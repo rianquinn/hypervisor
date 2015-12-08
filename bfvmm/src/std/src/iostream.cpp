@@ -129,6 +129,13 @@ namespace std
     }
 
     ostream &
+    ostream::operator<<(size_t val)
+    {
+        char str[IOTA_MIN_BUF_SIZE];
+        return *this << itoa(val, str, m_base);
+    }
+
+    ostream &
     ostream::operator<<(ostream_modifier modifier)
     {
         switch (modifier)

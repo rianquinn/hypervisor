@@ -25,6 +25,8 @@
 #include <std/iostream>
 #include <debug_ring/debug_ring.h>
 
+#include <vmm/vmm_intel_x64.h>
+
 // =============================================================================
 // Entry Functions
 // =============================================================================
@@ -41,6 +43,9 @@ start_vmm(void *arg)
         return VMM_ERROR_INIT_FAILED;
 
     std::cout.init();
+
+    vmm_intel_x64::instance().init(&intrinsics_intel_x64::instance());
+    vmm_intel_x64::instance().start();
 
     return 0;
 }

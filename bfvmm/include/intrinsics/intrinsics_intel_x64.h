@@ -23,14 +23,51 @@
 #ifndef INTRINSICS_INTEL_X64_H
 #define INTRINSICS_INTEL_X64_H
 
+#include <intrinsics/intrinsics_x64.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
-
 #ifdef __cplusplus
 }
 #endif
+
+class intrinsics_intel_x64 : public intrinsics_x64
+{
+public:
+
+    /// Get Singleton Instance
+    ///
+    /// @return an instance to this singleton class
+    ///
+    static intrinsics_intel_x64 &instance()
+    {
+        static intrinsics_intel_x64 self;
+        return self;
+    }
+
+    /// Intel x64 Intrinsics Destructor
+    ///
+    virtual ~intrinsics_intel_x64() {}
+
+private:
+
+    /// Private Intel x64 Intrinsics Constructor
+    ///
+    /// Since this is a singleton class, the constructor should not be used
+    /// directly. Instead, use instance()
+    ///
+    intrinsics_intel_x64() {}
+
+public:
+
+    /// Explicitly prevent the ability to copy this class since it is
+    /// a singleton class
+    ///
+
+    intrinsics_intel_x64(intrinsics_intel_x64 const &) = delete;
+    void operator=(intrinsics_intel_x64 const &) = delete;
+};
 
 #endif

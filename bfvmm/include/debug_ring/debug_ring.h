@@ -80,12 +80,12 @@ private:
 
 public:
 
-    /// Explicitly delete the use of the copying this class as it is a
-    /// singleton class
+    /// Explicitly prevent the ability to copy this class since it is
+    /// a singleton class
     ///
 
-    debug_ring(debug_ring const &)      = delete;
-    void operator=(debug_ring const &)  = delete;
+    debug_ring(debug_ring const &) = delete;
+    void operator=(debug_ring const &) = delete;
 
 private:
 

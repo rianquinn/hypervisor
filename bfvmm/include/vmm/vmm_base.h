@@ -22,12 +22,28 @@
 #ifndef VMM_BASE_H
 #define VMM_BASE_H
 
+namespace vmm_error
+{
+    enum type
+    {
+        success = 0,
+        failure = 1,
+        not_supported = 2
+    };
+};
+
 class vmm_base
 {
 public:
 
     vmm_base() {}
     virtual ~vmm_base() {}
+
+    virtual vmm_error::type start()
+    { return vmm_error::failure; }
+
+    virtual vmm_error::type stop()
+    { return vmm_error::failure; }
 };
 
 #endif
