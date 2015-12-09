@@ -441,9 +441,13 @@ vmm_intel_x64::vmxon_vmcs_region_size()
 vmm_error::type
 vmm_intel_x64::execute_vmxon()
 {
-    std::cout << m_vmxon_page.phys_addr() << std::endl;
+    auto phys = m_vmxon_page.phys_addr();
 
-    // m_intrinsics->vmxon(m_vmxon_page.phys_addr());
+    if(m_intrinsics->vmxon(&phys) == false)
+    {
+        std::cout << "execute_vmxon failed" << std::endl;
+        return vmm_error::not_supported;
+    }
 
     return vmm_error::success;
 }
@@ -451,7 +455,11 @@ vmm_intel_x64::execute_vmxon()
 vmm_error::type
 vmm_intel_x64::execute_vmxoff()
 {
-    // m_intrinsics->vmxoff();
+    if(m_intrinsics->vmxoff() == false)
+    {
+        std::cout << "execute_vmxoff failed" << std::endl;
+        return vmm_error::not_supported;
+    }
 
     return vmm_error::success;
 }

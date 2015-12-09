@@ -76,7 +76,7 @@ platform_alloc_page(void)
     struct page_t pg = {0};
 
     pg.virt = kmalloc(PAGE_SIZE, GFP_KERNEL);
-    pg.phys = (void *)virt_to_phys(pg.virt);
+    pg.phys = (void *)__pa(pg.virt);
     pg.size = PAGE_SIZE;
 
     return pg;

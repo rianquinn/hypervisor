@@ -24,12 +24,24 @@ global __vmxoff:function
 
 section .text
 
-; void __vmxon(void *vmxon_region)
+; uint64_t __vmxon(void *vmxon_region)
 __vmxon:
     vmxon [rdi]
-    ret
+    jbe __vmx_failure
+    jmp __vmx_success
 
-; void __vmxoff(void)
+; uint64_t __vmxoff(void)
 __vmxoff:
     vmxoff
+    jbe __vmx_failure
+    jmp __vmx_success
+
+; vmx instruction failed
+__vmx_failure:
+    mov rax, 0x0
+    ret
+
+; vmx instruction succeded
+__vmx_success:
+    mov rax, 0x1
     ret

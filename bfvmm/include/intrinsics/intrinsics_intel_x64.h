@@ -29,8 +29,8 @@
 extern "C" {
 #endif
 
-void __vmxon(void *vmxon_region);
-void __vmxoff(void);
+uint64_t __vmxon(void *vmxon_region);
+uint64_t __vmxoff(void);
 
 #ifdef __cplusplus
 }
@@ -54,10 +54,10 @@ public:
     ///
     virtual ~intrinsics_intel_x64() {}
 
-    void vmxon(void *vmxon_region)
+    bool vmxon(void *vmxon_region)
     { __vmxon(vmxon_region); }
 
-    void vmxoff()
+    bool vmxoff()
     { __vmxoff(); }
 
 private:
