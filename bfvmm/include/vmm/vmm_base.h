@@ -31,7 +31,8 @@ namespace vmm_error
     {
         success = 0,
         failure = 1,
-        not_supported = 2
+        not_supported = 2,
+        out_of_memory = 3
     };
 };
 

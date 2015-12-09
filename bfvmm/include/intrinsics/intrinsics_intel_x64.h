@@ -29,6 +29,9 @@
 extern "C" {
 #endif
 
+void __vmxon(void *vmxon_region);
+void __vmxoff(void);
+
 #ifdef __cplusplus
 }
 #endif
@@ -50,6 +53,12 @@ public:
     /// Intel x64 Intrinsics Destructor
     ///
     virtual ~intrinsics_intel_x64() {}
+
+    void vmxon(void *vmxon_region)
+    { __vmxon(vmxon_region); }
+
+    void vmxoff()
+    { __vmxoff(); }
 
 private:
 

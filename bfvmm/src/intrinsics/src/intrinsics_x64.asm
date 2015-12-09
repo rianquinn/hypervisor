@@ -26,8 +26,10 @@ global __cpuid_edx:function
 global __read_rflags:function
 global __read_msr:function
 global __write_msr:function
-
-section .data
+global __read_cr0:function
+global __write_cr0:function
+global __read_cr4:function
+global __write_cr4:function
 
 section .text
 
@@ -122,4 +124,24 @@ __write_msr:
 
     pop rdx
     pop rcx
+    ret
+
+; uint64_t __read_cr0()
+__read_cr0:
+    mov rax, cr0
+    ret
+
+; void __write_cr0(uint64_t val)
+__write_cr0:
+    mov cr0, rdi
+    ret
+
+; uint64_t __read_cr4()
+__read_cr4:
+    mov rax, cr4
+    ret
+
+; void __write_cr4(uint64_t val)
+__write_cr4:
+    mov cr4, rdi
     ret

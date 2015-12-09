@@ -18,3 +18,18 @@
 ; You should have received a copy of the GNU Lesser General Public
 ; License along with this library; if not, write to the Free Software
 ; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+global __vmxon:function
+global __vmxoff:function
+
+section .text
+
+; void __vmxon(void *vmxon_region)
+__vmxon:
+    vmxon [rdi]
+    ret
+
+; void __vmxoff(void)
+__vmxoff:
+    vmxoff
+    ret

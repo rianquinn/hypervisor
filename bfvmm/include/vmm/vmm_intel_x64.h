@@ -88,9 +88,20 @@ private:
 
     vmm_error::type verify_cpuid_vmx_supported();
     vmm_error::type verify_vmx_capabilities_msr();
+    vmm_error::type verify_ia32_vmx_cr0_fixed0_msr();
+    vmm_error::type verify_ia32_vmx_cr0_fixed1_msr();
+    vmm_error::type verify_ia32_vmx_cr4_fixed0_msr();
+    vmm_error::type verify_ia32_vmx_cr4_fixed1_msr();
+    vmm_error::type verify_ia32_feature_control_msr();
     vmm_error::type verify_v8086_disabled();
 
     vmm_error::type create_vmxon_region();
+    vmm_error::type enable_vmx_operation();
+
+    vmm_error::type execute_vmxon();
+    vmm_error::type execute_vmxoff();
+
+    uint64_t vmxon_vmcs_region_size();
 
 private:
 

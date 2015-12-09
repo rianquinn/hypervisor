@@ -44,6 +44,12 @@ uint64_t __read_rflags(void);
 uint64_t __read_msr(uint32_t msr);
 void __write_msr(uint32_t msr, uint64_t val);
 
+uint64_t __read_cr0();
+void __write_cr0(uint64_t val);
+
+uint64_t __read_cr4();
+void __write_cr4(uint64_t val);
+
 #ifdef __cplusplus
 }
 #endif
@@ -79,6 +85,18 @@ public:
 
     virtual void write_msr(uint32_t msr, uint64_t val)
     { __write_msr(msr, val); }
+
+    virtual uint64_t read_cr0()
+    { return __read_cr0(); }
+
+    virtual void write_cr0(uint64_t val)
+    { __write_cr0(val); }
+
+    virtual uint64_t read_cr4()
+    { return __read_cr4(); }
+
+    virtual void write_cr4(uint64_t val)
+    { __write_cr4(val); }
 };
 
 // =============================================================================
@@ -105,8 +123,50 @@ public:
 #define RFLAGS_VIP_VIRTUAL_INTERUPT_PENDING (1 << 20)
 #define RFLAGS_ID_ID_FLAG (1 << 21)
 
+// CR0
+// 64-ia-32-architectures-software-developer-manual, section 2.5
+#define CRO_PE_PROTECTION_ENABLE (1 << 0)
+#define CR0_MP_MONITOR_COPROCESSOR (1 << 1)
+#define CR0_EM_EMULATION (1 << 2)
+#define CR0_TS_TASK_SWITCHED (1 << 3)
+#define CR0_ET_EXTENSION_TYPE (1 << 4)
+#define CR0_NE_NUMERIC_ERROR (1 << 5)
+#define CR0_WP_WRITE_PROTECT (1 << 16)
+#define CR0_AM_ALIGNMENT_MASK (1 << 18)
+#define CR0_NW_NOT_WRITE_THROUGH (1 << 29)
+#define CR0_CD_CACHE_DISABLE (1 << 30)
+#define CR0_PG_PAGING (1 << 31)
+
+// CR4
+// 64-ia-32-architectures-software-developer-manual, section 2.5
+#define CR4_VME_VIRTUAL8086_MODE_EXTENSIONS (1 << 0)
+#define CR4_PVI_PROTECTED_MODE_VIRTUAL_INTERRUPTS (1 << 1)
+#define CR4_TSD_TIME_STAMP_DISABLE (1 << 2)
+#define CR4_DE_DEBUGGING_EXTENSIONS (1 << 3)
+#define CR4_PSE_PAGE_SIZE_EXTENSIONS (1 << 4)
+#define CR4_PAE_PHYSICAL_ADDRESS_EXTENSIONS (1 << 5)
+#define CR4_MACHINE_CHECK_ENABLE (1 << 6)
+#define CR4_PGE_PAGE_GLOBAL_ENABLE (1 << 7)
+#define CR4_PCE_PERFORMANCE_MONITOR_COUNTER_ENABLE (1 << 8)
+#define CR4_OSFXSR (1 << 9)
+#define CR4_OSXMMEXCPT (1 << 10)
+#define CR4_VMXE_VMX_ENABLE_BIT (1 << 13)
+#define CR4_SMXE_SMX_ENABLE_BIT (1 << 14)
+#define CR4_FSGSBASE_FSGSBASE_ENABLE_BIT (1 << 16)
+#define CR4_PCIDE_PCID_ENABLE_BIT (1 << 17)
+#define CR4_OSXSAVE (1 << 18)
+#define CR4_SMEP_SMEP_ENABLE_BIT (1 << 20)
+#define CR4_SMAP_SMAP_ENABLE_BIT (1 << 21)
+#define CR4_PKE_PROTECTION_KEY_ENABLE_BIT (1 << 22)
+
 // VMX MSRs
 // 64-ia-32-architectures-software-developer-manual, appendix A.1
 #define IA32_VMX_BASIC_MSR (0x480)
+#define IA32_VMX_CR0_FIXED0_MSR (0x486)
+#define IA32_VMX_CR0_FIXED1_MSR (0x487)
+#define IA32_VMX_CR4_FIXED0_MSR (0x488)
+#define IA32_VMX_CR4_FIXED1_MSR (0x489)
+#define IA32_FEATURE_CONTROL (0x3A)
+
 
 #endif
