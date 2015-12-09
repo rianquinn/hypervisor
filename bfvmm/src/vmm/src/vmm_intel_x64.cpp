@@ -30,12 +30,19 @@ vmm_intel_x64::instance()
 }
 
 vmm_error::type
-vmm_intel_x64::init(intrinsics_intel_x64 *intrinsics)
+vmm_intel_x64::init(intrinsics_base *intrinsics,
+                    memory_manager_base *memory_manager)
 {
-    if(intrinsics == 0)
+    if(intrinsics == 0 || memory_manager == 0)
         return vmm_error::failure;
 
-    m_intrinsics = intrinsics;
+    // Ideally we would use dynamic_cast to get access to the intrinics
+    // for this archiecture, simply to validate that we were passed the
+    // correct class. Since the VMM does not have RTTI, we cannot use this
+    // function.
+
+    m_intrinsics = reinterpret_cast<intrinsics_intel_x64 *>(intrinsics);
+    m_mm = memory_manager;
 
     return vmm_error::success;
 }
@@ -160,6 +167,12 @@ vmm_intel_x64::verify_v8086_disabled()
     }
 
     return vmm_error::success;
+}
+
+vmm_error::type
+vmm_intel_x64::create_vmxon_region()
+{
+
 }
 
 

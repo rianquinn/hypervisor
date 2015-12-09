@@ -41,6 +41,9 @@ public:
     debug_ring_base() {}
     virtual ~debug_ring_base() {}
 
+    virtual debug_ring_error::type init(struct debug_ring_resources *drr)
+    { return debug_ring_error::failure; }
+
     virtual debug_ring_error::type write(const char *str, int64_t len)
     { return debug_ring_error::failure; }
 };

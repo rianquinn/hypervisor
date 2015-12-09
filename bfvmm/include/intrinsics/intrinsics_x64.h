@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef INTRINSICS_H
-#define INTRINSICS_H
+#ifndef INTRINSICS_X64_H
+#define INTRINSICS_X64_H
 
 #include <stdint.h>
+#include <intrinsics/intrinsics_base.h>
 
 // =============================================================================
 // Intrinsics
@@ -51,7 +52,7 @@ void __write_msr(uint32_t msr, uint64_t val);
 // C++ Wrapper
 // =============================================================================
 
-class intrinsics_x64
+class intrinsics_x64 : public intrinsics_base
 {
 public:
 

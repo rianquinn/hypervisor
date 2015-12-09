@@ -29,6 +29,34 @@
 #include <vmm/vmm_intel_x64.h>
 
 // =============================================================================
+// Singleton Factories
+// =============================================================================
+
+debug_ring_base *
+get_debug_ring()
+{
+    return &debug_ring::instance();
+}
+
+memory_manager_base *
+get_memory_manager()
+{
+    return &memory_manager::instance();
+}
+
+intrinsics_base *
+get_intrinsics()
+{
+    return &intrinsics_intel_x64::instance();
+}
+
+vmm_base *
+get_vmm()
+{
+    return &vmm_intel_x64::instance();
+}
+
+// =============================================================================
 // Entry Functions
 // =============================================================================
 
@@ -40,24 +68,35 @@ start_vmm(void *arg)
     if (arg == 0)
         return VMM_ERROR_INVALID_ARG;
 
-    if (debug_ring::instance().init(vmmr->drr) != debug_ring_error::success)
+    debug_ring_base *dr = get_debug_ring();
+    memory_manager_base *mm = get_memory_manager();
+    intrinsics_base *intrinsics = get_intrinsics();
+    vmm_base *vmm = get_vmm();
+
+    if (dr == 0 || mm == 0 || intrinsics == 0 || vmm == 0)
+        return VMM_ERROR_INVALID_FACTORY;
+
+    if (dr->init(vmmr->drr) != debug_ring_error::success)
         return VMM_ERROR_DEBUG_RING_INIT_FAILED;
 
     std::cout.init();
 
-    if (memory_manager::instance().init() != memory_manager_error::success)
-        return VMM_ERROR_MEMORY_MANAGER_FAILED;
+    if (mm->init() != memory_manager_error::success)
+        return VMM_ERROR_MEMORY_MANAGER_INIT_FAILED;
 
     for (auto i = 0; i < MAX_PAGES; i++)
     {
         auto pg = page(vmmr->pages[i]);
 
-        if (memory_manager::instance().add_page(pg) != memory_manager_error::success)
+        if (mm->add_page(pg) != memory_manager_error::success)
             return VMM_ERROR_INVALID_PAGES;
     }
 
-    vmm_intel_x64::instance().init(&intrinsics_intel_x64::instance());
-    vmm_intel_x64::instance().start();
+    if (vmm->init(intrinsics, mm) != vmm_error::success)
+        return VMM_ERROR_VMM_INIT_FAILED;
+
+    if (vmm->start() != vmm_error::success)
+        return VMM_ERROR_VMM_START_FAILED;
 
     return 0;
 }

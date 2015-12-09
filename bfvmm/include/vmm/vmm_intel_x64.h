@@ -46,7 +46,8 @@ public:
     ///
     /// @param intrinsics the intrinsics class that this VMM will use
     /// @return success on success, failure otherwise
-    vmm_error::type init(intrinsics_intel_x64 *intrinsics);
+    vmm_error::type init(intrinsics_base *intrinsics,
+                         memory_manager_base *memory_manager) override;
 
     /// Start VMM
     ///
@@ -89,9 +90,12 @@ private:
     vmm_error::type verify_vmx_capabilities_msr();
     vmm_error::type verify_v8086_disabled();
 
+    vmm_error::type create_vmxon_region();
 
 private:
 
+    page m_vmxon_page;
+    memory_manager_base *m_mm;
     intrinsics_intel_x64 *m_intrinsics;
 };
 

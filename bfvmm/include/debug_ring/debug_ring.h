@@ -54,7 +54,7 @@ public:
     /// @param drr debug resources created by the driver entry
     /// @return success on success, invalid on failure
     ///
-    debug_ring_error::type init(struct debug_ring_resources *drr);
+    debug_ring_error::type init(struct debug_ring_resources *drr) override;
 
     /// Write to Debug Ring
     ///

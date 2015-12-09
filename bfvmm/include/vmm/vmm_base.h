@@ -22,6 +22,9 @@
 #ifndef VMM_BASE_H
 #define VMM_BASE_H
 
+#include <intrinsics/intrinsics_base.h>
+#include <memory_manager/memory_manager_base.h>
+
 namespace vmm_error
 {
     enum type
@@ -38,6 +41,10 @@ public:
 
     vmm_base() {}
     virtual ~vmm_base() {}
+
+    virtual vmm_error::type init(intrinsics_base *intrinsics,
+                                 memory_manager_base *memory_manager)
+    { return vmm_error::failure; }
 
     virtual vmm_error::type start()
     { return vmm_error::failure; }
