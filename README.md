@@ -8,10 +8,12 @@ research. Some highlights include:
 - Reduced legacy support (e.g. requires 64bit, no support for BIOS, etc...)
 - Written in C++
 - Cross Platform
+- Developed using Test Driven Development
 - Few external dependencies
+- LGPL v2.1
 
 In addition to simplified architecture, the Bareflank hypervisor has been
-licensed under the v2.1 LGPL. The entire Bareflank hypervisor is a collection
+licensed under the LGPL v2.1. The entire Bareflank hypervisor is a collection
 of cross-compiled libraries. Users of the Bareflank hypervisor are welcome
 to replace any or all of the open source libraries with proprietary versions,
 enabling the development of internal hypervisor based research, while
@@ -29,7 +31,7 @@ Before you can compile, you must have a native GCC installer, as well as a
 GCC cross-compiler. For instructions on how to setup a GCC cross-compiler,
 please see the following:
 
-https://github.com/Bareflank/hypervisor/tree/master/doc/cross_compilers
+[Cross Compilers](https://github.com/Bareflank/hypervisor/tree/master/doc/cross_compilers)
 
 If you are running on one of the supported platforms, setting up the cross
 compiler is as simple as:
@@ -50,6 +52,8 @@ To run the hypervisor, you need to first compile, and load one of the driver
 entry points. Bareflank uses the driver entry point to gain kernel level
 access to the system to load the hypervisor. To see the instructions for
 how to load the hypervisor, please read the following:
+
+[Driver Entry Documentation](https://github.com/Bareflank/hypervisor/tree/master/driver_entry/src/arch)
 
 To clean up the source directory, run:
 

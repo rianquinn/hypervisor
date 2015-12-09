@@ -20,48 +20,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#include <platform.h>
-#include <sys/mman.h>
+#ifndef MEMORY_H
+#define MEMORY_H
 
-void *
-platform_alloc(int64_t len)
-{
-    return malloc(len);
-}
-
-void *
-platform_alloc_exec(int64_t len)
-{
-    return mmap(0, len, PROT_READ | PROT_WRITE | PROT_EXEC,
-                MAP_PRIVATE | MAP_ANON, -1, 0);
-}
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct page_t
-platform_alloc_page(void)
 {
-    struct page_t pg;
+    void *phys;
+    void *virt;
+    unsigned long long size;
+};
 
-    pg.virt = (void *)48;
-    pg.phys = (void *)1516;
-    pg.size = 2342;
+#define MAX_PAGES 10
 
-    return pg;
+#ifdef __cplusplus
 }
+#endif
 
-void
-platform_free(void *addr)
-{
-    free(addr);
-}
-
-void
-platform_free_exec(void *addr, int64_t len)
-{
-    munmap(addr, len);
-}
-
-void
-platform_free_page(struct page_t pg)
-{
-}
+#endif
