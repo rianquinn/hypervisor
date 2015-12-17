@@ -27,13 +27,13 @@ exit_handler_dispatch::exit_handler_dispatch()
 {
     m_vcpu = ef()->get_vcpu_factory()->get_vcpu(0);
 
-    if(m_vcpu == 0)
+    if (m_vcpu == 0)
         return;
 
     m_vmcs_intel_x64 = reinterpret_cast<vmcs_intel_x64 *>(m_vcpu->get_vmcs());
     m_intrinsics_intel_x64 = reinterpret_cast<intrinsics_intel_x64 *>(m_vcpu->get_intrinsics());
 
-    if(m_vmcs_intel_x64 == 0 || m_intrinsics_intel_x64 == 0)
+    if (m_vmcs_intel_x64 == 0 || m_intrinsics_intel_x64 == 0)
         return;
 
     m_exit_reason = m_vmcs_intel_x64->vmread(VMCS_EXIT_REASON);
@@ -49,7 +49,7 @@ exit_handler_dispatch::~exit_handler_dispatch()
 void
 exit_handler_dispatch::dispatch()
 {
-    switch(m_exit_reason)
+    switch (m_exit_reason)
     {
         case VM_EXIT_REASON_EXCEPTION_OR_NON_MASKABLE_INTERRUPT:
             handle_exception_or_non_maskable_interrupt();
@@ -419,15 +419,15 @@ exit_handler_dispatch::handle_control_register_accesses()
     auto access_type = ((m_exit_qualification & 0x00000030) >> 4);
     auto general_purpose_register = ((m_exit_qualification & 0x00000F00) >> 8);
 
-    if(control_register != 3)
+    if (control_register != 3)
         goto unimplemented;
 
-    if(access_type >= 2)
+    if (access_type >= 2)
         goto unimplemented;
 
-    if(access_type == 0)
+    if (access_type == 0)
     {
-        switch(general_purpose_register)
+        switch (general_purpose_register)
         {
             case 0:
                 m_intrinsics_intel_x64->vmwrite(VMCS_GUEST_CR3, g_guest_rax);
@@ -501,9 +501,9 @@ exit_handler_dispatch::handle_control_register_accesses()
         return;
     }
 
-    if(access_type == 1)
+    if (access_type == 1)
     {
-        switch(general_purpose_register)
+        switch (general_purpose_register)
         {
             case 0:
                 m_intrinsics_intel_x64->vmread(VMCS_GUEST_CR3, &g_guest_rax);
@@ -606,7 +606,32 @@ exit_handler_dispatch::handle_rdmsr()
 
 void
 exit_handler_dispatch::handle_wrmsr()
-{ unimplemented_handler(); }
+{
+    switch (g_guest_rcx)
+    {
+        case IA32_FS_BASE:
+        {
+            uint64_t msr_val;
+            msr_val = (g_guest_rdx << 32) | (g_guest_rax & 0x00000000FFFFFFFF);
+            m_vmcs_intel_x64->vmwrite(VMCS_GUEST_FS_BASE, msr_val);
+            break;
+        }
+        case IA32_GS_BASE:
+        {
+            uint64_t msr_val;
+            msr_val = (g_guest_rdx << 32) | (g_guest_rax & 0x00000000FFFFFFFF);
+            m_vmcs_intel_x64->vmwrite(VMCS_GUEST_GS_BASE, msr_val);
+            break;
+        }
+        default:
+        {
+            guest_write_msr();
+            break;
+        }
+    }
+
+    advance_rip();
+}
 
 void
 exit_handler_dispatch::handle_vm_entry_failure_invalid_guest_state()
@@ -725,7 +750,7 @@ exit_handler_dispatch::advance_rip()
 void
 exit_handler_dispatch::spin_wait()
 {
-    for(auto i = 0; i < 1000000; i++);
+    for (auto i = 0; i < 1000000; i++);
 }
 
 void
@@ -744,10 +769,24 @@ exit_handler_dispatch::unimplemented_handler()
     m_intrinsics_intel_x64->halt();
 }
 
+void
+exit_handler_dispatch::dump_cpu_state()
+{
+    std::cout << std::hex << std::endl;
+    std::cout << "---------------------------------------------" << std::endl;
+    std::cout << "  - rip: 0x" << g_guest_rip << std::endl;
+    std::cout << "  - rax: 0x" << g_guest_rax << std::endl;
+    std::cout << "  - rbx: 0x" << g_guest_rbx << std::endl;
+    std::cout << "  - rcx: 0x" << g_guest_rcx << std::endl;
+    std::cout << "  - rdx: 0x" << g_guest_rdx << std::endl;
+    std::cout << "---------------------------------------------" << std::endl;
+    std::cout << std::dec << std::endl;
+}
+
 const char *
 exit_handler_dispatch::exit_reason_to_str(uint64_t exit_reason)
 {
-    switch(exit_reason)
+    switch (exit_reason)
     {
         case VM_EXIT_REASON_EXCEPTION_OR_NON_MASKABLE_INTERRUPT:
             return "VM_EXIT_REASON_EXCEPTION_OR_NON_MASKABLE_INTERRUPT";

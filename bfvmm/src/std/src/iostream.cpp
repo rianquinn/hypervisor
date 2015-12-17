@@ -117,8 +117,8 @@ namespace std
     ostream &
     ostream::operator<<(unsigned char val)
     {
-        unsigned char str[2] = {val, '\0'};
-        return *this << str;
+        char str[IOTA_MIN_BUF_SIZE];
+        return *this << itoa(val, str, m_base);
     }
 
     ostream &

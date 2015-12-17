@@ -53,6 +53,15 @@ void *
 platform_alloc_exec(int64_t len);
 
 /**
+ * Return the pfn of virtually address memory
+ *
+ * @param virtual address of memory to find the pfn of
+ * @return Physical page frame number of the backing store
+ */
+uint64_t
+platform_vaddr_to_pfn(void *vaddr);
+
+/**
  * Allocate Page
  *
  * Used by the common code to allocate a page of memory. Note that the

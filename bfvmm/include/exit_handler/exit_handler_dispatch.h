@@ -102,6 +102,7 @@ private:
 
     void spin_wait();
     void unimplemented_handler();
+    void dump_cpu_state();
 
     const char *exit_reason_to_str(uint64_t exit_reason);
 

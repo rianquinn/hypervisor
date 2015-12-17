@@ -424,4 +424,16 @@ public:
 #define IA32_FS_BASE                                              0xC0000100
 #define IA32_GS_BASE                                              0xC0000101
 
+// 64-ia-32-architectures-software-developer-manual, section 21.6.9
+// MSR Bitmap offsets
+#define LOW_RDMSR_BITMAP_BASE   0
+#define HIGH_RDMSR_BITMAP_BASE  1024
+#define LOW_WRMSR_BITMAP_BASE   2048
+#define HIGH_WRMSR_BITMAP_BASE  3072
+
+#define LOW_MSR_BASE            0x0000
+#define LOW_MSR_LIMIT           0x2000
+#define HIGH_MSR_BASE           0xC0000000
+#define HIGH_MSR_LIMIT          0xC0002000
+
 #endif

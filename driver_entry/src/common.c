@@ -113,6 +113,11 @@ add_elf_file(uint64_t size)
         ALERT("add_elf_file: out of memory\n");
         return 0;
     }
+    else
+    {
+        DEBUG("Module[%16x] base address: %p\n", g_num_bfelf_files, exec);
+        DEBUG("Module[%16x] base address: %p\n", g_num_bfelf_files, platform_vaddr_to_pfn(exec));
+    }
 
     g_bfelf_execs[g_num_bfelf_files] = exec;
     g_bfelf_sizes[g_num_bfelf_files] = size;
