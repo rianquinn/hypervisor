@@ -62,6 +62,34 @@ vmcs_intel_x64::init(intrinsics *intrinsics,
     return vmcs_error::success;
 }
 
+inline void
+dump_hex(uint8_t *buffer, uint16_t length)
+{
+    int i = 0;
+    for (i = 0; i < length; i += 16)
+    {
+        std::cout << std::hex;
+        std::cout << (buffer + i) << " | "
+                  << buffer[i] << " "
+                  << buffer[i + 1] << " "
+                  << buffer[i + 2] << " "
+                  << buffer[i + 3] << " "
+                  << buffer[i + 4] << " "
+                  << buffer[i + 5] << " "
+                  << buffer[i + 6] << " "
+                  << buffer[i + 7] << "  "
+                  << buffer[i + 8] << " "
+                  << buffer[i + 9] << " "
+                  << buffer[i + 10] << " "
+                  << buffer[i + 11] << " "
+                  << buffer[i + 12] << " "
+                  << buffer[i + 13] << " "
+                  << buffer[i + 14] << " "
+                  << buffer[i + 15] << std::endl;
+        std::cout << std::dec;
+    }
+}
+
 vmcs_error::type
 vmcs_intel_x64::launch()
 {
@@ -188,7 +216,11 @@ vmcs_intel_x64::launch()
 
     auto buf = (char *)m_msr_bitmap.virt_addr();
     for (auto i = 0; i < m_msr_bitmap.size(); i++)
-        buf[i] = 0;
+    {
+        buf[i] = 0x00;
+    }
+
+    enable_trap_on_wrmsr(IA32_FS_BASE);
 
     vmwrite(VMCS_ADDRESS_OF_MSR_BITMAPS_FULL, (uint64_t)m_msr_bitmap.phys_addr());
 
@@ -664,6 +696,7 @@ vmcs_intel_x64::write_natural_width_guest_state_fields()
     vmwrite(VMCS_GUEST_CS_BASE, m_cs_base);
     vmwrite(VMCS_GUEST_SS_BASE, m_ss_base);
     vmwrite(VMCS_GUEST_DS_BASE, m_ds_base);
+
     vmwrite(VMCS_GUEST_FS_BASE, m_intrinsics->read_msr(IA32_FS_BASE));
     vmwrite(VMCS_GUEST_GS_BASE, m_intrinsics->read_msr(IA32_GS_BASE));
     vmwrite(VMCS_GUEST_LDTR_BASE, m_ldtr_base);
@@ -854,4 +887,90 @@ vmcs_intel_x64::vmread(uint64_t field)
     }
 
     return value;
+}
+
+void
+vmcs_intel_x64::enable_trap_on_rdmsr(uint32_t msr)
+{
+    auto msr_bitmap = (uint8_t *)m_msr_bitmap.virt_addr();
+
+    if (msr >= LOW_MSR_BASE && msr < LOW_MSR_LIMIT)
+    {
+        uint8_t *rdmsr_bitmap = msr_bitmap + LOW_RDMSR_BITMAP_BASE;
+        set_bitmap_bit(rdmsr_bitmap, msr);
+    }
+    else if (msr >= HIGH_MSR_BASE && msr < HIGH_MSR_LIMIT)
+    {
+        uint8_t *rdmsr_bitmap = msr_bitmap + HIGH_RDMSR_BITMAP_BASE;
+        set_bitmap_bit(rdmsr_bitmap, (msr - HIGH_MSR_BASE));
+    }
+}
+
+void
+vmcs_intel_x64::disable_trap_on_rdmsr(uint32_t msr)
+{
+    auto msr_bitmap = (uint8_t *)m_msr_bitmap.virt_addr();
+
+    if (msr >= LOW_MSR_BASE && msr < LOW_MSR_LIMIT)
+    {
+        uint8_t *rdmsr_bitmap = msr_bitmap + LOW_RDMSR_BITMAP_BASE;
+        clear_bitmap_bit(rdmsr_bitmap, msr);
+    }
+    else if (msr >= HIGH_MSR_BASE && msr < HIGH_MSR_LIMIT)
+    {
+        uint8_t *rdmsr_bitmap = msr_bitmap + HIGH_RDMSR_BITMAP_BASE;
+        clear_bitmap_bit(rdmsr_bitmap, (msr - HIGH_MSR_BASE));
+    }
+}
+
+void
+vmcs_intel_x64::enable_trap_on_wrmsr(uint32_t msr)
+{
+    auto msr_bitmap = (uint8_t *)m_msr_bitmap.virt_addr();
+
+    if (msr >= LOW_MSR_BASE && msr < LOW_MSR_LIMIT)
+    {
+        uint8_t *wrmsr_bitmap = msr_bitmap + LOW_WRMSR_BITMAP_BASE;
+        set_bitmap_bit(wrmsr_bitmap, msr);
+    }
+    else if (msr >= HIGH_MSR_BASE && msr < HIGH_MSR_LIMIT)
+    {
+        uint8_t *wrmsr_bitmap = msr_bitmap + HIGH_WRMSR_BITMAP_BASE;
+        set_bitmap_bit(wrmsr_bitmap, (msr - HIGH_MSR_BASE));
+    }
+}
+
+void
+vmcs_intel_x64::disable_trap_on_wrmsr(uint32_t msr)
+{
+    auto msr_bitmap = (uint8_t *)m_msr_bitmap.virt_addr();
+
+    if (msr >= LOW_MSR_BASE && msr < LOW_MSR_LIMIT)
+    {
+        uint8_t *wrmsr_bitmap = msr_bitmap + LOW_WRMSR_BITMAP_BASE;
+        clear_bitmap_bit(wrmsr_bitmap, msr);
+    }
+    else if (msr >= HIGH_MSR_BASE && msr < HIGH_MSR_LIMIT)
+    {
+        uint8_t *wrmsr_bitmap = msr_bitmap + HIGH_WRMSR_BITMAP_BASE;
+        clear_bitmap_bit(wrmsr_bitmap, (msr - HIGH_MSR_BASE));
+    }
+}
+
+void
+vmcs_intel_x64::dump_msr_bitmap()
+{
+    auto msr_bitmap = (uint8_t *)m_msr_bitmap.virt_addr();
+
+    std::cout << "MSR Bitmap 0:" << std::endl;
+    dump_hex(msr_bitmap, 1024);
+
+    std::cout << std::endl << "MSR Bitmap 1:" << std::endl;
+    dump_hex(msr_bitmap + HIGH_RDMSR_BITMAP_BASE, 1024);
+
+    std::cout << std::endl << "MSR Bitmap 2:" << std::endl;
+    dump_hex(msr_bitmap + LOW_WRMSR_BITMAP_BASE, 1024);
+
+    std::cout << std::endl << "MSR Bitmap 3:" << std::endl;
+    dump_hex(msr_bitmap + HIGH_WRMSR_BITMAP_BASE, 1024);
 }

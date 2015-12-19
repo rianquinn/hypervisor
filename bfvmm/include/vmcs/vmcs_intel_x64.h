@@ -25,6 +25,23 @@
 #include <vmcs/vmcs.h>
 #include <intrinsics/intrinsics_intel_x64.h>
 
+inline void set_bitmap_bit(uint8_t *bitmap, uint32_t index)
+{
+    uint16_t byte_index = index / 8;
+    uint8_t bit_index = index % 8;
+
+    bitmap[index] |= (uint8_t)(1 << bit_index);
+}
+
+inline void clear_bitmap_bit(uint8_t *bitmap, uint32_t index)
+{
+    uint16_t byte_index = index / 8;
+    uint8_t bit_index = index % 8;
+
+    bitmap[index] &= (uint8_t)(~(1 << bit_index));
+}
+
+
 class vmcs_intel_x64 : public vmcs
 {
 public:
@@ -292,6 +309,15 @@ private:
     bool check_control_vm_entry_ctls_reserved_properly_set();
     bool check_control_event_injection_checks();
     bool check_control_entry_msr_load_address();
+
+    // MSR bitmap control
+    void enable_trap_on_rdmsr(uint32_t msr);
+    void disable_trap_on_rdmsr(uint32_t msr);
+
+    void enable_trap_on_wrmsr(uint32_t msr);
+    void disable_trap_on_wrmsr(uint32_t msr);
+
+    void dump_msr_bitmap();
 
 private:
 

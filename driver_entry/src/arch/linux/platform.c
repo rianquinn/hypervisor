@@ -26,6 +26,7 @@
 #include <linux/slab.h>
 #include <linux/module.h>
 #include <linux/vmalloc.h>
+#include <linux/mm.h>
 
 void *
 platform_alloc(int64_t len)
@@ -69,6 +70,12 @@ platform_alloc_exec(int64_t len)
     }
 
     return addr;
+}
+
+uint64_t
+platform_vaddr_to_pfn(void *vaddr)
+{
+    return (uint64_t)page_to_pfn(vmalloc_to_page(vaddr));
 }
 
 struct page_t
