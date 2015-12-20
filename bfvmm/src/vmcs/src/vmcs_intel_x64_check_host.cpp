@@ -266,7 +266,7 @@ vmcs_intel_x64::check_host_es_selector_rpl_ti_equal_zero()
 {
     auto es = vmread(VMCS_HOST_ES_SELECTOR);
 
-    if ((es & 0x0003) != 0)
+    if ((es & 0x0007) != 0)
     {
         std::cout << "check_host_es_selector_rpl_ti_equal_zero failed. "
                   << "RPL or TI not equal to 0: " << std::endl
@@ -284,7 +284,7 @@ vmcs_intel_x64::check_host_cs_selector_rpl_ti_equal_zero()
 {
     auto cs = vmread(VMCS_HOST_CS_SELECTOR);
 
-    if ((cs & 0x0003) != 0)
+    if ((cs & 0x0007) != 0)
     {
         std::cout << "check_host_cs_selector_rpl_ti_equal_zero failed. "
                   << "RPL or TI not equal to 0: " << std::endl
@@ -302,7 +302,7 @@ vmcs_intel_x64::check_host_ss_selector_rpl_ti_equal_zero()
 {
     auto ss = vmread(VMCS_HOST_SS_SELECTOR);
 
-    if ((ss & 0x0003) != 0)
+    if ((ss & 0x0007) != 0)
     {
         std::cout << "check_host_ss_selector_rpl_ti_equal_zero failed. "
                   << "RPL or TI not equal to 0: " << std::endl
@@ -320,7 +320,7 @@ vmcs_intel_x64::check_host_ds_selector_rpl_ti_equal_zero()
 {
     auto ds = vmread(VMCS_HOST_DS_SELECTOR);
 
-    if ((ds & 0x0003) != 0)
+    if ((ds & 0x0007) != 0)
     {
         std::cout << "check_host_ds_selector_rpl_ti_equal_zero failed. "
                   << "RPL or TI not equal to 0: " << std::endl
@@ -338,7 +338,7 @@ vmcs_intel_x64::check_host_fs_selector_rpl_ti_equal_zero()
 {
     auto fs = vmread(VMCS_HOST_FS_SELECTOR);
 
-    if ((fs & 0x0003) != 0)
+    if ((fs & 0x0007) != 0)
     {
         std::cout << "check_host_fs_selector_rpl_ti_equal_zero failed. "
                   << "RPL or TI not equal to 0: " << std::endl
@@ -356,7 +356,7 @@ vmcs_intel_x64::check_host_gs_selector_rpl_ti_equal_zero()
 {
     auto gs = vmread(VMCS_HOST_GS_SELECTOR);
 
-    if ((gs & 0x0003) != 0)
+    if ((gs & 0x0007) != 0)
     {
         std::cout << "check_host_gs_selector_rpl_ti_equal_zero failed. "
                   << "RPL or TI not equal to 0: " << std::endl
@@ -374,7 +374,7 @@ vmcs_intel_x64::check_host_tr_selector_rpl_ti_equal_zero()
 {
     auto tr = vmread(VMCS_HOST_TR_SELECTOR);
 
-    if ((tr & 0x0003) != 0)
+    if ((tr & 0x0007) != 0)
     {
         std::cout << "check_host_tr_selector_rpl_ti_equal_zero failed. "
                   << "RPL or TI not equal to 0: " << std::endl
