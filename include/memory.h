@@ -25,6 +25,8 @@
 
 #include <constants.h>
 
+#pragma pack(push, 1)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -39,5 +41,7 @@ struct page_t
 #ifdef __cplusplus
 }
 #endif
+
+#pragma pack(pop)
 
 #endif

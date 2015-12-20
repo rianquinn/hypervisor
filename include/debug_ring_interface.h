@@ -23,6 +23,8 @@
 #ifndef DEBUG_RING_INTERFACE_H
 #define DEBUG_RING_INTERFACE_H
 
+#pragma pack(push, 1)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -104,5 +106,7 @@ debug_ring_read(struct debug_ring_resources *drr, char *str, long long int len);
 #ifdef __cplusplus
 }
 #endif
+
+#pragma pack(pop)
 
 #endif

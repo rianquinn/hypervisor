@@ -224,17 +224,17 @@ vmcs_intel_x64::launch()
     // occured. If the launch succeeds, we should continue execution as
     // normal, not this code will be in a virtual machine when finished.
 
-    ret = launch_vmcs();
-    if (ret != vmcs_error::success)
-    {
-        std::cout << "launch failed!!!" << std::endl;
+    // ret = launch_vmcs();
+    // if (ret != vmcs_error::success)
+    // {
+    //     std::cout << "launch failed!!!" << std::endl;
+    //     return vmcs_error::success;
+    // }
+    // else
+    // {
+    //     std::cout << "WOOT, launch was succesfull!!!" << std::endl;
         return vmcs_error::success;
-    }
-    else
-    {
-        std::cout << "WOOT, launch was succesfull!!!" << std::endl;
-        return vmcs_error::success;
-    }
+    // }
 }
 
 vmcs_error::type

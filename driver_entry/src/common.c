@@ -234,7 +234,7 @@ common_init(void)
             return BF_ERROR_FAILED_TO_ALLOC_DRR;
         }
 
-        vmmr->drr = g_drr;
+        vmmr->drr = (struct debug_ring_resources *)g_drr;
         vmmr->drr->len = DEBUG_RING_SIZE - sizeof(struct debug_ring_resources);
     }
 
@@ -377,7 +377,22 @@ common_start_vmm(void)
 
     g_vmm_status = VMM_STARTED;
 
-    ret = execute_symbol("_Z9start_vmmPv", get_vmmr());
+    // I put this test here just to see if I can access the memory from the
+    // driver without a crash. It seems to work fine. I even commented out
+    // the part where we call start_vmm / stop_vmm, and it works great.
+
+    ALERT("============================================ start\n");
+
+    ALERT("drr: %p\n", get_vmmr()->drr);
+    ALERT("buf: %p\n", get_vmmr()->drr->buf);
+    ALERT("len: %lld\n", get_vmmr()->drr->len);
+
+    for (i = 0; i < get_vmmr()->drr->len; i++)
+        get_vmmr()->drr->buf[i] = '\0';
+
+    ALERT("============================================ stop\n");
+
+    ret = execute_symbol("start_vmm", get_vmmr());
     if (ret != BF_SUCCESS)
     {
         ALERT("start_vmm: failed to execute symbol: %d\n", ret);
@@ -399,7 +414,7 @@ common_stop_vmm(void)
 
     if (vmm_status() == VMM_STARTED)
     {
-        ret = execute_symbol("_Z8stop_vmmPv", 0);
+        ret = execute_symbol("stop_vmm", 0);
         if (ret != BFELF_SUCCESS)
             ALERT("stop_vmm: failed to execute symbol: %d\n", ret);
     }

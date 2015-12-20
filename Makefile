@@ -42,6 +42,7 @@ include ./common/common_subdir.mk
 .PHONY: debian_clean
 .PHONY: start
 .PHONY: stop
+.PHONY: cycle
 
 debian_load:
 	cd driver_entry/src/arch/linux; \
@@ -62,3 +63,5 @@ start:
 stop:
 	cd bfm/bin/native; \
 	sudo ./run.sh stop
+
+cycle: start stop

@@ -27,6 +27,12 @@
 #include <constants.h>
 #include <debug_ring_interface.h>
 
+#pragma pack(push, 1)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * VMM Error Codes
  */
@@ -103,5 +109,11 @@ start_vmm(void *arg);
  */
 void *
 stop_vmm(void *arg);
+
+#ifdef __cplusplus
+}
+#endif
+
+#pragma pack(pop)
 
 #endif

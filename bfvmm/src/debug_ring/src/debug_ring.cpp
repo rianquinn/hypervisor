@@ -19,8 +19,28 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <assert.h>
+#include <iostream>
 #include <debug_ring/debug_ring.h>
+
+debug_ring_error::type
+debug_ring_init(struct debug_ring_resources *drr)
+{
+    drr->epos = 0;
+    drr->spos = 0;
+
+    // std::cout << "-------------------------------------------- start" << std::endl;
+
+    // std::cout << "drr: " << drr << std::endl;
+    // std::cout << "buf: " << (void *)drr->buf << std::endl;
+    // std::cout << "len: " << drr->len << std::endl;
+
+    for (auto i = 0; i < drr->len; i++)
+        drr->buf[i] = '\0';
+
+    // std::cout << "-------------------------------------------- start" << std::endl;
+
+    return debug_ring_error::success;
+}
 
 debug_ring_error::type
 debug_ring::init(struct debug_ring_resources *drr)
@@ -37,10 +57,18 @@ debug_ring::init(struct debug_ring_resources *drr)
     m_drr->epos = 0;
     m_drr->spos = 0;
 
+    // std::cout << "-------------------------------------------- start" << std::endl;
+
+    // std::cout << "drr: " << m_drr << std::endl;
+    // std::cout << "buf: " << (void *)m_drr->buf << std::endl;
+    // std::cout << "len: " << m_drr->len << std::endl;
+
     for (auto i = 0; i < m_drr->len; i++)
         m_drr->buf[i] = '\0';
 
     m_is_valid = true;
+
+    // std::cout << "-------------------------------------------- start" << std::endl;
 
     return debug_ring_error::success;
 }

@@ -35,6 +35,9 @@ namespace debug_ring_error
     };
 }
 
+debug_ring_error::type
+debug_ring_init(struct debug_ring_resources *drr);
+
 /// Debug Ring
 ///
 /// The debug ring is a simple debug facility that allows the vmm to write
