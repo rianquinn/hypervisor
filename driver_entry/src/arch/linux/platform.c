@@ -38,7 +38,7 @@ platform_alloc(int64_t len)
         return addr;
     }
 
-    addr = vmalloc(len);
+    addr = kmalloc(len, GFP_KERNEL);
 
     if (addr == NULL)
         ALERT("platform_alloc: failed to vmalloc mem: %lld\n", len);
@@ -89,7 +89,7 @@ platform_free(void *addr)
         return;
     }
 
-    vfree(addr);
+    kfree(addr);
 }
 
 void

@@ -72,7 +72,7 @@ struct vmm_resources_t
     /*
      * Debug ring structure used by the VMM to support debugging.
      */
-    struct debug_ring_resources *drr;
+    struct debug_ring_resources drr;
 
     /*
      * Array of pages that must be allocated by the driver entry to be

@@ -64,4 +64,8 @@ stop:
 	cd bfm/bin/native; \
 	sudo ./run.sh stop
 
+dump:
+	cd bfm/bin/native; \
+	sudo ./run.sh dump
+
 cycle: start stop

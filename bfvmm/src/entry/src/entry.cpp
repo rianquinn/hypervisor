@@ -28,26 +28,6 @@
 #define INIT_IOSTREAM()
 #endif
 
-debug_ring_error::type
-debug_ring_init_local(struct debug_ring_resources *drr)
-{
-    drr->epos = 0;
-    drr->spos = 0;
-
-    // std::cout << "-------------------------------------------- start" << std::endl;
-
-    // std::cout << "drr: " << drr << std::endl;
-    // std::cout << "buf: " << (void *)drr->buf << std::endl;
-    // std::cout << "len: " << drr->len << std::endl;
-
-    for (auto i = 0; i < drr->len; i++)
-        drr->buf[i] = '\0';
-
-    // std::cout << "-------------------------------------------- start" << std::endl;
-
-    return debug_ring_error::success;
-}
-
 // =============================================================================
 // Internal C++ Entry Functions
 // =============================================================================
@@ -55,135 +35,26 @@ debug_ring_init_local(struct debug_ring_resources *drr)
 void *
 start_vmm_trampoline(void *arg)
 {
-    auto *vmmr = (vmm_resources_t *)arg;
+    auto vmmr = (struct vmm_resources_t *)arg;
 
     if (arg == 0)
         return VMM_ERROR_INVALID_ARG;
 
-    // #########################################################################
-    // Testing Code
-    // #########################################################################
+    std::cout << "vmmr: " << vmmr << std::endl;
+    std::cout << "epos: " << vmmr->drr.epos << std::endl;
+    std::cout << "spos: " << vmmr->drr.spos << std::endl;
+    std::cout << "len: " << vmmr->drr.len << std::endl;
+    std::cout << "buf: " << (void *)vmmr->drr.buf << std::endl;
 
-    INIT_IOSTREAM();
+    // // -------------------------------------------------------------------------
+    // // Initialize Debugging
 
-    // The following code is the same as what is in common.c for the driver
-    // entry. Bascially, both are clearing memory, and printing out the address
-    // of the memory and it's length.
-    //
-    // The address and length never change. In all the tests below, pritning
-    // out the address of buf causes the code to be more reliable, but it
-    // will still crash if you try like a million times. When it does crash
-    // you get a "buf: ", meaning it crashed trying to access drr->buf. This
-    // tells me that the drr memory itself is somehow no longer addressable,
-    // even though nothing has happened, and the address is the same.
+    // // TODO: At some point, we are going to have to be told what CPU we are
+    // // starting on, and then get the VCPU for that CPU and initialize it.
+    // // Since we only support single core for now, we use 0.
 
-    std::cout << "============================================ start" << std::endl;
-
-    std::cout << "drr: " << vmmr->drr << std::endl;
-    std::cout << "buf: " << (void *)vmmr->drr->buf << std::endl;
-    std::cout << "len: " << vmmr->drr->len << std::endl;
-
-    // TEST #1: This test was designed to see if allocating the debug ring in
-    // the vcpu is the problem. So I create the debug ring on the stack here,
-    // and it's still a problem.
-    debug_ring m_debug_ring;
-    m_debug_ring.init(vmmr->drr);
-    m_debug_ring.init(vmmr->drr);
-    m_debug_ring.init(vmmr->drr);
-    m_debug_ring.init(vmmr->drr);
-    m_debug_ring.init(vmmr->drr);
-
-    // TEST #2: This test was to try and figure out if the C++ code was the
-    // issue. The idea here was that maybe removing the C++ component would
-    // make it work. But that as was not the case, as it still crashes.
-    // debug_ring_init(vmmr->drr);
-    // debug_ring_init(vmmr->drr);
-    // debug_ring_init(vmmr->drr);
-    // debug_ring_init(vmmr->drr);
-    // debug_ring_init(vmmr->drr);
-
-    // TEST #3: This test was to see if the ELF loader was the issue, as this
-    // function is in the same module. This code still crashes.
-    // debug_ring_init_local(vmmr->drr);
-    // debug_ring_init_local(vmmr->drr);
-    // debug_ring_init_local(vmmr->drr);
-    // debug_ring_init_local(vmmr->drr);
-    // debug_ring_init_local(vmmr->drr);
-
-    // TEST #4: This test test if we run this code from in the this function.
-    // In this case, it still crashes, but it takes longer to do so.
-    // {
-    //     vmmr->drr->epos = 0;
-    //     vmmr->drr->spos = 0;
-
-    //     for (auto i = 0; i < vmmr->drr->len; i++)
-    //         vmmr->drr->buf[i] = '\0';
-
-    //     vmmr->drr->epos = 0;
-    //     vmmr->drr->spos = 0;
-
-    //     for (auto i = 0; i < vmmr->drr->len; i++)
-    //         vmmr->drr->buf[i] = '\0';
-
-    //     vmmr->drr->epos = 0;
-    //     vmmr->drr->spos = 0;
-
-    //     for (auto i = 0; i < vmmr->drr->len; i++)
-    //         vmmr->drr->buf[i] = '\0';
-
-    //     vmmr->drr->epos = 0;
-    //     vmmr->drr->spos = 0;
-
-    //     for (auto i = 0; i < vmmr->drr->len; i++)
-    //         vmmr->drr->buf[i] = '\0';
-
-    //     vmmr->drr->epos = 0;
-    //     vmmr->drr->spos = 0;
-
-    //     for (auto i = 0; i < vmmr->drr->len; i++)
-    //         vmmr->drr->buf[i] = '\0';
-    // }
-
-    // TEST #5: This test case runs the actual code that we are supposed to
-    // run. I do it many times (just like above), as this causes the crash to
-    // happen faster.
-    //
-    // if (vcpu == 0 || memory_manager == 0)
-    //     return VMM_ERROR_INVALID_ENTRY_FACTORY;
-
-    // auto vcpu = ef()->get_vcpu_factory()->get_vcpu(0);
-    // auto memory_manager = ef()->get_memory_manager();
-
-    // if (vcpu->get_debug_ring()->init(vmmr->drr) != debug_ring_error::success)
-    //     return VMM_ERROR_INVALID_DRR;
-
-    // if (vcpu->get_debug_ring()->init(vmmr->drr) != debug_ring_error::success)
-    //     return VMM_ERROR_INVALID_DRR;
-
-    // if (vcpu->get_debug_ring()->init(vmmr->drr) != debug_ring_error::success)
-    //     return VMM_ERROR_INVALID_DRR;
-
-    // if (vcpu->get_debug_ring()->init(vmmr->drr) != debug_ring_error::success)
-    //     return VMM_ERROR_INVALID_DRR;
-
-    // if (vcpu->get_debug_ring()->init(vmmr->drr) != debug_ring_error::success)
-    //     return VMM_ERROR_INVALID_DRR;
-
-    std::cout << "============================================ stop" << std::endl;
-
-    // #########################################################################
-    // Testing Code
-    // #########################################################################
-
-    // -------------------------------------------------------------------------
-    // Initialize Debugging
-
-    // TODO: At some point, we are going to have to be told what CPU we are
-    // starting on, and then get the VCPU for that CPU and initialize it.
-    // Since we only support single core for now, we use 0.
-
-    // TODO: There are a lot of train wrecks in the code here that need to be
-    //       removed.
+    // // TODO: There are a lot of train wrecks in the code here that need to be
+    // //       removed.
 
     // auto vcpu = ef()->get_vcpu_factory()->get_vcpu(0);
     // auto memory_manager = ef()->get_memory_manager();
@@ -191,7 +62,7 @@ start_vmm_trampoline(void *arg)
     // if (vcpu == 0 || memory_manager == 0)
     //     return VMM_ERROR_INVALID_ENTRY_FACTORY;
 
-    // if (vcpu->get_debug_ring()->init(vmmr->drr) != debug_ring_error::success)
+    // if (vcpu->get_debug_ring()->init(&vmmr->drr) != debug_ring_error::success)
     //     return VMM_ERROR_INVALID_DRR;
 
     // INIT_IOSTREAM();
@@ -219,8 +90,8 @@ start_vmm_trampoline(void *arg)
     // if (vmm->start() != vmm_error::success)
     //     return VMM_ERROR_VMM_START_FAILED;
 
-    // // -------------------------------------------------------------------------
-    // // Initialize and Luanch the VMCS
+    // -------------------------------------------------------------------------
+    // Initialize and Luanch the VMCS
 
     // auto vmcs = vcpu->get_vmcs();
 

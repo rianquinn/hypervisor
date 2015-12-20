@@ -78,11 +78,11 @@ extern "C" {
  */
 struct debug_ring_resources
 {
-    long long int len;
-    long long int epos;
-    long long int spos;
+    int len;
+    int epos;
+    int spos;
 
-    char buf[];
+    char *buf;
 };
 
 /**

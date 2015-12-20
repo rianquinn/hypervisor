@@ -42,10 +42,9 @@
 /* Global                                                                     */
 /* ========================================================================== */
 
-uint64_t g_vmm_status = VMM_STOPPED;
+struct vmm_resources_t *g_vmmr = 0;
 
-void *g_drr = 0;
-struct vmm_resources_t g_vmmr = {0};
+uint64_t g_vmm_status = VMM_STOPPED;
 
 uint64_t g_num_bfelf_files = 0;
 void *g_bfelf_execs[MAX_NUM_MODULES] = {0};
@@ -56,16 +55,16 @@ struct bfelf_file_t g_bfelf_files[MAX_NUM_MODULES] = {0};
 /* Helpers                                                                    */
 /* ========================================================================== */
 
+struct vmm_resources_t *
+get_vmmr(void)
+{
+    return g_vmmr;
+}
+
 uint64_t
 vmm_status(void)
 {
     return g_vmm_status;
-}
-
-struct vmm_resources_t *
-get_vmmr(void)
-{
-    return &g_vmmr;
 }
 
 struct bfelf_file_t *
@@ -122,7 +121,7 @@ add_elf_file(uint64_t size)
     return exec;
 }
 
-void
+int64_t
 remove_elf_files(void)
 {
     int i;
@@ -138,6 +137,8 @@ remove_elf_files(void)
     }
 
     g_num_bfelf_files = 0;
+
+    return BF_SUCCESS;
 }
 
 int64_t
@@ -212,6 +213,56 @@ execute_symbol(const char *sym, void *arg)
     return BF_ERROR_UNKNOWN;
 }
 
+struct vmm_resources_t *
+allocate_resources(void)
+{
+    int i;
+    char *ring;
+    struct vmm_resources_t *vmmr;
+
+    ring = (char *)platform_alloc(DEBUG_RING_SIZE);
+    vmmr = (struct vmm_resources_t *)platform_alloc(sizeof(struct vmm_resources_t));
+
+    if (vmmr == 0 || ring == 0)
+        return 0;
+
+    vmmr->drr.buf = (void *)14;
+    vmmr->drr.spos = 11;
+    vmmr->drr.epos = 15;
+    vmmr->drr.len = DEBUG_RING_SIZE;
+
+    for (i = 0; i < MAX_PAGES; i++)
+    {
+        struct page_t pg = platform_alloc_page();
+
+        if (pg.virt == 0 || pg.phys == 0)
+            return 0;
+
+            vmmr->pages[i] = pg;
+    }
+
+    return vmmr;
+}
+
+int64_t
+free_resources(struct vmm_resources_t *vmmr)
+{
+    int i;
+
+    if (vmmr == 0)
+        return BF_ERROR_INVALID_ARG;
+
+    if (vmmr->drr.buf != 0)
+        platform_free(vmmr->drr.buf);
+
+    for (i = 0; i < MAX_PAGES; i++)
+        platform_free_page(vmmr->pages[i]);
+
+    platform_free(vmmr);
+
+    return BF_SUCCESS;
+}
+
 /* ========================================================================== */
 /* Implementation                                                             */
 /* ========================================================================== */
@@ -219,65 +270,14 @@ execute_symbol(const char *sym, void *arg)
 int64_t
 common_init(void)
 {
-    int i;
-    struct vmm_resources_t *vmmr = get_vmmr();
-
-    if (vmmr == 0)
-        return BF_ERROR_INVALID_ARG;
-
-    if (g_drr == 0)
-    {
-        g_drr = platform_alloc(DEBUG_RING_SIZE);
-        if (g_drr == 0)
-        {
-            ALERT("start_vmm: failed to allocate memory for the debug ring\n");
-            return BF_ERROR_FAILED_TO_ALLOC_DRR;
-        }
-
-        vmmr->drr = (struct debug_ring_resources *)g_drr;
-        vmmr->drr->len = DEBUG_RING_SIZE - sizeof(struct debug_ring_resources);
-    }
-
-    for (i = 0; i < MAX_PAGES; i++)
-    {
-        if (vmmr->pages[i].virt == 0)
-        {
-            struct page_t pg = platform_alloc_page();
-
-            if (pg.virt == 0 || pg.phys == 0)
-                return BF_ERROR_OUT_OF_MEMORY;
-
-            vmmr->pages[i] = pg;
-        }
-    }
-
     return BF_SUCCESS;
 }
 
 int64_t
 common_fini(void)
 {
-    int i;
-    struct page_t blank_pg = {0};
-    struct vmm_resources_t *vmmr = get_vmmr();
-
-    if (vmmr == 0)
-        return BF_ERROR_INVALID_ARG;
-
     if (common_stop_vmm() != BF_SUCCESS)
         ALERT("common_fini: failed to stop vmm\n");
-
-    if (g_drr != 0)
-    {
-        platform_free(g_drr);
-        g_drr = 0;
-    }
-
-    for (i = 0; i < MAX_PAGES; i++)
-    {
-        platform_free_page(vmmr->pages[i]);
-        vmmr->pages[i] = blank_pg;
-    }
 
     return BF_SUCCESS;
 }
@@ -375,29 +375,29 @@ common_start_vmm(void)
         goto failure;
     }
 
+    g_vmmr = allocate_resources();
+    if (g_vmmr == 0)
+    {
+        ALERT("start_vmm: failed to allocate resources: %d\n", ret);
+        goto failure;
+    }
+
     g_vmm_status = VMM_STARTED;
 
-    // I put this test here just to see if I can access the memory from the
-    // driver without a crash. It seems to work fine. I even commented out
-    // the part where we call start_vmm / stop_vmm, and it works great.
+    ALERT("vmmr: %p\n", g_vmmr);
+    ALERT("buf: %p\n", g_vmmr->drr.buf);
+    ALERT("len: %d\n", g_vmmr->drr.len);
 
-    ALERT("============================================ start\n");
-
-    ALERT("drr: %p\n", get_vmmr()->drr);
-    ALERT("buf: %p\n", get_vmmr()->drr->buf);
-    ALERT("len: %lld\n", get_vmmr()->drr->len);
-
-    for (i = 0; i < get_vmmr()->drr->len; i++)
-        get_vmmr()->drr->buf[i] = '\0';
-
-    ALERT("============================================ stop\n");
-
-    ret = execute_symbol("start_vmm", get_vmmr());
+    ret = execute_symbol("start_vmm", g_vmmr);
     if (ret != BF_SUCCESS)
     {
         ALERT("start_vmm: failed to execute symbol: %d\n", ret);
         goto failure;
     }
+
+    ALERT("vmmr: %p\n", g_vmmr);
+    ALERT("buf: %p\n", g_vmmr->drr.buf);
+    ALERT("len: %d\n", g_vmmr->drr.len);
 
     return BF_SUCCESS;
 
@@ -419,7 +419,13 @@ common_stop_vmm(void)
             ALERT("stop_vmm: failed to execute symbol: %d\n", ret);
     }
 
-    remove_elf_files();
+    ret = remove_elf_files();
+    if (ret != BF_SUCCESS)
+        ALERT("stop_vmm: failed to remove elf files: %d\n", ret);
+
+    ret = free_resources(get_vmmr());
+    if (ret != BF_SUCCESS)
+        ALERT("stop_vmm: failed to free resources: %d\n", ret);
 
     g_vmm_status = VMM_STOPPED;
     return BF_SUCCESS;
@@ -430,6 +436,7 @@ common_dump_vmm(void)
 {
     int i;
     char *rb;
+    // struct vmm_resources_t *vmmr = get_vmmr();
 
     rb = platform_alloc(DEBUG_RING_SIZE);
     if (rb == 0)
@@ -441,8 +448,11 @@ common_dump_vmm(void)
     for (i = 0; i < DEBUG_RING_SIZE; i++)
         rb[i] = 0;
 
-    if (debug_ring_read(g_drr, rb, DEBUG_RING_SIZE) < 0)
-        ALERT("dump_vmm: failed to read debug ring\n");
+    // if(vmmr != 0)
+    // {
+    //     if (debug_ring_read(vmmr->drr, rb, DEBUG_RING_SIZE) < 0)
+    //         ALERT("dump_vmm: failed to read debug ring\n");
+    // }
 
     DEBUG("\n");
     DEBUG("VMM DUMP:\n");

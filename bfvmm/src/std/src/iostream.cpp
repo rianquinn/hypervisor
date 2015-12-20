@@ -67,11 +67,10 @@ namespace std
         // TODO: There are a lot of train wrecks in the code here that
         //       need to be removed.
 
-        // auto vc = ef()->get_vcpu_factory()->get_vcpu(0);
+        auto vc = ef()->get_vcpu_factory()->get_vcpu(0);
         auto serial = ef()->get_serial_port();
 
-        // if (vc == 0 || serial == 0)
-        if (serial == 0)
+        if (vc == 0 || serial == 0)
             return *this;
 
         if (m_justify == std::right)
