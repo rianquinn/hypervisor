@@ -26,17 +26,44 @@
 #include <memory.h>
 #include <memory_manager/page.h>
 
-namespace memory_manager_error
-{
-    enum type
-    {
-        success = 0,
-        failure = 1,
-        out_of_memory = 2,
-        full = 3,
-        already_added = 4
-    };
-};
+// Get rid of all of the memory management code. This all needs to be redone.
+// There is no need for the page pool in the driver anymore as this code
+// will take care of everything without special code in the driver entry
+//
+// Create a simple "first fit" allgorithm with two pools. If the size to be
+// allocated is smaller than a page size, it gets the memory from the smaller
+// pool, and vice versa. Yes this will be wasteful, but it will work well for
+// now and can be upgraded later with no impact to the rest of the code
+//
+// Small Pool:
+// - 80 bytes per block (or 10 64bit ints per block, which is about the size of
+//   each class that we have, minus the debug rings which will pull from the
+//   larger pool)
+//
+// Large Pool
+// - 4096 bytes per block (or 1 page per block which is exactly what the debug
+//   ring and VMX code needs).
+//
+// Some Rules:
+// - The pools must be page aligned. Will have to add alignment macros in the
+//   GCC code to do this.
+// - The arrays should be statically created, and return the address from that
+//   statically created array (avoid possible issues with &, which is the
+//   whole reason we are doing this)
+// - There should be the memory array, and then the bool array for each block
+//   that will tell use if the block is free or allocated. Once again, this is
+//   wasteful but I don't care. I want it to work well before we try to make
+//   it work effeciently).
+// - Obviously write unit tests to verify that it works properly.
+// - Will need some basic idea of how much memory this thing will need. We
+//   can do this by first providing a lot of memory, and then then trimming
+//   back as we see total allocations.
+// - Will provide new and delete, but it's likely that delete will never be
+//   called (or at least, unlikely that new will be called after delete, as
+//   delete will likely only occur on teardown)
+
+#include <stddef.h>
+#include <constants.h>
 
 class memory_manager
 {
@@ -50,43 +77,27 @@ public:
     ///
     virtual ~memory_manager() {}
 
-    /// Add Page to Memory Manager
-    ///
-    /// Adds a page to the memory mamanger. The page must be a valid page
-    /// that has not already been added.
-    ///
-    /// @param pg valid page to add to the memory manager
-    /// @return failure if the page is invalid, full if too many pages have
-    ///     been added to the memory manager, already_added if the page has
-    ///     already been added to the memory manager, and success on success
-    ///
-    virtual memory_manager_error::type add_page(page &pg);
+    virtual void *malloc(size_t size);
+    virtual void *malloc_aligned(size_t size, int64_t alignment);
 
-    /// Allocate Page
-    ///
-    /// Allocates a page from the memory manage. Once a page has been
-    /// allocated, it cannot be allocated again unless it has been freed.
-    ///
-    /// @param pg pointer to page to store the allocated page
-    /// @return invalid if a NULL page is provide, out_of_memory if the
-    ///     memory manager has run out of pages to allocate, success on
-    ///     success
-    ///
-    virtual memory_manager_error::type alloc_page(page *pg);
+    virtual void free(void *ptr);
 
-    /// Free Page
-    ///
-    /// Frees a page that has been previously allocated. Once a page is free
-    /// it can be allocated again (i.e. discontinue use of a page once it has
-    /// been freed)
-    ///
-    /// @param pg page to free
-    ///
-    virtual void free_page(page &pg);
+    virtual void *block_to_virt(int64_t block);
+    virtual int64_t virt_to_block(void *virt);
+
+    virtual void *virt_to_phys(void *virt);
+    virtual void *phys_to_virt(void *phys);
+
+    virtual bool is_block_aligned(int64_t block, int64_t alignment);
+
+    virtual int64_t add_mdl(struct memory_descriptor *mdl, int64_t num);
 
 private:
 
-    page m_pages[MAX_PAGES];
+    uint8_t m_mem_pool[MAX_MEM_POOL] __attribute__((aligned(MAX_PAGE_SIZE)));
+    uint32_t m_block_allocated[MAX_BLOCKS];
+
+    struct memory_descriptor m_mdl[MAX_NUM_MEMORY_DESCRIPTORS];
 };
 
 /// Get Memory Manager
@@ -97,31 +108,21 @@ private:
 /// global access to a single memory manager, but allows the manager to be
 /// properly constructed, and provides a simple means to test the class if
 /// needed.
+///
+/// @return a pointer to the memory manager (never 0)
+///
 memory_manager *mm();
 
-/// Add Page
+/// Add Memory Descriptor List
 ///
-/// Adds a page to the memory manager. This is a "C" function that can
-/// be used by the driver entry point to provide the memory manager with a
-/// page that it can manage.
+/// This is used by the driver entry to add an MDL to VMM. The driver entry
+/// will need to collect memory descriptors for every page of memory that the
+/// VMM is using so that the memory manager can provide mappings as needed.
 ///
-/// @param pg the page to add to the memory manager
-/// @return MEMORY_MANAGER_SUCCESS on success, MEMORY_MANAGER_FAILURE
-///     otherwise
+/// @param mdl the memory descirptor list
+/// @param num the number of memory diescriptors in the list
+/// @return MEMORY_MANAGER_SUCCESS on success, MEMORY_MANAGER_FAILURE otherwise
 ///
-extern "C" long long int
-add_page(struct page_t *pg);
-
-/// Remove Page
-///
-/// Remove a page to the memory manager. This is a "C" function that can
-/// be used by the driver entry point to remove a page from  the memory manager.
-///
-/// @param pg the page to remove from the memory manager
-/// @return MEMORY_MANAGER_SUCCESS on success, MEMORY_MANAGER_FAILURE
-///     otherwise
-///
-extern "C" long long int
-remove_page(struct page_t *pg);
+extern "C" long long int add_mdl(struct memory_descriptor *mdl, long long int num);
 
 #endif

@@ -375,46 +375,46 @@ vmm_intel_x64::disable_vmx_operation()
 vmm_error::type
 vmm_intel_x64::create_vmxon_region()
 {
-    if (m_memory_manager->alloc_page(&m_vmxon_page) != memory_manager_error::success)
-    {
-        std::cout << "create_vmxon_region failed: "
-                  << "out of memory" << std::endl;
-        return vmm_error::out_of_memory;
-    }
+    // if (m_memory_manager->alloc_page(&m_vmxon_page) != memory_manager_error::success)
+    // {
+    //     std::cout << "create_vmxon_region failed: "
+    //               << "out of memory" << std::endl;
+    //     return vmm_error::out_of_memory;
+    // }
 
-    if (m_vmxon_page.size() < vmxon_region_size())
-    {
-        std::cout << "create_vmxon_region failed: "
-                  << "the allocated page is not large enough:" << std::endl
-                  << "    - page size: " << m_vmxon_page.size() << " "
-                  << "    - vmxon/vmcs region size: " << vmxon_region_size()
-                  << std::endl;
-        return vmm_error::not_supported;
-    }
+    // if (m_vmxon_page.size() < vmxon_region_size())
+    // {
+    //     std::cout << "create_vmxon_region failed: "
+    //               << "the allocated page is not large enough:" << std::endl
+    //               << "    - page size: " << m_vmxon_page.size() << " "
+    //               << "    - vmxon/vmcs region size: " << vmxon_region_size()
+    //               << std::endl;
+    //     return vmm_error::not_supported;
+    // }
 
-    if (((uintptr_t)m_vmxon_page.phys_addr() & 0x0000000000000FFF) != 0)
-    {
-        std::cout << "create_vmxon_region failed: "
-                  << "the allocated page is not page aligned:" << std::endl
-                  << "    - page phys: " << m_vmxon_page.phys_addr()
-                  << std::endl;
-        return vmm_error::not_supported;
-    }
+    // if (((uintptr_t)m_vmxon_page.phys_addr() & 0x0000000000000FFF) != 0)
+    // {
+    //     std::cout << "create_vmxon_region failed: "
+    //               << "the allocated page is not page aligned:" << std::endl
+    //               << "    - page phys: " << m_vmxon_page.phys_addr()
+    //               << std::endl;
+    //     return vmm_error::not_supported;
+    // }
 
-    auto buf = (char *)m_vmxon_page.virt_addr();
-    auto reg = (vmxon_region *)m_vmxon_page.virt_addr();
+    // auto buf = (char *)m_vmxon_page.virt_addr();
+    // auto reg = (vmxon_region *)m_vmxon_page.virt_addr();
 
-    // The information regading this MSR can be found in appendix A.1. For
-    // the VMX capabilities check, we need the following:
-    //
-    // - Bits 30:0 contain the 31-bit VMCS revision identifier used by the
-    //   processor. Processors that use the same VMCS revision identifier use
-    //   the same size for VMCS regions (see subsequent item on bits 44:32)
+    // // The information regading this MSR can be found in appendix A.1. For
+    // // the VMX capabilities check, we need the following:
+    // //
+    // // - Bits 30:0 contain the 31-bit VMCS revision identifier used by the
+    // //   processor. Processors that use the same VMCS revision identifier use
+    // //   the same size for VMCS regions (see subsequent item on bits 44:32)
 
-    for (auto i = 0; i < m_vmxon_page.size(); i++)
-        buf[i] = 0;
+    // for (auto i = 0; i < m_vmxon_page.size(); i++)
+    //     buf[i] = 0;
 
-    reg->revision_id = m_intrinsics->read_msr(IA32_VMX_BASIC_MSR) & 0x7FFFFFFFF;
+    // reg->revision_id = m_intrinsics->read_msr(IA32_VMX_BASIC_MSR) & 0x7FFFFFFFF;
 
     return vmm_error::success;
 }
@@ -422,7 +422,7 @@ vmm_intel_x64::create_vmxon_region()
 vmm_error::type
 vmm_intel_x64::release_vmxon_region()
 {
-    m_memory_manager->free_page(m_vmxon_page);
+    // m_memory_manager->free_page(m_vmxon_page);
 
     return vmm_error::success;
 }

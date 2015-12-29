@@ -21,75 +21,149 @@
 
 #include <memory_manager/memory_manager.h>
 
+// -----------------------------------------------------------------------------
+// Macros
+// -----------------------------------------------------------------------------
+
+#define FREE_BLOCK (-1)
+
+// -----------------------------------------------------------------------------
+// Implementation
+// -----------------------------------------------------------------------------
+
 memory_manager::memory_manager()
 {
+    for (auto i = 0; i < MAX_MEM_POOL; i++)
+        m_mem_pool[i] = 0;
+
+    for (auto i = 0; i < MAX_BLOCKS; i++)
+        m_block_allocated[i] = FREE_BLOCK;
+
+    for (auto i = 0; i < MAX_NUM_MEMORY_DESCRIPTORS; i++)
+        m_mdl[i] = {0};
 }
 
-memory_manager_error::type
-memory_manager::add_page(page &pg)
+void *
+memory_manager::malloc(size_t size)
 {
-    auto index = -1;
-
-    if (pg.is_valid() == false)
-        return memory_manager_error::failure;
-
-    for (auto i = 0; i < MAX_PAGES; i++)
-    {
-        if (m_pages[i] == page())
-            index = i;
-
-        if (m_pages[i] == pg)
-            return memory_manager_error::already_added;
-    }
-
-    if (index < 0)
-        return memory_manager_error::full;
-
-    pg.free();
-    m_pages[index] = pg;
-
-    return memory_manager_error::success;
+    return malloc_aligned(size, size == MAX_PAGE_SIZE ? MAX_PAGE_SIZE : 0);
 }
 
-memory_manager_error::type
-memory_manager::alloc_page(page *pg)
+void *
+memory_manager::malloc_aligned(size_t size, int64_t alignment)
 {
-    if (pg == 0)
-        return memory_manager_error::failure;
+    if (size == 0)
+        return 0;
 
-    for (auto i = 0; i < MAX_PAGES; i++)
+    auto count = 0;
+    auto block = 0;
+    auto num_blocks = size / MAX_CACHE_LINE_SIZE;
+
+    if (size % MAX_CACHE_LINE_SIZE != 0)
+        num_blocks++;
+
+    for (auto b = 0; b < MAX_BLOCKS && count < num_blocks; b++)
     {
-        if (m_pages[i].is_valid() == false)
-            continue;
+        if (m_block_allocated[b] == FREE_BLOCK)
+        {
+            if (count == 0)
+            {
+                if (is_block_aligned(b, alignment) == false)
+                    continue;
 
-        if (m_pages[i].is_allocated() == true)
-            continue;
+                block = b;
+            }
 
-        m_pages[i].allocate();
-        *pg = m_pages[i];
-
-        return memory_manager_error::success;
+            count++;
+        }
+        else
+        {
+            count = 0;
+        }
     }
 
-    return memory_manager_error::out_of_memory;
+    if (count == num_blocks)
+    {
+        for (auto b = block; b < num_blocks; b++)
+            m_block_allocated[b] = block;
+
+        return block_to_virt(block);
+    }
+
+    return 0;
 }
 
 void
-memory_manager::free_page(page &pg)
+memory_manager::free(void *ptr)
 {
-    if (pg.is_valid() == false)
+    if (ptr == 0)
         return;
 
-    for (auto i = 0; i < MAX_PAGES; i++)
-    {
-        if (m_pages[i] == pg)
-        {
-            pg.free();
-            m_pages[i] = pg;
+    auto block = virt_to_block(ptr);
 
-            return;
-        }
+    if (block < 0 || block >= MAX_BLOCKS)
+        return;
+
+    auto start = m_block_allocated[block];
+
+    if (start < 0 || start >= MAX_BLOCKS)
+        return;
+
+    for (auto b = start; b < MAX_BLOCKS; b++)
+    {
+        if (m_block_allocated[b] != start)
+            break;
+
+        m_block_allocated[b] = FREE_BLOCK;
     }
+}
+
+void *
+memory_manager::block_to_virt(int64_t block)
+{
+    if (block >= MAX_BLOCKS)
+        return 0;
+
+    return m_mem_pool + (block * MAX_CACHE_LINE_SIZE);
+}
+
+void *
+memory_manager::virt_to_phys(void *virt)
+{
+    return 0;
+}
+
+void *
+memory_manager::phys_to_virt(void *phys)
+{
+    return 0;
+}
+
+int64_t
+memory_manager::virt_to_block(void *virt)
+{
+    if (virt >= m_mem_pool + MAX_MEM_POOL)
+        return -1;
+
+    return ((uint8_t *)virt - m_mem_pool) / MAX_CACHE_LINE_SIZE;
+}
+
+bool
+memory_manager::is_block_aligned(int64_t block, int64_t alignment)
+{
+    if (block >= MAX_BLOCKS)
+        return false;
+
+    if (alignment <= 0)
+        return true;
+
+    return ((uint64_t)block_to_virt(block) % alignment) == 0;
+}
+
+int64_t
+memory_manager::add_mdl(struct memory_descriptor *mdl, int64_t num)
+{
+    return MEMORY_MANAGER_SUCCESS;
 }
 
 memory_manager *mm()
@@ -98,22 +172,14 @@ memory_manager *mm()
     return &mm;
 }
 
-extern "C" long long int
-add_page(struct page_t *pg)
+int64_t
+add_mdl_trampoline(struct memory_descriptor *mdl, int64_t num)
 {
-    if (pg == 0)
-        return MEMORY_MANAGER_FAILURE;
-
-    auto tmp = page(*pg);
-
-    if (mm()->add_page(tmp) != memory_manager_error::success)
-        return MEMORY_MANAGER_FAILURE;
-
-    return MEMORY_MANAGER_SUCCESS;
+    return mm()->add_mdl(mdl, num);
 }
 
 extern "C" long long int
-remove_page(struct page_t *pg)
+add_mdl(struct memory_descriptor *mdl, long long int num)
 {
-    return MEMORY_MANAGER_SUCCESS;
+    return add_mdl_trampoline(mdl, num);
 }

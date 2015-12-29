@@ -72,7 +72,7 @@ TARGET_NAME=memory_manager
 TARGET_TYPE=lib
 TARGET_COMPILER=both
 
-SOURCES+=page.cpp
+#SOURCES+=page.cpp
 SOURCES+=memory_manager.cpp
 HEADERS=
 

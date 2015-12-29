@@ -41,7 +41,7 @@ void *g_bfelf_execs[MAX_NUM_MODULES] = {0};
 uint64_t g_bfelf_sizes[MAX_NUM_MODULES] = {0};
 struct bfelf_file_t g_bfelf_files[MAX_NUM_MODULES] = {0};
 
-struct page_t page_pool[MAX_PAGES] = {0};
+// struct page_t page_pool[MAX_PAGES] = {0};
 
 /* ========================================================================== */
 /* Helpers                                                                    */
@@ -219,34 +219,34 @@ execute_symbol(const char *sym)
 int64_t
 allocate_page_pool(void)
 {
-    int i;
-    int ret;
-    add_page_t add_page;
+    // int i;
+    // int ret;
+    // add_page_t add_page;
 
-    ret = resolve_symbol("add_page", (void **)&add_page);
-    if (ret != BF_SUCCESS)
-    {
-        ALERT("allocate_page_pool: failed to locate add_page. the symbol is missing or not loaded\n");
-        return ret;
-    }
+    // ret = resolve_symbol("add_page", (void **)&add_page);
+    // if (ret != BF_SUCCESS)
+    // {
+    //     ALERT("allocate_page_pool: failed to locate add_page. the symbol is missing or not loaded\n");
+    //     return ret;
+    // }
 
-    for (i = 0; i < MAX_PAGES; i++)
-    {
-        if (page_pool[i].virt != 0)
-            continue;
+    // for (i = 0; i < MAX_PAGES; i++)
+    // {
+    //     if (page_pool[i].virt != 0)
+    //         continue;
 
-        page_pool[i] = platform_alloc_page();
+    //     page_pool[i] = platform_alloc_page();
 
-        if (page_pool[i].virt == 0)
-            return BF_ERROR_OUT_OF_MEMORY;
+    //     if (page_pool[i].virt == 0)
+    //         return BF_ERROR_OUT_OF_MEMORY;
 
-        ret = add_page(&page_pool[i]);
-        if (ret != MEMORY_MANAGER_SUCCESS)
-        {
-            ALERT("allocate_page_pool: failed to add page to memory manager\n");
-            return ret;
-        }
-    }
+    //     ret = add_page(&page_pool[i]);
+    //     if (ret != MEMORY_MANAGER_SUCCESS)
+    //     {
+    //         ALERT("allocate_page_pool: failed to add page to memory manager\n");
+    //         return ret;
+    //     }
+    // }
 
     return BF_SUCCESS;
 }
@@ -254,34 +254,34 @@ allocate_page_pool(void)
 int64_t
 free_page_pool(void)
 {
-    int i;
-    int ret;
-    remove_page_t remove_page;
+    // int i;
+    // int ret;
+    // remove_page_t remove_page;
 
-    ret = resolve_symbol("remove_page", (void **)&remove_page);
-    if (ret != BF_SUCCESS)
-    {
-        ALERT("free_page_pool: failed to locate remove_page. the symbol is missing or not loaded\n");
-        return ret;
-    }
+    // ret = resolve_symbol("remove_page", (void **)&remove_page);
+    // if (ret != BF_SUCCESS)
+    // {
+    //     ALERT("free_page_pool: failed to locate remove_page. the symbol is missing or not loaded\n");
+    //     return ret;
+    // }
 
-    for (i = 0; i < MAX_PAGES; i++)
-    {
-        struct page_t blank_page = {0};
+    // for (i = 0; i < MAX_PAGES; i++)
+    // {
+    //     struct page_t blank_page = {0};
 
-        if (page_pool[i].virt == 0)
-            continue;
+    //     if (page_pool[i].virt == 0)
+    //         continue;
 
-        ret = remove_page(&page_pool[i]);
-        if (ret != MEMORY_MANAGER_SUCCESS)
-        {
-            ALERT("free_page_pool: failed to remove page from memory manager\n");
-            return ret;
-        }
+    //     ret = remove_page(&page_pool[i]);
+    //     if (ret != MEMORY_MANAGER_SUCCESS)
+    //     {
+    //         ALERT("free_page_pool: failed to remove page from memory manager\n");
+    //         return ret;
+    //     }
 
-        platform_free_page(page_pool[i]);
-        page_pool[i] = blank_page;
-    }
+    //     platform_free_page(page_pool[i]);
+    //     page_pool[i] = blank_page;
+    // }
 
     return BF_SUCCESS;
 }

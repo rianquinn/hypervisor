@@ -184,19 +184,19 @@ vmcs_intel_x64::launch()
     // CLEAN ME UP
     // =========================================================================
 
-    m_memory_manager->alloc_page(&m_msr_bitmap);
+    // m_memory_manager->alloc_page(&m_msr_bitmap);
 
-    auto buf = (char *)m_msr_bitmap.virt_addr();
-    for (auto i = 0; i < m_msr_bitmap.size(); i++)
-        buf[i] = 0;
+    // auto buf = (char *)m_msr_bitmap.virt_addr();
+    // for (auto i = 0; i < m_msr_bitmap.size(); i++)
+    //     buf[i] = 0;
 
-    vmwrite(VMCS_ADDRESS_OF_MSR_BITMAPS_FULL, (uint64_t)m_msr_bitmap.phys_addr());
+    // vmwrite(VMCS_ADDRESS_OF_MSR_BITMAPS_FULL, (uint64_t)m_msr_bitmap.phys_addr());
 
-    auto controls = vmread(VMCS_PRIMARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS);
+    // auto controls = vmread(VMCS_PRIMARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS);
 
-    controls |= VM_EXEC_P_PROC_BASED_USE_MSR_BITMAPS;
+    // controls |= VM_EXEC_P_PROC_BASED_USE_MSR_BITMAPS;
 
-    vmwrite(VMCS_PRIMARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, controls);
+    // vmwrite(VMCS_PRIMARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, controls);
 
     // =========================================================================
     // CLEAN ME UP
@@ -319,46 +319,46 @@ vmcs_intel_x64::save_state()
 vmcs_error::type
 vmcs_intel_x64::create_vmcs_region()
 {
-    if (m_memory_manager->alloc_page(&m_vmcs_region) != memory_manager_error::success)
-    {
-        std::cout << "create_vmcs_region failed: "
-                  << "out of memory" << std::endl;
-        return vmcs_error::out_of_memory;
-    }
+    // if (m_memory_manager->alloc_page(&m_vmcs_region) != memory_manager_error::success)
+    // {
+    //     std::cout << "create_vmcs_region failed: "
+    //               << "out of memory" << std::endl;
+    //     return vmcs_error::out_of_memory;
+    // }
 
-    if (m_vmcs_region.size() < vmcs_region_size())
-    {
-        std::cout << "create_vmcs_region failed: "
-                  << "the allocated page is not large enough:" << std::endl
-                  << "    - page size: " << m_vmcs_region.size() << " "
-                  << "    - vmxon/vmcs region size: " << vmcs_region_size()
-                  << std::endl;
-        return vmcs_error::not_supported;
-    }
+    // if (m_vmcs_region.size() < vmcs_region_size())
+    // {
+    //     std::cout << "create_vmcs_region failed: "
+    //               << "the allocated page is not large enough:" << std::endl
+    //               << "    - page size: " << m_vmcs_region.size() << " "
+    //               << "    - vmxon/vmcs region size: " << vmcs_region_size()
+    //               << std::endl;
+    //     return vmcs_error::not_supported;
+    // }
 
-    if (((uintptr_t)m_vmcs_region.phys_addr() & 0x0000000000000FFF) != 0)
-    {
-        std::cout << "create_vmcs_region failed: "
-                  << "the allocated page is not page aligned:" << std::endl
-                  << "    - page phys: " << m_vmcs_region.phys_addr()
-                  << std::endl;
-        return vmcs_error::not_supported;
-    }
+    // if (((uintptr_t)m_vmcs_region.phys_addr() & 0x0000000000000FFF) != 0)
+    // {
+    //     std::cout << "create_vmcs_region failed: "
+    //               << "the allocated page is not page aligned:" << std::endl
+    //               << "    - page phys: " << m_vmcs_region.phys_addr()
+    //               << std::endl;
+    //     return vmcs_error::not_supported;
+    // }
 
-    auto buf = (char *)m_vmcs_region.virt_addr();
-    auto reg = (vmcs_region *)m_vmcs_region.virt_addr();
+    // auto buf = (char *)m_vmcs_region.virt_addr();
+    // auto reg = (vmcs_region *)m_vmcs_region.virt_addr();
 
-    // The information regading this MSR can be found in appendix A.1. For
-    // the VMX capabilities check, we need the following:
-    //
-    // - Bits 30:0 contain the 31-bit VMCS revision identifier used by the
-    //   processor. Processors that use the same VMCS revision identifier use
-    //   the same size for VMCS regions (see subsequent item on bits 44:32)
+    // // The information regading this MSR can be found in appendix A.1. For
+    // // the VMX capabilities check, we need the following:
+    // //
+    // // - Bits 30:0 contain the 31-bit VMCS revision identifier used by the
+    // //   processor. Processors that use the same VMCS revision identifier use
+    // //   the same size for VMCS regions (see subsequent item on bits 44:32)
 
-    for (auto i = 0; i < m_vmcs_region.size(); i++)
-        buf[i] = 0;
+    // for (auto i = 0; i < m_vmcs_region.size(); i++)
+    //     buf[i] = 0;
 
-    reg->revision_id = (m_intrinsics->read_msr(IA32_VMX_BASIC_MSR) & 0x7FFFFFFFF);
+    // reg->revision_id = (m_intrinsics->read_msr(IA32_VMX_BASIC_MSR) & 0x7FFFFFFFF);
 
     return vmcs_error::success;
 }
@@ -366,7 +366,7 @@ vmcs_intel_x64::create_vmcs_region()
 vmcs_error::type
 vmcs_intel_x64::release_vmxon_region()
 {
-    m_memory_manager->free_page(m_vmcs_region);
+    // m_memory_manager->free_page(m_vmcs_region);
 
     return vmcs_error::success;
 }
