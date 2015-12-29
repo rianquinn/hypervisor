@@ -73,7 +73,7 @@
  * size.
  */
 #ifndef MAX_BLOCKS
-#define MAX_BLOCKS (8 * MAX_PAGE_SIZE)
+#define MAX_BLOCKS (16 * MAX_PAGE_SIZE)
 #endif
 
 /*

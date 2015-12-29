@@ -19,11 +19,11 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <std/iostream>
-
 #include <std/stdlib.h>
 #include <std/string.h>
-#include <entry/entry_factory.h>
+
+#include <std/iostream>
+#include <serial/serial_port_x86.h>
 
 // =============================================================================
 // Globals
@@ -31,7 +31,21 @@
 
 namespace std
 {
-    bfostream cout;
+    ostream cout;
+}
+
+serial_port_x86 *
+internal_serial()
+{
+    static serial_port_x86 serial;
+    return &serial;
+}
+
+bool
+write(const char *str, int64_t len)
+{
+    internal_serial()->write(str, len);
+    return true;
 }
 
 // =============================================================================
@@ -40,12 +54,17 @@ namespace std
 
 namespace std
 {
-    void
-    bfostream::init()
+    bool
+    ostream::init()
     {
         m_base = 10;
         m_width = 0;
         m_justify = std::left;
+
+        if (internal_serial()->open() != serial::success)
+            return false;
+
+        return true;
     }
 
     ostream &
@@ -66,15 +85,15 @@ namespace std
         if (m_justify == std::right)
         {
             for (auto i = 0; i < gap; i++)
-                ef()->write(" ", 1);
+                write(" ", 1);
         }
 
-        ef()->write(str, len);
+        write(str, len);
 
         if (m_justify == std::left)
         {
             for (auto i = 0; i < gap; i++)
-                ef()->write(" ", 1);
+                write(" ", 1);
         }
 
         return *this;

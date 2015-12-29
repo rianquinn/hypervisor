@@ -33,11 +33,13 @@ public:
 
     /// Manager Constructor
     ///
-    memory_manager();
+    memory_manager() {}
 
     /// Destructor
     ///
     virtual ~memory_manager() {}
+
+    virtual void init();
 
     virtual int64_t free_blocks();
 

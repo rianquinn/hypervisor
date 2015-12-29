@@ -20,31 +20,49 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 #include <entry.h>
-#include <entry/entry_factory.h>
+#include <std/std.h>
+#include <memory_manager/memory_manager.h>
+
+int
+init_vmm_trampoline(int arg)
+{
+    if(init_std() == false)
+        return ENTRY_ERROR_VMM_INIT_FAILED;
+
+    std::cout << "step #1: verify that cout works properly" << std::endl;
+    std::cout << "step #2: attempt to init memory manager" << std::endl;
+
+    mm()->init();
+
+    return ENTRY_SUCCESS;
+}
+
+int
+start_vmm_trampoline(int arg)
+{
+    return ENTRY_SUCCESS;
+}
+
+int
+stop_vmm_trampoline(int arg)
+{
+    return ENTRY_SUCCESS;
+}
 
 extern "C" int
 init_vmm(int arg)
 {
-    if (ef()->init_vmm(0) != entry_factory_error::success)
-        return ENTRY_ERROR_VMM_INIT_FAILED;
-
-    return ENTRY_SUCCESS;
+    return init_vmm_trampoline(arg);
 }
 
 extern "C" int
 start_vmm(int arg)
 {
-    if (ef()->start_vmm(0) != entry_factory_error::success)
-        return ENTRY_ERROR_VMM_START_FAILED;
-
-    return ENTRY_SUCCESS;
+    return start_vmm_trampoline(arg);
 }
 
 extern "C" int
 stop_vmm(int arg)
 {
-    if (ef()->stop_vmm(0) != entry_factory_error::success)
-        return ENTRY_ERROR_VMM_STOP_FAILED;
-
-    return ENTRY_SUCCESS;
+    return stop_vmm_trampoline(arg);
 }

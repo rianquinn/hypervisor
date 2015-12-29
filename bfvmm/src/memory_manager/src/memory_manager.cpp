@@ -19,6 +19,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+#include <std/std.h>
 #include <memory_manager/memory_manager.h>
 
 // -----------------------------------------------------------------------------
@@ -31,17 +32,22 @@
 // Implementation
 // -----------------------------------------------------------------------------
 
-memory_manager::memory_manager() :
-    m_start(0)
+void
+memory_manager::init()
 {
+    m_start = 0;
+
+    std::cout << "    - m_mem_pool: " << (void *)m_mem_pool << std::endl;
+    // for(auto i = 0; i < 1000000; i++);
+
     for(auto i = 0; i < MAX_MEM_POOL; i++)
         m_mem_pool[i] = 0;
 
-    for(auto i = 0; i < MAX_BLOCKS; i++)
-        m_block_allocated[i] = FREE_BLOCK;
+    // for(auto i = 0; i < MAX_BLOCKS; i++)
+    //     m_block_allocated[i] = FREE_BLOCK;
 
-    for(auto i = 0; i < MAX_NUM_MEMORY_DESCRIPTORS; i++)
-        m_mdl[i] = {0};
+    // for(auto i = 0; i < MAX_NUM_MEMORY_DESCRIPTORS; i++)
+    //     m_mdl[i] = {0};
 }
 
 int64_t
@@ -237,3 +243,23 @@ add_mdl(struct memory_descriptor *mdl, long long int num)
 {
     return add_mdl_trampoline(mdl, num);
 }
+
+#ifdef CROSS_COMPILED
+
+void*
+operator new(size_t size)
+{ return mm()->malloc(size); }
+
+void*
+operator new[](size_t size)
+{ return mm()->malloc(0); }
+
+void
+operator delete(void *ptr)
+{ mm()->free(ptr); }
+
+void
+operator delete[](void *ptr)
+{ mm()->free(ptr); }
+
+#endif

@@ -22,15 +22,9 @@
 #include <iostream>
 #include <entry/entry_factory.h>
 
-#ifndef INIT_IOSTREAM
-#define INIT_IOSTREAM()
-#endif
-
 entry_factory_error::type
 entry_factory::init_vmm(int64_t vcpuid)
 {
-    INIT_IOSTREAM();
-
     if (m_serial_port.open() != serial::success)
         return entry_factory_error::failure;
 

@@ -113,8 +113,8 @@ endif
 ifeq ($(TARGET_TYPE),lib)
 	ifeq ($(TARGET_CROSS_COMPILED),true)
 		CROSS_CCFLAGS+=-fpic
-		CROSS_CXXFLAGS+=-fpic -fno-rtti -fno-sized-deallocation -fno-exceptions -fno-use-cxa-atexit -fno-threadsafe-statics
-		CROSS_LDFLAGS+=-shared -z max-page-size=4096
+		CROSS_CXXFLAGS+=-fpic -fno-rtti -fno-sized-deallocation -fno-exceptions -fno-use-cxa-atexit -fno-threadsafe-statics -ffreestanding
+		CROSS_LDFLAGS+=-shared -z max-page-size=4096 -ffreestanding -nostdlib -lgcc -L/home/user/opt/cross/lib/gcc/x86_64-elf/5.2.0/
 		CROSS_LD_OPTION=-o
 		CROSS_TARGET=$(patsubst %,$(CROSS_OUTDIR)/$(CROSS_SHARED_LIB_PRE)%$(CROSS_SHARED_LIB_EXT),$(TARGET_NAME))
 	endif
@@ -130,8 +130,8 @@ endif
 ifeq ($(TARGET_TYPE),staticlib)
 	ifeq ($(TARGET_CROSS_COMPILED),true)
 		CROSS_CCFLAGS+=-fpic
-		CROSS_CXXFLAGS+=-fpic -fno-rtti -fno-sized-deallocation -fno-exceptions -fno-use-cxa-atexit -fno-threadsafe-statics
-		CROSS_LDFLAGS+=
+		CROSS_CXXFLAGS+=-fpic -fno-rtti -fno-sized-deallocation -fno-exceptions -fno-use-cxa-atexit -fno-threadsafe-statics -ffreestanding
+		CROSS_LDFLAGS+= -z max-page-size=4096 -ffreestanding -nostdlib -lgcc -L/home/user/opt/cross/lib/gcc/x86_64-elf/5.2.0/
 		CROSS_LD_OPTION=
 		CROSS_TARGET=$(patsubst %,$(CROSS_OUTDIR)/$(CROSS_STATIC_LIB_PRE)%$(CROSS_STATIC_LIB_EXT),$(TARGET_NAME))
 	endif

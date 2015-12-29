@@ -28,6 +28,7 @@
 
 #include <entry.h>
 #include <memory.h>
+#include <constants.h>
 #include <debug_ring_interface.h>
 
 /* ========================================================================== */
@@ -92,8 +93,6 @@ add_elf_file(uint64_t size)
         return 0;
     }
 
-    DEBUG("adding module of size: %d\n", (int)size);
-
     file = get_next_file();
     if (file == 0)
     {
@@ -107,6 +106,8 @@ add_elf_file(uint64_t size)
         ALERT("add_elf_file: out of memory\n");
         return 0;
     }
+
+    DEBUG("adding module of size: 0x%x    at: %p\n", (int)size, exec);
 
     for (i = 0; i < size; i++)
         ((char *)exec)[i] = 0;
@@ -130,7 +131,7 @@ remove_elf_files(void)
         for (j = 0; j < g_bfelf_sizes[i]; j++)
             ((char *)g_bfelf_execs[i])[j] = 0;
 
-        DEBUG("removing module of size: %d\n", (int)g_bfelf_sizes[i]);
+        DEBUG("removing module of size: 0x%x\n", (int)g_bfelf_sizes[i]);
 
         platform_free_exec(g_bfelf_execs[i], g_bfelf_sizes[i]);
 
