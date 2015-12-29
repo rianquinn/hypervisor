@@ -61,14 +61,19 @@ memory_manager_ut::list()
     // this->test_page_valid_equal_valid_different_size();
     // this->test_page_valid_equal_valid_same();
 
-    // this->test_memory_manager_add_invalid_page();
-    // this->test_memory_manager_add_valid_page();
-    // this->test_memory_manager_add_same_page();
-    // this->test_memory_manager_add_too_many_pages();
-    // this->test_memory_manager_alloc_page_null_arg();
-    // this->test_memory_manager_alloc_page_too_many_pages();
-    // this->test_memory_manager_alloc_page();
-    // this->test_memory_manager_free_allocated_page();
+    // this->test_memory_manager_malloc_zero();
+    // this->test_memory_manager_malloc_valid();
+    // this->test_memory_manager_multiple_malloc_should_be_contiguous();
+    // this->test_memory_manager_malloc_free_malloc();
+    // this->test_memory_manager_malloc_page_is_page_aligned();
+    // this->test_memory_manager_free_zero();
+    // this->test_memory_manager_free_random();
+    // this->test_memory_manager_free_twice();
+    // this->test_memory_manager_malloc_all_of_memory();
+    // this->test_memory_manager_malloc_all_of_memory_fragmented();
+    // this->test_memory_manager_malloc_aligned_ignored_alignment();
+    // this->test_memory_manager_malloc_aligned();
+    this->test_memory_manager_malloc_alloc_fragment();
 
     return true;
 }

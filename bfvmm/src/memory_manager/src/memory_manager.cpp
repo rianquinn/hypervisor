@@ -31,16 +31,29 @@
 // Implementation
 // -----------------------------------------------------------------------------
 
-memory_manager::memory_manager()
+memory_manager::memory_manager() :
+    m_start(0)
 {
-    for (auto i = 0; i < MAX_MEM_POOL; i++)
+    for(auto i = 0; i < MAX_MEM_POOL; i++)
         m_mem_pool[i] = 0;
 
-    for (auto i = 0; i < MAX_BLOCKS; i++)
+    for(auto i = 0; i < MAX_BLOCKS; i++)
         m_block_allocated[i] = FREE_BLOCK;
 
-    for (auto i = 0; i < MAX_NUM_MEMORY_DESCRIPTORS; i++)
+    for(auto i = 0; i < MAX_NUM_MEMORY_DESCRIPTORS; i++)
         m_mdl[i] = {0};
+}
+
+int64_t
+memory_manager::free_blocks()
+{
+    auto num_blocks = 0;
+
+    for(auto i = 0; i < MAX_BLOCKS; i++)
+        if(m_block_allocated[i] == FREE_BLOCK)
+            num_blocks++;
+
+    return num_blocks;
 }
 
 void *
@@ -52,39 +65,65 @@ memory_manager::malloc(size_t size)
 void *
 memory_manager::malloc_aligned(size_t size, int64_t alignment)
 {
-    if (size == 0)
+    if(size == 0)
         return 0;
+
+    // This is a really simple "first fit" algorithm. The only optimization
+    // that we have here is m_start. This algorithm works by looping from the
+    // start of the list of blocks, and looking for a contiguous set of
+    // blocks, that matches the provided alignment. Once we find the set of
+    // blocks the user is asking for, we set each block to "allocated" by
+    // providing the start block for the chunk of memory that was allocated.
+    // Free will use this "start" block to identify the starting block for
+    // any allocated virtual address.
+    //
+    // m_start defines the starting position to search the list of blocks.
+    // Without m_start, we would start from 0, and loop to MAX_BLOCKS on
+    // every allocation. In practice, we don't need to start from 0, as each
+    // block is likely to be consumed as we allocate more and more memory.
+    // It's not until the first hole or "fragmentation" occurs, that m_start
+    // must stop until the fragmentation is removed.
 
     auto count = 0;
     auto block = 0;
+    auto reset = 0;
     auto num_blocks = size / MAX_CACHE_LINE_SIZE;
 
-    if (size % MAX_CACHE_LINE_SIZE != 0)
+    if(size % MAX_CACHE_LINE_SIZE != 0)
         num_blocks++;
 
-    for (auto b = 0; b < MAX_BLOCKS && count < num_blocks; b++)
+    for (auto b = m_start; b < MAX_BLOCKS && count < num_blocks; b++)
     {
-        if (m_block_allocated[b] == FREE_BLOCK)
+        if(m_block_allocated[b] == FREE_BLOCK)
         {
-            if (count == 0)
+            if(count == 0)
             {
-                if (is_block_aligned(b, alignment) == false)
+                if(is_block_aligned(b, alignment) == false)
+                {
+                    reset = 1;
                     continue;
+                }
 
                 block = b;
             }
 
             count++;
+
+            if(reset == 0 && b > m_start)
+                m_start = b;
         }
         else
         {
+            if(count > 0)
+                reset = 1;
+
             count = 0;
         }
     }
 
     if (count == num_blocks)
     {
-        for (auto b = block; b < num_blocks; b++)
+        for(auto b = block;  b < MAX_BLOCKS && b < num_blocks + block; b++)
             m_block_allocated[b] = block;
 
         return block_to_virt(block);
@@ -99,6 +138,18 @@ memory_manager::free(void *ptr)
     if (ptr == 0)
         return;
 
+    // Our version of free is a lot cleaner than most memory manager, but is
+    // terribly inefficent with respect to how much memory it consumes for
+    // bookeeping. We store the starting block for every virtual address. This
+    // means that if you were to delete a base class for a subclass that did
+    // not specify "virtual" for the base class, all of memory would still be
+    // deleted. This is because we know where the starting address should be
+    // even if the virtual address that was provided is offset from the
+    // virtual address that was actually allocated.
+    //
+    // Also note that we need to adjust m_start if we freed memory that opened
+    // up a "fragmentation" in list of allocated blocks.
+
     auto block = virt_to_block(ptr);
 
     if (block < 0 || block >= MAX_BLOCKS)
@@ -109,9 +160,12 @@ memory_manager::free(void *ptr)
     if (start < 0 || start >= MAX_BLOCKS)
         return;
 
-    for (auto b = start; b < MAX_BLOCKS; b++)
+    for(auto b = start; b < MAX_BLOCKS; b++)
     {
-        if (m_block_allocated[b] != start)
+        if(b < m_start)
+            m_start = b;
+
+        if(m_block_allocated[b] != start)
             break;
 
         m_block_allocated[b] = FREE_BLOCK;
@@ -121,7 +175,7 @@ memory_manager::free(void *ptr)
 void *
 memory_manager::block_to_virt(int64_t block)
 {
-    if (block >= MAX_BLOCKS)
+    if(block >= MAX_BLOCKS)
         return 0;
 
     return m_mem_pool + (block * MAX_CACHE_LINE_SIZE);
@@ -142,7 +196,7 @@ memory_manager::phys_to_virt(void *phys)
 int64_t
 memory_manager::virt_to_block(void *virt)
 {
-    if (virt >= m_mem_pool + MAX_MEM_POOL)
+    if(virt >= m_mem_pool + MAX_MEM_POOL)
         return -1;
 
     return ((uint8_t *)virt - m_mem_pool) / MAX_CACHE_LINE_SIZE;
@@ -151,10 +205,10 @@ memory_manager::virt_to_block(void *virt)
 bool
 memory_manager::is_block_aligned(int64_t block, int64_t alignment)
 {
-    if (block >= MAX_BLOCKS)
+    if(block >= MAX_BLOCKS)
         return false;
 
-    if (alignment <= 0)
+    if(alignment <= 0)
         return true;
 
     return ((uint64_t)block_to_virt(block) % alignment) == 0;

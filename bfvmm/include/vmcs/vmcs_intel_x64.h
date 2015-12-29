@@ -346,9 +346,6 @@ private:
 
     memory_manager *m_memory_manager;
     intrinsics_intel_x64 *m_intrinsics;
-
-    page m_vmcs_region;
-    page m_msr_bitmap;
 };
 
 #endif

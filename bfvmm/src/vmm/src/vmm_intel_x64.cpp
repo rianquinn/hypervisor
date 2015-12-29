@@ -430,23 +430,23 @@ vmm_intel_x64::release_vmxon_region()
 vmm_error::type
 vmm_intel_x64::execute_vmxon()
 {
-    auto phys = m_vmxon_page.phys_addr();
+    // auto phys = m_vmxon_page.phys_addr();
 
-    // For some reason, the VMXON instruction takes the address of a memory
-    // location that has the address of the VMXON region, which sadly is not
-    // well documented in the Intel manual.
+    // // For some reason, the VMXON instruction takes the address of a memory
+    // // location that has the address of the VMXON region, which sadly is not
+    // // well documented in the Intel manual.
 
-    if (m_vmxon_enabled == true)
-        return vmm_error::success;
+    // if (m_vmxon_enabled == true)
+    //     return vmm_error::success;
 
-    if (m_intrinsics->vmxon(&phys) == false)
-    {
-        std::cout << "execute_vmxon failed" << std::endl;
-        return vmm_error::failure;
-    }
+    // if (m_intrinsics->vmxon(&phys) == false)
+    // {
+    //     std::cout << "execute_vmxon failed" << std::endl;
+    //     return vmm_error::failure;
+    // }
 
-    m_vmxon_enabled = true;
-    std::cout << "vmxon: success" << std::endl;
+    // m_vmxon_enabled = true;
+    // std::cout << "vmxon: success" << std::endl;
 
     return vmm_error::success;
 }

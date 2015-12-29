@@ -60,14 +60,20 @@ private:
     // void test_page_valid_equal_valid_different_size();
     // void test_page_valid_equal_valid_same();
 
-    // void test_memory_manager_add_invalid_page();
-    // void test_memory_manager_add_valid_page();
-    // void test_memory_manager_add_same_page();
-    // void test_memory_manager_add_too_many_pages();
-    // void test_memory_manager_alloc_page_null_arg();
-    // void test_memory_manager_alloc_page_too_many_pages();
-    // void test_memory_manager_alloc_page();
-    // void test_memory_manager_free_allocated_page();
+    void test_memory_manager_malloc_zero();
+    void test_memory_manager_malloc_valid();
+    void test_memory_manager_multiple_malloc_should_be_contiguous();
+    void test_memory_manager_malloc_free_malloc();
+    void test_memory_manager_malloc_page_is_page_aligned();
+    void test_memory_manager_free_zero();
+    void test_memory_manager_free_random();
+    void test_memory_manager_free_twice();
+    void test_memory_manager_malloc_all_of_memory();
+    void test_memory_manager_malloc_all_of_memory_fragmented();
+    void test_memory_manager_malloc_aligned_ignored_alignment();
+    void test_memory_manager_malloc_aligned();
+    void test_memory_manager_malloc_alloc_fragment();
+
 };
 
 #endif

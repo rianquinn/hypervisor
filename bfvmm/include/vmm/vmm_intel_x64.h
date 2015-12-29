@@ -97,8 +97,6 @@ private:
 
     memory_manager *m_memory_manager;
     intrinsics_intel_x64 *m_intrinsics;
-
-    page m_vmxon_page;
 };
 
 #endif

@@ -22,119 +22,212 @@
 #include <test.h>
 #include <memory_manager/memory_manager.h>
 
-// - malloc(0) == 0
-// - malloc(10) == valid address
-// - malloc(10), malloc(10) = virt address + 10 of pervious address
-// - malloc(10), free(), malloc(10) == same virt address
-// - malloc(page_size) == page aligned memory
-// - free(0) is no big deal
-// - free(address that doesn't exit) is no big deal
-// - free(valid address) free's memory
-// - free(valid address + random offset) free's all of the memory
-// - malloc all of memory
-// - over allocate memory that is aligned
-// - over allocate memory that is unaligned (for example, there are 4 bytes left, and allocate 10)
-// - allocate all of memory, free all of memory, and then allocate
-// - make sure that we can allocate all of the pages in the memory pool and then free them
-// - test virt to block
-// - test block to virt
-// - test is block page aligned
-// - test byte alignment that is some random amount, like 16 byte alignment
-// - after allocating 5 bytes
-// - test cache line alignment
-// - test more than a cache line alignment
-// - test 4k alignment
+void
+memory_manager_ut::test_memory_manager_malloc_zero()
+{
+    EXPECT_TRUE(mm()->malloc(0) == 0);
+}
 
+void
+memory_manager_ut::test_memory_manager_malloc_valid()
+{
+    auto addr = mm()->malloc(10);
 
+    EXPECT_TRUE(addr != 0);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS - 1);
 
+    mm()->free(addr);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS);
+}
 
+void
+memory_manager_ut::test_memory_manager_multiple_malloc_should_be_contiguous()
+{
+    auto addr1 = mm()->malloc(10);
+    auto addr2 = mm()->malloc(10);
+    auto addr3 = mm()->malloc(10);
+    auto addr4 = mm()->malloc(10);
 
-// void
-// memory_manager_ut::test_memory_manager_add_invalid_page()
-// {
-//     page pg;
-//     memory_manager mm;
+    EXPECT_TRUE((uint64_t)addr2 == (uint64_t)addr1 + MAX_CACHE_LINE_SIZE);
+    EXPECT_TRUE((uint64_t)addr3 == (uint64_t)addr2 + MAX_CACHE_LINE_SIZE);
+    EXPECT_TRUE((uint64_t)addr4 == (uint64_t)addr3 + MAX_CACHE_LINE_SIZE);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS - 4);
 
-//     EXPECT_TRUE(mm.add_page(pg) == memory_manager_error::failure);
-// }
+    mm()->free(addr1);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS - 3);
 
-// void
-// memory_manager_ut::test_memory_manager_add_valid_page()
-// {
-//     page pg(this, this, 10);
-//     memory_manager mm;
+    mm()->free(addr2);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS - 2);
 
-//     EXPECT_TRUE(mm.add_page(pg) == memory_manager_error::success);
-// }
+    mm()->free(addr3);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS - 1);
 
-// void
-// memory_manager_ut::test_memory_manager_add_same_page()
-// {
-//     page pg(this, this, 10);
-//     memory_manager mm;
+    mm()->free(addr4);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS);
+}
 
-//     mm.add_page(pg);
+void
+memory_manager_ut::test_memory_manager_malloc_free_malloc()
+{
+    auto addr1 = mm()->malloc(10);
+    mm()->free(addr1);
+    auto addr2 = mm()->malloc(10);
 
-//     EXPECT_TRUE(mm.add_page(pg) == memory_manager_error::already_added);
-// }
+    EXPECT_TRUE(addr2 == addr1);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS - 1);
 
-// void
-// memory_manager_ut::test_memory_manager_add_too_many_pages()
-// {
-//     page pg(this, this, MAX_PAGES + 1);
-//     memory_manager mm;
+    mm()->free(addr2);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS);
+}
 
-//     for (auto i = 0; i < MAX_PAGES; i++)
-//     {
-//         page pg(this, this, i + 1);
-//         mm.add_page(pg);
-//     }
+void
+memory_manager_ut::test_memory_manager_malloc_page_is_page_aligned()
+{
+    auto addr1 = mm()->malloc(10);
+    auto addr2 = mm()->malloc(MAX_PAGE_SIZE);
 
-//     EXPECT_TRUE(mm.add_page(pg) == memory_manager_error::full);
-// }
+    EXPECT_TRUE((uint64_t)addr2 % MAX_PAGE_SIZE == 0);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS - 65);
 
-// void
-// memory_manager_ut::test_memory_manager_alloc_page_null_arg()
-// {
-//     memory_manager mm;
-//     EXPECT_TRUE(mm.alloc_page(0) == memory_manager_error::failure);
-// }
+    mm()->free(addr1);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS - MAX_CACHE_LINE_SIZE);
 
-// void
-// memory_manager_ut::test_memory_manager_alloc_page_too_many_pages()
-// {
-//     page pg(this, this, MAX_PAGES);
-//     memory_manager mm;
+    mm()->free(addr2);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS);
+}
 
-//     mm.add_page(pg);
-//     mm.alloc_page(&pg);
+void
+memory_manager_ut::test_memory_manager_free_zero()
+{
+    mm()->free(0);
 
-//     EXPECT_TRUE(mm.alloc_page(&pg) == memory_manager_error::out_of_memory);
-// }
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS);
+}
 
-// void
-// memory_manager_ut::test_memory_manager_alloc_page()
-// {
-//     page pg(this, this, MAX_PAGES);
-//     memory_manager mm;
+void
+memory_manager_ut::test_memory_manager_free_random()
+{
+    mm()->free((void *)0xDEADBEEF);
 
-//     mm.add_page(pg);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS);
+}
 
-//     EXPECT_TRUE(pg.is_allocated() == false);
-//     EXPECT_TRUE(mm.alloc_page(&pg) == memory_manager_error::success);
-//     EXPECT_TRUE(pg.is_allocated() == true);
-// }
+void
+memory_manager_ut::test_memory_manager_free_twice()
+{
+    auto addr1 = mm()->malloc(10);
 
-// void
-// memory_manager_ut::test_memory_manager_free_allocated_page()
-// {
-//     page pg(this, this, MAX_PAGES);
-//     memory_manager mm;
+    mm()->free(addr1);
+    mm()->free(addr1);
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS);
+}
 
-//     mm.add_page(pg);
-//     mm.alloc_page(&pg);
+void
+memory_manager_ut::test_memory_manager_malloc_all_of_memory()
+{
+    void *addr[TOTAL_NUM_PAGES] = {0};
 
-//     EXPECT_TRUE(pg.is_allocated() == true);
-//     mm.free_page(pg);
-//     EXPECT_TRUE(pg.is_allocated() == false);
-// }
+    for(auto i = 0; i < TOTAL_NUM_PAGES - 1; i++)
+        addr[i] = mm()->malloc(MAX_PAGE_SIZE);
+
+    EXPECT_TRUE(mm()->free_blocks() == BLOCKS_PER_PAGE);
+    addr[TOTAL_NUM_PAGES - 1] = mm()->malloc(MAX_PAGE_SIZE);
+
+    EXPECT_TRUE(mm()->free_blocks() == 0);
+    EXPECT_TRUE(mm()->malloc(10) == 0);
+
+    for(auto i = 0; i < TOTAL_NUM_PAGES; i++)
+        mm()->free(addr[i]);
+
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS);
+}
+
+void
+memory_manager_ut::test_memory_manager_malloc_all_of_memory_fragmented()
+{
+    void *addr[TOTAL_NUM_PAGES] = {0};
+
+    for(auto i = 0; i < TOTAL_NUM_PAGES - 1; i++)
+        addr[i] = mm()->malloc(MAX_PAGE_SIZE);
+
+    EXPECT_TRUE(mm()->free_blocks() == BLOCKS_PER_PAGE);
+    addr[TOTAL_NUM_PAGES - 1] = mm()->malloc(10);
+
+    EXPECT_TRUE(mm()->free_blocks() == BLOCKS_PER_PAGE - 1);
+    EXPECT_TRUE(mm()->malloc(MAX_PAGE_SIZE) == 0);
+
+    for(auto i = 0; i < TOTAL_NUM_PAGES; i++)
+        mm()->free(addr[i]);
+
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS);
+}
+
+void
+memory_manager_ut::test_memory_manager_malloc_aligned_ignored_alignment()
+{
+    auto addr1 = mm()->malloc_aligned(10, 0);
+    auto addr2 = mm()->malloc_aligned(10, -1);
+
+    EXPECT_TRUE(addr1 != 0);
+    EXPECT_TRUE(addr2 != 0);
+
+    mm()->free(addr1);
+    mm()->free(addr2);
+}
+
+void
+memory_manager_ut::test_memory_manager_malloc_aligned()
+{
+    auto addr1 = mm()->malloc_aligned(10, 3);
+    auto addr2 = mm()->malloc_aligned(10, 5);
+    auto addr3 = mm()->malloc_aligned(10, MAX_CACHE_LINE_SIZE);
+    auto addr4 = mm()->malloc_aligned(10, MAX_PAGE_SIZE);
+    auto addr5 = mm()->malloc_aligned(10, 3);
+
+    EXPECT_TRUE((uint64_t)addr1 % 3 == 0);
+    EXPECT_TRUE((uint64_t)addr2 % 5 == 0);
+    EXPECT_TRUE((uint64_t)addr3 % MAX_CACHE_LINE_SIZE == 0);
+    EXPECT_TRUE((uint64_t)addr4 % MAX_PAGE_SIZE == 0);
+    EXPECT_TRUE((uint64_t)addr5 % 3 == 0);
+
+    mm()->free(addr1);
+    mm()->free(addr2);
+    mm()->free(addr3);
+    mm()->free(addr4);
+    mm()->free(addr5);
+
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS);
+}
+
+void
+memory_manager_ut::test_memory_manager_malloc_alloc_fragment()
+{
+    auto addr1 = mm()->malloc_aligned(10, 3);
+    auto addr2 = mm()->malloc_aligned(MAX_PAGE_SIZE, MAX_PAGE_SIZE);
+    auto addr3 = mm()->malloc_aligned(10, 0);
+    auto addr4 = mm()->malloc_aligned(10, 0);
+    auto addr5 = mm()->malloc_aligned(10, 0);
+
+    EXPECT_TRUE(addr1 != 0);
+    EXPECT_TRUE(addr2 != 0);
+    EXPECT_TRUE(addr3 != 0);
+    EXPECT_TRUE(addr4 != 0);
+    EXPECT_TRUE(addr5 != 0);
+
+    EXPECT_TRUE((uint64_t)addr3 < (uint64_t)addr2);
+    EXPECT_TRUE((uint64_t)addr4 < (uint64_t)addr2);
+    EXPECT_TRUE((uint64_t)addr5 < (uint64_t)addr2);
+
+    mm()->free(addr4);
+    auto addr6 = mm()->malloc_aligned(10, 0);
+
+    EXPECT_TRUE((uint64_t)addr4 == (uint64_t)addr6);
+
+    mm()->free(addr1);
+    mm()->free(addr2);
+    mm()->free(addr3);
+    mm()->free(addr5);
+    mm()->free(addr6);
+
+    EXPECT_TRUE(mm()->free_blocks() == MAX_BLOCKS);
+}

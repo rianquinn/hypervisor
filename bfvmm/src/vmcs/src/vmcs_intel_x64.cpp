@@ -374,19 +374,19 @@ vmcs_intel_x64::release_vmxon_region()
 vmcs_error::type
 vmcs_intel_x64::clear_vmcs_region()
 {
-    auto phys = m_vmcs_region.phys_addr();
+    // auto phys = m_vmcs_region.phys_addr();
 
-    // For some reason, the VMCLEAR instruction takes the address of a memory
-    // location that has the address of the VMCS region, which sadly is not
-    // well documented in the Intel manual.
+    // // For some reason, the VMCLEAR instruction takes the address of a memory
+    // // location that has the address of the VMCS region, which sadly is not
+    // // well documented in the Intel manual.
 
-    if (m_intrinsics->vmclear(&phys) == false)
-    {
-        std::cout << "vmclear failed" << std::endl;
-        return vmcs_error::failure;
-    }
+    // if (m_intrinsics->vmclear(&phys) == false)
+    // {
+    //     std::cout << "vmclear failed" << std::endl;
+    //     return vmcs_error::failure;
+    // }
 
-    m_valid = true;
+    // m_valid = true;
 
     return vmcs_error::success;
 }
@@ -394,17 +394,17 @@ vmcs_intel_x64::clear_vmcs_region()
 vmcs_error::type
 vmcs_intel_x64::load_vmcs_region()
 {
-    auto phys = m_vmcs_region.phys_addr();
+    // auto phys = m_vmcs_region.phys_addr();
 
-    // For some reason, the VMPTRLD instruction takes the address of a memory
-    // location that has the address of the VMCS region, which sadly is not
-    // well documented in the Intel manual.
+    // // For some reason, the VMPTRLD instruction takes the address of a memory
+    // // location that has the address of the VMCS region, which sadly is not
+    // // well documented in the Intel manual.
 
-    if (m_intrinsics->vmptrld(&phys) == false)
-    {
-        std::cout << "vmptrld failed" << std::endl;
-        return vmcs_error::failure;
-    }
+    // if (m_intrinsics->vmptrld(&phys) == false)
+    // {
+    //     std::cout << "vmptrld failed" << std::endl;
+    //     return vmcs_error::failure;
+    // }
 
     return vmcs_error::success;
 }

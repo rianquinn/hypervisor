@@ -73,8 +73,18 @@
  * size.
  */
 #ifndef MAX_BLOCKS
-#define MAX_BLOCKS (4 * MAX_PAGE_SIZE)
+#define MAX_BLOCKS (8 * MAX_PAGE_SIZE)
 #endif
+
+/*
+ * Convience Macros
+ *
+ * These macros provide some useful information about how the memory manager
+ * is defined. These should not be set by the compiler, but instead, are here
+ * to calculate stats about how the compiler setup the other macros.
+ */
+#define BLOCKS_PER_PAGE (MAX_PAGE_SIZE / MAX_CACHE_LINE_SIZE)
+#define TOTAL_NUM_PAGES (MAX_BLOCKS / BLOCKS_PER_PAGE)
 
 /*
  * Max Internal Mem Pool
