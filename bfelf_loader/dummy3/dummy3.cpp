@@ -84,6 +84,8 @@ dummy3_test1(int num)
 // that it has is valid. At any rate our current belief is that this is a
 // bug with GCC, likely being exposed due to the way we have it configured.
 
+#define BUF_SIZE (4 * 1024 * 1024)
+
 class Blah1
 {
 public:
@@ -100,16 +102,55 @@ public:
     ~Blah2() {}
 
     int boo() { return 1; }
-    int foo() override { return 1; }
+    int foo() override
+    {
+        for (auto i = 0; i < BUF_SIZE; i++)
+            buf[i] = 0;
+
+        return 1;
+    }
+
+    void init()
+    {
+        for (auto i = 0; i < BUF_SIZE; i++)
+            buf[i] = 0;
+    }
+
+private:
+    int buf[BUF_SIZE];
 };
 
 Blah2 g_blah2;
 
+Blah2 *
+static_blah()
+{
+    static Blah2 my_blah;
+    return &my_blah;
+}
+
 int
 dummy3_test2(int num)
 {
-    Blah2 &p_blah2 = g_blah2;
-    l_my_glob1 = p_blah2.foo();
+    Blah2 &r_blah2 = g_blah2;
+    l_my_glob1 = r_blah2.foo();
+
+    // This should crash but it doesn't. In the kernel, I always get a segfault
+    // at 0x0010 when I use -> from an address that I got using &. Here, it
+    // works fine.
+    static_blah()->init();
+
+    // Foo does not crash. This is the pattern we have been using for
+    // everything as it seems to be stable.
+    static_blah()->foo();
+
+    // Foo does crash. Still don't know why, but this repros in the kernel
+    // as well so don't do it. Oh.... and if you notice, I do the same thing
+    // above, just not with -> and it works fine. I also do it with a staticly
+    // defined memory and it works fine.
+    Blah2 *p_blah2 = &g_blah2;
+    p_blah2->init();
+    // p_blah2->foo();
 
     return l_my_glob1 +
            l_my_glob2 +
@@ -191,3 +232,10 @@ extern "C" void
 __cxa_pure_virtual()
 {
 }
+
+extern "C" int
+atexit(void (*func)(void))
+{
+    return 0;
+}
+

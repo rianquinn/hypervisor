@@ -38,7 +38,7 @@ memory_manager::init()
     m_start = 0;
 
     std::cout << "    - m_mem_pool: " << (void *)m_mem_pool << std::endl;
-    // for(auto i = 0; i < 1000000; i++);
+    for(auto i = 0; i < 1000000; i++);
 
     for(auto i = 0; i < MAX_MEM_POOL; i++)
         m_mem_pool[i] = 0;
@@ -226,10 +226,14 @@ memory_manager::add_mdl(struct memory_descriptor *mdl, int64_t num)
     return MEMORY_MANAGER_SUCCESS;
 }
 
+static memory_manager g_mm;
+
 memory_manager *mm()
 {
-    static memory_manager mm;
-    return &mm;
+    std::cout << "mm: " << (void *)&g_mm << std::endl;
+    for(auto i = 0; i < 1000000; i++);
+
+    return &g_mm;
 }
 
 int64_t

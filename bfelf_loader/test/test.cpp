@@ -564,6 +564,7 @@ void bfelf_loader_ut::test_bfelf_loader_relocate()
     ASSERT_TRUE(ret == BFELF_SUCCESS);
 
     ret = bfelf_loader_relocate(&m_loader);
+    std::cout << bfelf_error(ret) << std::endl;
     ASSERT_TRUE(ret == BFELF_SUCCESS);
 }
 
