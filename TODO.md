@@ -35,3 +35,7 @@ Version 1.1 TODO:
 - Need to rename the VCPU logic as it's really specific to Intel.
 - Add Windows support
 
+Documenttion:
+- Problem with CR3
+- Red-zone
+- Statics using the stack
