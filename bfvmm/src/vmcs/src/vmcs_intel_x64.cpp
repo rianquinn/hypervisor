@@ -26,6 +26,8 @@
 #include <exit_handler/exit_handler_intel_x64_support.h>
 #include <memory_manager/memory_manager.h>
 
+gdt g_gdt(8);
+
 vmcs_intel_x64::vmcs_intel_x64(const std::shared_ptr<intrinsics_intel_x64> &intrinsics) :
     m_intrinsics(intrinsics)
 {
@@ -390,13 +392,17 @@ vmcs_intel_x64::write_natural_host_state(const vmcs_intel_x64_state &state)
 {
     auto exit_handler_stack = m_exit_handler_stack.get() + STACK_SIZE - 1;
 
+    g_gdt.set_gdt_entry(1, 0x0, 0xFFFFFFFF);
+    g_gdt.set_gdt_entry(2, 0x0, 0xFFFFFFFF);
+    g_gdt.set_gdt_entry(3, 0x0);
+
     vmwrite(VMCS_HOST_CR0, state.cr0());
     vmwrite(VMCS_HOST_CR3, state.cr3());
     vmwrite(VMCS_HOST_CR4, state.cr4());
 
     vmwrite(VMCS_HOST_TR_BASE, state.tr_base());
 
-    vmwrite(VMCS_HOST_GDTR_BASE, state.gdt().base);
+    vmwrite(VMCS_HOST_GDTR_BASE, (uint64_t)g_gdt.base_entry());
     vmwrite(VMCS_HOST_IDTR_BASE, state.idt().base);
 
     vmwrite(VMCS_HOST_RSP, (uint64_t)exit_handler_stack);
@@ -449,10 +455,15 @@ vmcs_intel_x64::promote_32bit_guest_state()
 void
 vmcs_intel_x64::promote_natural_guest_state()
 {
+    gdt_t gdtr = { 0, 0 };
+
     m_intrinsics->write_cr0(vmread(VMCS_GUEST_CR0));
     m_intrinsics->write_cr3(vmread(VMCS_GUEST_CR3));
     m_intrinsics->write_cr4(vmread(VMCS_GUEST_CR4));
     m_intrinsics->write_dr7(vmread(VMCS_GUEST_DR7));
+
+    gdtr.base = vmread(VMCS_GUEST_GDTR_BASE);
+    gdtr.limit = vmread(VMCS_GUEST_GDTR_LIMIT);
 
     auto ia32_fs_base_msr = vmread(VMCS_GUEST_FS_BASE);
     auto ia32_gs_base_msr = vmread(VMCS_GUEST_GS_BASE);
@@ -463,6 +474,8 @@ vmcs_intel_x64::promote_natural_guest_state()
     m_intrinsics->write_msr(IA32_GS_BASE_MSR, ia32_gs_base_msr);
     m_intrinsics->write_msr(IA32_SYSENTER_ESP_MSR, ia32_sysenter_esp_msr);
     m_intrinsics->write_msr(IA32_SYSENTER_EIP_MSR, ia32_sysenter_eip_msr);
+
+    m_intrinsics->write_gdt(&gdtr);
 }
 
 void

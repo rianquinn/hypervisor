@@ -61,8 +61,10 @@ CROSS_OUTDIR:=../../../bin
 
 SOURCES+=intrinsics_x64.asm
 SOURCES+=intrinsics_intel_x64.asm
+SOURCES+=gdt.cpp
 
-INCLUDE_PATHS+=
+INCLUDE_PATHS+=../../../include
+INCLUDE_PATHS+=../../../../include
 
 LIBS+=
 
