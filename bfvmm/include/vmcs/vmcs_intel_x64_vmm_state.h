@@ -30,6 +30,8 @@
 #include <intrinsics/tss_x64.h>
 #include <intrinsics/intrinsics_intel_x64.h>
 
+#include <memory_manager/page_table_x64.h>
+
 /// VMCS VMM State
 ///
 /// Defines the VMM's CPU state. Note that the Intel Manual calls this the
@@ -48,8 +50,7 @@ class vmcs_intel_x64_vmm_state : public vmcs_intel_x64_state
 {
 public:
 
-    vmcs_intel_x64_vmm_state(const std::shared_ptr<state_save_intel_x64> &state_save,
-                             const std::shared_ptr<intrinsics_intel_x64> &intrinsics);
+    vmcs_intel_x64_vmm_state(const std::shared_ptr<state_save_intel_x64> &state_save);
     ~vmcs_intel_x64_vmm_state() {}
 
     uint16_t cs() const override { return m_cs; }
@@ -186,6 +187,8 @@ private:
     uint64_t m_ia32_efer_msr;
     uint64_t m_ia32_fs_base_msr;
     uint64_t m_ia32_gs_base_msr;
+
+    std::shared_ptr<page_table_x64> m_pml4;
 };
 
 #endif

@@ -65,6 +65,8 @@ private:
     void test_memory_manager_phys_to_virt_random_address();
     void test_memory_manager_phys_to_virt_upper_limit();
     void test_memory_manager_phys_to_virt_lower_limit();
+
+    void test_page_table_x64_add_page_success();
 };
 
 #endif

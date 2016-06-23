@@ -111,7 +111,7 @@ guard_exceptions(T func)
 // -----------------------------------------------------------------------------
 
 memory_manager *
-memory_manager::instance()
+memory_manager::instance() noexcept
 {
     static memory_manager self;
     return &self;

@@ -67,6 +67,8 @@ memory_manager_ut::list()
     this->test_memory_manager_phys_to_virt_upper_limit();
     this->test_memory_manager_phys_to_virt_lower_limit();
 
+    this->test_page_table_x64_add_page_success();
+
     return true;
 }
 
