@@ -418,5 +418,24 @@ eh_frame::find_fde(register_state *state)
     log("ERROR: failed to locate FDE\n");
     state->dump();
 
+    uint64_t *p = (uint64_t *)state->get(7);
+    log(")p[-8]: %p\n",(void *)p[-8]);
+    log(")p[-7]: %p\n",(void *)p[-7]);
+    log(")p[-6]: %p\n",(void *)p[-6]);
+    log(")p[-5]: %p\n",(void *)p[-5]);
+    log(")p[-4]: %p\n",(void *)p[-4]);
+    log(")p[-3]: %p\n",(void *)p[-3]);
+    log(")p[-2]: %p\n",(void *)p[-2]);
+    log(")p[-1]: %p\n",(void *)p[-1]);
+    log(")p[0] : %p\n",(void *)p[0] );
+    log(")p[1] : %p\n",(void *)p[1] );
+    log(")p[2] : %p\n",(void *)p[2] );
+    log(")p[3] : %p\n",(void *)p[3] );
+    log(")p[4] : %p\n",(void *)p[4] );
+    log(")p[5] : %p\n",(void *)p[5] );
+    log(")p[6] : %p\n",(void *)p[6] );
+    log(")p[7] : %p\n",(void *)p[7] );
+    log(")p[8] : %p\n",(void *)p[8] );
+
     return fd_entry();
 }

@@ -130,23 +130,23 @@ bool bfunwind_ut::fini()
 
 bool bfunwind_ut::list()
 {
-    this->test_catch_all();
-    this->test_catch_bool();
-    this->test_catch_int();
-    this->test_catch_cstr();
-    this->test_catch_string();
-    this->test_catch_exception();
-    this->test_catch_custom_exception();
-    this->test_catch_multiple_catches_per_function();
+    // this->test_catch_all();
+    // this->test_catch_bool();
+    // this->test_catch_int();
+    // this->test_catch_cstr();
+    // this->test_catch_string();
+    // this->test_catch_exception();
+    // this->test_catch_custom_exception();
+    // this->test_catch_multiple_catches_per_function();
     this->test_catch_raii();
-    this->test_catch_throw_from_stream();
-    this->test_catch_nested_throw_in_catch();
-    this->test_catch_nested_throw_outside_catch();
-    this->test_catch_nested_throw_uncaught();
-    this->test_catch_nested_throw_rethrow();
-    this->test_catch_throw_with_lots_of_register_mods();
+    // this->test_catch_throw_from_stream();
+    // this->test_catch_nested_throw_in_catch();
+    // this->test_catch_nested_throw_outside_catch();
+    // this->test_catch_nested_throw_uncaught();
+    // this->test_catch_nested_throw_rethrow();
+    // this->test_catch_throw_with_lots_of_register_mods();
 
-    return true;
+    return false;
 }
 
 int

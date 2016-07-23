@@ -281,6 +281,8 @@ bfunwind_ut::test_catch_multiple_catches_per_function()
     EXPECT_TRUE(caught == true);
 }
 
+#include <commit_or_rollback.h>
+
 void
 bfunwind_ut::test_catch_raii()
 {
@@ -294,6 +296,14 @@ bfunwind_ut::test_catch_raii()
         auto raii3 = raii();
         auto raii4 = raii();
         auto raii5 = raii();
+
+        auto cor1 = commit_or_rollback([&]
+        {
+            std::cout << "fdafdfsa" << std::endl;
+        });
+
+
+        throw std::logic_error("Fdfad");
 
         throw_exception_func();
     }

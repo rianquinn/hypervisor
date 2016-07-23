@@ -511,6 +511,8 @@ vmcs_intel_x64::secondary_processor_based_vm_execution_controls()
 {
     auto controls = vmread(VMCS_SECONDARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS);
 
+    throw std::logic_error("hello world");
+
     // controls |= VM_EXEC_S_PROC_BASED_VIRTUALIZE_APIC_ACCESSES;
     // controls |= VM_EXEC_S_PROC_BASED_ENABLE_EPT;
     // controls |= VM_EXEC_S_PROC_BASED_DESCRIPTOR_TABLE_EXITING;

@@ -64,16 +64,22 @@ vcpu_intel_x64::vcpu_intel_x64(int64_t id,
 void
 vcpu_intel_x64::start()
 {
+bfdebug << __LINE__ << bfendl;
     auto cor1 = commit_or_rollback([&]
     { m_vmxon->stop(); });
 
+bfdebug << __LINE__ << bfendl;
     m_vmxon->start();
 
+bfdebug << __LINE__ << bfendl;
     m_vmm_state = std::make_shared<vmcs_intel_x64_vmm_state>(m_state_save);
+bfdebug << __LINE__ << bfendl;
     m_host_vm_state = std::make_shared<vmcs_intel_x64_host_vm_state>(m_intrinsics);
 
+bfdebug << __LINE__ << bfendl;
     m_vmcs->launch(m_vmm_state, m_host_vm_state);
 
+bfdebug << __LINE__ << bfendl;
     cor1.commit();
 }
 
