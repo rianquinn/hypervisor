@@ -62,7 +62,6 @@ execute_entry:
     mov r14, r8
     mov r15, r9
 %else
-    mov rsp, rdi
     mov r13, rsi
     mov r14, rdx
     mov r15, rcx
