@@ -1,5 +1,17 @@
 language: cpp
 
+env:
+
+addons:
+  coverity_scan:
+    project:
+      name: "rianquinn/hypervisor"
+      description: "Build submitted via Travis CI"
+    notification_email: rianquinn@gmail.com
+    build_command_prepend: "./configure; make clean"
+    build_command:   "make -j 4"
+    branch_pattern: coverity_scan
+
 services:
 - docker
 
@@ -12,6 +24,8 @@ env:
 - COMPILER=gcc_530
 - COMPILER=gcc_540
 - COMPILER=gcc_610
+global:
+  - secure: "on1AzDFRGFLz/LFutnHk8yKNcHbkrEBlQsL+90NZTmha+o4cUAhoEN7TC6JS2wcv6+qyeaGSktRqjndf+u8EHUbLKcskxGJu+dKk5aeZolhzIT4rkdtLecafirp8P+k3elEnE1eBVcW0pl6t9rVcCDWQwwUGl139XBMgkFj6TTWC1Al/U3UrNegKEnM+/y7isydOl0zh55ugYS0mXF+jc+GrzCUCjxSnwx47IbTGGcX+fKDzxBEAl5kkOvPjfrugqcHYxVox7Y70tc9iXVcHGMpdM/C0AoxjEQ7rlXGNdY+MjvqKAmNLWoQCf73A/m13C06ZSEEVpChj9jVxOSnmbWoAINXFDwZdSXCqLnTfFmd2wYdbmEfcvpdCqaKaTXkNHmaMeVWVIPAdOI1G45mtpxwWzkr3Q73ukP3VC6awbqis1IixEXmyhvAFtkGDqUufOyA9o7FLd/mVL4LFCFgMshLvqs3ElyNx0apPU60gMh0xrp+azlK59apEBLJbcVN4+YBBkroSGMh+Z9mncvm4J8Px/lBvtuXLbXrFmr/zr4xgwV2xQ8Pz2ItzbYA72+LYjuET23ULFkqIUfPIBO4B8sRhqjcGXZMo/NbhZxpmNlo+0+JKV6uYCMUiYYoHDCsY/t73KzrN+JEomW250lXh6cZtwDde8Vt04nN5t1YMO10="
 
 before_install:
 - pip install --user git+git://github.com/eddyxu/cpp-coveralls.git
@@ -26,3 +40,12 @@ script:
 
 after_success:
 - coveralls --build-root makefiles -e build_libbfc -e build_libcxx -e build_libcxxabi -e build_newlib -e build_scripts -e common -e doc -e extensions -e source_libbfc -e source_libcxx -e source_libcxxabi -e source_llvm -e source_newlib -e sysroot -e tools -e bfc -e bfcxx -e bfdrivers/src/arch -e bfm/src/arch -e include/hippomocks.h -e include/unittest.h -e bfunwind -e bfvmm/src/vcpu_factory/src/vcpu_factory.cpp -e bfvmm/include/intrinsics/intrinsics_x64.h -e bfvmm/include/intrinsics/intrinsics_intel_x64.h -e include/exception.h -e bfvmm/src/vmcs -e bfvmm/include/vmcs --gcov-options '\-lp'
+
+addons:
+  coverity_scan:
+    project:
+      name: "rianquinn/hypervisor"
+      description: "Build submitted via Travis CI"
+    notification_email: rianquinn@gmail.com
+    build_command_prepend: ""
+    build_command:   "TRAVISCI=yes make -j2"
