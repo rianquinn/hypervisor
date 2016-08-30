@@ -106,6 +106,8 @@ bf_write_ioctl(HANDLE fd, DWORD request, const void *data, DWORD size)
 {
     if (!DeviceIoControl(fd, request, NULL, 0, const_cast<void *>(data), size, NULL, NULL))
         return BF_IOCTL_FAILURE;
+
+    return 0;
 }
 
 // -----------------------------------------------------------------------------
