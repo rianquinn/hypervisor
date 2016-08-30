@@ -139,7 +139,7 @@ ioctl_private::call_ioctl_add_module(const char *data, uint64_t len)
     if (len == 0)
         throw std::invalid_argument("len == 0");
 
-    if (bf_write_ioctl(fd, IOCTL_ADD_MODULE, data, len))
+    if (bf_write_ioctl(fd, IOCTL_ADD_MODULE, data, len) == BF_IOCTL_FAILURE)
         throw ioctl_failed(IOCTL_ADD_MODULE);
 }
 
