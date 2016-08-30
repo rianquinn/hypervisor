@@ -93,7 +93,7 @@ bf_send_ioctl(HANDLE fd, DWORD request)
 }
 
 int64_t
-bf_read_ioctl(HANDLE fd, DWORD request, void *data, size_t size)
+bf_read_ioctl(HANDLE fd, DWORD request, void *data, DWORD size)
 {
     if (!DeviceIoControl(fd, request, NULL, 0, data, size, NULL, NULL))
         return BF_IOCTL_FAILURE;
@@ -102,7 +102,7 @@ bf_read_ioctl(HANDLE fd, DWORD request, void *data, size_t size)
 }
 
 int64_t
-bf_write_ioctl(HANDLE fd, DWORD request, const void *data, size_t size)
+bf_write_ioctl(HANDLE fd, DWORD request, const void *data, DWORD size)
 {
     if (!DeviceIoControl(fd, request, (LPVOID)data, size, NULL, 0, NULL, NULL))
         return BF_IOCTL_FAILURE;
