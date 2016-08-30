@@ -34,7 +34,7 @@ platform_alloc_rw(uint64_t len)
 
     if (len == 0)
     {
-        ALERT("platform_alloc: invalid length\n");
+        ALERT("platform_alloc_rw: invalid length\n");
         return addr;
     }
 
@@ -53,7 +53,7 @@ platform_alloc_rwe(uint64_t len)
 
     if (len == 0)
     {
-        ALERT("platform_alloc: invalid length\n");
+        ALERT("platform_alloc_rwe: invalid length\n");
         return addr;
     }
 

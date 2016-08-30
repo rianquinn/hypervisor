@@ -42,10 +42,16 @@ uint64_t g_vcpuid = 0;
 /* -------------------------------------------------------------------------- */
 
 static int64_t
-ioctl_add_module(char *file, int64_t len)
+ioctl_add_module(char *file, uint64_t len)
 {
     char *buf;
     int64_t ret;
+
+    if (len == 0)
+    {
+        ALERT("IOCTL_ADD_MODULE: invalid module length\n");
+        return BF_IOCTL_FAILURE;
+    }
 
     if (g_num_pmodules >= MAX_NUM_MODULES)
     {
@@ -299,7 +305,7 @@ bareflankEvtIoDeviceControl(
     switch (IoControlCode)
     {
         case IOCTL_ADD_MODULE:
-            ret = ioctl_add_module((char *)in, (int64_t)in_size);
+            ret = ioctl_add_module((char *)in, (uint64_t)in_size);
             break;
 
         case IOCTL_LOAD_VMM:
