@@ -102,9 +102,9 @@ bf_read_ioctl(HANDLE fd, DWORD request, void *data, DWORD size)
 }
 
 int64_t
-bf_write_ioctl(HANDLE fd, DWORD request, void *data, DWORD size)
+bf_write_ioctl(HANDLE fd, DWORD request, const void *data, DWORD size)
 {
-    if (!DeviceIoControl(fd, request, NULL, 0, data, size, NULL, NULL))
+    if (!DeviceIoControl(fd, request, NULL, 0, const_cast<void *>(data), size, NULL, NULL))
         return BF_IOCTL_FAILURE;
 }
 
@@ -139,7 +139,7 @@ ioctl_private::call_ioctl_add_module(const char *data, uint64_t len)
     if (len == 0)
         throw std::invalid_argument("len == 0");
 
-    if (bf_write_ioctl(fd, IOCTL_ADD_MODULE, data, len) != 0)
+    if (bf_write_ioctl(fd, IOCTL_ADD_MODULE, data, len))
         throw ioctl_failed(IOCTL_ADD_MODULE);
 }
 
