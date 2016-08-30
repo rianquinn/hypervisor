@@ -1926,10 +1926,8 @@ dwarf4::decode_uleb128(char **addr)
     return result;
 }
 
-#ifndef __clang__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
 
 void
 dwarf4::unwind(const fd_entry &fde, register_state *state)
@@ -1958,6 +1956,4 @@ dwarf4::unwind(const fd_entry &fde, register_state *state)
     state->commit(cfa + row.arg_size());
 }
 
-#ifndef __clang__
 #pragma GCC diagnostic pop
-#endif

@@ -130,6 +130,13 @@ ioctl_private::open()
         throw driver_inaccessible();
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
+// We turn off the conversion warnings here as Window's IOCTL macros are
+// tripping them which we cannot fix.
+
 void
 ioctl_private::call_ioctl_add_module(const char *data, uint64_t len)
 {
@@ -139,35 +146,35 @@ ioctl_private::call_ioctl_add_module(const char *data, uint64_t len)
     if (len == 0)
         throw std::invalid_argument("len == 0");
 
-    if (bf_write_ioctl(fd, static_cast<DWORD>(IOCTL_ADD_MODULE), data, len) == BF_IOCTL_FAILURE)
+    if (bf_write_ioctl(fd, IOCTL_ADD_MODULE, data, len) == BF_IOCTL_FAILURE)
         throw ioctl_failed(IOCTL_ADD_MODULE);
 }
 
 void
 ioctl_private::call_ioctl_load_vmm()
 {
-    if (bf_send_ioctl(fd, IOCTL_LOAD_VMM) != 0)
+    if (bf_send_ioctl(fd, IOCTL_LOAD_VMM) == BF_IOCTL_FAILURE)
         throw ioctl_failed(IOCTL_LOAD_VMM);
 }
 
 void
 ioctl_private::call_ioctl_unload_vmm()
 {
-    if (bf_send_ioctl(fd, IOCTL_UNLOAD_VMM) != 0)
+    if (bf_send_ioctl(fd, IOCTL_UNLOAD_VMM) == BF_IOCTL_FAILURE)
         throw ioctl_failed(IOCTL_UNLOAD_VMM);
 }
 
 void
 ioctl_private::call_ioctl_start_vmm()
 {
-    if (bf_send_ioctl(fd, IOCTL_START_VMM) != 0)
+    if (bf_send_ioctl(fd, IOCTL_START_VMM) == BF_IOCTL_FAILURE)
         throw ioctl_failed(IOCTL_START_VMM);
 }
 
 void
 ioctl_private::call_ioctl_stop_vmm()
 {
-    if (bf_send_ioctl(fd, IOCTL_STOP_VMM) != 0)
+    if (bf_send_ioctl(fd, IOCTL_STOP_VMM) == BF_IOCTL_FAILURE)
         throw ioctl_failed(IOCTL_STOP_VMM);
 }
 
@@ -177,10 +184,10 @@ ioctl_private::call_ioctl_dump_vmm(debug_ring_resources_t *drr, uint64_t vcpuid)
     if (drr == nullptr)
         throw std::invalid_argument("drr == NULL");
 
-    if (bf_write_ioctl(fd, IOCTL_SET_VCPUID, &vcpuid, sizeof(vcpuid)) != 0)
+    if (bf_write_ioctl(fd, IOCTL_SET_VCPUID, &vcpuid, sizeof(vcpuid)) == BF_IOCTL_FAILURE)
         throw ioctl_failed(IOCTL_SET_VCPUID);
 
-    if (bf_read_ioctl(fd, IOCTL_DUMP_VMM, drr, sizeof(*drr)) != 0)
+    if (bf_read_ioctl(fd, IOCTL_DUMP_VMM, drr, sizeof(*drr)) == BF_IOCTL_FAILURE)
         throw ioctl_failed(IOCTL_DUMP_VMM);
 }
 
@@ -190,6 +197,8 @@ ioctl_private::call_ioctl_vmm_status(int64_t *status)
     if (status == nullptr)
         throw std::invalid_argument("status == NULL");
 
-    if (bf_read_ioctl(fd, IOCTL_VMM_STATUS, status, sizeof(*status)) != 0)
+    if (bf_read_ioctl(fd, IOCTL_VMM_STATUS, status, sizeof(*status)) == BF_IOCTL_FAILURE)
         throw ioctl_failed(IOCTL_VMM_STATUS);
 }
+
+#pragma GCC diagnostic pop
