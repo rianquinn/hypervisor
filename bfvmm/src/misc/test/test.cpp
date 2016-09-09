@@ -43,6 +43,28 @@ misc_ut::list()
     this->test_error_codes_valid();
     this->test_error_codes_unknown();
 
+    this->test_string_literal();
+
+    this->test_vector_find();
+    this->test_vector_cfind();
+    this->test_vector_take();
+    this->test_vector_remove();
+
+    this->test_guard_exceptions_no_return();
+    this->test_guard_exceptions_with_return();
+
+    this->test_maskmanip_get_mask();
+    this->test_maskmanip_clear_mask();
+    this->test_maskmanip_set_mask();
+
+    this->test_bitmanip_set_bit();
+    this->test_bitmanip_clear_bit();
+    this->test_bitmanip_get_bit();
+
+    this->test_bitmanip_is_bit_enabled();
+    this->test_bitmanip_is_bit_disabled();
+    this->test_bitmanip_num_bits_enabled();
+
     return true;
 }
 

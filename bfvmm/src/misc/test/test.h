@@ -42,6 +42,26 @@ private:
     void test_error_codes_valid();
     void test_error_codes_unknown();
 
+    void test_string_literal();
+
+    void test_vector_find();
+    void test_vector_cfind();
+    void test_vector_take();
+    void test_vector_remove();
+
+    void test_guard_exceptions_no_return();
+    void test_guard_exceptions_with_return();
+
+    void test_maskmanip_get_mask();
+    void test_maskmanip_clear_mask();
+    void test_maskmanip_set_mask();
+
+    void test_bitmanip_set_bit();
+    void test_bitmanip_clear_bit();
+    void test_bitmanip_get_bit();
+    void test_bitmanip_is_bit_enabled();
+    void test_bitmanip_is_bit_disabled();
+    void test_bitmanip_num_bits_enabled();
 };
 
 #endif
