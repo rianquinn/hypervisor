@@ -64,6 +64,10 @@ root_page_table_x64::integer_pointer
 root_page_table_x64::phys_addr()
 { return m_root_pt->phys_addr(); }
 
+root_page_table_x64::pat_type
+root_page_table_x64::pat()
+{ return 0x0706050400000100UL; }
+
 void
 root_page_table_x64::map(integer_pointer virt, integer_pointer phys, attr_type attr)
 { map_page(virt, phys, attr); }
@@ -78,11 +82,25 @@ root_page_table_x64::root_page_table_x64() noexcept :
     try
     {
         for (const auto &md : g_mm->descriptors())
-            this->map_page(md.virt, md.phys, md.type);
+        {
+            switch (md.type)
+            {
+                case MEMORY_TYPE_R | MEMORY_TYPE_W:
+                    this->map_page(md.virt, md.phys, read_write_write_back);
+                    break;
+
+                case MEMORY_TYPE_R | MEMORY_TYPE_E:
+                    this->map_page(md.virt, md.phys, read_execute_write_back);
+                    break;
+
+                default:
+                    throw std::logic_error("unsupported memory type");
+            }
+        }
     }
-    catch (...)
+    catch (std::exception &e)
     {
-        bferror << "failed to construct root page tables" << bfendl;
+        bferror << "failed to construct root page tables: " << e.what() << bfendl;
         root_page_table_terminate();
     }
 }
@@ -115,25 +133,32 @@ root_page_table_x64::map_page(integer_pointer virt, integer_pointer phys, attr_t
 
     entry->set_phys_addr(phys);
     entry->set_present(true);
+    entry->set_pat_index(attr & 0x000000000000000FL);
 
     switch (attr)
     {
-        case MEMORY_TYPE_R | MEMORY_TYPE_W:
-        {
+        case root_page_table_x64::read_write_uncacheable:
+        case root_page_table_x64::read_write_write_combining:
+        case root_page_table_x64::read_write_write_through:
+        case root_page_table_x64::read_write_write_protected:
+        case root_page_table_x64::read_write_write_back:
+        case root_page_table_x64::read_write_uncached:
             entry->set_rw(true);
             entry->set_nx(true);
             break;
-        }
 
-        case MEMORY_TYPE_R | MEMORY_TYPE_E:
-        {
+        case root_page_table_x64::read_execute_uncacheable:
+        case root_page_table_x64::read_execute_write_combining:
+        case root_page_table_x64::read_execute_write_through:
+        case root_page_table_x64::read_execute_write_protected:
+        case root_page_table_x64::read_execute_write_back:
+        case root_page_table_x64::read_execute_uncached:
             entry->set_rw(false);
             entry->set_nx(false);
             break;
-        }
 
         default:
-            throw std::logic_error("unsupported memory attribute");
+            throw std::logic_error("unsupported memory permissions");
     }
 
     g_mm->add_md(virt, phys, attr);

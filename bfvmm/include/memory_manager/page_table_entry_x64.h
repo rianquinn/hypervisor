@@ -78,6 +78,7 @@ public:
 
     using pointer = uintptr_t *;
     using integer_pointer = uintptr_t;
+    using pat_index_type = uint64_t;
 
     /// Default Constructor
     ///
@@ -315,6 +316,24 @@ public:
     /// @param enabled true if the entry is not executable, false otherwise
     ///
     void set_nx(bool enabled) noexcept;
+
+    /// PAT Index
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @return combines PWT, PCD and PAT to return the PAT index
+    ///
+    pat_index_type pat_index() const noexcept;
+
+    /// Set PAT Index
+    ///
+    /// @expects index >= 0 && index < 8
+    /// @ensures none
+    ///
+    /// @param the index of the PAT to set
+    ///
+    void set_pat_index(pat_index_type index);
 
 private:
 

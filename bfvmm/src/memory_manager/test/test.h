@@ -98,6 +98,7 @@ private:
     void test_page_table_entry_x64_global();
     void test_page_table_entry_x64_nx();
     void test_page_table_entry_x64_phys_addr();
+    void test_page_table_entry_x64_pat_index();
 
     void test_unique_map_ptr_x64_default_constructor();
     void test_unique_map_ptr_x64_phys_constructor_invalid_args();
@@ -127,6 +128,7 @@ private:
     void test_root_page_table_x64_init_failure();
     void test_root_page_table_x64_init_success();
     void test_root_page_table_x64_phys_addr();
+    void test_root_page_table_x64_pat();
     void test_root_page_table_x64_map_failure();
     void test_root_page_table_x64_map_add_md_failure();
     void test_root_page_table_x64_map_unmap_success();

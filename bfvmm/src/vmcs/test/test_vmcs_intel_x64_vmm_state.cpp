@@ -48,7 +48,7 @@ setup_vmm_state(MockRepository &mocks)
     auto pt = mocks.Mock<root_page_table_x64>();
     mocks.OnCallFunc(root_page_table_x64::instance).Return(pt);
     mocks.OnCall(pt, root_page_table_x64::phys_addr).Return(test_cr3);
-
+    mocks.OnCall(pt, root_page_table_x64::pat).Return(0x0);
 
     test_cr0 = cr0::protection_enable::mask;
     test_cr0 |= cr0::monitor_coprocessor::mask;

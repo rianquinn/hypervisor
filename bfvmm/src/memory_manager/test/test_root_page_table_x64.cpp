@@ -86,6 +86,18 @@ memory_manager_ut::test_root_page_table_x64_phys_addr()
 }
 
 void
+memory_manager_ut::test_root_page_table_x64_pat()
+{
+    MockRepository mocks;
+    setup_mm(mocks);
+
+    RUN_UNITTEST_WITH_MOCKS(mocks, [&]
+    {
+        this->expect_true(g_pt->pat() == 0x0706050400000100UL);
+    });
+}
+
+void
 memory_manager_ut::test_root_page_table_x64_map_failure()
 {
     MockRepository mocks;
@@ -93,10 +105,9 @@ memory_manager_ut::test_root_page_table_x64_map_failure()
 
     RUN_UNITTEST_WITH_MOCKS(mocks, [&]
     {
-        this->expect_exception([&] { g_pt->map(0, 0x54323000, MEMORY_TYPE_R | MEMORY_TYPE_W); }, ""_ut_ffe);
-        this->expect_exception([&] { g_pt->map(0x12347000, 0, MEMORY_TYPE_R | MEMORY_TYPE_W); }, ""_ut_ffe);
-        this->expect_exception([&] { g_pt->map(0x12347000, 0x54323000, 0); }, ""_ut_ffe);
-        this->expect_exception([&] { g_pt->map(0x12347000, 0x54323000, MEMORY_TYPE_R); }, ""_ut_lee);
+        this->expect_exception([&] { g_pt->map(0, 0x54323000, root_page_table_x64::read_write_write_back); }, ""_ut_ffe);
+        this->expect_exception([&] { g_pt->map(0x12347000, 0, root_page_table_x64::read_execute_write_back); }, ""_ut_ffe);
+        this->expect_exception([&] { g_pt->map(0x12347000, 0x54323000, static_cast<root_page_table_x64::attr_type>(0)); }, ""_ut_ffe);
     });
 }
 
@@ -110,7 +121,7 @@ memory_manager_ut::test_root_page_table_x64_map_add_md_failure()
 
     RUN_UNITTEST_WITH_MOCKS(mocks, [&]
     {
-        this->expect_exception([&] { g_pt->map(0x12347000, 0x54323000, MEMORY_TYPE_R | MEMORY_TYPE_W); }, ""_ut_ree);
+        this->expect_exception([&] { g_pt->map(0x12347000, 0x54323000, root_page_table_x64::read_write_write_back); }, ""_ut_ree);
     });
 }
 
@@ -122,7 +133,10 @@ memory_manager_ut::test_root_page_table_x64_map_unmap_success()
 
     RUN_UNITTEST_WITH_MOCKS(mocks, [&]
     {
-        this->expect_no_exception([&] { g_pt->map(0x12347000, 0x54323000, MEMORY_TYPE_R | MEMORY_TYPE_W); });
+        this->expect_no_exception([&] { g_pt->map(0x12347000, 0x54323000, root_page_table_x64::read_write_uncacheable); });
+        this->expect_no_exception([&] { g_pt->unmap(0x12347000); });
+
+        this->expect_no_exception([&] { g_pt->map(0x12347000, 0x54323000, root_page_table_x64::read_execute_uncacheable); });
         this->expect_no_exception([&] { g_pt->unmap(0x12347000); });
     });
 }
@@ -135,7 +149,7 @@ memory_manager_ut::test_root_page_table_x64_map_unmap_twice_success()
 
     RUN_UNITTEST_WITH_MOCKS(mocks, [&]
     {
-        this->expect_no_exception([&] { g_pt->map(0x12347000, 0x54323000, MEMORY_TYPE_R | MEMORY_TYPE_W); });
+        this->expect_no_exception([&] { g_pt->map(0x12347000, 0x54323000, root_page_table_x64::read_write_write_back); });
         this->expect_no_exception([&] { g_pt->unmap(0x12347000); });
         this->expect_no_exception([&] { g_pt->unmap(0x12347000); });
     });

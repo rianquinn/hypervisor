@@ -351,7 +351,7 @@ public:
         m_virt |= lower(phys);
         m_virt |= upper(vmap);
 
-        g_pt->map(vmap, upper(phys), attr);
+        g_pt->map(vmap, upper(phys), root_page_table_x64::read_write_write_back);
 
         flush();
     }
@@ -436,7 +436,7 @@ public:
             auto size = p.second;
 
             for (poff = 0; poff < size; poff += x64::page_size, voff += x64::page_size)
-                g_pt->map(vmap + voff, phys + poff, attr);
+                g_pt->map(vmap + voff, phys + poff, root_page_table_x64::read_write_write_back);
         }
 
         flush();
@@ -501,7 +501,7 @@ public:
             auto vadr = vmap + offset;
             auto padr = virt_to_phys_with_cr3(upper(virt) + offset, cr3);
 
-            g_pt->map(vadr, padr, attr);
+            g_pt->map(vadr, padr, root_page_table_x64::read_write_write_back);
         }
 
         flush();

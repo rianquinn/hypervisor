@@ -87,6 +87,8 @@ vmcs_intel_x64_vmm_state::vmcs_intel_x64_vmm_state()
 
     m_rflags = 0;
 
+    m_ia32_pat_msr = g_pt->pat();
+
     m_ia32_efer_msr = 0;
     m_ia32_efer_msr |= msrs::ia32_efer::lme::mask;
     m_ia32_efer_msr |= msrs::ia32_efer::lma::mask;

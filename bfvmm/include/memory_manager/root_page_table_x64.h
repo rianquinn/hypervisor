@@ -41,9 +41,27 @@ class root_page_table_x64
 {
 public:
 
+    enum attr_type
+    {
+        read_write_uncacheable        = 0x00000100UL,
+        read_write_write_combining    = 0x00000101UL,
+        read_write_write_through      = 0x00000104UL,
+        read_write_write_protected    = 0x00000105UL,
+        read_write_write_back         = 0x00000106UL,
+        read_write_uncached           = 0x00000107UL,
+        read_execute_uncacheable      = 0x00001000UL,
+        read_execute_write_combining  = 0x00001001UL,
+        read_execute_write_through    = 0x00001004UL,
+        read_execute_write_protected  = 0x00001005UL,
+        read_execute_write_back       = 0x00001006UL,
+        read_execute_uncached         = 0x00001007UL,
+    };
+
+public:
+
     using pointer = void *;
     using integer_pointer = uintptr_t;
-    using attr_type = decltype(memory_descriptor::type);
+    using pat_type = uint64_t;
 
     /// Default Destructor
     ///
@@ -73,6 +91,15 @@ public:
     /// @return returns the physical address of the root page tables.
     ///
     virtual integer_pointer phys_addr();
+
+    /// Page Attribute Table
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @return returns the pat used by this set of page tables
+    ///
+    virtual pat_type pat();
 
     /// Map Page
     ///

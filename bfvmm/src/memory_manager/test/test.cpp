@@ -102,6 +102,7 @@ memory_manager_ut::list()
     this->test_page_table_entry_x64_global();
     this->test_page_table_entry_x64_nx();
     this->test_page_table_entry_x64_phys_addr();
+    this->test_page_table_entry_x64_pat_index();
 
     this->test_unique_map_ptr_x64_default_constructor();
     this->test_unique_map_ptr_x64_phys_constructor_invalid_args();
@@ -131,6 +132,7 @@ memory_manager_ut::list()
     this->test_root_page_table_x64_init_failure();
     this->test_root_page_table_x64_init_success();
     this->test_root_page_table_x64_phys_addr();
+    this->test_root_page_table_x64_pat();
     this->test_root_page_table_x64_map_failure();
     this->test_root_page_table_x64_map_add_md_failure();
     this->test_root_page_table_x64_map_unmap_success();

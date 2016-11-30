@@ -40,12 +40,12 @@ namespace x64
 
 namespace memory_type
 {
-    constexpr const auto uncacheable                             = 0x00000000ULL;
-    constexpr const auto write_combining                         = 0x00000001ULL;
-    constexpr const auto write_through                           = 0x00000004ULL;
-    constexpr const auto write_protected                         = 0x00000005ULL;
-    constexpr const auto write_back                              = 0x00000006ULL;
-    constexpr const auto uncached                                = 0x00000007ULL;
+    constexpr const auto uncacheable                             = 0x00000000UL;
+    constexpr const auto write_combining                         = 0x00000001UL;
+    constexpr const auto write_through                           = 0x00000004UL;
+    constexpr const auto write_protected                         = 0x00000005UL;
+    constexpr const auto write_back                              = 0x00000006UL;
+    constexpr const auto uncached                                = 0x00000007UL;
 }
 
 namespace access_rights
@@ -127,7 +127,7 @@ template<class T, class = typename std::enable_if<std::is_integral<T>::value>::t
 auto is_physical_address_valid(T addr)
 {
     auto bits = cpuid::addr_size::phys::get();
-    auto mask = (0xFFFFFFFFFFFFFFFFULL >> bits) << bits;
+    auto mask = (0xFFFFFFFFFFFFFFFFUL >> bits) << bits;
 
     return ((addr & mask) == 0);
 }
