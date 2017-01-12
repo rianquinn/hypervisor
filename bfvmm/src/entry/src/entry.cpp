@@ -22,21 +22,34 @@
 #include <gsl/gsl>
 
 #include <debug.h>
+#include <vcpuid.h>
 #include <entry/entry.h>
 #include <guard_exceptions.h>
 #include <vcpu/vcpu_manager.h>
+
+void
+__attribute__((weak)) pre_start_vmm(vcpuid::type id)
+{ (void) id; }
+
+void
+__attribute__((weak)) post_start_vmm(vcpuid::type id)
+{ (void) id; }
 
 extern "C" int64_t
 start_vmm(uint64_t arg) noexcept
 {
     return guard_exceptions(ENTRY_ERROR_VMM_START_FAILED, [&]()
     {
+        pre_start_vmm(arg);
+
         g_vcm->create_vcpu(arg);
 
         auto ___ = gsl::on_failure([&]
         { g_vcm->delete_vcpu(arg); });
 
         g_vcm->run_vcpu(arg);
+
+        post_start_vmm(arg);
 
         bfdebug << "success: host os is " << bfcolor_green "now " << bfcolor_end
                 << "in a vm on vcpuid = " << arg << bfendl;
@@ -45,13 +58,25 @@ start_vmm(uint64_t arg) noexcept
     });
 }
 
+void
+__attribute__((weak)) pre_stop_vmm(vcpuid::type id)
+{ (void) id; }
+
+void
+__attribute__((weak)) post_stop_vmm(vcpuid::type id)
+{ (void) id; }
+
 extern "C" int64_t
 stop_vmm(uint64_t arg) noexcept
 {
     return guard_exceptions(ENTRY_ERROR_VMM_STOP_FAILED, [&]()
     {
+        pre_stop_vmm(arg);
+
         g_vcm->hlt_vcpu(arg);
         g_vcm->delete_vcpu(arg);
+
+        post_stop_vmm(arg);
 
         bfdebug << "success: host os is " << bfcolor_red "not " << bfcolor_end
                 << "in a vm on vcpuid = " << arg << bfendl;
