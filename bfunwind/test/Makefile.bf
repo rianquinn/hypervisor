@@ -73,7 +73,7 @@ INCLUDE_PATHS+=../include/
 INCLUDE_PATHS+=%HYPER_ABS%/include/
 INCLUDE_PATHS+=%HYPER_ABS%/bfelf_loader/include/
 
-LIBS+=bfunwind_static
+LIBS+=bfunwind_static dl
 
 LIBRARY_PATHS+=%BUILD_REL%/../bin/native/
 

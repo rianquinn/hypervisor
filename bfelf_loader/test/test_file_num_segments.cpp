@@ -31,8 +31,7 @@ bfelf_loader_ut::test_bfelf_file_num_segments_invalid_ef()
 void
 bfelf_loader_ut::test_bfelf_file_num_segments_uninitalized()
 {
-    bfelf_file_t ef;
-    memset(&ef, 0, sizeof(ef));
+    bfelf_file_t ef = {};
 
     auto ret = bfelf_file_num_segments(&ef);
     this->expect_true(ret == 0);
@@ -42,10 +41,13 @@ void
 bfelf_loader_ut::test_bfelf_file_num_segments_success()
 {
     auto ret = 0LL;
-    bfelf_file_t ef;
-    auto test = get_test();
 
-    ret = bfelf_file_init(reinterpret_cast<char *>(&test), sizeof(test), &ef);
+    bfelf_file_t ef;
+    auto &&data = get_test();
+    auto &&buff = std::get<0>(data);
+    auto &&size = std::get<1>(data);
+
+    ret = bfelf_file_init(buff.get(), size, &ef);
     this->expect_true(ret == BFELF_SUCCESS);
 
     ret = bfelf_file_num_segments(&ef);

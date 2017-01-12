@@ -87,7 +87,6 @@ int64_t
 resolve_symbol(const char *name, void **sym)
 {
     int64_t ret;
-    struct e_string_t str = {0, 0};
 
     if (name == 0 || sym == 0)
         return BF_ERROR_INVALID_ARG;
@@ -95,10 +94,7 @@ resolve_symbol(const char *name, void **sym)
     if (g_num_modules == 0)
         return BF_ERROR_NO_MODULES_ADDED;
 
-    str.buf = name;
-    str.len = symbol_length(name);
-
-    ret = bfelf_loader_resolve_symbol(&g_loader, &str, sym);
+    ret = bfelf_loader_resolve_symbol(&g_loader, name, sym);
     if (ret != BFELF_SUCCESS)
     {
         ALERT("Failed to find: %s\n", name);
@@ -428,7 +424,7 @@ common_load_vmm(void)
 
     for (i = 0; (module = get_module(i)) != 0; i++)
     {
-        ret = bfelf_loader_add(&g_loader, &module->file, module->exec);
+        ret = bfelf_loader_add(&g_loader, &module->file, module->exec, module->exec);
         if (ret != BFELF_SUCCESS)
             goto failure;
     }
@@ -443,9 +439,9 @@ common_load_vmm(void)
 
     for (i = 0; (module = get_module(i)) != 0; i++)
     {
-        struct section_info_t info = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        struct section_info_t info = {0, 0, 0, 0, 0, 0, 0, 0};
 
-        ret = bfelf_loader_get_info(&g_loader, &module->file, &info);
+        ret = bfelf_file_get_section_info(&module->file, &info);
         if (ret != BF_SUCCESS)
             goto failure;
 
@@ -501,9 +497,9 @@ common_unload_vmm(void)
     {
         for (i = g_num_modules - 1; (module = get_module(i)) != 0; i--)
         {
-            struct section_info_t info = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            struct section_info_t info = {0, 0, 0, 0, 0, 0, 0, 0};
 
-            ret = bfelf_loader_get_info(&g_loader, &module->file, &info);
+            ret = bfelf_file_get_section_info(&module->file, &info);
             if (ret != BF_SUCCESS)
                 goto corrupted;
 

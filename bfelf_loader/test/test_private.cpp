@@ -167,7 +167,8 @@ bfelf_loader_ut::test_private_relocate_invalid_relocation()
     auto file = "hello";
     auto exec = std::make_unique<char[]>(1);
 
-    ef.exec = exec.get();
+    ef.exec_addr = exec.get();
+    ef.exec_virt = exec.get();
     ef.file = file;
     ef.strtab = &strtab;
     ef.symtab = static_cast<bfelf_sym *>(symtab);

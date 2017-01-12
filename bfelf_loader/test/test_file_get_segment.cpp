@@ -34,11 +34,14 @@ void
 bfelf_loader_ut::test_bfelf_file_get_segment_invalid_index()
 {
     auto ret = 0LL;
-    bfelf_file_t ef;
     bfelf_phdr *phdr = nullptr;
-    auto test = get_test();
 
-    ret = bfelf_file_init(reinterpret_cast<char *>(&test), sizeof(test), &ef);
+    bfelf_file_t ef;
+    auto &&data = get_test();
+    auto &&buff = std::get<0>(data);
+    auto &&size = std::get<1>(data);
+
+    ret = bfelf_file_init(buff.get(), size, &ef);
     this->expect_true(ret == BFELF_SUCCESS);
 
     ret = bfelf_file_get_segment(&ef, 10, &phdr);
@@ -49,10 +52,13 @@ void
 bfelf_loader_ut::test_bfelf_file_get_segment_invalid_phdr()
 {
     auto ret = 0LL;
-    bfelf_file_t ef;
-    auto test = get_test();
 
-    ret = bfelf_file_init(reinterpret_cast<char *>(&test), sizeof(test), &ef);
+    bfelf_file_t ef;
+    auto &&data = get_test();
+    auto &&buff = std::get<0>(data);
+    auto &&size = std::get<1>(data);
+
+    ret = bfelf_file_init(buff.get(), size, &ef);
     this->expect_true(ret == BFELF_SUCCESS);
 
     ret = bfelf_file_get_segment(&ef, 0, nullptr);
@@ -63,11 +69,14 @@ void
 bfelf_loader_ut::test_bfelf_file_get_segment_success()
 {
     auto ret = 0LL;
-    bfelf_file_t ef;
     bfelf_phdr *phdr = nullptr;
-    auto test = get_test();
 
-    ret = bfelf_file_init(reinterpret_cast<char *>(&test), sizeof(test), &ef);
+    bfelf_file_t ef;
+    auto &&data = get_test();
+    auto &&buff = std::get<0>(data);
+    auto &&size = std::get<1>(data);
+
+    ret = bfelf_file_init(buff.get(), size, &ef);
     this->expect_true(ret == BFELF_SUCCESS);
 
     ret = bfelf_file_get_segment(&ef, 0, &phdr);

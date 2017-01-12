@@ -37,8 +37,14 @@
 //   dereferenced, it should not be an issue.
 //
 
-template<class T, class = typename std::enable_if<std::is_integral<T>::value>::type>
-void *view_as_pointer(const T val)
-{ return reinterpret_cast<void *>(val); }
+template<class T,
+         class = typename std::enable_if<
+             std::is_integral<T>::value
+             or
+             std::is_pointer<T>::value
+             >::type
+         >
+const void *view_as_pointer(const T val)
+{ return reinterpret_cast<const void *>(val); }
 
 #endif

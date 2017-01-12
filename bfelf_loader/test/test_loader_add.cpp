@@ -30,7 +30,7 @@ bfelf_loader_ut::test_bfelf_loader_add_invalid_loader()
     ret = bfelf_file_init(m_dummy_misc.get(), m_dummy_misc_length, &dummy_misc_ef);
     this->expect_true(ret == BFELF_SUCCESS);
 
-    ret = bfelf_loader_add(nullptr, &dummy_misc_ef, m_dummy_misc_exec.get());
+    ret = bfelf_loader_add(nullptr, &dummy_misc_ef, m_dummy_misc_exec.get(), m_dummy_misc_exec.get());
     this->expect_true(ret == BFELF_ERROR_INVALID_ARG);
 }
 
@@ -40,7 +40,7 @@ bfelf_loader_ut::test_bfelf_loader_add_invalid_elf_file()
     bfelf_loader_t loader;
     memset(&loader, 0, sizeof(loader));
 
-    auto ret = bfelf_loader_add(&loader, nullptr, m_dummy_misc_exec.get());
+    auto ret = bfelf_loader_add(&loader, nullptr, m_dummy_misc_exec.get(), m_dummy_misc_exec.get());
     this->expect_true(ret == BFELF_ERROR_INVALID_ARG);
 }
 
@@ -53,15 +53,18 @@ bfelf_loader_ut::test_bfelf_loader_add_too_many_files()
     ret = bfelf_file_init(m_dummy_misc.get(), m_dummy_misc_length, &dummy_misc_ef);
     this->expect_true(ret == BFELF_SUCCESS);
 
+    auto &&dummy_misc_pair = get_elf_exec(&dummy_misc_ef);
+    m_dummy_misc_exec = std::move(std::get<0>(dummy_misc_pair));
+
     bfelf_loader_t loader;
     memset(&loader, 0, sizeof(loader));
 
-    for (auto i = 0; i < BFELF_MAX_MODULES; i++)
+    for (auto i = 0; i < MAX_NUM_MODULES; i++)
     {
-        ret = bfelf_loader_add(&loader, &dummy_misc_ef, m_dummy_misc_exec.get());
+        ret = bfelf_loader_add(&loader, &dummy_misc_ef, m_dummy_misc_exec.get(), m_dummy_misc_exec.get());
         this->expect_true(ret == BFELF_SUCCESS);
     }
 
-    ret = bfelf_loader_add(&loader, &dummy_misc_ef, m_dummy_misc_exec.get());
+    ret = bfelf_loader_add(&loader, &dummy_misc_ef, m_dummy_misc_exec.get(), m_dummy_misc_exec.get());
     this->expect_true(ret == BFELF_ERROR_LOADER_FULL);
 }
