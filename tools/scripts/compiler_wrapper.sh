@@ -245,6 +245,18 @@ do
         continue
         ;;
 
+    "-flto"*)
+        COMPILE_ARGS[$COMPILE_ARGS_INDEX]=$ARG
+        COMPILE_ARGS_INDEX=$((COMPILE_ARGS_INDEX+1))
+
+        # only use gold linker module for flto with clang
+        if [[ $0 == *"clang"* ]]; then
+            LINK_ARGS=("--plugin $HOME/compilers/$compiler/lib/LLVMgold.so" "${LINK_ARGS[@]}");
+            LINK_ARGS_INDEX=$((LINK_ARGS_INDEX + 1));
+        fi
+        continue
+        ;;
+
     "-f"*)
         COMPILE_ARGS[$COMPILE_ARGS_INDEX]=$ARG
         COMPILE_ARGS_INDEX=$((COMPILE_ARGS_INDEX+1))
@@ -288,16 +300,6 @@ do
 
     "-rdynamic")
         LINK_ARGS[$LINK_ARGS_INDEX]="-export-dynamic"
-        LINK_ARGS_INDEX=$((LINK_ARGS_INDEX+1))
-        continue
-        ;;
-
-    "-Wl,--plugin-opt"*)
-        COMPILE_ARGS[$COMPILE_ARGS_INDEX]=$ARG
-        COMPILE_ARGS_INDEX=$((COMPILE_ARGS_INDEX+1))
-        ARG=${ARG/-Wl,/}
-        ARG=${ARG/,/ }
-        LINK_ARGS[$LINK_ARGS_INDEX]="--plugin $HOME/compilers/$compiler/lib/LLVMgold.so $ARG"
         LINK_ARGS_INDEX=$((LINK_ARGS_INDEX+1))
         continue
         ;;
