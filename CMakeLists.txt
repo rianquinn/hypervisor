@@ -15,6 +15,58 @@ if(NOT UNAME STREQUAL "Cygwin")
 endif()
 
 # ------------------------------------------------------------------------------
+# Options
+# ------------------------------------------------------------------------------
+
+if(WORKING_PATH)
+
+    set(BFSDK_PATH "${WORKING_PATH}/bfsdk")
+    set(BFSYSROOT_PATH "${WORKING_PATH}/bfsysroot")
+    set(BFELF_LOADER_PATH "${WORKING_PATH}/bfelf_loader")
+    set(BFM_PATH "${WORKING_PATH}/bfm")
+    set(BFVMM_PATH "${WORKING_PATH}/bfvmm")
+    set(BFDRIVER_PATH "${WORKING_PATH}/bfdriver")
+    set(EXTENDED_APIS_PATH "${WORKING_PATH}/extended_apis")
+
+    if(NOT EXISTS ${BFSDK_PATH})
+        message(FATAL_ERROR "${BFSDK_PATH} does not exist")
+    endif()
+
+    if(NOT EXISTS ${BFSYSROOT_PATH})
+        message(FATAL_ERROR "${BFSYSROOT_PATH} does not exist")
+    endif()
+
+    if(NOT EXISTS ${BFELF_LOADER_PATH})
+        message(FATAL_ERROR "${BFELF_LOADER_PATH} does not exist")
+    endif()
+
+    if(NOT EXISTS ${BFM_PATH})
+        message(FATAL_ERROR "${BFM_PATH} does not exist")
+    endif()
+
+    if(NOT EXISTS ${BFVMM_PATH})
+        message(FATAL_ERROR "${BFVMM_PATH} does not exist")
+    endif()
+
+    if(NOT EXISTS ${BFDRIVER_PATH})
+        message(FATAL_ERROR "${BFDRIVER_PATH} does not exist")
+    endif()
+
+    if(ENABLE_EXTENDED_APIS)
+        if(NOT EXISTS ${EXTENDED_APIS_PATH})
+            message(FATAL_ERROR "${EXTENDED_APIS_PATH} does not exist")
+        endif()
+    endif()
+
+endif()
+
+if(ENABLE_DEV_MODE)
+    set(ENABLE_TIDY ON)
+    set(ENABLE_COVERAGE ON)
+    set(ENABLE_UNITTESTING ON)
+endif()
+
+# ------------------------------------------------------------------------------
 # Repos
 # ------------------------------------------------------------------------------
 
@@ -454,7 +506,7 @@ if(ENABLE_EXTENDED_APIS)
             BINARY_DIR          ${CMAKE_BINARY_DIR}/test_extended_apis/build
             UPDATE_COMMAND      ${CMAKE_COMMAND} -E echo "checking for updates"
             BUILD_COMMAND       ""
-            DEPENDS             extended_apis
+            DEPENDS             extended_apis test_bfvmm
         )
 
     endif()
@@ -493,6 +545,20 @@ if(ENABLE_UNITTESTING)
     )
 endif()
 
+if(ENABLE_EXTENDED_APIS)
+    add_custom_command(
+        TARGET super-clean
+        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/extended_apis/build --target clean
+    )
+
+    if(ENABLE_UNITTESTING)
+        add_custom_command(
+            TARGET super-clean
+            COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/test_extended_apis/build --target clean
+        )
+    endif()
+endif()
+
 add_custom_target(dist-clean
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfsdk/build --target dist-clean
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/bfdriver
@@ -503,6 +569,7 @@ add_custom_target(dist-clean
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/bfsdk
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/bfsysroot
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/bfvmm
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/extended_apis
 )
 
 # ------------------------------------------------------------------------------
@@ -526,24 +593,44 @@ add_custom_target(driver_clean COMMAND make driver_clean > /dev/null VERBATIM WO
 add_custom_target(driver_quick DEPENDS driver_load driver_build)
 
 # ------------------------------------------------------------------------------
+# Retry
+# ------------------------------------------------------------------------------
+
+add_custom_target(whoops
+    COMMAND make driver_quick
+    COMMAND make quick
+)
+
+# ------------------------------------------------------------------------------
 # Test
 # ------------------------------------------------------------------------------
 
-cmake_policy(PUSH)
+if(ENABLE_UNITTESTING)
 
-if(POLICY CMP0037)
-    cmake_policy(SET CMP0037 OLD)       # allow `make test`
+    cmake_policy(PUSH)
+
+    if(POLICY CMP0037)
+        cmake_policy(SET CMP0037 OLD)       # allow `make test`
+    endif()
+
+    add_custom_target(test
+        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfdriver/build --target test
+        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfelf_loader/build --target test
+        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfm/build --target test
+        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfsdk/build --target test
+        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/test_bfvmm/build --target test
+    )
+
+    if(ENABLE_EXTENDED_APIS)
+        add_custom_command(
+            TARGET test
+            COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/test_extended_apis/build --target test
+        )
+    endif()
+
+    cmake_policy(POP)
+
 endif()
-
-add_custom_target(test
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfdriver/build --target test
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfelf_loader/build --target test
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfm/build --target test
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfsdk/build --target test
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/test_bfvmm/build --target test
-)
-
-cmake_policy(POP)
 
 # ------------------------------------------------------------------------------
 # Tidy
@@ -566,6 +653,18 @@ if(ENABLE_TIDY)
         COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfsdk/build --target tidy-all
         COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/test_bfvmm/build --target tidy-all
     )
+
+    if(ENABLE_EXTENDED_APIS)
+        add_custom_command(
+            TARGET tidy
+            COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/test_extended_apis/build --target tidy
+        )
+
+        add_custom_command(
+            TARGET tidy-all
+            COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/test_extended_apis/build --target tidy-all
+        )
+    endif()
 
 endif()
 
@@ -591,6 +690,18 @@ add_custom_target(format-all
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfvmm/build --target format-all
 )
 
+if(ENABLE_EXTENDED_APIS)
+    add_custom_command(
+        TARGET format
+        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/extended_apis/build --target format
+    )
+
+    add_custom_command(
+        TARGET format-all
+        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/extended_apis/build --target format-all
+    )
+endif()
+
 # ------------------------------------------------------------------------------
 # Git Report
 # ------------------------------------------------------------------------------
@@ -603,3 +714,7 @@ add_custom_command(TARGET report COMMAND git -C ${BFM_PATH} diff --stat COMMENT 
 add_custom_command(TARGET report COMMAND git -C ${BFSDK_PATH} diff --stat COMMENT "Diff: bfsdk")
 add_custom_command(TARGET report COMMAND git -C ${BFSYSROOT_PATH} diff --stat COMMENT "Diff: bfsysroot")
 add_custom_command(TARGET report COMMAND git -C ${BFVMM_PATH} diff --stat COMMENT "Diff: bfvmm")
+
+if(ENABLE_EXTENDED_APIS)
+    add_custom_command(TARGET report COMMAND git -C ${EXTENDED_APIS_PATH} diff --stat COMMENT "Diff: extended_apis")
+endif()
