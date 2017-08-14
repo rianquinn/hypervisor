@@ -62,7 +62,7 @@ matrix:
     script:
       - export PATH="$PWD/../bfprefix/bin:$PATH"
       - cmake -DENABLE_UNITTESTING=ON ..
-      - make
+      - make -j3
       - make test
 
   #
@@ -84,7 +84,7 @@ matrix:
     script:
       - export PATH="$PWD/../bfprefix/bin:$PATH"
       - cmake -DENABLE_UNITTESTING=ON ..
-      - make
+      - make -j3
       - make test
 
   #
@@ -106,5 +106,5 @@ matrix:
     script:
       - export PATH="$PWD/../bfprefix/bin:$PATH"
       - cmake -DENABLE_UNITTESTING=ON ..
-      - make
+      - make -j3
       - make test

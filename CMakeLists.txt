@@ -26,6 +26,8 @@ if(WORKING_PATH)
     set(BFM_PATH "${WORKING_PATH}/bfm")
     set(BFVMM_PATH "${WORKING_PATH}/bfvmm")
     set(BFDRIVER_PATH "${WORKING_PATH}/bfdriver")
+    set(BFUNWIND_PATH "${WORKING_PATH}/bfunwind")
+    set(BFSUPPORT_PATH "${WORKING_PATH}/bfsupport")
     set(EXTENDED_APIS_PATH "${WORKING_PATH}/extended_apis")
 
     if(NOT EXISTS ${BFSDK_PATH})
@@ -52,6 +54,14 @@ if(WORKING_PATH)
         message(FATAL_ERROR "${BFDRIVER_PATH} does not exist")
     endif()
 
+    if(NOT EXISTS ${BFUNWIND_PATH})
+        message(FATAL_ERROR "${BFUNWIND_PATH} does not exist")
+    endif()
+
+    if(NOT EXISTS ${BFSUPPORT_PATH})
+        message(FATAL_ERROR "${BFSUPPORT_PATH} does not exist")
+    endif()
+
     if(ENABLE_EXTENDED_APIS)
         if(NOT EXISTS ${EXTENDED_APIS_PATH})
             message(FATAL_ERROR "${EXTENDED_APIS_PATH} does not exist")
@@ -62,8 +72,17 @@ endif()
 
 if(ENABLE_DEV_MODE)
     set(ENABLE_TIDY ON)
+    set(ENABLE_ASTYLE ON)
     set(ENABLE_COVERAGE ON)
     set(ENABLE_UNITTESTING ON)
+endif()
+
+if(NOT CMAKE_BUILD_TYPE)
+    if(ENABLE_UNITTESTING)
+        set(CMAKE_BUILD_TYPE "Debug")
+    else()
+        set(CMAKE_BUILD_TYPE "Release")
+    endif()
 endif()
 
 # ------------------------------------------------------------------------------
@@ -74,42 +93,48 @@ if(NOT BFSDK_PATH)
     set(BFSDK_URL "https://github.com/bareflank/bfsdk.git" CACHE STRING "")
     set(BFSDK_TAG "master" CACHE STRING "")
     set(BFSDK_PATH ${CMAKE_SOURCE_DIR}/bfsdk CACHE PATH "")
-    set(BFSDK_UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED})
 endif()
 
 if(NOT BFSYSROOT_PATH)
     set(BFSYSROOT_URL "https://github.com/bareflank/bfsysroot.git" CACHE STRING "")
     set(BFSYSROOT_TAG "master" CACHE STRING "")
     set(BFSYSROOT_PATH ${CMAKE_SOURCE_DIR}/bfsysroot CACHE PATH "")
-    set(BFSYSROOT_UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED})
 endif()
 
 if(NOT BFELF_LOADER_PATH)
     set(BFELF_LOADER_URL "https://github.com/bareflank/bfelf_loader.git" CACHE STRING "")
     set(BFELF_LOADER_TAG "master" CACHE STRING "")
     set(BFELF_LOADER_PATH ${CMAKE_SOURCE_DIR}/bfelf_loader CACHE PATH "")
-    set(BFELF_LOADER_UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED})
 endif()
 
 if(NOT BFM_PATH)
     set(BFM_URL "https://github.com/bareflank/bfm.git" CACHE STRING "")
     set(BFM_TAG "master" CACHE STRING "")
     set(BFM_PATH ${CMAKE_SOURCE_DIR}/bfm CACHE PATH "")
-    set(BFM_UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED})
 endif()
 
 if(NOT BFVMM_PATH)
     set(BFVMM_URL "https://github.com/bareflank/bfvmm.git" CACHE STRING "")
     set(BFVMM_TAG "master" CACHE STRING "")
     set(BFVMM_PATH ${CMAKE_SOURCE_DIR}/bfvmm CACHE PATH "")
-    set(BFVMM_UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED})
 endif()
 
 if(NOT BFDRIVER_PATH)
     set(BFDRIVER_URL "https://github.com/bareflank/bfdriver.git" CACHE STRING "")
     set(BFDRIVER_TAG "master" CACHE STRING "")
     set(BFDRIVER_PATH ${CMAKE_SOURCE_DIR}/bfdriver CACHE PATH "")
-    set(BFDRIVER_UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED})
+endif()
+
+if(NOT BFUNWIND_PATH)
+    set(BFUNWIND_URL "https://github.com/bareflank/bfunwind.git" CACHE STRING "")
+    set(BFUNWIND_TAG "master" CACHE STRING "")
+    set(BFUNWIND_PATH ${CMAKE_SOURCE_DIR}/bfunwind CACHE PATH "")
+endif()
+
+if(NOT BFSUPPORT_PATH)
+    set(BFSUPPORT_URL "https://github.com/bareflank/bfsupport.git" CACHE STRING "")
+    set(BFSUPPORT_TAG "master" CACHE STRING "")
+    set(BFSUPPORT_PATH ${CMAKE_SOURCE_DIR}/bfsupport CACHE PATH "")
 endif()
 
 message(STATUS "BFSDK_PATH: ${BFSDK_PATH}")
@@ -148,6 +173,18 @@ if(BFDRIVER_URL OR BFDRIVER_TAG)
     message(STATUS "BFDRIVER_TAG: ${BFDRIVER_TAG}")
 endif()
 
+message(STATUS "BFUNWIND_PATH: ${BFUNWIND_PATH}")
+if(BFUNWIND_URL OR BFUNWIND_TAG)
+    message(STATUS "BFUNWIND_URL: ${BFUNWIND_URL}")
+    message(STATUS "BFUNWIND_TAG: ${BFUNWIND_TAG}")
+endif()
+
+message(STATUS "BFSUPPORT_PATH: ${BFSUPPORT_PATH}")
+if(BFSUPPORT_URL OR BFSUPPORT_TAG)
+    message(STATUS "BFSUPPORT_URL: ${BFSUPPORT_URL}")
+    message(STATUS "BFSUPPORT_TAG: ${BFSUPPORT_TAG}")
+endif()
+
 # ------------------------------------------------------------------------------
 # Extended APIs Path
 # ------------------------------------------------------------------------------
@@ -158,7 +195,6 @@ if(ENABLE_EXTENDED_APIS)
         set(EXTENDED_APIS_URL "https://github.com/bareflank/extended_apis.git" CACHE STRING "")
         set(EXTENDED_APIS_TAG "master" CACHE STRING "")
         set(EXTENDED_APIS_PATH ${CMAKE_SOURCE_DIR}/extended_apis CACHE PATH "")
-        set(EXTENDED_APIS_UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED})
     endif()
 
     message(STATUS "EXTENDED_APIS_PATH: ${EXTENDED_APIS_PATH}")
@@ -251,15 +287,25 @@ list(APPEND BFSDK_CMAKE_ARGS
     -DBFSOURCE_DIR=${CMAKE_SOURCE_DIR}
     -DCMAKE_INSTALL_PREFIX=${BFPREFIX}
     -DENABLE_TIDY=${ENABLE_TIDY}
+    -DENABLE_ASTYLE=${ENABLE_ASTYLE}
     -DENABLE_COVERAGE=${ENABLE_COVERAGE}
     -DENABLE_UNITTESTING=${ENABLE_UNITTESTING}
     -DUPDATE_DISCONNECTED=${UPDATE_DISCONNECTED}
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DBFUNWIND_URL=${BFUNWIND_URL}
+    -DBFUNWIND_TAG=${BFUNWIND_TAG}
+    -DBFUNWIND_PATH=${BFUNWIND_PATH}
+    -DBFSUPPORT_URL=${BFSUPPORT_URL}
+    -DBFSUPPORT_TAG=${BFSUPPORT_TAG}
+    -DBFSUPPORT_PATH=${BFSUPPORT_PATH}
+    -DENABLE_CROSS_COMPILATION=ON
 )
 
 ExternalProject_Add(
     bfsdk
     GIT_REPOSITORY      ${BFSDK_URL}
     GIT_TAG             ${BFSDK_TAG}
+    GIT_SHALLOW         1
     CMAKE_ARGS          ${BFSDK_CMAKE_ARGS}
     PREFIX              ${CMAKE_BINARY_DIR}/bfsdk/prefix
     TMP_DIR             ${CMAKE_BINARY_DIR}/bfsdk/tmp
@@ -267,7 +313,7 @@ ExternalProject_Add(
     DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/bfsdk/download
     SOURCE_DIR          ${BFSDK_PATH}
     BINARY_DIR          ${CMAKE_BINARY_DIR}/bfsdk/build
-    UPDATE_DISCONNECTED ${BFSDK_UPDATE_DISCONNECTED}
+    UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED}
     UPDATE_COMMAND      ${CMAKE_COMMAND} -E echo "checking for updates"
     BUILD_COMMAND       ""
 )
@@ -292,8 +338,11 @@ endif()
 
 list(APPEND BFSYSROOT_CMAKE_ARGS
     -DBFSOURCE_DIR=${CMAKE_SOURCE_DIR}
+    -DBFUNWIND_PATH=${BFUNWIND_PATH}
+    -DBFSUPPORT_PATH=${BFSUPPORT_PATH}
     -DCMAKE_INSTALL_PREFIX=${BFPREFIX}
     -DCMAKE_TOOLCHAIN_FILE=${VMM_TOOLCHAIN_FILE}
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DDISABLE_WARNINGS=ON
 )
 
@@ -301,6 +350,7 @@ ExternalProject_Add(
     bfsysroot
     GIT_REPOSITORY      ${BFSYSROOT_URL}
     GIT_TAG             ${BFSYSROOT_TAG}
+    GIT_SHALLOW         1
     CMAKE_ARGS          ${BFSYSROOT_CMAKE_ARGS}
     PREFIX              ${CMAKE_BINARY_DIR}/bfsysroot/prefix
     TMP_DIR             ${CMAKE_BINARY_DIR}/bfsysroot/tmp
@@ -308,7 +358,7 @@ ExternalProject_Add(
     DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/bfsysroot/download
     SOURCE_DIR          ${BFSYSROOT_PATH}
     BINARY_DIR          ${CMAKE_BINARY_DIR}/bfsysroot/build
-    UPDATE_DISCONNECTED ${BFSYSROOT_UPDATE_DISCONNECTED}
+    UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED}
     UPDATE_COMMAND      ${CMAKE_COMMAND} -E echo "checking for updates"
     INSTALL_COMMAND     ""
     DEPENDS             bfsdk
@@ -321,14 +371,17 @@ ExternalProject_Add(
 list(APPEND BFELF_LOADER_CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=${BFPREFIX}
     -DENABLE_TIDY=${ENABLE_TIDY}
+    -DENABLE_ASTYLE=${ENABLE_ASTYLE}
     -DENABLE_COVERAGE=${ENABLE_COVERAGE}
     -DENABLE_UNITTESTING=${ENABLE_UNITTESTING}
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 )
 
 ExternalProject_Add(
     bfelf_loader
     GIT_REPOSITORY      ${BFELF_LOADER_URL}
     GIT_TAG             ${BFELF_LOADER_TAG}
+    GIT_SHALLOW         1
     CMAKE_ARGS          ${BFELF_LOADER_CMAKE_ARGS}
     PREFIX              ${CMAKE_BINARY_DIR}/bfelf_loader/prefix
     TMP_DIR             ${CMAKE_BINARY_DIR}/bfelf_loader/tmp
@@ -336,7 +389,7 @@ ExternalProject_Add(
     DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/bfelf_loader/download
     SOURCE_DIR          ${BFELF_LOADER_PATH}
     BINARY_DIR          ${CMAKE_BINARY_DIR}/bfelf_loader/build
-    UPDATE_DISCONNECTED ${BFELF_LOADER_UPDATE_DISCONNECTED}
+    UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED}
     UPDATE_COMMAND      ${CMAKE_COMMAND} -E echo "checking for updates"
     BUILD_COMMAND       ""
     DEPENDS             bfsdk
@@ -349,8 +402,10 @@ ExternalProject_Add(
 list(APPEND BFM_CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=${BFPREFIX}
     -DENABLE_TIDY=${ENABLE_TIDY}
+    -DENABLE_ASTYLE=${ENABLE_ASTYLE}
     -DENABLE_COVERAGE=${ENABLE_COVERAGE}
     -DENABLE_UNITTESTING=${ENABLE_UNITTESTING}
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 )
 
 if(ENABLE_EXTENDED_APIS)
@@ -363,6 +418,7 @@ ExternalProject_Add(
     bfm
     GIT_REPOSITORY      ${BFM_URL}
     GIT_TAG             ${BFM_TAG}
+    GIT_SHALLOW         1
     CMAKE_ARGS          ${BFM_CMAKE_ARGS}
     PREFIX              ${CMAKE_BINARY_DIR}/bfm/prefix
     TMP_DIR             ${CMAKE_BINARY_DIR}/bfm/tmp
@@ -370,7 +426,7 @@ ExternalProject_Add(
     DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/bfm/download
     SOURCE_DIR          ${BFM_PATH}
     BINARY_DIR          ${CMAKE_BINARY_DIR}/bfm/build
-    UPDATE_DISCONNECTED ${BFM_UPDATE_DISCONNECTED}
+    UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED}
     UPDATE_COMMAND      ${CMAKE_COMMAND} -E echo "checking for updates"
     BUILD_COMMAND       ""
     DEPENDS             bfsdk bfelf_loader
@@ -383,12 +439,14 @@ ExternalProject_Add(
 list(APPEND BFVMM_CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=${BFPREFIX}
     -DCMAKE_TOOLCHAIN_FILE=${VMM_TOOLCHAIN_FILE}
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 )
 
 ExternalProject_Add(
     bfvmm
     GIT_REPOSITORY      ${BFVMM_URL}
     GIT_TAG             ${BFVMM_TAG}
+    GIT_SHALLOW         1
     CMAKE_ARGS          ${BFVMM_CMAKE_ARGS}
     PREFIX              ${CMAKE_BINARY_DIR}/bfvmm/prefix
     TMP_DIR             ${CMAKE_BINARY_DIR}/bfvmm/tmp
@@ -396,7 +454,7 @@ ExternalProject_Add(
     DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/bfvmm/download
     SOURCE_DIR          ${BFVMM_PATH}
     BINARY_DIR          ${CMAKE_BINARY_DIR}/bfvmm/build
-    UPDATE_DISCONNECTED ${BFVMM_UPDATE_DISCONNECTED}
+    UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED}
     UPDATE_COMMAND      ${CMAKE_COMMAND} -E echo "checking for updates"
     BUILD_COMMAND       ""
     DEPENDS             bfsdk bfsysroot
@@ -407,8 +465,10 @@ if(ENABLE_UNITTESTING)
     list(APPEND TEST_BFVMM_CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${BFPREFIX_TEST}
         -DENABLE_TIDY=${ENABLE_TIDY}
+        -DENABLE_ASTYLE=${ENABLE_ASTYLE}
         -DENABLE_COVERAGE=${ENABLE_COVERAGE}
         -DENABLE_UNITTESTING=${ENABLE_UNITTESTING}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     )
 
     ExternalProject_Add(
@@ -435,14 +495,17 @@ endif()
 list(APPEND BFDRIVER_CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=${BFPREFIX}
     -DENABLE_TIDY=${ENABLE_TIDY}
+    -DENABLE_ASTYLE=${ENABLE_ASTYLE}
     -DENABLE_COVERAGE=${ENABLE_COVERAGE}
     -DENABLE_UNITTESTING=${ENABLE_UNITTESTING}
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 )
 
 ExternalProject_Add(
     bfdriver
     GIT_REPOSITORY      ${BFDRIVER_URL}
     GIT_TAG             ${BFDRIVER_TAG}
+    GIT_SHALLOW         1
     CMAKE_ARGS          ${BFDRIVER_CMAKE_ARGS}
     PREFIX              ${CMAKE_BINARY_DIR}/bfdriver/prefix
     TMP_DIR             ${CMAKE_BINARY_DIR}/bfdriver/tmp
@@ -450,7 +513,7 @@ ExternalProject_Add(
     DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/bfdriver/download
     SOURCE_DIR          ${BFDRIVER_PATH}
     BINARY_DIR          ${CMAKE_BINARY_DIR}/bfdriver/build
-    UPDATE_DISCONNECTED ${BFDRIVER_UPDATE_DISCONNECTED}
+    UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED}
     UPDATE_COMMAND      ${CMAKE_COMMAND} -E echo "checking for updates"
     BUILD_COMMAND       ""
     INSTALL_COMMAND     ""
@@ -466,12 +529,14 @@ if(ENABLE_EXTENDED_APIS)
     list(APPEND EXTENDED_APIS_CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${BFPREFIX}
         -DCMAKE_TOOLCHAIN_FILE=${VMM_TOOLCHAIN_FILE}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     )
 
     ExternalProject_Add(
         extended_apis
         GIT_REPOSITORY      ${EXTENDED_APIS_URL}
         GIT_TAG             ${EXTENDED_APIS_TAG}
+        GIT_SHALLOW         1
         CMAKE_ARGS          ${EXTENDED_APIS_CMAKE_ARGS}
         PREFIX              ${CMAKE_BINARY_DIR}/extended_apis/prefix
         TMP_DIR             ${CMAKE_BINARY_DIR}/extended_apis/tmp
@@ -479,7 +544,7 @@ if(ENABLE_EXTENDED_APIS)
         DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/extended_apis/download
         SOURCE_DIR          ${EXTENDED_APIS_PATH}
         BINARY_DIR          ${CMAKE_BINARY_DIR}/extended_apis/build
-        UPDATE_DISCONNECTED ${EXTENDED_APIS_UPDATE_DISCONNECTED}
+        UPDATE_DISCONNECTED ${UPDATE_DISCONNECTED}
         UPDATE_COMMAND      ${CMAKE_COMMAND} -E echo "checking for updates"
         BUILD_COMMAND       ""
         DEPENDS             bfsdk bfvmm
@@ -490,8 +555,10 @@ if(ENABLE_EXTENDED_APIS)
         list(APPEND TEST_EXTENDED_APIS_CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX=${BFPREFIX_TEST}
             -DENABLE_TIDY=${ENABLE_TIDY}
+            -DENABLE_ASTYLE=${ENABLE_ASTYLE}
             -DENABLE_COVERAGE=${ENABLE_COVERAGE}
             -DENABLE_UNITTESTING=${ENABLE_UNITTESTING}
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         )
 
         ExternalProject_Add(
@@ -567,7 +634,9 @@ add_custom_target(dist-clean
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/bfprefix
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/bfprefix_test
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/bfsdk
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/bfsupport
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/bfsysroot
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/bfunwind
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/bfvmm
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/extended_apis
 )
@@ -677,7 +746,6 @@ add_custom_target(format
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfelf_loader/build --target format
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfm/build --target format
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfsdk/build --target format
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfsysroot/build --target format
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfvmm/build --target format
 )
 
@@ -686,7 +754,6 @@ add_custom_target(format-all
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfelf_loader/build --target format-all
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfm/build --target format-all
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfsdk/build --target format-all
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfsysroot/build --target format-all
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/bfvmm/build --target format-all
 )
 
@@ -712,7 +779,9 @@ add_custom_command(TARGET report COMMAND git -C ${BFDRIVER_PATH} diff --stat COM
 add_custom_command(TARGET report COMMAND git -C ${BFELF_LOADER_PATH} diff --stat COMMENT "Diff: bfelf_loader")
 add_custom_command(TARGET report COMMAND git -C ${BFM_PATH} diff --stat COMMENT "Diff: bfm")
 add_custom_command(TARGET report COMMAND git -C ${BFSDK_PATH} diff --stat COMMENT "Diff: bfsdk")
+add_custom_command(TARGET report COMMAND git -C ${BFSUPPORT_PATH} diff --stat COMMENT "Diff: bfsdk")
 add_custom_command(TARGET report COMMAND git -C ${BFSYSROOT_PATH} diff --stat COMMENT "Diff: bfsysroot")
+add_custom_command(TARGET report COMMAND git -C ${BFUNWIND_PATH} diff --stat COMMENT "Diff: bfsdk")
 add_custom_command(TARGET report COMMAND git -C ${BFVMM_PATH} diff --stat COMMENT "Diff: bfvmm")
 
 if(ENABLE_EXTENDED_APIS)
