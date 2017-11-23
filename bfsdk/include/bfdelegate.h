@@ -20,6 +20,11 @@
 /// @file bfdelegate.h
 ///
 
+#ifndef BFDELEGATE_H
+#define BFDELEGATE_H
+
+#include <memory>
+
 // -----------------------------------------------------------------------------
 // Delegate Definition
 // -----------------------------------------------------------------------------
@@ -56,12 +61,19 @@ public:
     ///
     ~delegate() noexcept = default;
 
-    /// Is Not Null
+    /// Check to verify if the delegate is executable
     ///
-    /// @return true if the delegate is not null
+    /// @return true if executable, false otherwise
+    ///
+    constexpr bool is_executable() const noexcept
+    { return m_stub != nullptr; }
+
+    /// Check to verify if the delegate is executable
+    ///
+    /// @return true if executable, false otherwise
     ///
     constexpr explicit operator bool() const noexcept
-    { return m_stub != nullptr; }
+    { return is_executable(); }
 
     /// Create (Member Function Pointer)
     ///
@@ -81,8 +93,8 @@ public:
         typename = std::enable_if<std::is_class<T>::value>,
         typename = std::enable_if<std::is_pointer<T>::value>
         >
-    constexpr static delegate create(T *obj) noexcept
-    { return delegate(std::forward<T *>(obj), member_stub<T, FUNC>); }
+    constexpr static delegate create(T &obj) noexcept
+    { return delegate(std::addressof(obj), member_stub<T, FUNC>); }
 
     /// Create (Const Member Function Pointer)
     ///
@@ -102,8 +114,8 @@ public:
         typename = std::enable_if<std::is_class<T>::value>,
         typename = std::enable_if<std::is_pointer<T>::value>
         >
-    constexpr static delegate create(const T *obj) noexcept
-    { return delegate(std::forward<T *>(const_cast<T *>(obj)), const_member_stub<T, FUNC>); }
+    constexpr static delegate create(const T &obj) noexcept
+    { return delegate(const_cast<T *>(std::addressof(obj)), const_member_stub<T, FUNC>); }
 
     /// Create (Function Pointer)
     ///
@@ -134,7 +146,7 @@ public:
         typename = std::enable_if<std::is_pointer<LAMBDA>::value>
         >
     constexpr static delegate create(const LAMBDA &ptr) noexcept
-    { return delegate(reinterpret_cast<void *>(const_cast<LAMBDA *>(&ptr)), lambda_stub<LAMBDA>); }
+    { return delegate(reinterpret_cast<void *>(const_cast<LAMBDA *>(std::addressof(ptr))), lambda_stub<LAMBDA>); }
 
     /// Operator ()
     ///
@@ -213,3 +225,5 @@ public:
 
     /// @endcond
 };
+
+#endif

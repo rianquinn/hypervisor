@@ -69,7 +69,7 @@ TEST_CASE("test class")
 {
     test_class t;
 
-    auto d = delegate<int(int)>::create<test_class, &test_class::foo>(&t);
+    auto d = delegate<int(int)>::create<test_class, &test_class::foo>(t);
     CHECK(d(1) == result);
 }
 
@@ -77,13 +77,13 @@ TEST_CASE("test const class")
 {
     test_const_class t;
 
-    auto d = delegate<int(int)>::create<test_const_class, &test_const_class::foo>(&t);
+    auto d = delegate<int(int)>::create<test_const_class, &test_const_class::foo>(t);
     CHECK(d(1) == result);
 }
 
 TEST_CASE("free function")
 {
-    auto d = delegate<int(int)>::create<&foo>();
+    auto d = delegate<int(int)>::create<foo>();
     CHECK(d(1) == result);
 }
 
@@ -136,8 +136,8 @@ TEST_CASE("list")
     };
 
     auto d1 = delegate<int(int)>::create(l);
-    auto d2 = delegate<int(int)>::create<&foo>();
-    auto d3 = delegate<int(int)>::create<test_class, &test_class::foo>(&t);
+    auto d2 = delegate<int(int)>::create<foo>();
+    auto d3 = delegate<int(int)>::create<test_class, &test_class::foo>(t);
 
     std::list<delegate<int(int)>> delegates;
     delegates.push_back(d1);
