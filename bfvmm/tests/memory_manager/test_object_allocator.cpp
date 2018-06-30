@@ -37,11 +37,6 @@
 
 constexpr const auto blocks_per_page = 512;
 
-TEST_CASE("basic allocator of 0 size")
-{
-    basic_object_allocator pool{0, 0};
-}
-
 TEST_CASE("construction: limited")
 {
     {

@@ -31,6 +31,14 @@
 #include "memory_manager.h"
 #include "misc.h"
 
+struct quiet
+{
+    quiet()
+    { unsafe_write_cstr(nullptr, 0); }
+};
+
+quiet g_quite{};
+
 void setup_test_support()
 {
 #ifdef BF_X64
