@@ -16,214 +16,166 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-// TIDY_EXCLUSION=-cppcoreguidelines-pro-type-reinterpret-cast
-//
-// Reason:
-//     Although in general this is a good rule, for hypervisor level code that
-//     interfaces with the kernel, and raw hardware, this rule is
-//     impractical.
-//
-
 #include <catch/catch.hpp>
 
 #include <test/support.h>
 #include <memory_manager/memory_manager.h>
 
-// extern "C" int64_t
-// add_md(struct memory_descriptor *md) noexcept;
-
-TEST_CASE("size out of bounds")
+TEST_CASE("alloc null")
 {
-    CHECK(g_mm->size(nullptr) == 0);
-    CHECK(g_mm->size(reinterpret_cast<void *>(0xFFFFFFFFFFFFFFFF)) == 0);
+    CHECK(g_mm->alloc(0) == nullptr);
+    CHECK(g_mm->alloc_map(0) == nullptr);
 }
 
-// void
-// memory_manager_ut::test_memory_manager_x64_malloc_out_of_memory()
-// {
-//     this->expect_true(g_mm->alloc(0) == nullptr);
-//     this->expect_true(g_mm->alloc_map(0) == nullptr);
+TEST_CASE("alloc not enough memory")
+{
+    CHECK(g_mm->alloc(0xFFFFFFFFFFFFFFFF) == nullptr);
+    CHECK(g_mm->alloc_map(0xFFFFFFFFFFFFFFFF) == nullptr);
+}
 
-//     this->expect_true(g_mm->alloc(0xFFFFFFFFFFFFFF00) == nullptr);
-//     this->expect_true(g_mm->alloc_map(0xFFFFFFFFFFFFFF00) == nullptr);
-// }
+TEST_CASE("alloc heap and size")
+{
+    auto buf01 = g_mm->alloc(0x010);
+    auto buf02 = g_mm->alloc(0x020);
+    auto buf03 = g_mm->alloc(0x030);
+    auto buf04 = g_mm->alloc(0x040);
+    auto buf05 = g_mm->alloc(0x080);
+    auto buf06 = g_mm->alloc(0x100);
+    auto buf07 = g_mm->alloc(0x200);
+    auto buf08 = g_mm->alloc(0x400);
+    auto buf09 = g_mm->alloc(0x800);
+    auto buf10 = g_mm->alloc(0x900);
+    auto buf11 = g_mm->alloc(BAREFLANK_PAGE_SIZE);
+    auto buf12 = g_mm->alloc(0x10000);
 
-// void
-// memory_manager_ut::test_memory_manager_x64_malloc_heap()
-// {
-//     auto &&ptr = g_mm->alloc(cache_line_size);
+    CHECK(g_mm->size(buf01) == 0x010);
+    CHECK(g_mm->size(buf02) == 0x020);
+    CHECK(g_mm->size(buf03) == 0x030);
+    CHECK(g_mm->size(buf04) == 0x040);
+    CHECK(g_mm->size(buf05) == 0x080);
+    CHECK(g_mm->size(buf06) == 0x100);
+    CHECK(g_mm->size(buf07) == 0x200);
+    CHECK(g_mm->size(buf08) == 0x400);
+    CHECK(g_mm->size(buf09) == 0x800);
+    CHECK(g_mm->size(buf10) == BAREFLANK_PAGE_SIZE);
+    CHECK(g_mm->size(buf11) == BAREFLANK_PAGE_SIZE);
+    CHECK(g_mm->size(buf12) == 0x10000);
 
-//     this->expect_true(ptr != nullptr);
-//     this->expect_true(g_mm->size(ptr) == cache_line_size);
+    g_mm->free(buf01);
+    g_mm->free(buf02);
+    g_mm->free(buf03);
+    g_mm->free(buf04);
+    g_mm->free(buf05);
+    g_mm->free(buf06);
+    g_mm->free(buf07);
+    g_mm->free(buf08);
+    g_mm->free(buf09);
+    g_mm->free(buf10);
+    g_mm->free(buf11);
+    g_mm->free(buf12);
+}
 
-//     g_mm->free(ptr);
-// }
+TEST_CASE("alloc page and size")
+{
+    auto buf01 = g_mm->alloc_page();
+    CHECK(g_mm->size_page(buf01) == BAREFLANK_PAGE_SIZE);
+    g_mm->free_page(buf01);
+}
 
-// void
-// memory_manager_ut::test_memory_manager_x64_malloc_page()
-// {
-//     auto &&ptr = g_mm->alloc(page_size);
+TEST_CASE("alloc map and size")
+{
+    auto buf01 = g_mm->alloc_map(BAREFLANK_PAGE_SIZE);
+    CHECK(g_mm->size_map(buf01) == BAREFLANK_PAGE_SIZE);
+    g_mm->free_map(buf01);
+}
 
-//     this->expect_true(ptr != nullptr);
-//     this->expect_true(g_mm->size(ptr) == page_size);
+TEST_CASE("size unallocated")
+{
+    int i{};
 
-//     g_mm->free(ptr);
-// }
+    CHECK(g_mm->size(&i) == 0);
+    CHECK(g_mm->size_map(&i) == 0);
+    CHECK(g_mm->size_page(&i) == 0);
+}
 
-// void
-// memory_manager_ut::test_memory_manager_x64_malloc_map()
-// {
-//     auto &&ptr = g_mm->alloc_map(page_size);
+TEST_CASE("free unallocated")
+{
+    int i{};
 
-//     this->expect_true(ptr != nullptr);
-//     this->expect_true(g_mm->size_map(ptr) == page_size);
+    CHECK_NOTHROW(g_mm->free(&i));
+    CHECK_NOTHROW(g_mm->free_map(&i));
+    CHECK_NOTHROW(g_mm->free_page(&i));
+}
 
-//     g_mm->free_map(ptr);
-// }
+TEST_CASE("add_md unaligned physical")
+{
+    CHECK_THROWS(g_mm->add_md(0x12345000, 0x54321123, 0));
+}
 
-// void
-// memory_manager_ut::test_memory_manager_x64_add_md()
-// {
-//     memory_descriptor md = {0, 0, 0};
+TEST_CASE("add_md unaligned virtual")
+{
+    CHECK_THROWS(g_mm->add_md(0x12345123, 0x54321000, 0));
+}
 
-//     this->expect_true(add_md(nullptr) == MEMORY_MANAGER_FAILURE);
-//     this->expect_true(add_md(&md) == MEMORY_MANAGER_FAILURE);
-// }
+TEST_CASE("add_md success")
+{
+    CHECK_NOTHROW(g_mm->add_md(0x12345000, 0x54321000, 0));
+    CHECK_NOTHROW(g_mm->remove_md(0x12345000, 0x54321000));
+}
 
-// void
-// memory_manager_ut::test_memory_manager_x64_add_md_invalid_type()
-// {
-//     memory_manager_x64::integer_pointer virt = 0x12345000;
-//     memory_manager_x64::integer_pointer phys = 0x54321000;
-//     memory_manager_x64::attr_type attr = 0;
+TEST_CASE("remove_md unaligned physical")
+{
+    CHECK_THROWS(g_mm->remove_md(0x12345000, 0x54321123));
+}
 
-//     this->expect_exception([&] { g_mm->add_md(virt, phys, attr); }, ""_ut_ffe);
-//     this->expect_true(g_mm->descriptors().empty());
-// }
+TEST_CASE("remove_md unaligned virtual")
+{
+    CHECK_THROWS(g_mm->remove_md(0x12345123, 0x54321000));
+}
 
-// void
-// memory_manager_ut::test_memory_manager_x64_add_md_unaligned_physical()
-// {
-//     memory_manager_x64::integer_pointer virt = 0x12345000;
-//     memory_manager_x64::integer_pointer phys = 0x54321123;
-//     memory_manager_x64::attr_type attr = MEMORY_TYPE_R | MEMORY_TYPE_W | MEMORY_TYPE_E;
+TEST_CASE("remove_md without add")
+{
+    CHECK_NOTHROW(g_mm->remove_md(0x12345000, 0x54321000));
+}
 
-//     this->expect_exception([&] { g_mm->add_md(virt, phys, attr); }, ""_ut_ffe);
-//     this->expect_true(g_mm->descriptors().empty());
-// }
+TEST_CASE("virtint to physint failure")
+{
+    CHECK_THROWS(g_mm->virtint_to_physint(0x12345000));
 
-// void
-// memory_manager_ut::test_memory_manager_x64_add_md_unaligned_virtual()
-// {
-//     memory_manager_x64::integer_pointer virt = 0x12345123;
-//     memory_manager_x64::integer_pointer phys = 0x54321000;
-//     memory_manager_x64::attr_type attr = MEMORY_TYPE_R | MEMORY_TYPE_W | MEMORY_TYPE_E;
+    CHECK_THROWS(g_mm->virtint_to_physint(0));
+    CHECK_THROWS(g_mm->virtint_to_physptr(0));
+    CHECK_THROWS(g_mm->virtptr_to_physint(nullptr));
+    CHECK_THROWS(g_mm->virtptr_to_physptr(nullptr));
+}
 
-//     this->expect_exception([&] { g_mm->add_md(virt, phys, attr); }, ""_ut_ffe);
-//     this->expect_true(g_mm->descriptors().empty());
-// }
+TEST_CASE("physint to virtint failure")
+{
+    CHECK_THROWS(g_mm->physint_to_virtint(0x54321000));
 
-// void
-// memory_manager_ut::test_memory_manager_x64_remove_md_invalid_virt()
-// {
-//     memory_manager_x64::integer_pointer virt = 0x12345000;
-//     memory_manager_x64::integer_pointer phys = 0x54321000;
-//     memory_manager_x64::attr_type attr = MEMORY_TYPE_R | MEMORY_TYPE_W | MEMORY_TYPE_E;
+    CHECK_THROWS(g_mm->physint_to_virtint(0));
+    CHECK_THROWS(g_mm->physint_to_virtptr(0));
+    CHECK_THROWS(g_mm->physptr_to_virtint(nullptr));
+    CHECK_THROWS(g_mm->physptr_to_virtptr(nullptr));
+}
 
-//     this->expect_no_exception([&] { g_mm->add_md(virt, phys, attr); });
-//     this->expect_false(g_mm->descriptors().empty());
+TEST_CASE("virtint_to_physint success")
+{
+    g_mm->add_md(0x12345000, 0x54321000, 0);
 
-//     this->expect_no_exception([&] { g_mm->remove_md(0); });
-//     this->expect_no_exception([&] { g_mm->remove_md(virt + 0x10); });
-//     this->expect_no_exception([&] { g_mm->remove_md(virt); });
-//     this->expect_true(g_mm->descriptors().empty());
-// }
+    CHECK(g_mm->virtint_to_physint(0x12345ABC) == 0x54321ABC);
+    CHECK(g_mm->virtint_to_physint(0x12345FFF) == 0x54321FFF);
+    CHECK(g_mm->virtint_to_physint(0x12345000) == 0x54321000);
 
-// void
-// memory_manager_ut::test_memory_manager_x64_virtint_to_physint_failure()
-// {
-//     this->expect_exception([&] { g_mm->virtint_to_physint(0); }, ""_ut_ffe);
-//     this->expect_exception([&] { g_mm->virtint_to_physint(0x54321000); }, ""_ut_ore);
-// }
+    g_mm->remove_md(0x12345000, 0x54321000);
+}
 
-// void
-// memory_manager_ut::test_memory_manager_x64_physint_to_virtint_failure()
-// {
-//     this->expect_exception([&] { g_mm->physint_to_virtint(0); }, ""_ut_ffe);
-//     this->expect_exception([&] { g_mm->physint_to_virtint(0x12346000); }, ""_ut_ore);
-// }
+TEST_CASE("physint_to_virtint success")
+{
+    g_mm->add_md(0x12345000, 0x54321000, 0);
 
-// void
-// memory_manager_ut::test_memory_manager_x64_virtint_to_attrint_failure()
-// {
-//     this->expect_exception([&] { g_mm->virtint_to_attrint(0); }, ""_ut_ffe);
-//     this->expect_exception([&] { g_mm->virtint_to_attrint(0x54321000); }, ""_ut_ore);
-// }
+    CHECK(g_mm->physint_to_virtint(0x54321ABC) == 0x12345ABC);
+    CHECK(g_mm->physint_to_virtint(0x54321FFF) == 0x12345FFF);
+    CHECK(g_mm->physint_to_virtint(0x54321000) == 0x12345000);
 
-// template<class F> auto test_with_md(F f)
-// {
-//     auto &&ret = false;
-//     memory_manager_x64::integer_pointer virt = 0x12345000;
-//     memory_manager_x64::integer_pointer phys = 0x54321000;
-//     memory_manager_x64::attr_type attr = MEMORY_TYPE_R | MEMORY_TYPE_W | MEMORY_TYPE_E;
-
-//     {
-//         g_mm->add_md(virt, phys, attr);
-
-//         auto ___ = gsl::finally([&]
-//         { g_mm->remove_md(virt); });
-
-//         ret = f();
-//     }
-
-//     return ret && g_mm->descriptors().empty();
-// }
-
-// void
-// memory_manager_ut::test_memory_manager_x64_virtint_to_physint_random_address()
-// {
-//     this->expect_true(test_with_md([&] { return g_mm->virtint_to_physint(0x12345ABC) == 0x54321ABC; }));
-//     this->expect_true(test_with_md([&] { return g_mm->virtint_to_physint(0x12345FFF) == 0x54321FFF; }));
-//     this->expect_true(test_with_md([&] { return g_mm->virtint_to_physint(0x12345000) == 0x54321000; }));
-// }
-
-// void
-// memory_manager_ut::test_memory_manager_x64_virtint_to_physint_nullptr()
-// {
-//     this->expect_exception([&] { g_mm->virtint_to_physint(0); }, ""_ut_ffe);
-//     this->expect_exception([&] { g_mm->virtptr_to_physint(nullptr); }, ""_ut_ffe);
-//     this->expect_exception([&] { g_mm->virtint_to_physptr(0); }, ""_ut_ffe);
-//     this->expect_exception([&] { g_mm->virtptr_to_physptr(nullptr); }, ""_ut_ffe);
-// }
-
-// void
-// memory_manager_ut::test_memory_manager_x64_physint_to_virtint_random_address()
-// {
-//     this->expect_true(test_with_md([&] { return g_mm->physint_to_virtint(0x54321ABC) == 0x12345ABC; }));
-//     this->expect_true(test_with_md([&] { return g_mm->physint_to_virtint(0x54321FFF) == 0x12345FFF; }));
-//     this->expect_true(test_with_md([&] { return g_mm->physint_to_virtint(0x54321000) == 0x12345000; }));
-// }
-
-// void
-// memory_manager_ut::test_memory_manager_x64_physint_to_virtint_nullptr()
-// {
-//     this->expect_exception([&] { g_mm->physint_to_virtint(0); }, ""_ut_ffe);
-//     this->expect_exception([&] { g_mm->physptr_to_virtint(nullptr); }, ""_ut_ffe);
-//     this->expect_exception([&] { g_mm->physint_to_virtptr(0); }, ""_ut_ffe);
-//     this->expect_exception([&] { g_mm->physptr_to_virtptr(nullptr); }, ""_ut_ffe);
-// }
-
-// void
-// memory_manager_ut::test_memory_manager_x64_virtint_to_attrint_random_address()
-// {
-//     this->expect_true(test_with_md([&] { return g_mm->virtint_to_attrint(0x12345ABC) == (MEMORY_TYPE_R | MEMORY_TYPE_W | MEMORY_TYPE_E); }));
-//     this->expect_true(test_with_md([&] { return g_mm->virtint_to_attrint(0x12345FFF) == (MEMORY_TYPE_R | MEMORY_TYPE_W | MEMORY_TYPE_E); }));
-//     this->expect_true(test_with_md([&] { return g_mm->virtint_to_attrint(0x12345000) == (MEMORY_TYPE_R | MEMORY_TYPE_W | MEMORY_TYPE_E); }));
-// }
-
-// void
-// memory_manager_ut::test_memory_manager_x64_virtint_to_attrint_nullptr()
-// {
-//     this->expect_exception([&] { g_mm->virtint_to_attrint(0); }, ""_ut_ffe);
-//     this->expect_exception([&] { g_mm->virtptr_to_attrint(nullptr); }, ""_ut_ffe);
-// }
+    g_mm->remove_md(0x12345000, 0x54321000);
+}

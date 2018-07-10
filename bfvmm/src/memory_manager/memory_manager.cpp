@@ -33,7 +33,6 @@
 
 #include <bfgsl.h>
 #include <bfconstants.h>
-#include <bfexception.h>
 #include <bfupperlower.h>
 
 #include <memory_manager/memory_manager.h>
@@ -43,7 +42,8 @@
 // -----------------------------------------------------------------------------
 
 #include <mutex>
-std::mutex g_add_md_mutex;
+
+std::mutex g_md_mutex;
 std::mutex m_alloc_mutex;
 std::mutex m_alloc_page_mutex;
 std::mutex m_alloc_mem_map_mutex;
@@ -114,15 +114,15 @@ namespace bfvmm
 
 /// \cond
 
-constexpr auto g_page_pool_k = 15ULL;
+constexpr auto g_page_pool_k = PAGE_POOL_K;
 alignas(BAREFLANK_PAGE_SIZE) uint8_t g_page_pool_buffer[buddy_allocator::buffer_size(g_page_pool_k)] = {};
 alignas(BAREFLANK_PAGE_SIZE) uint8_t g_page_pool_node_tree[buddy_allocator::node_tree_size(g_page_pool_k)] = {};
 
-constexpr auto g_huge_pool_k = 15ULL;
+constexpr auto g_huge_pool_k = HUGE_POOL_K;
 alignas(BAREFLANK_PAGE_SIZE) uint8_t g_huge_pool_buffer[buddy_allocator::buffer_size(g_huge_pool_k)] = {};
 alignas(BAREFLANK_PAGE_SIZE) uint8_t g_huge_pool_node_tree[buddy_allocator::node_tree_size(g_huge_pool_k)] = {};
 
-constexpr auto g_mem_map_pool_k = 15ULL;
+constexpr auto g_mem_map_pool_k = MEM_MAP_POOL_K;
 alignas(BAREFLANK_PAGE_SIZE) uint8_t g_mem_map_pool_node_tree[buddy_allocator::node_tree_size(g_mem_map_pool_k)] = {};
 
 /// \endcond
@@ -144,6 +144,10 @@ memory_manager::pointer
 memory_manager::alloc(size_type size) noexcept
 {
     std::lock_guard<std::mutex> lock(m_alloc_mutex);
+
+    if (size == 0) {
+        return nullptr;
+    }
 
     try {
         if (size <= 0x010) {
@@ -182,7 +186,7 @@ memory_manager::alloc(size_type size) noexcept
             return slab800.allocate();
         }
 
-        if (size != BAREFLANK_PAGE_SIZE) {
+        if (size > BAREFLANK_PAGE_SIZE) {
             return static_cast<pointer>(g_huge_pool.allocate(size));
         }
 
@@ -197,6 +201,9 @@ memory_manager::alloc(size_type size) noexcept
 memory_manager::pointer
 memory_manager::alloc_page() noexcept
 {
+#ifdef ENABLE_BUILD_TEST
+    return static_cast<pointer>(g_page_pool.allocate(BAREFLANK_PAGE_SIZE));
+#else
     std::lock_guard<std::mutex> lock(m_alloc_page_mutex);
 
     try {
@@ -206,6 +213,7 @@ memory_manager::alloc_page() noexcept
     { WARNING("memory_manager::alloc_page: std::bad_alloc thrown"); }
 
     return nullptr;
+#endif
 }
 
 memory_manager::pointer
@@ -359,11 +367,18 @@ memory_manager::size_map(pointer ptr) const noexcept
 memory_manager::integer_pointer
 memory_manager::virtint_to_physint(integer_pointer virt) const
 {
-    // [[ensures ret: ret != 0]]
-    expects(virt != 0);
+    auto lower = bfn::lower(virt);
+    auto upper = bfn::upper(virt);
 
-    std::lock_guard<std::mutex> guard(g_add_md_mutex);
-    return bfn::upper(m_virt_map.at(bfn::upper(virt)).phys) | bfn::lower(virt);
+    std::lock_guard<std::mutex> guard(g_md_mutex);
+
+    if (auto iter = m_virt_map.find(upper); iter != m_virt_map.end()) {
+        return iter->second.phys | lower;
+    }
+
+    throw std::runtime_error(
+        "virtint_to_physint failed: " + bfn::to_string(virt, 16)
+    );
 }
 
 memory_manager::integer_pointer
@@ -381,11 +396,18 @@ memory_manager::virtptr_to_physptr(pointer virt) const
 memory_manager::integer_pointer
 memory_manager::physint_to_virtint(integer_pointer phys) const
 {
-    // [[ensures ret: ret != 0]]
-    expects(phys != 0);
+    auto lower = bfn::lower(phys);
+    auto upper = bfn::upper(phys);
 
-    std::lock_guard<std::mutex> guard(g_add_md_mutex);
-    return bfn::upper(m_phys_map.at(bfn::upper(phys)).virt) | bfn::lower(phys);
+    std::lock_guard<std::mutex> guard(g_md_mutex);
+
+    if (auto iter = m_phys_map.find(upper); iter != m_phys_map.end()) {
+        return iter->second.virt | lower;
+    }
+
+    throw std::runtime_error(
+        "physint_to_virtint failed: " + bfn::to_string(phys, 16)
+    );
 }
 
 memory_manager::integer_pointer
@@ -404,7 +426,7 @@ void
 memory_manager::add_md(integer_pointer virt, integer_pointer phys, attr_type attr)
 {
     auto ___ = gsl::on_failure([&] {
-        std::lock_guard<std::mutex> guard(g_add_md_mutex);
+        std::lock_guard<std::mutex> guard(g_md_mutex);
 
         m_virt_map.erase(virt);
         m_phys_map.erase(phys);
@@ -414,7 +436,7 @@ memory_manager::add_md(integer_pointer virt, integer_pointer phys, attr_type att
     expects(bfn::lower(phys) == 0);
 
     {
-        std::lock_guard<std::mutex> guard(g_add_md_mutex);
+        std::lock_guard<std::mutex> guard(g_md_mutex);
 
         if (m_virt_map.find(virt) != m_virt_map.end()) {
             throw std::runtime_error(
@@ -434,41 +456,24 @@ memory_manager::add_md(integer_pointer virt, integer_pointer phys, attr_type att
 }
 
 void
-memory_manager::remove_md(integer_pointer virt, integer_pointer phys) noexcept
+memory_manager::remove_md(integer_pointer virt, integer_pointer phys)
 {
-    if (virt == 0) {
-        bfalert_info(0, "memory_manager::remove_md: virt == 0");
-        return;
-    }
+    expects(bfn::lower(virt) == 0);
+    expects(bfn::lower(phys) == 0);
 
-    if (phys == 0) {
-        bfalert_info(0, "memory_manager::remove_md: phys == 0");
-        return;
-    }
-
-    if (bfn::lower(virt) != 0) {
-        bfalert_nhex(0, "memory_manager::remove_md: bfn::lower(virt) != 0", bfn::lower(virt));
-        return;
-    }
-
-    if (bfn::lower(phys) != 0) {
-        bfalert_nhex(0, "memory_manager::remove_md: bfn::lower(phys) != 0", bfn::lower(phys));
-        return;
-    }
-
-    guard_exceptions([&] {
-        std::lock_guard<std::mutex> guard(g_add_md_mutex);
+    {
+        std::lock_guard<std::mutex> guard(g_md_mutex);
 
         m_virt_map.erase(virt);
         m_phys_map.erase(phys);
-    });
+    }
 }
 
 memory_manager::memory_descriptor_list
 memory_manager::descriptors() const
 {
     memory_descriptor_list list;
-    std::lock_guard<std::mutex> guard(g_add_md_mutex);
+    std::lock_guard<std::mutex> guard(g_md_mutex);
 
     for (const auto &p : m_virt_map) {
         list.push_back({p.second.phys, p.first, p.second.attr});

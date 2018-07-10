@@ -21,14 +21,9 @@
 
 #include "cr3/mmap.h"
 
-namespace bfvmm
+namespace bfvmm::x64
 {
-namespace x64
-{
-
-gsl::not_null<cr3::mmap *> mmap();
-
-}
+    gsl::not_null<cr3::mmap *> mmap();
 }
 
 #endif
