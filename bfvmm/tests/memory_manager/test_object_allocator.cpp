@@ -35,6 +35,7 @@
 #include <test/support.h>
 #include <memory_manager/object_allocator.h>
 
+constexpr const auto num_iter = 0x100U;
 constexpr const auto blocks_per_page = 512;
 
 TEST_CASE("basic allocator of 0 size")
@@ -483,13 +484,26 @@ TEST_CASE("allocate: contains")
     CHECK(g_allocated_pages.empty());
 }
 
+TEST_CASE("copy")
+{
+    std::queue<uint64_t, std::list<uint64_t, object_allocator<uint64_t>>> d1;
+
+    for (auto i = 0U; i < num_iter; i++) {
+        d1.push(i);
+    }
+
+    auto d2 = d1;
+
+    for (auto i = 0U; i < num_iter; i++) {
+        d2.pop();
+    }
+}
+
 // -----------------------------------------------------------------------------
 // Benchmarks
 // -----------------------------------------------------------------------------
 
 #include <bfbenchmark.h>
-
-constexpr const auto NUM_ITERATIONS = 0x100U;
 
 TEST_CASE("base line")
 {
@@ -501,17 +515,17 @@ TEST_CASE("base line")
         std::queue<uint64_t, std::list<uint64_t>> d;
 
         auto results1 = benchmark([&] {
-            for (auto i = 0U; i < NUM_ITERATIONS; i++)
+            for (auto i = 0U; i < num_iter; i++)
             { d.push(i); }
         });
 
         auto results2 = benchmark([&] {
-            for (auto i = 0U; i < NUM_ITERATIONS; i++)
+            for (auto i = 0U; i < num_iter; i++)
             { d.pop(); }
         });
 
         auto results3 = benchmark([&] {
-            for (auto i = 0U; i < NUM_ITERATIONS; i++)
+            for (auto i = 0U; i < num_iter; i++)
             { d.push(i); }
         });
 
@@ -534,17 +548,17 @@ TEST_CASE("unlimited queue")
         std::queue<uint64_t, std::list<uint64_t, object_allocator<uint64_t>>> d;
 
         auto results1 = benchmark([&] {
-            for (auto i = 0U; i < NUM_ITERATIONS; i++)
+            for (auto i = 0U; i < num_iter; i++)
             { d.push(i); }
         });
 
         auto results2 = benchmark([&] {
-            for (auto i = 0U; i < NUM_ITERATIONS; i++)
+            for (auto i = 0U; i < num_iter; i++)
             { d.pop(); }
         });
 
         auto results3 = benchmark([&] {
-            for (auto i = 0U; i < NUM_ITERATIONS; i++)
+            for (auto i = 0U; i < num_iter; i++)
             { d.push(i); }
         });
 

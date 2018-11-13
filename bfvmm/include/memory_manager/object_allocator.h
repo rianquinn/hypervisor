@@ -697,7 +697,7 @@ public:
     /// @ensures none
     ///
     object_allocator() noexcept :
-        m_d {sizeof(T), max_pages}
+        m_d{std::make_shared<basic_object_allocator>(sizeof(T), max_pages)}
     { }
 
     /// Destructor
@@ -738,34 +738,34 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    /// @param other not supported
+    /// @param other the allocator to rebind
     ///
     template <typename U>
     object_allocator(const object_allocator<U, max_pages> &other) noexcept :
-        m_d {sizeof(T), max_pages}
+        m_d{std::make_shared<basic_object_allocator>(sizeof(T), max_pages)}
     { bfignored(other); }
 
-    /// Copy Constructor (not supported)
+    /// Copy Constructor
     ///
     /// @expects none
     /// @ensures none
     ///
-    /// @param other not supported
+    /// @param other the allocator to copy
     ///
     object_allocator(const object_allocator &other) noexcept :
-        m_d {sizeof(T), max_pages}
-    { bfignored(other); }
+        m_d{other.m_d}
+    { }
 
-    /// Copy Operator (not supported)
+    /// Copy Operator
     ///
     /// @expects none
     /// @ensures none
     ///
-    /// @param other not supported
+    /// @param other the allocator to copy
     /// @return this
     ///
     object_allocator &operator=(const object_allocator &other) noexcept
-    { bfignored(other); }
+    { m_d = other.m_d; }
 
     /// Allocate
     ///
@@ -787,7 +787,7 @@ public:
             return reinterpret_cast<pointer>(alloc_page());
         }
 
-        return static_cast<pointer>(m_d.allocate());
+        return static_cast<pointer>(m_d->allocate());
     }
 
     /// Deallocate Object
@@ -804,7 +804,7 @@ public:
             return free_page(p);
         }
 
-        m_d.deallocate(p);
+        m_d->deallocate(p);
     }
 
     /// Contains
@@ -816,7 +816,7 @@ public:
     /// @return true if the allocator contains p, false otherwise
     ///
     bool contains(pointer p) const noexcept
-    { return m_d.contains(p); }
+    { return m_d->contains(p); }
 
     /// Construct
     ///
@@ -854,25 +854,25 @@ public:
     /// @cond
 
     auto page_stack_size() noexcept
-    { return m_d.page_stack_size(); }
+    { return m_d->page_stack_size(); }
 
     auto objt_stack_size() noexcept
-    { return m_d.objt_stack_size(); }
+    { return m_d->objt_stack_size(); }
 
     auto num_page() noexcept
-    { return m_d.num_page(); }
+    { return m_d->num_page(); }
 
     auto num_free() noexcept
-    { return m_d.num_free(); }
+    { return m_d->num_free(); }
 
     auto num_used() noexcept
-    { return m_d.num_used(); }
+    { return m_d->num_used(); }
 
     /// @endcond
 
 private:
 
-    basic_object_allocator m_d;
+    std::shared_ptr<basic_object_allocator> m_d;
 
 private:
 
@@ -890,12 +890,12 @@ private:
 /// @cond
 
 template <typename T1, typename T2, std::size_t MP>
-bool operator==(const object_allocator<T1, MP> &, const object_allocator<T2, MP> &)
-{ return false; }
+bool operator==(const object_allocator<T1, MP> &lhs, const object_allocator<T2, MP> &rhs)
+{ return lhs.m_d == rhs.m_d; }
 
 template <typename T1, typename T2, std::size_t MP>
-bool operator!=(const object_allocator<T1, MP> &, const object_allocator<T2, MP> &)
-{ return true; }
+bool operator!=(const object_allocator<T1, MP> &lhs, const object_allocator<T2, MP> &rhs)
+{ return lhs.m_d != rhs.m_d; }
 
 /// @endcond
 
