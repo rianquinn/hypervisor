@@ -27,5 +27,7 @@ init_project(
 add_subdirectory(debug)
 add_subdirectory(memory_manager)
 add_subdirectory(hve)
+add_subdirectory(domain)
 add_subdirectory(vcpu)
 add_subdirectory(entry)
+add_subdirectory(sdk)

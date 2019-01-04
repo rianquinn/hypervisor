@@ -1,6 +1,6 @@
 //
 // Bareflank Hypervisor
-// Copyright (C) 2015 Assured Information Security, Inc.
+// Copyright (C) 2018 Assured Information Security, Inc.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -16,17 +16,18 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <bfvmm/vcpu/vcpu_factory.h>
-#include <bfvmm/hve/arch/intel_x64/vcpu.h>
+#include <vcpu/vcpu.h>
+#include <hve/arch/intel_x64/delegator/invd.h>
 
-namespace bfvmm
+namespace bfvmm::intel_x64::invd
 {
 
-WEAK_SYM std::unique_ptr<vcpu>
-vcpu_factory::make(vcpuid::type vcpuid, bfobject *obj)
+bool
+delegator::handle(vcpu_t vcpu)
 {
-    bfignored(obj);
-    return std::make_unique<intel_x64::vcpu>(vcpuid);
+    bfignored(vcpu);
+    ::x64::cache::wbinvd();
+    return vcpu->advance();
 }
 
 }

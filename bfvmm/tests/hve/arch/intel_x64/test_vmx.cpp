@@ -29,7 +29,8 @@
 TEST_CASE("vmx: start_success")
 {
     setup_test_support();
-    CHECK_NOTHROW(bfvmm::intel_x64::vmx{});
+    auto vmx = bfvmm::intel_x64::vmx{};
+    CHECK_NOTHROW(vmx.enable());
 }
 
 TEST_CASE("vmx: start_execute_vmxon_failure")
@@ -40,8 +41,8 @@ TEST_CASE("vmx: start_execute_vmxon_failure")
     auto ___ = gsl::finally([&] {
         g_vmxon_fails = false;
     });
-
-    CHECK_THROWS(bfvmm::intel_x64::vmx{});
+    auto vmx = bfvmm::intel_x64::vmx{};
+    CHECK_THROWS(vmx.enable());
 }
 
 TEST_CASE("vmx: reset")
@@ -53,7 +54,8 @@ TEST_CASE("vmx: reset")
         ::intel_x64::cr4::vmx_enable_bit::disable();
     });
 
-    CHECK_NOTHROW(bfvmm::intel_x64::vmx{});
+    auto vmx = bfvmm::intel_x64::vmx{};
+    CHECK_NOTHROW(vmx.enable());
 }
 
 TEST_CASE("vmx: start_check_ia32_vmx_cr4_fixed0_msr_failure")
@@ -61,7 +63,8 @@ TEST_CASE("vmx: start_check_ia32_vmx_cr4_fixed0_msr_failure")
     setup_test_support();
 
     g_msrs[intel_x64::msrs::ia32_vmx_cr4_fixed0::addr] = 0x1;
-    CHECK_THROWS(bfvmm::intel_x64::vmx{});
+    auto vmx = bfvmm::intel_x64::vmx{};
+    CHECK_THROWS(vmx.enable());
 }
 
 TEST_CASE("vmx: start_check_ia32_vmx_cr4_fixed1_msr_failure")
@@ -71,7 +74,8 @@ TEST_CASE("vmx: start_check_ia32_vmx_cr4_fixed1_msr_failure")
     g_cr4 = 0x1;
     g_msrs[intel_x64::msrs::ia32_vmx_cr4_fixed1::addr] = 0xFFFFFFFFFFFFFFF0;
 
-    CHECK_THROWS(bfvmm::intel_x64::vmx{});
+    auto vmx = bfvmm::intel_x64::vmx{};
+    CHECK_THROWS(vmx.enable());
 }
 
 TEST_CASE("vmx: start_enable_vmx_operation_failure")
@@ -83,7 +87,8 @@ TEST_CASE("vmx: start_enable_vmx_operation_failure")
         g_write_cr4_fails = false;
     });
 
-    CHECK_THROWS(bfvmm::intel_x64::vmx{});
+    auto vmx = bfvmm::intel_x64::vmx{};
+    CHECK_THROWS(vmx.enable());
 }
 
 TEST_CASE("vmx: start_v8086_disabled_failure")
@@ -91,7 +96,8 @@ TEST_CASE("vmx: start_v8086_disabled_failure")
     setup_test_support();
 
     g_rflags = 0xFFFFFFFFFFFFFFFF;
-    CHECK_THROWS(bfvmm::intel_x64::vmx{});
+    auto vmx = bfvmm::intel_x64::vmx{};
+    CHECK_THROWS(vmx.enable());
 }
 
 TEST_CASE("vmx: start_check_ia32_feature_control_msr_unlocked")
@@ -100,7 +106,8 @@ TEST_CASE("vmx: start_check_ia32_feature_control_msr_unlocked")
 
     g_msrs[intel_x64::msrs::ia32_feature_control::addr] = 0;
 
-    CHECK_NOTHROW(bfvmm::intel_x64::vmx{});
+    auto vmx = bfvmm::intel_x64::vmx{};
+    CHECK_NOTHROW(vmx.enable());
     CHECK(intel_x64::msrs::ia32_feature_control::enable_vmx_outside_smx::is_enabled());
     CHECK(intel_x64::msrs::ia32_feature_control::lock_bit::is_enabled());
 }
@@ -110,7 +117,8 @@ TEST_CASE("vmx: start_check_ia32_feature_control_msr_locked")
     setup_test_support();
 
     intel_x64::msrs::ia32_feature_control::lock_bit::enable();
-    CHECK_NOTHROW(bfvmm::intel_x64::vmx{});
+    auto vmx = bfvmm::intel_x64::vmx{};
+    CHECK_NOTHROW(vmx.enable());
 }
 
 TEST_CASE("vmx: start_check_ia32_vmx_cr0_fixed0_msr")
@@ -118,7 +126,8 @@ TEST_CASE("vmx: start_check_ia32_vmx_cr0_fixed0_msr")
     setup_test_support();
 
     g_msrs[intel_x64::msrs::ia32_vmx_cr0_fixed0::addr] = 0x1;
-    CHECK_THROWS(bfvmm::intel_x64::vmx{});
+    auto vmx = bfvmm::intel_x64::vmx{};
+    CHECK_THROWS(vmx.enable());
 }
 
 TEST_CASE("vmx: start_check_ia32_vmx_cr0_fixed1_msr")
@@ -128,7 +137,8 @@ TEST_CASE("vmx: start_check_ia32_vmx_cr0_fixed1_msr")
     g_cr0 = 0x1;
     g_msrs[intel_x64::msrs::ia32_vmx_cr0_fixed1::addr] = 0xFFFFFFFFFFFFFFF0;
 
-    CHECK_THROWS(bfvmm::intel_x64::vmx{});
+    auto vmx = bfvmm::intel_x64::vmx{};
+    CHECK_THROWS(vmx.enable());
 }
 
 TEST_CASE("vmx: start_check_vmx_capabilities_msr_memtype_failure")
@@ -172,6 +182,7 @@ TEST_CASE("vmx: stop_vmxoff_failure")
         g_vmxoff_fails = false;
     });
 
-    bfvmm::intel_x64::vmx{};
+    auto vmx = bfvmm::intel_x64::vmx{};
+    vmx.enable();
     CHECK(::intel_x64::cr4::vmx_enable_bit::is_enabled());
 }

@@ -27,15 +27,18 @@ auto
 setup_vmcs()
 {
     setup_test_support();
-    return bfvmm::intel_x64::vmcs{0x0};
+    auto vcpu = std::make_unique<bfvmm::intel_x64::vcpu>(0);
+    auto vmcs = bfvmm::intel_x64::vmcs(vcpu.get());
+    return vmcs;
 }
 
 TEST_CASE("vmcs: construct / destruct")
 {
     MockRepository mocks;
     auto vmcs = setup_vmcs();
+    auto vcpu = std::make_unique<bfvmm::intel_x64::vcpu>(0);
 
-    CHECK_NOTHROW(bfvmm::intel_x64::vmcs{0});
+    CHECK_NOTHROW(bfvmm::intel_x64::vmcs{vcpu.get()});
 }
 
 TEST_CASE("vmcs: launch demote success")
@@ -70,7 +73,8 @@ TEST_CASE("vmcs: launch failure")
     mocks.OnCallFunc(bfvmm::intel_x64::check::all);
     mocks.OnCallFunc(::intel_x64::vmcs::debug::dump);
 
-    bfvmm::intel_x64::vmcs vmcs{0xF0000000};
+    auto vcpu = std::make_unique<bfvmm::intel_x64::vcpu>(0xF0000000);
+    bfvmm::intel_x64::vmcs vmcs{vcpu.get()};
     CHECK_THROWS(vmcs.launch());
 }
 

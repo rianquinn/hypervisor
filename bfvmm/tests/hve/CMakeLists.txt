@@ -20,6 +20,7 @@ list(APPEND ARGN
     DEPENDS bfvmm_hve
     DEPENDS bfvmm_vcpu
     DEPENDS bfvmm_memory_manager
+    DEPENDS bfvmm_sdk
     DEFINES STATIC_HVE
     DEFINES STATIC_VCPU
     DEFINES STATIC_MEMORY_MANAGER
@@ -63,11 +64,6 @@ do_test(test_exception
 
 do_test(test_check
     SOURCES arch/intel_x64/test_check.cpp
-    ${ARGN}
-)
-
-do_test(test_exit_handler
-    SOURCES arch/intel_x64/test_exit_handler.cpp
     ${ARGN}
 )
 
