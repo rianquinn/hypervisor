@@ -1,6 +1,6 @@
 //
 // Bareflank Hypervisor
-// Copyright (C) 2015 Assured Information Security, Inc.
+// Copyright (C) 2018 Assured Information Security, Inc.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -34,14 +34,17 @@ namespace bfvmm::intel_x64
 {
 
 vcpu::vcpu(vcpuid::type id) :
-    bfvmm::vcpu{id}
+    bfvmm::vcpu{id},
+    m_vmcs{std::make_unique<bfvmm::intel_x64::vmcs>(this)},
+    m_vmx{std::make_unique<intel_x64::vmx>()},
+    m_cpuid_delegator{std::make_unique<cpuid::delegator>()},
+    m_nmi_delegator{std::make_unique<nmi::delegator>()},
+    m_cr_delegator{std::make_unique<cr::delegator>()},
+    m_invd_delegator{std::make_unique<invd::delegator>()},
+    m_msr_delegator{std::make_unique<msr::delegator>()},
+    m_unhandled_exit_delegator{std::make_unique<unhandled_exit::delegator>()}
 {
-    if (this->is_host_vm_vcpu()) {
-        m_vmx = std::make_unique<intel_x64::vmx>();
-    }
-
-    m_vmcs = std::make_unique<bfvmm::intel_x64::vmcs>(id);
-    m_exit_handler = std::make_unique<bfvmm::intel_x64::exit_handler>(this);
+    using namespace ::intel_x64::vmcs::exit_reason;
 
     this->add_run_delegate(
         run_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::run_delegate>(this)
@@ -51,11 +54,37 @@ vcpu::vcpu(vcpuid::type id) :
         hlt_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::hlt_delegate>(this)
     );
 
-    m_vmcs->save_state()->vcpu_ptr =
-        reinterpret_cast<uintptr_t>(this);
+    auto exit_delegate = handler_delegate_t::create<unhandled_exit::delegator,
+         &unhandled_exit::delegator::handle>(m_unhandled_exit_delegator);
+    m_exit_delegates.fill(exit_delegate);
 
-    m_vmcs->save_state()->exit_handler_ptr =
-        reinterpret_cast<uintptr_t>(m_exit_handler.get());
+    exit_delegate = handler_delegate_t::create<cpuid::delegator,
+    &cpuid::delegator::handle>(m_cpuid_delegator);
+    m_exit_delegates.at(basic_exit_reason::cpuid) = exit_delegate;
+
+    exit_delegate = handler_delegate_t::create<nmi::delegator,
+    &nmi::delegator::handle_nmi>(m_nmi_delegator);
+    m_exit_delegates.at(basic_exit_reason::exception_or_non_maskable_interrupt) = exit_delegate;
+
+    exit_delegate = handler_delegate_t::create<nmi::delegator,
+    &nmi::delegator::handle_nmi_window>(m_nmi_delegator);
+    m_exit_delegates.at(basic_exit_reason::nmi_window) = exit_delegate;
+
+    exit_delegate = handler_delegate_t::create<invd::delegator,
+    &invd::delegator::handle>(m_invd_delegator);
+    m_exit_delegates.at(basic_exit_reason::invd) = exit_delegate;
+
+    exit_delegate = handler_delegate_t::create<msr::delegator,
+    &msr::delegator::handle_rdmsr>(m_msr_delegator);
+    m_exit_delegates.at(basic_exit_reason::rdmsr) = exit_delegate;
+
+    exit_delegate = handler_delegate_t::create<msr::delegator,
+    &msr::delegator::handle_wrmsr>(m_msr_delegator);
+    m_exit_delegates.at(basic_exit_reason::wrmsr) = exit_delegate;
+
+    exit_delegate = handler_delegate_t::create<cr::delegator,
+    &cr::delegator::handle>(m_cr_delegator);
+    m_exit_delegates.at(basic_exit_reason::control_register_accesses) = exit_delegate;
 }
 
 void
@@ -77,12 +106,15 @@ vcpu::run_delegate(bfobject *obj)
         m_vmcs->resume();
     }
     else {
-
-        m_launched = true;
+        if (this->is_host_vm_vcpu()) {
+            m_vmx->enable();
+        }
 
         try {
+            m_vmcs->init();
             m_vmcs->load();
             m_vmcs->launch();
+            m_launched = true;
         }
         catch (...) {
             m_launched = false;
@@ -90,7 +122,6 @@ vcpu::run_delegate(bfobject *obj)
         }
 
         ::x64::cpuid::get(0x4BF00010, 0, 0, 0);
-        ::x64::cpuid::get(0x4BF00011, 0, 0, 0);
     }
 }
 
@@ -100,7 +131,6 @@ vcpu::hlt_delegate(bfobject *obj)
     bfignored(obj);
 
     ::x64::cpuid::get(0x4BF00020, 0, 0, 0);
-    ::x64::cpuid::get(0x4BF00021, 0, 0, 0);
 }
 
 void
@@ -110,17 +140,6 @@ vcpu::load()
 void
 vcpu::promote()
 { m_vmcs->promote(); }
-
-void
-vcpu::add_handler(
-    ::intel_x64::vmcs::value_type reason,
-    const handler_delegate_t &d)
-{ m_exit_handler->add_handler(reason, d); }
-
-void
-vcpu::add_exit_handler(
-    const handler_delegate_t &d)
-{ m_exit_handler->add_exit_handler(d); }
 
 void
 vcpu::dump(const char *str)
@@ -186,6 +205,52 @@ vcpu::advance()
 
     this->set_rip(this->rip() + vm_exit_instruction_length::get());
     return true;
+}
+
+bool
+vcpu::init()
+{
+    for (const auto &d : m_init_delegates) {
+        if (!d(this)) {
+            bferror_info(0, "VCPU init failed");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+vcpu::fini()
+{
+    for (const auto &d : m_fini_delegates) {
+        if (!d(this)) {
+            bferror_info(0, "VCPU fini failed");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void
+vcpu::vmexit_handler() noexcept
+{
+    guard_exceptions([&]() {
+
+        for (const auto &d : m_all_exit_delegates) {
+            d(this);
+        }
+
+        auto reason = ::intel_x64::vmcs::exit_reason::basic_exit_reason::get();
+        auto exit_delegate = m_exit_delegates.at(reason);
+        if (exit_delegate(this)) {
+            this->run();
+        }
+        else {
+            m_unhandled_exit_delegator->handle(this);
+        }
+    });
 }
 
 uint64_t

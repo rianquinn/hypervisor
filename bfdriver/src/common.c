@@ -422,6 +422,8 @@ common_start_vmm(void)
             break;
     }
 
+    platform_call_vmm_on_core(0, BF_REQUEST_VMM_HYPERVISOR_SETUP, platform_num_cpus(), 0);
+
     for (cpuid = 0, g_num_cpus_started = 0; cpuid < platform_num_cpus(); cpuid++) {
         ret = platform_call_vmm_on_core(
                   (uint64_t)cpuid, BF_REQUEST_VMM_INIT, (uint64_t)cpuid, 0);

@@ -135,4 +135,22 @@ typedef INT_PTR intptr_t;
 #define PRId64 "lld"
 #endif
 
+/* -------------------------------------------------------------------------- */
+/* VMM Types                                                                  */
+/* -------------------------------------------------------------------------- */
+
+#ifdef __cplusplus
+#include <bfgsl.h>
+#include <bfarch.h>
+#if defined(BF_INTEL_X64)
+namespace bfvmm::intel_x64
+{
+class domain;
+class vcpu;
+}
+using domain_t = gsl::not_null<bfvmm::intel_x64::domain *>;
+using vcpu_t = gsl::not_null<bfvmm::intel_x64::vcpu *>;
+#endif
+#endif
+
 #endif

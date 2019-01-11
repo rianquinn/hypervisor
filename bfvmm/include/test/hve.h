@@ -67,8 +67,8 @@ setup_idt_x64()
 #include "../hve/arch/intel_x64/vmcs.h"
 #include "../hve/arch/intel_x64/check.h"
 #include "../hve/arch/intel_x64/exception.h"
-#include "../hve/arch/intel_x64/exit_handler.h"
 #include "../hve/arch/intel_x64/vcpu.h"
+#include <bftypes.h>
 
 bfvmm::intel_x64::save_state_t g_save_state{};
 
@@ -84,9 +84,16 @@ extern "C" void vmcs_resume(
     bfvmm::intel_x64::save_state_t *save_state) noexcept
 { bfignored(save_state); }
 
-extern "C" void exit_handler_entry(void)
+extern "C" void vmexit_entry(void)
 { }
 
 #endif
+
+bool hypervisor_main(vcpu_t vcpu)
+{ return true; }
+
+bool hypervisor_teardown(vcpu_t vcpu)
+{ return true; }
+
 
 /// @endcond

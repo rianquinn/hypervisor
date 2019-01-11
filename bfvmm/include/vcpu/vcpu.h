@@ -28,6 +28,7 @@
 #include <bfvcpuid.h>
 #include <bfobject.h>
 #include <bfdelegate.h>
+#include <bfarch.h>
 
 // -----------------------------------------------------------------------------
 // Exports
@@ -362,6 +363,12 @@ public:
 };
 
 }
+
+#if defined(BF_INTEL_X64)
+#include "../hve/arch/intel_x64/vcpu.h"
+#else
+#   error "vcpu.h: unsupported architecture"
+#endif
 
 #ifdef _MSC_VER
 #pragma warning(pop)

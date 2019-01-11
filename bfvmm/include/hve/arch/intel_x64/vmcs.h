@@ -24,6 +24,9 @@
 
 #include "save_state.h"
 #include "check.h"
+#include "../x64/gdt.h"
+#include "../x64/idt.h"
+#include "../x64/tss.h"
 
 #include "../../../memory_manager/memory_manager.h"
 
@@ -52,9 +55,7 @@
 // Definitions
 // -----------------------------------------------------------------------------
 
-namespace bfvmm
-{
-namespace intel_x64
+namespace bfvmm::intel_x64
 {
 
 /// Intel x86_64 VMCS
@@ -83,16 +84,25 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    /// @param vcpuid the vcpuid for this VMCS
+    /// @param vcpu the vcpu this VMCS is for
     ///
-    vmcs(vcpuid::type vcpuid);
+    vmcs(vcpu_t vcpu);
 
     /// Destructor
     ///
     /// @expects none
     /// @ensures none
     ///
-    VIRTUAL ~vmcs() = default;
+    ~vmcs() = default;
+
+    /// Init
+    ///
+    /// Initizlizes the VMCS stucture to be used by hardware
+    ///
+    /// @expects VMX is enabled
+    /// @ensures none
+    ///
+    void init();
 
     /// Launch
     ///
@@ -104,7 +114,7 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    VIRTUAL void launch();
+    void launch();
 
     /// Resume
     ///
@@ -126,7 +136,7 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    VIRTUAL void resume();
+    void resume();
 
     /// Promote
     ///
@@ -145,7 +155,7 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    VIRTUAL void promote();
+    void promote();
 
     /// Load
     ///
@@ -163,7 +173,7 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    VIRTUAL void load();
+    void load();
 
     /// Clear
     ///
@@ -177,7 +187,7 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    VIRTUAL void clear();
+    void clear();
 
     /// Check
     ///
@@ -189,7 +199,7 @@ public:
     /// @return returns true if the VMCS is configured properly, false
     ///     otherwise
     ///
-    VIRTUAL bool check() const noexcept;
+    bool check() const noexcept;
 
     /// Save State
     ///
@@ -202,16 +212,24 @@ public:
     ///
     /// @return returns the VMCS's save state.
     ///
-    VIRTUAL save_state_t *save_state() const
+    save_state_t *save_state() const
     { return m_save_state.get(); }
 
 private:
 
-    vcpuid::type m_vcpuid;
     std::unique_ptr<save_state_t> m_save_state;
 
     page_ptr<uint32_t> m_vmcs_region;
     uintptr_t m_vmcs_region_phys;
+    std::unique_ptr<gsl::byte[]> m_ist1;
+    std::unique_ptr<gsl::byte[]> m_stack;
+    x64::tss m_host_tss{};
+    x64::gdt m_host_gdt{512};
+    x64::idt m_host_idt{256};
+
+    void write_host_state(vcpuid::type vcpuid);
+    void write_guest_state();
+    void write_control_state();
 
 public:
 
@@ -226,7 +244,6 @@ public:
     /// @endcond
 };
 
-}
 }
 
 using vmcs_t = bfvmm::intel_x64::vmcs;
