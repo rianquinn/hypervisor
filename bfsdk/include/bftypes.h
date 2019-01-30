@@ -53,6 +53,14 @@
 
 #define bfignored(a) (void)a
 
+#if defined(__clang__) || defined(__GNUC__)
+#define bflikely(x) __builtin_expect(!!(x), 1)
+#define bfunlikely(x) __builtin_expect(!!(x), 0)
+#else
+#define bflikely(x) (x)
+#define bfunlikely(x) (x)
+#endif
+
 /* -------------------------------------------------------------------------- */
 /* Stringify                                                                  */
 /* -------------------------------------------------------------------------- */
