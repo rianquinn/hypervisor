@@ -30,6 +30,8 @@ if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
         arch/intel_x64/vmexit/interrupt_window.cpp
         arch/intel_x64/vmexit/io_instruction.cpp
         arch/intel_x64/vmexit/monitor_trap.cpp
+        arch/intel_x64/vmexit/nmi_window.cpp
+        arch/intel_x64/vmexit/nmi.cpp
         arch/intel_x64/vmexit/rdmsr.cpp
         arch/intel_x64/vmexit/sipi_signal.cpp
         arch/intel_x64/vmexit/preemption_timer.cpp
@@ -44,7 +46,6 @@ if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
         arch/intel_x64/interrupt_queue.cpp
         arch/intel_x64/microcode.cpp
         arch/intel_x64/mtrrs.cpp
-        arch/intel_x64/nmi.cpp
         arch/intel_x64/vcpu.cpp
         arch/intel_x64/vmcs.cpp
         arch/intel_x64/vmx.cpp
@@ -56,7 +57,6 @@ if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
         if(NOT WIN32)
             list(APPEND SOURCES
                 arch/intel_x64/exception.asm
-                arch/intel_x64/nmi.asm
                 arch/intel_x64/exit_handler_entry.asm
                 arch/intel_x64/vmcs_launch.asm
                 arch/intel_x64/vmcs_promote.asm

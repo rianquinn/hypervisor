@@ -54,23 +54,24 @@ vcpu::vcpu(
 
     m_control_register_handler{this},
     m_cpuid_handler{this},
-    m_io_instruction_handler{this},
-    m_monitor_trap_handler{this},
-    m_rdmsr_handler{this},
-    m_wrmsr_handler{this},
-    m_xsetbv_handler{this},
-
     m_ept_misconfiguration_handler{this},
     m_ept_violation_handler{this},
     m_external_interrupt_handler{this},
     m_init_signal_handler{this},
     m_interrupt_window_handler{this},
+    m_io_instruction_handler{this},
+    m_monitor_trap_handler{this},
+    m_nmi_window_handler{this},
+    m_nmi_handler{this},
+    m_preemption_timer_handler{this},
+    m_rdmsr_handler{this},
     m_sipi_signal_handler{this},
+    m_wrmsr_handler{this},
+    m_xsetbv_handler{this},
 
     m_ept_handler{this},
     m_microcode_handler{this},
-    m_vpid_handler{this},
-    m_preemption_timer_handler{this}
+    m_vpid_handler{this}
 {
     using namespace vmcs_n;
 
@@ -96,6 +97,7 @@ vcpu::vcpu(
     primary_processor_based_vm_execution_controls::use_io_bitmaps::enable();
 
     this->enable_vpid();
+    this->enable_nmis();
 }
 
 void
@@ -484,6 +486,38 @@ vcpu::add_monitor_trap_handler(
 void
 vcpu::enable_monitor_trap_flag()
 { m_monitor_trap_handler.enable(); }
+
+//--------------------------------------------------------------------------
+// Non-Maskable Interrupt Window
+//--------------------------------------------------------------------------
+
+void
+vcpu::queue_nmi()
+{ m_nmi_window_handler.queue_nmi(); }
+
+void
+vcpu::inject_nmi()
+{ m_nmi_window_handler.inject_nmi(); }
+
+//--------------------------------------------------------------------------
+// Non-Maskable Interrupts
+//--------------------------------------------------------------------------
+
+void
+vcpu::add_nmi_handler(
+    const nmi_handler::handler_delegate_t &d)
+{
+    m_nmi_handler.add_handler(d);
+    m_nmi_handler.enable_exiting();
+}
+
+void
+vcpu::enable_nmis()
+{ m_nmi_handler.enable_exiting(); }
+
+void
+vcpu::disable_nmis()
+{ m_nmi_handler.disable_exiting(); }
 
 //--------------------------------------------------------------------------
 // Read MSR

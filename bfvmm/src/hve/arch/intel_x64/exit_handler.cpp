@@ -38,7 +38,6 @@
 #include <hve/arch/intel_x64/vcpu.h>
 #include <hve/arch/intel_x64/check.h>
 #include <hve/arch/intel_x64/exception.h>
-#include <hve/arch/intel_x64/nmi.h>
 #include <hve/arch/intel_x64/exit_handler.h>
 
 #include <memory_manager/arch/x64/cr3.h>
@@ -126,30 +125,6 @@ setup()
 namespace bfvmm::intel_x64
 {
 
-static bool
-handle_nmi(vcpu *vcpu)
-{
-    bfignored(vcpu);
-    using namespace ::intel_x64::vmcs;
-    using namespace primary_processor_based_vm_execution_controls;
-
-    nmi_window_exiting::enable();
-    return true;
-}
-
-static bool
-handle_nmi_window(vcpu *vcpu)
-{
-    bfignored(vcpu);
-    using namespace ::intel_x64::vmcs;
-    using namespace primary_processor_based_vm_execution_controls;
-
-    inject_nmi();
-    nmi_window_exiting::disable();
-
-    return true;
-}
-
 // -----------------------------------------------------------------------------
 // Implementation
 // -----------------------------------------------------------------------------
@@ -180,16 +155,6 @@ exit_handler::exit_handler(
     if (vcpuid::is_host_vm_vcpu(vcpu->id())) {
         this->write_guest_state();
     }
-
-    this->add_handler(
-        exit_reason::basic_exit_reason::exception_or_non_maskable_interrupt,
-        handler_delegate_t::create<handle_nmi>()
-    );
-
-    this->add_handler(
-        exit_reason::basic_exit_reason::nmi_window,
-        handler_delegate_t::create<handle_nmi_window>()
-    );
 }
 
 void
@@ -229,7 +194,6 @@ exit_handler::write_host_state()
 
     m_host_tss.ist1 = setup_stack(m_ist1.get(), m_vcpu->id());
     set_default_esrs(&m_host_idt, 8);
-    set_nmi_handler(&m_host_idt, 8);
 
     host_rip::set(exit_handler_entry);
     host_rsp::set(setup_stack(m_stack.get(), m_vcpu->id()));
@@ -362,9 +326,6 @@ exit_handler::write_control_state()
     using namespace pin_based_vm_execution_controls;
     using namespace primary_processor_based_vm_execution_controls;
     using namespace secondary_processor_based_vm_execution_controls;
-
-    nmi_exiting::enable();
-    virtual_nmis::enable();
 
     activate_secondary_controls::enable_if_allowed();
     enable_rdtscp::enable_if_allowed();

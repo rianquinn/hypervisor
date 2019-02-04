@@ -19,13 +19,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VMEXIT_INTERRUPT_WINDOW_INTEL_X64_H
-#define VMEXIT_INTERRUPT_WINDOW_INTEL_X64_H
+#ifndef VMEXIT_NMI_WINDOW_HANDLER_INTEL_X64_H
+#define VMEXIT_NMI_WINDOW_HANDLER_INTEL_X64_H
 
 #include <bfgsl.h>
 #include <bfdelegate.h>
-
-#include "../interrupt_queue.h"
 
 // -----------------------------------------------------------------------------
 // Exports
@@ -52,9 +50,9 @@ namespace bfvmm::intel_x64
 
 class vcpu;
 
-/// Interrupt window
+/// NMI window
 ///
-class EXPORT_HVE interrupt_window_handler
+class EXPORT_HVE nmi_window_handler
 {
 public:
 
@@ -65,56 +63,36 @@ public:
     ///
     /// @param vcpu the vcpu object for this interrupt window handler
     ///
-    interrupt_window_handler(
-        gsl::not_null<vcpu *> vcpu);
+    nmi_window_handler(gsl::not_null<vcpu *> vcpu);
 
     /// Destructor
     ///
     /// @expects
     /// @ensures
     ///
-    ~interrupt_window_handler() = default;
+    ~nmi_window_handler() = default;
 
 public:
 
-    /// Queue External Interrupt
+    /// Queue NMI
     ///
-    /// Queue an external interrupt at the given vector on the
-    /// next upcoming open interrupt window.
+    /// Queues an NMI for injection.
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vector the vector to inject into the guest
-    ///
-    void queue_external_interrupt(uint64_t vector);
+    void queue_nmi();
 
-    /// Inject Exception
+    /// Inject NMI
     ///
-    /// Inject an exception on the next VM entry. Note that this will overwrite
-    /// any interrupts that are already injected for the next VM entry so
-    /// care should be taken when using this function
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param vector the vector to inject into the guest
-    /// @param ec the error code associated with the exception if applicable
-    ///
-    void inject_exception(uint64_t vector, uint64_t ec = 0);
-
-    /// Inject External Interrupt
-    ///
-    /// Inject an external interrupt on the next VM entry. Note that this will
-    /// overwriteany interrupts that are already injected for the next VM entry
-    /// so care should be taken when using this function
+    /// Inject an NMI on the next VM entry.
     ///
     /// @expects
     /// @ensures
     ///
     /// @param vector the vector to inject into the guest
     ///
-    void inject_external_interrupt(uint64_t vector);
+    void inject_nmi();
 
 public:
 
@@ -133,18 +111,15 @@ private:
 
     vcpu *m_vcpu;
 
-    bool m_enabled{false};
-    interrupt_queue m_interrupt_queue;
-
 public:
 
     /// @cond
 
-    interrupt_window_handler(interrupt_window_handler &&) = default;
-    interrupt_window_handler &operator=(interrupt_window_handler &&) = default;
+    nmi_window_handler(nmi_window_handler &&) = default;
+    nmi_window_handler &operator=(nmi_window_handler &&) = default;
 
-    interrupt_window_handler(const interrupt_window_handler &) = delete;
-    interrupt_window_handler &operator=(const interrupt_window_handler &) = delete;
+    nmi_window_handler(const nmi_window_handler &) = delete;
+    nmi_window_handler &operator=(const nmi_window_handler &) = delete;
 
     /// @endcond
 };

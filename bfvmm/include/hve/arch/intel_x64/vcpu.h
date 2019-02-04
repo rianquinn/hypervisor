@@ -31,6 +31,8 @@
 #include "vmexit/interrupt_window.h"
 #include "vmexit/io_instruction.h"
 #include "vmexit/monitor_trap.h"
+#include "vmexit/nmi_window.h"
+#include "vmexit/nmi.h"
 #include "vmexit/rdmsr.h"
 #include "vmexit/sipi_signal.h"
 #include "vmexit/preemption_timer.h"
@@ -495,10 +497,7 @@ public:
 
     /// Queue External Interrupt
     ///
-    /// Queues an external interrupt for injection. If the interrupt window
-    /// is open, and there are no interrupts queued for injection, the
-    /// interrupt may be injected on the upcoming VM-entry, othewise the
-    /// interrupt is queued, and injected when appropriate.
+    /// Queues an external interrupt for injection.
     ///
     /// @expects
     /// @ensures
@@ -524,7 +523,7 @@ public:
     /// Inject External Interrupt
     ///
     /// Inject an external interrupt on the next VM entry. Note that this will
-    /// overwriteany interrupts that are already injected for the next VM entry
+    /// overwrite any interrupts that are already injected for the next VM entry
     /// so care should be taken when using this function
     ///
     /// @expects
@@ -624,6 +623,61 @@ public:
     /// @ensures
     ///
     VIRTUAL void enable_monitor_trap_flag();
+
+    //--------------------------------------------------------------------------
+    // Non-Mackable Interrupt Window
+    //--------------------------------------------------------------------------
+
+    /// Queue NMI
+    ///
+    /// Queues an NMI for injection.
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void queue_nmi();
+
+    /// Inject NMI
+    ///
+    /// Inject an NMI on the next VM entry. Note that this will
+    /// overwrite any interrupts that are already injected for the next VM entry
+    /// so care should be taken when using this function
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void inject_nmi();
+
+    //--------------------------------------------------------------------------
+    // Non-Maskable Interrupts
+    //--------------------------------------------------------------------------
+
+    /// Add NMI Handler
+    ///
+    /// Turns on NMI handling and adds an NMI
+    /// handler to handle NMIs
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param d the delegate to call when an exit occurs
+    ///
+    VIRTUAL void add_nmi_handler(
+        const nmi_handler::handler_delegate_t &d);
+
+    /// Enable NMI Support
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void enable_nmis();
+
+    /// Disable NMI Support
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void disable_nmis();
 
     //--------------------------------------------------------------------------
     // Read MSR
@@ -1719,23 +1773,24 @@ private:
 
     control_register_handler m_control_register_handler;
     cpuid_handler m_cpuid_handler;
-    io_instruction_handler m_io_instruction_handler;
-    monitor_trap_handler m_monitor_trap_handler;
-    rdmsr_handler m_rdmsr_handler;
-    wrmsr_handler m_wrmsr_handler;
-    xsetbv_handler m_xsetbv_handler;
-
     ept_misconfiguration_handler m_ept_misconfiguration_handler;
     ept_violation_handler m_ept_violation_handler;
     external_interrupt_handler m_external_interrupt_handler;
     init_signal_handler m_init_signal_handler;
     interrupt_window_handler m_interrupt_window_handler;
+    io_instruction_handler m_io_instruction_handler;
+    monitor_trap_handler m_monitor_trap_handler;
+    nmi_window_handler m_nmi_window_handler;
+    nmi_handler m_nmi_handler;
+    preemption_timer_handler m_preemption_timer_handler;
+    rdmsr_handler m_rdmsr_handler;
     sipi_signal_handler m_sipi_signal_handler;
+    wrmsr_handler m_wrmsr_handler;
+    xsetbv_handler m_xsetbv_handler;
 
     ept_handler m_ept_handler;
     microcode_handler m_microcode_handler;
     vpid_handler m_vpid_handler;
-    preemption_timer_handler m_preemption_timer_handler;
 
 private:
 

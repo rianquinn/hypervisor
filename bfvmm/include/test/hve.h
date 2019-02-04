@@ -62,6 +62,39 @@ setup_idt_x64()
     g_idtr.limit = gsl::narrow_cast<uint16_t>(limit);
 }
 
+extern "C" void _esr0(void) noexcept {}
+extern "C" void _esr1(void) noexcept {}
+extern "C" void _esr2(void) noexcept {}
+extern "C" void _esr3(void) noexcept {}
+extern "C" void _esr4(void) noexcept {}
+extern "C" void _esr5(void) noexcept {}
+extern "C" void _esr6(void) noexcept {}
+extern "C" void _esr7(void) noexcept {}
+extern "C" void _esr8(void) noexcept {}
+extern "C" void _esr9(void) noexcept {}
+extern "C" void _esr10(void) noexcept {}
+extern "C" void _esr11(void) noexcept {}
+extern "C" void _esr12(void) noexcept {}
+extern "C" void _esr13(void) noexcept {}
+extern "C" void _esr14(void) noexcept {}
+extern "C" void _esr15(void) noexcept {}
+extern "C" void _esr16(void) noexcept {}
+extern "C" void _esr17(void) noexcept {}
+extern "C" void _esr18(void) noexcept {}
+extern "C" void _esr19(void) noexcept {}
+extern "C" void _esr20(void) noexcept {}
+extern "C" void _esr21(void) noexcept {}
+extern "C" void _esr22(void) noexcept {}
+extern "C" void _esr23(void) noexcept {}
+extern "C" void _esr24(void) noexcept {}
+extern "C" void _esr25(void) noexcept {}
+extern "C" void _esr26(void) noexcept {}
+extern "C" void _esr27(void) noexcept {}
+extern "C" void _esr28(void) noexcept {}
+extern "C" void _esr29(void) noexcept {}
+extern "C" void _esr30(void) noexcept {}
+extern "C" void _esr31(void) noexcept {}
+
 #endif
 
 #ifdef BF_INTEL_X64
@@ -160,6 +193,11 @@ setup_vcpu(MockRepository &mocks, ::intel_x64::vmcs::value_type reason = 0)
     mocks.OnCall(vcpu, bfvmm::intel_x64::vcpu::add_default_io_instruction_handler);
     mocks.OnCall(vcpu, bfvmm::intel_x64::vcpu::add_monitor_trap_handler);
     mocks.OnCall(vcpu, bfvmm::intel_x64::vcpu::enable_monitor_trap_flag);
+    mocks.OnCall(vcpu, bfvmm::intel_x64::vcpu::queue_nmi);
+    mocks.OnCall(vcpu, bfvmm::intel_x64::vcpu::inject_nmi);
+    mocks.OnCall(vcpu, bfvmm::intel_x64::vcpu::add_nmi_handler);
+    mocks.OnCall(vcpu, bfvmm::intel_x64::vcpu::enable_nmis);
+    mocks.OnCall(vcpu, bfvmm::intel_x64::vcpu::disable_nmis);
     mocks.OnCall(vcpu, bfvmm::intel_x64::vcpu::trap_on_rdmsr_access);
     mocks.OnCall(vcpu, bfvmm::intel_x64::vcpu::trap_on_all_rdmsr_accesses);
     mocks.OnCall(vcpu, bfvmm::intel_x64::vcpu::pass_through_rdmsr_access);

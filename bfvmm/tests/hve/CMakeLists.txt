@@ -74,11 +74,6 @@ do_test(test_check_vmcs_host_fields
     ${ARGN}
 )
 
-do_test(test_nmi
-    SOURCES arch/intel_x64/test_nmi.cpp
-    ${ARGN}
-)
-
 do_test(test_exception
     SOURCES arch/intel_x64/test_exception.cpp
     ${ARGN}

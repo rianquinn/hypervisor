@@ -46,6 +46,8 @@
 #include <bfvmm/hve/arch/intel_x64/vmexit/interrupt_window.h>
 #include <bfvmm/hve/arch/intel_x64/vmexit/io_instruction.h>
 #include <bfvmm/hve/arch/intel_x64/vmexit/monitor_trap.h>
+#include <bfvmm/hve/arch/intel_x64/vmexit/nmi_window.h>
+#include <bfvmm/hve/arch/intel_x64/vmexit/nmi.h>
 #include <bfvmm/hve/arch/intel_x64/vmexit/preemption_timer.h>
 #include <bfvmm/hve/arch/intel_x64/vmexit/rdmsr.h>
 #include <bfvmm/hve/arch/intel_x64/vmexit/sipi_signal.h>
@@ -58,7 +60,6 @@
 #include <bfvmm/hve/arch/intel_x64/interrupt_queue.h>
 #include <bfvmm/hve/arch/intel_x64/microcode.h>
 #include <bfvmm/hve/arch/intel_x64/mtrrs.h>
-#include <bfvmm/hve/arch/intel_x64/nmi.h>
 #include <bfvmm/hve/arch/intel_x64/save_state.h>
 #include <bfvmm/hve/arch/intel_x64/vcpu_global_state.h>
 #include <bfvmm/hve/arch/intel_x64/vcpu.h>

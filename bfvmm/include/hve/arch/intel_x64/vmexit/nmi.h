@@ -19,13 +19,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VMEXIT_INTERRUPT_WINDOW_INTEL_X64_H
-#define VMEXIT_INTERRUPT_WINDOW_INTEL_X64_H
+#ifndef VMEXIT_NMI_INTEL_X64_H
+#define VMEXIT_NMI_INTEL_X64_H
+
+#include <list>
 
 #include <bfgsl.h>
 #include <bfdelegate.h>
-
-#include "../interrupt_queue.h"
 
 // -----------------------------------------------------------------------------
 // Exports
@@ -52,69 +52,75 @@ namespace bfvmm::intel_x64
 
 class vcpu;
 
-/// Interrupt window
+/// External interrupt
 ///
-class EXPORT_HVE interrupt_window_handler
+/// Provides an interface for registering handlers for external-interrupt
+/// exits.
+///
+class EXPORT_HVE nmi_handler
 {
 public:
+
+    /// Handler delegate type
+    ///
+    /// The type of delegate clients must use when registering
+    /// handlers
+    ///
+    using handler_delegate_t = delegate<bool(vcpu *)>;
 
     /// Constructor
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this interrupt window handler
+    /// @param vcpu the vcpu object for this external-interrupt handler
     ///
-    interrupt_window_handler(
-        gsl::not_null<vcpu *> vcpu);
+    nmi_handler(gsl::not_null<vcpu *> vcpu);
 
     /// Destructor
     ///
     /// @expects
     /// @ensures
     ///
-    ~interrupt_window_handler() = default;
+    ~nmi_handler() = default;
 
 public:
 
-    /// Queue External Interrupt
-    ///
-    /// Queue an external interrupt at the given vector on the
-    /// next upcoming open interrupt window.
+    /// Add Handler
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vector the vector to inject into the guest
+    /// @param d the handler to call when an exit occurs
     ///
-    void queue_external_interrupt(uint64_t vector);
+    void add_handler(const handler_delegate_t &d);
 
-    /// Inject Exception
-    ///
-    /// Inject an exception on the next VM entry. Note that this will overwrite
-    /// any interrupts that are already injected for the next VM entry so
-    /// care should be taken when using this function
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param vector the vector to inject into the guest
-    /// @param ec the error code associated with the exception if applicable
-    ///
-    void inject_exception(uint64_t vector, uint64_t ec = 0);
+public:
 
-    /// Inject External Interrupt
+    /// Enable exiting
     ///
-    /// Inject an external interrupt on the next VM entry. Note that this will
-    /// overwriteany interrupts that are already injected for the next VM entry
-    /// so care should be taken when using this function
+    /// Example:
+    /// @code
+    /// this->enable_exiting();
+    /// @endcode
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vector the vector to inject into the guest
+    void enable_exiting();
+
+    /// Disable exiting
     ///
-    void inject_external_interrupt(uint64_t vector);
+    /// Example:
+    /// @code
+    /// this->disable_exiting();
+    /// @endcode
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    void disable_exiting();
+
 
 public:
 
@@ -126,28 +132,23 @@ public:
 
 private:
 
-    void enable_exiting();
-    void disable_exiting();
-
-private:
-
     vcpu *m_vcpu;
-
-    bool m_enabled{false};
-    interrupt_queue m_interrupt_queue;
+    std::list<handler_delegate_t> m_handlers;
 
 public:
 
     /// @cond
 
-    interrupt_window_handler(interrupt_window_handler &&) = default;
-    interrupt_window_handler &operator=(interrupt_window_handler &&) = default;
+    nmi_handler(nmi_handler &&) = default;
+    nmi_handler &operator=(nmi_handler &&) = default;
 
-    interrupt_window_handler(const interrupt_window_handler &) = delete;
-    interrupt_window_handler &operator=(const interrupt_window_handler &) = delete;
+    nmi_handler(const nmi_handler &) = delete;
+    nmi_handler &operator=(const nmi_handler &) = delete;
 
     /// @endcond
 };
+
+using nmi_handler_delegate_t = nmi_handler::handler_delegate_t;
 
 }
 
