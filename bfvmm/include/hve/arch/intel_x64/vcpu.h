@@ -31,6 +31,8 @@
 #include "vmexit/interrupt_window.h"
 #include "vmexit/io_instruction.h"
 #include "vmexit/monitor_trap.h"
+#include "vmexit/nmi_window.h"
+#include "vmexit/nmi.h"
 #include "vmexit/rdmsr.h"
 #include "vmexit/sipi_signal.h"
 #include "vmexit/preemption_timer.h"
@@ -86,10 +88,6 @@ namespace bfvmm::intel_x64
 ///
 class EXPORT_HVE vcpu : public bfvmm::vcpu
 {
-
-    using handler_t = bool(gsl::not_null<bfvmm::intel_x64::vcpu *>);
-    using handler_delegate_t = delegate<handler_t>;
-
 public:
 
     /// Default Constructor
@@ -134,6 +132,28 @@ public:
     /// @param obj ignored
     ///
     VIRTUAL void hlt_delegate(bfobject *obj);
+
+    /// Init Delegate
+    ///
+    /// Provides the base implementation for initializing the vCPU.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param obj ignored
+    ///
+    VIRTUAL void init_delegate(bfobject *obj);
+
+    /// Fini Delegate
+    ///
+    /// Provides the base implementation for finalizing the vCPU.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param obj ignored
+    ///
+    VIRTUAL void fini_delegate(bfobject *obj);
 
 public:
 
@@ -804,13 +824,6 @@ public:
     //==========================================================================
     // Resources
     //==========================================================================
-
-    // TODO
-    //
-    // Remvoe me. This creates a trainwreck. Intead, this object should be
-    // passed to the the objects that need it.
-    //
-    //
 
     /// Global State
     ///
@@ -1646,9 +1659,6 @@ public:
     VIRTUAL uint64_t ldtr_access_rights() const noexcept;
     VIRTUAL void set_ldtr_access_rights(uint64_t val) noexcept;
 
-    VIRTUAL gsl::not_null<intel_x64::exit_handler *> exit_handler() const;
-    VIRTUAL gsl::not_null<intel_x64::vmcs *> vmcs() const;
-
     /// @endcond
 
 private:
@@ -1657,34 +1667,36 @@ private:
 
 private:
 
+    std::unique_ptr<vmx> m_vmx{};
+
     ept::mmap *m_mmap{};
     vcpu_global_state_t *m_vcpu_global_state{};
 
 private:
 
-    std::unique_ptr<intel_x64::vmx> m_vmx;
-    std::unique_ptr<intel_x64::vmcs> m_vmcs;
-    std::unique_ptr<intel_x64::exit_handler> m_exit_handler;
+    vmcs m_vmcs;
+    exit_handler m_exit_handler;
 
     control_register_handler m_control_register_handler;
     cpuid_handler m_cpuid_handler;
-    io_instruction_handler m_io_instruction_handler;
-    monitor_trap_handler m_monitor_trap_handler;
-    rdmsr_handler m_rdmsr_handler;
-    wrmsr_handler m_wrmsr_handler;
-    xsetbv_handler m_xsetbv_handler;
-
     ept_misconfiguration_handler m_ept_misconfiguration_handler;
     ept_violation_handler m_ept_violation_handler;
     external_interrupt_handler m_external_interrupt_handler;
     init_signal_handler m_init_signal_handler;
     interrupt_window_handler m_interrupt_window_handler;
+    io_instruction_handler m_io_instruction_handler;
+    monitor_trap_handler m_monitor_trap_handler;
+    nmi_window_handler m_nmi_window_handler;
+    nmi_handler m_nmi_handler;
+    preemption_timer_handler m_preemption_timer_handler;
+    rdmsr_handler m_rdmsr_handler;
     sipi_signal_handler m_sipi_signal_handler;
+    wrmsr_handler m_wrmsr_handler;
+    xsetbv_handler m_xsetbv_handler;
 
     ept_handler m_ept_handler;
     microcode_handler m_microcode_handler;
     vpid_handler m_vpid_handler;
-    preemption_timer_handler m_preemption_timer_handler;
 
 private:
 
@@ -1695,16 +1707,11 @@ private:
     friend class io_instruction_handler;
     friend class rdmsr_handler;
     friend class wrmsr_handler;
-
-    std::list<handler_delegate_t> m_init_delegates;
-    std::list<handler_delegate_t> m_fini_delegates;
-
-private:
-
-    void vmexit_handler() noexcept;
 };
 
 }
+
+using vcpu_t = bfvmm::intel_x64::vcpu;
 
 /// Get Guest vCPU
 ///

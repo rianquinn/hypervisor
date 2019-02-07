@@ -28,7 +28,6 @@
 #include <bfdelegate.h>
 
 #include "../vmcs.h"
-#include "../../../../vmm_types.h"
 
 // -----------------------------------------------------------------------------
 // Exports
@@ -115,14 +114,14 @@ public:
     /// handlers
     ///
     using handler_delegate_t =
-        delegate<bool(gsl::not_null<vcpu *>, info_t &)>;
+        delegate<bool(vcpu *, info_t &)>;
 
     /// Constructor
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this control register handler
+    /// @param vcpu the vcpu object for this handler
     ///
     control_register_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -133,6 +132,28 @@ public:
     /// @ensures
     ///
     ~control_register_handler() = default;
+
+    /// Init
+    ///
+    /// Initializes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
 
 public:
 
@@ -228,24 +249,22 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vcpu *> vcpu);
+    bool handle(vcpu *vcpu);
 
     /// @endcond
 
 private:
 
-    bool handle_cr0(gsl::not_null<vcpu *> vcpu);
-    bool handle_cr3(gsl::not_null<vcpu *> vcpu);
-    bool handle_cr4(gsl::not_null<vcpu *> vcpu);
+    bool handle_cr0(vcpu *vcpu);
+    bool handle_cr3(vcpu *vcpu);
+    bool handle_cr4(vcpu *vcpu);
 
-    bool handle_wrcr0(gsl::not_null<vcpu *> vcpu);
-    bool handle_rdcr3(gsl::not_null<vcpu *> vcpu);
-    bool handle_wrcr3(gsl::not_null<vcpu *> vcpu);
-    bool handle_wrcr4(gsl::not_null<vcpu *> vcpu);
+    bool handle_wrcr0(vcpu *vcpu);
+    bool handle_rdcr3(vcpu *vcpu);
+    bool handle_wrcr3(vcpu *vcpu);
+    bool handle_wrcr4(vcpu *vcpu);
 
 private:
-
-    vcpu *m_vcpu;
 
     std::list<handler_delegate_t> m_wrcr0_handlers;
     std::list<handler_delegate_t> m_rdcr3_handlers;
@@ -264,6 +283,11 @@ public:
 
     /// @endcond
 };
+
+using control_register_handler_delegate_t = control_register_handler::handler_delegate_t;
+
+uintptr_t emulate_rdgpr(vcpu *vcpu);
+void emulate_wrgpr(vcpu *vcpu, uintptr_t val);
 
 }
 

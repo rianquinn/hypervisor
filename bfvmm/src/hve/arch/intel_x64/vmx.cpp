@@ -43,15 +43,8 @@ vmx::vmx() :
     this->check_vmx_capabilities_msr();
 }
 
-vmx::~vmx()
-{
-    if (::intel_x64::cr4::vmx_enable_bit::is_enabled()) {
-        this->disable();
-    }
-}
-
 void
-vmx::enable()
+vmx::init(vcpu *vcpu)
 {
     this->reset_vmx();
     this->setup_vmx_region();
@@ -69,7 +62,7 @@ vmx::enable()
 }
 
 void
-vmx::disable()
+vmx::fini(vcpu *vcpu) nonexcept
 {
     guard_exceptions([&]() {
         this->execute_vmxoff();

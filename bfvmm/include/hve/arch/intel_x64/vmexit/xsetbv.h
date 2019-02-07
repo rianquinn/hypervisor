@@ -104,14 +104,14 @@ public:
     /// handlers
     ///
     using handler_delegate_t =
-        delegate<bool(vcpu_t, info_t &)>;
+        delegate<bool(vcpu *, info_t &)>;
 
     /// Constructor
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this xsetbv handler
+    /// @param vcpu the vcpu object for this handler
     ///
     xsetbv_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -122,6 +122,28 @@ public:
     /// @ensures
     ///
     ~xsetbv_handler() = default;
+
+    /// Init
+    ///
+    /// Initializes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
 
 public:
 
@@ -138,13 +160,12 @@ public:
 
     /// @cond
 
-    bool handle(vcpu_t vcpu);
+    bool handle(vcpu *vcpu);
 
     /// @endcond
 
 private:
 
-    vcpu *m_vcpu;
     std::list<handler_delegate_t> m_handlers;
 
 public:
@@ -159,6 +180,8 @@ public:
 
     /// @endcond
 };
+
+using xsetbv_handler_delegate_t = xsetbv_handler::handler_delegate_t;
 
 }
 

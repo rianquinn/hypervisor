@@ -53,6 +53,8 @@
 namespace bfvmm::intel_x64
 {
 
+class vcpu;
+
 /// VMXON (Intel x86_64)
 ///
 /// This class is respobsible for turning Intel's VMX (also know as VT-x)
@@ -70,7 +72,9 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    vmx();
+    /// @param vcpu the vcpu object for this handler
+    ///
+    vmx(gsl::not_null<vcpu *> vcpu);
 
     /// Destructor
     ///
@@ -79,23 +83,27 @@ public:
     ///
     ~vmx();
 
-    /// Enable
+    /// Init
     ///
-    /// Enables vmx in hardware and executes the vmxon instruction
+    /// Initializes vmx's hardware state.
     ///
     /// @expects none
     /// @ensures none
     ///
-    void enable();
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
 
-    /// Disable
+    /// Fini
     ///
-    /// Runs the vmxoff instruction and disables vmx in hardware
+    /// Finalizes vmx's hardware state.
     ///
     /// @expects none
     /// @ensures none
     ///
-    void disable();
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
 
 private:
 

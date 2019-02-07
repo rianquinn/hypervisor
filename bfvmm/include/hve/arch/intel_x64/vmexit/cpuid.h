@@ -118,14 +118,14 @@ public:
     /// handlers
     ///
     using handler_delegate_t =
-        delegate<bool(gsl::not_null<vcpu *>, info_t &)>;
+        delegate<bool(vcpu *, info_t &)>;
 
     /// Constructor
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this cpuid_handler
+    /// @param vcpu the vcpu object for this handler
     ///
     cpuid_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -136,6 +136,28 @@ public:
     /// @ensures
     ///
     ~cpuid_handler() = default;
+
+    /// Init
+    ///
+    /// Initializes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
 
 public:
 
@@ -185,13 +207,11 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vcpu *> vcpu);
+    bool handle(vcpu *vcpu);
 
     /// @endcond
 
 private:
-
-    vcpu *m_vcpu;
 
     ::handler_delegate_t m_default_handler;
     std::unordered_map<leaf_t, bool> m_emulate;
@@ -209,6 +229,8 @@ public:
 
     /// @endcond
 };
+
+using cpuid_handler_delegate_t = cpuid_handler::handler_delegate_t;
 
 }
 

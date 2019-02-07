@@ -106,14 +106,14 @@ public:
     /// handlers
     ///
     using handler_delegate_t =
-        delegate<bool(gsl::not_null<vcpu *>, info_t &)>;
+        delegate<bool(vcpu *, info_t &)>;
 
     /// Constructor
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this EPT violation handler
+    /// @param vcpu the vcpu object for this handler
     ///
     ept_violation_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -124,6 +124,28 @@ public:
     /// @ensures
     ///
     ~ept_violation_handler() = default;
+
+    /// Init
+    ///
+    /// Initializes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
 
 public:
 
@@ -212,19 +234,17 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vcpu *> vcpu);
+    bool handle(vcpu *vcpu);
 
     /// @endcond
 
 private:
 
-    bool handle_read(gsl::not_null<vcpu *> vcpu, info_t &info);
-    bool handle_write(gsl::not_null<vcpu *> vcpu, info_t &info);
-    bool handle_execute(gsl::not_null<vcpu *> vcpu, info_t &info);
+    bool handle_read(vcpu *vcpu, info_t &info);
+    bool handle_write(vcpu *vcpu, info_t &info);
+    bool handle_execute(vcpu *vcpu, info_t &info);
 
 private:
-
-    vcpu *m_vcpu;
 
     ::handler_delegate_t m_default_read_handler;
     ::handler_delegate_t m_default_write_handler;
@@ -246,6 +266,8 @@ public:
 
     /// @endcond
 };
+
+using ept_violation_handler_delegate_t = ept_violation_handler::handler_delegate_t;
 
 }
 

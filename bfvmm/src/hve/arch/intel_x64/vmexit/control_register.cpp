@@ -24,8 +24,8 @@
 namespace bfvmm::intel_x64
 {
 
-static uintptr_t
-emulate_rdgpr(gsl::not_null<bfvmm::intel_x64::vcpu *> vcpu)
+uintptr_t
+emulate_rdgpr(vcpu *vcpu)
 {
     using namespace ::intel_x64::vmcs;
     using namespace exit_qualification::control_register_access;
@@ -81,8 +81,8 @@ emulate_rdgpr(gsl::not_null<bfvmm::intel_x64::vcpu *> vcpu)
     }
 }
 
-static void
-emulate_wrgpr(gsl::not_null<bfvmm::intel_x64::vcpu *> vcpu, uintptr_t val)
+void
+emulate_wrgpr(vcpu *vcpu, uintptr_t val)
 {
     using namespace ::intel_x64::vmcs;
     using namespace exit_qualification::control_register_access;
@@ -153,6 +153,7 @@ emulate_wrgpr(gsl::not_null<bfvmm::intel_x64::vcpu *> vcpu, uintptr_t val)
             return;
     }
 }
+
 static bool
 emulate_ia_32e_mode_switch(
     control_register_handler::info_t &info)
@@ -182,7 +183,7 @@ emulate_ia_32e_mode_switch(
 
 static bool
 default_wrcr0_handler(
-    vcpu_t vcpu, control_register_handler::info_t &info)
+    vcpu *vcpu, control_register_handler::info_t &info)
 {
     using namespace vmcs_n::guest_cr0;
     bfignored(vcpu);
@@ -196,7 +197,7 @@ default_wrcr0_handler(
 
 static bool
 default_rdcr3_handler(
-    vcpu_t vcpu, control_register_handler::info_t &info)
+    vcpu *vcpu, control_register_handler::info_t &info)
 {
     bfignored(vcpu);
     bfignored(info);
@@ -206,18 +207,17 @@ default_rdcr3_handler(
 
 static bool
 default_wrcr3_handler(
-    vcpu_t vcpu, control_register_handler::info_t &info)
+    vcpu *vcpu, control_register_handler::info_t &info)
 {
     bfignored(vcpu);
     bfignored(info);
 
-    ::intel_x64::vmx::invept_global();
     return true;
 }
 
 static bool
 default_wrcr4_handler(
-    vcpu_t vcpu, control_register_handler::info_t &info)
+    vcpu *vcpu, control_register_handler::info_t &info)
 {
     bfignored(vcpu);
     bfignored(info);
@@ -226,7 +226,7 @@ default_wrcr4_handler(
 }
 
 control_register_handler::control_register_handler(
-    vcpu_t vcpu
+    gsl::not_null<vcpu *> vcpu
 ) :
     m_vcpu{vcpu}
 {
@@ -254,6 +254,21 @@ control_register_handler::control_register_handler(
     );
 }
 
+void
+control_register_handler::init(
+    gsl::not_null<vcpu *> vcpu
+{
+    bfignored(vcpu);
+
+    this->enable_wrcr0_exiting(0);
+    this->enable_wrcr4_exiting(0);
+}
+
+void
+control_register_handler::fini(
+    gsl::not_null<vcpu *> vcpu
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Add Handler / Enablers
 // -----------------------------------------------------------------------------
@@ -279,7 +294,8 @@ control_register_handler::add_wrcr4_handler(
 { m_wrcr4_handlers.push_front(d); }
 
 void
-control_register_handler::enable_wrcr0_exiting(vmcs_n::value_type mask)
+control_register_handler::enable_wrcr0_exiting(
+    vmcs_n::value_type mask)
 {
     using namespace vmcs_n;
     mask |= m_vcpu->global_state()->ia32_vmx_cr0_fixed0;
@@ -318,7 +334,7 @@ control_register_handler::enable_wrcr4_exiting(
 // -----------------------------------------------------------------------------
 
 bool
-control_register_handler::handle(vcpu_t vcpu)
+control_register_handler::handle(vcpu *vcpu)
 {
     using namespace vmcs_n::exit_qualification::control_register_access;
 
@@ -340,7 +356,7 @@ control_register_handler::handle(vcpu_t vcpu)
 }
 
 bool
-control_register_handler::handle_cr0(vcpu_t vcpu)
+control_register_handler::handle_cr0(vcpu *vcpu)
 {
     using namespace vmcs_n::exit_qualification::control_register_access;
 
@@ -366,7 +382,7 @@ control_register_handler::handle_cr0(vcpu_t vcpu)
 }
 
 bool
-control_register_handler::handle_cr3(vcpu_t vcpu)
+control_register_handler::handle_cr3(vcpu *vcpu)
 {
     using namespace vmcs_n::exit_qualification::control_register_access;
 
@@ -390,7 +406,7 @@ control_register_handler::handle_cr3(vcpu_t vcpu)
 }
 
 bool
-control_register_handler::handle_cr4(vcpu_t vcpu)
+control_register_handler::handle_cr4(vcpu *vcpu)
 {
     using namespace vmcs_n::exit_qualification::control_register_access;
 
@@ -416,7 +432,7 @@ control_register_handler::handle_cr4(vcpu_t vcpu)
 }
 
 bool
-control_register_handler::handle_wrcr0(vcpu_t vcpu)
+control_register_handler::handle_wrcr0(vcpu *vcpu)
 {
     struct info_t info = {
         emulate_rdgpr(vcpu),
@@ -447,7 +463,7 @@ control_register_handler::handle_wrcr0(vcpu_t vcpu)
 }
 
 bool
-control_register_handler::handle_rdcr3(vcpu_t vcpu)
+control_register_handler::handle_rdcr3(vcpu *vcpu)
 {
     struct info_t info = {
         vmcs_n::guest_cr3::get(),
@@ -474,7 +490,7 @@ control_register_handler::handle_rdcr3(vcpu_t vcpu)
 }
 
 bool
-control_register_handler::handle_wrcr3(vcpu_t vcpu)
+control_register_handler::handle_wrcr3(vcpu *vcpu)
 {
     struct info_t info = {
         emulate_rdgpr(vcpu),
@@ -501,7 +517,7 @@ control_register_handler::handle_wrcr3(vcpu_t vcpu)
 }
 
 bool
-control_register_handler::handle_wrcr4(vcpu_t vcpu)
+control_register_handler::handle_wrcr4(vcpu *vcpu)
 {
     struct info_t info = {
         emulate_rdgpr(vcpu),
@@ -511,6 +527,7 @@ control_register_handler::handle_wrcr4(vcpu_t vcpu)
     };
 
     info.shadow = info.val;
+    info.val |= ::intel_x64::cr4::vmx_enable_bit::mask;
     info.val |= m_vcpu->global_state()->ia32_vmx_cr4_fixed0;
 
     for (const auto &d : m_wrcr4_handlers) {

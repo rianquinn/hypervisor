@@ -19,8 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VMEXIT_MONITOR_TRAP_INTEL_X64_H
-#define VMEXIT_MONITOR_TRAP_INTEL_X64_H
+#ifndef VMEXIT_NMI_INTEL_X64_H
+#define VMEXIT_NMI_INTEL_X64_H
 
 #include <list>
 
@@ -52,39 +52,21 @@ namespace bfvmm::intel_x64
 
 class vcpu;
 
-/// Monitor Trap
+/// External interrupt
 ///
-/// Provides an interface for registering handlers for monitor-trap flag
+/// Provides an interface for registering handlers for external-interrupt
 /// exits.
 ///
-class EXPORT_HVE monitor_trap_handler
+class EXPORT_HVE nmi_handler
 {
 public:
-
-    /// Info
-    ///
-    /// This struct is created by monitor_trap_handler::handle before being
-    /// passed to each registered handler.
-    ///
-    struct info_t {
-
-        /// Ignore clear
-        ///
-        /// If true, do not disable the monitor trap flag after your
-        /// registered handler returns true.
-        ///
-        /// default: false
-        ///
-        bool ignore_clear;
-    };
 
     /// Handler delegate type
     ///
     /// The type of delegate clients must use when registering
     /// handlers
     ///
-    using handler_delegate_t =
-        delegate<bool(vcpu *, info_t &)>;
+    using handler_delegate_t = delegate<bool(vcpu *)>;
 
     /// Constructor
     ///
@@ -93,15 +75,14 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    monitor_trap_handler(
-        gsl::not_null<vcpu *> vcpu);
+    nmi_handler(gsl::not_null<vcpu *> vcpu);
 
     /// Destructor
     ///
     /// @expects
     /// @ensures
     ///
-    ~monitor_trap_handler() = default;
+    ~nmi_handler() = default;
 
     /// Init
     ///
@@ -127,7 +108,7 @@ public:
 
 public:
 
-    /// Add Monitor Trap Handler
+    /// Add Handler
     ///
     /// @expects
     /// @ensures
@@ -136,17 +117,31 @@ public:
     ///
     void add_handler(const handler_delegate_t &d);
 
-    /// Enable
+public:
+
+    /// Enable exiting
     ///
     /// Example:
     /// @code
-    /// this->enable();
+    /// this->enable_exiting();
     /// @endcode
     ///
     /// @expects
     /// @ensures
     ///
-    void enable();
+    void enable_exiting();
+
+    /// Disable exiting
+    ///
+    /// Example:
+    /// @code
+    /// this->disable_exiting();
+    /// @endcode
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    void disable_exiting();
 
 public:
 
@@ -164,16 +159,16 @@ public:
 
     /// @cond
 
-    monitor_trap_handler(monitor_trap_handler &&) = default;
-    monitor_trap_handler &operator=(monitor_trap_handler &&) = default;
+    nmi_handler(nmi_handler &&) = default;
+    nmi_handler &operator=(nmi_handler &&) = default;
 
-    monitor_trap_handler(const monitor_trap_handler &) = delete;
-    monitor_trap_handler &operator=(const monitor_trap_handler &) = delete;
+    nmi_handler(const nmi_handler &) = delete;
+    nmi_handler &operator=(const nmi_handler &) = delete;
 
     /// @endcond
 };
 
-using monitor_trap_handler_delegate_t = monitor_trap_handler::handler_delegate_t;
+using nmi_handler_delegate_t = nmi_handler::handler_delegate_t;
 
 }
 

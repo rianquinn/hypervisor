@@ -60,7 +60,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this rdmsr handler
+    /// @param vcpu the vcpu object for this handler
     ///
     vpid_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -72,32 +72,30 @@ public:
     ///
     ~vpid_handler() = default;
 
-    /// Get ID
+    /// Init
     ///
-    /// @expects
-    /// @ensures
+    /// Initializes the handler's hardware state, if any.
     ///
-    /// @return Returns the VPID
+    /// @expects none
+    /// @ensures none
     ///
-    vmcs_n::value_type id() const noexcept;
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
 
-    /// Enable
+    /// Fini
     ///
-    /// @expects
-    /// @ensures
+    /// Finalizes the handler's hardware state, if any.
     ///
-    void enable();
-
-    /// Disable
+    /// @expects none
+    /// @ensures none
     ///
-    /// @expects
-    /// @ensures
+    /// @param vcpu the vcpu object for this handler
     ///
-    void disable();
+    void fini(gsl::not_null<vcpu *> vcpu);
 
 private:
 
-    vcpu *m_vcpu;
     vmcs_n::value_type m_id;
 
 public:

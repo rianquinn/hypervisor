@@ -84,14 +84,14 @@ public:
     /// handlers
     ///
     using handler_delegate_t =
-        delegate<bool(gsl::not_null<vcpu *>, info_t &)>;
+        delegate<bool(vcpu *, info_t &)>;
 
     /// Constructor
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this external-interrupt handler
+    /// @param vcpu the vcpu object for this handler
     ///
     external_interrupt_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -102,6 +102,28 @@ public:
     /// @ensures
     ///
     ~external_interrupt_handler() = default;
+
+    /// Init
+    ///
+    /// Initializes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
 
 public:
 
@@ -144,13 +166,12 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vcpu *> vcpu);
+    bool handle(vcpu *vcpu);
 
     /// @endcond
 
 private:
 
-    vcpu *m_vcpu;
     std::list<handler_delegate_t> m_handlers;
 
 public:
@@ -165,6 +186,8 @@ public:
 
     /// @endcond
 };
+
+using external_interrupt_handler_delegate_t = external_interrupt_handler::handler_delegate_t;
 
 }
 

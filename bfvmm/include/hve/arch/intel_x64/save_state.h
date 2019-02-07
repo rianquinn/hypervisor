@@ -51,10 +51,10 @@ struct save_state_t {
     uint64_t rip;                   // 0x078
     uint64_t rsp;                   // 0x080
 
-    uint64_t reserved1;             // 0x088
-    uint64_t reserved2;             // 0x090
-    uint64_t vcpuid;                // 0x098
-    uint64_t vcpu_ptr;              // 0x0A0
+    uint64_t vcpuid;                // 0x088
+    uint64_t pcpuid;                // 0x090
+    uint64_t vcpu_ptr;              // 0x098
+    uint64_t exit_handler_ptr;      // 0x0A0
 
     uint64_t user1;                 // 0x0A8
     uint64_t user2;                 // 0x0B0

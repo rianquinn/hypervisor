@@ -98,14 +98,14 @@ public:
     /// handlers
     ///
     using handler_delegate_t =
-        delegate<bool(gsl::not_null<vcpu *>, info_t &)>;
+        delegate<bool(vcpu *, info_t &)>;
 
     /// Constructor
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this EPT misconfiguration handler
+    /// @param vcpu the vcpu object for this handler
     ///
     ept_misconfiguration_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -116,6 +116,28 @@ public:
     /// @ensures
     ///
     ~ept_misconfiguration_handler() = default;
+
+    /// Init
+    ///
+    /// Initializes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
 
 public:
 
@@ -132,13 +154,12 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vcpu *> vcpu);
+    bool handle(vcpu *vcpu);
 
     /// @endcond
 
 private:
 
-    vcpu *m_vcpu;
     std::list<handler_delegate_t> m_handlers;
 
 public:
@@ -153,6 +174,8 @@ public:
 
     /// @endcond
 };
+
+using ept_misconfiguration_handler_delegate_t = ept_misconfiguration_handler::handler_delegate_t;
 
 }
 

@@ -67,13 +67,13 @@ namespace bfvmm::intel_x64
 class vcpu;
 }
 
-using handler_t = bool(gsl::not_null<bfvmm::intel_x64::vcpu *>);
+using handler_t = bool(bfvmm::intel_x64::vcpu *);
 using handler_delegate_t = delegate<handler_t>;
-using init_handler_delegate_t = delegate<handler_t>;
-using fini_handler_delegate_t = delegate<handler_t>;
 
 namespace bfvmm::intel_x64
 {
+
+class vcpu;
 
 /// Exit handler
 ///
@@ -88,7 +88,9 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    exit_handler();
+    /// @param vcpu the vcpu object for this handler
+    ///
+    exit_handler(gsl::not_null<vcpu *> vcpu);
 
     /// Destructor
     ///
@@ -96,6 +98,30 @@ public:
     /// @ensures none
     ///
     VIRTUAL ~exit_handler() = default;
+
+    /// Init
+    ///
+    /// Initializes the exit handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the exit handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
+
+public:
 
     /// Add Handler Delegate
     ///
@@ -147,52 +173,16 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    /// @param vcpu The vcpu this exit occured on
+    /// @param exit_handler the exit handler associated with this vcpu
+    /// @param vcpu the vcpu this exit occurred on
+    /// @return true if the vmexit was successfully handled, false otherwise
     ///
-    /// @return True if the vmexit was successfully handled, false otherwise
-    bool handle(vcpu_t vcpu);
+    bool handle(vcpu *vcpu, exit_handler *exit_handler);
 
 private:
 
-    // These members provide the legacy exit handler mechanism, and will be
-    // deprecated slowly
-    std::list<init_handler_delegate_t> m_exit_handlers;
-    std::list<init_handler_delegate_t> m_init_handlers;
-    std::list<fini_handler_delegate_t> m_fini_handlers;
+    std::list<handler_delegate_t> m_exit_handlers;
     std::array<std::list<handler_delegate_t>, 64> m_exit_handlers_array;
-
-    // These members will provide the new exit handler mechanism
-    std::array<handler_delegate_t, 64> m_exit_delegates;
-    std::unique_ptr<cpuid::delegator> m_cpuid_delegator;
-    std::unique_ptr<nmi::delegator> m_nmi_delegator;
-    std::unique_ptr<cr::delegator> m_cr_delegator;
-    std::unique_ptr<invd::delegator> m_invd_delegator;
-    std::unique_ptr<msr::delegator> m_msr_delegator;
-    std::unique_ptr<fallback::delegator> m_fallback_delegator;
-
-public:
-
-    /// @cond
-
-    cpuid::delegator *cpuid_delegator() const
-    { return m_cpuid_delegator.get(); }
-
-    nmi::delegator *nmi_delegator() const
-    { return m_nmi_delegator.get(); }
-
-    cr::delegator *cr_delegator() const
-    { return m_cr_delegator.get(); }
-
-    invd::delegator *invd_delegator() const
-    { return m_invd_delegator.get(); }
-
-    msr::delegator *msr_delegator() const
-    { return m_msr_delegator.get(); }
-
-    fallback::delegator *fallback_delegator() const
-    { return m_fallback_delegator.get(); }
-
-    /// @endcond
 
 public:
 

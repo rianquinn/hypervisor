@@ -65,7 +65,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this INIT signal handler
+    /// @param vcpu the vcpu object for this handler
     ///
     init_signal_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -77,17 +77,35 @@ public:
     ///
     ~init_signal_handler() = default;
 
+    /// Init
+    ///
+    /// Initializes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
+
 public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vcpu *> vcpu);
+    bool handle(vcpu *vcpu);
 
     /// @endcond
-
-private:
-
-    vcpu *m_vcpu;
 
 public:
 

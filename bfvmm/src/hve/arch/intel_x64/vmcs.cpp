@@ -128,15 +128,14 @@ vmcs::vmcs(vcpu_t vcpu) :
     m_save_state{make_page<save_state_t>()},
     m_vmcs_region{make_page<uint32_t>()},
     m_vmcs_region_phys{g_mm->virtptr_to_physint(m_vmcs_region.get())},
+
     m_msr_bitmap{make_page<uint8_t>()},
     m_io_bitmap_a{make_page<uint8_t>()},
     m_io_bitmap_b{make_page<uint8_t>()},
+
     m_ist1{std::make_unique<gsl::byte[]>(STACK_SIZE * 2)},
     m_stack{std::make_unique<gsl::byte[]>(STACK_SIZE * 2)}
 {
-    m_save_state->vcpuid = vcpu->id();
-    m_save_state->vcpu_ptr = reinterpret_cast<uintptr_t>(vcpu.get());
-
     bfn::call_once(g_once_flag, setup);
 }
 
@@ -158,11 +157,13 @@ vmcs::init()
     m_host_gdt.set(4, nullptr, 0xFFFFFFFF, ring0_gs_descriptor);
     m_host_gdt.set(5, &m_host_tss, sizeof(m_host_tss), ring0_tr_descriptor);
 
-    auto vcpuid = m_save_state->vcpuid;
-    this->write_host_state(vcpuid);
+    m_host_tss.ist1 = setup_stack(m_ist1.get(), m_save_state->vcpuid);
+    set_default_esrs(&m_host_idt, 8);
+
+    this->write_host_state();
     this->write_control_state();
 
-    if (vcpuid::is_host_vm_vcpu(vcpuid)) {
+    if (vcpuid::is_host_vm_vcpu(m_save_state->vcpuid)) {
         this->write_guest_state();
     }
 
@@ -215,15 +216,11 @@ vmcs::resume()
 
 void
 vmcs::load()
-{
-    ::intel_x64::vm::load(&m_vmcs_region_phys);
-}
+{ ::intel_x64::vm::load(&m_vmcs_region_phys); }
 
 void
 vmcs::clear()
-{
-    ::intel_x64::vm::clear(&m_vmcs_region_phys);
-}
+{ ::intel_x64::vm::clear(&m_vmcs_region_phys); }
 
 bool
 vmcs::check() const noexcept
@@ -270,13 +267,8 @@ vmcs::write_host_state(vcpuid::type vcpuid)
     host_gdtr_base::set(m_host_gdt.base());
     host_idtr_base::set(m_host_idt.base());
 
-    m_host_tss.ist1 = setup_stack(m_ist1.get(), vcpuid);
-    set_default_esrs(&m_host_idt, 8);
-    set_nmi_handler(&m_host_idt, 8);
-
     host_rip::set(vmexit_entry);
-    host_rsp::set(setup_stack(m_stack.get(), vcpuid));
-
+    host_rsp::set(setup_stack(m_stack.get(), m_save_state->vcpuid));
 }
 
 void
@@ -388,21 +380,10 @@ vmcs::write_control_state()
         ((ia32_vmx_pinbased_ctls_msr >> 32) & 0x00000000FFFFFFFF)
     );
 
-
     primary_processor_based_vm_execution_controls::set(
         ((ia32_vmx_procbased_ctls_msr >> 0) & 0x00000000FFFFFFFF) &
         ((ia32_vmx_procbased_ctls_msr >> 32) & 0x00000000FFFFFFFF)
     );
-
-    // <TODO>: Move these to the VMCS
-    address_of_msr_bitmap::set(g_mm->virtptr_to_physint(m_msr_bitmap.get()));
-    address_of_io_bitmap_a::set(g_mm->virtptr_to_physint(m_io_bitmap_a.get()));
-    address_of_io_bitmap_b::set(g_mm->virtptr_to_physint(m_io_bitmap_b.get()));
-
-    primary_processor_based_vm_execution_controls::use_msr_bitmap::enable();
-    primary_processor_based_vm_execution_controls::use_io_bitmaps::enable();
-    // </TODO>
-
 
     vm_exit_controls::set(
         ((ia32_vmx_exit_ctls_msr >> 0) & 0x00000000FFFFFFFF) &
@@ -441,6 +422,13 @@ vmcs::write_control_state()
     vm_entry_controls::load_ia32_efer::enable();
 
     cr4_guest_host_mask::set(::intel_x64::cr4::vmx_enable_bit::mask);
+
+    address_of_msr_bitmap::set(g_mm->virtptr_to_physint(m_msr_bitmap.get()));
+    address_of_io_bitmap_a::set(g_mm->virtptr_to_physint(m_io_bitmap_a.get()));
+    address_of_io_bitmap_b::set(g_mm->virtptr_to_physint(m_io_bitmap_b.get()));
+
+    primary_processor_based_vm_execution_controls::use_msr_bitmap::enable();
+    primary_processor_based_vm_execution_controls::use_io_bitmaps::enable();
 }
 
 }

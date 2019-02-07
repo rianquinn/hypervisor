@@ -63,7 +63,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this rdmsr handler
+    /// @param vcpu the vcpu object for this handler
     ///
     ept_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -76,6 +76,30 @@ public:
     ///
     ~ept_handler() = default;
 
+    /// Init
+    ///
+    /// Initializes ept's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes ept's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
+
+public:
+
     /// Set EPTP
     ///
     /// @expects
@@ -85,10 +109,6 @@ public:
     ///     a nullptr, EPT is disabled.
     ///
     void set_eptp(ept::mmap *map);
-
-private:
-
-    vcpu *m_vcpu;
 
 public:
 

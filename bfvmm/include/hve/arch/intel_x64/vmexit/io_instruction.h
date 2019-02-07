@@ -138,14 +138,14 @@ public:
     /// handlers
     ///
     using handler_delegate_t =
-        delegate<bool(gsl::not_null<vcpu *>, info_t &)>;
+        delegate<bool(vcpu *, info_t &)>;
 
     /// Constructor
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this io instruction handler
+    /// @param vcpu the vcpu object for this handler
     ///
     io_instruction_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -156,6 +156,28 @@ public:
     /// @ensures
     ///
     ~io_instruction_handler() = default;
+
+    /// Init
+    ///
+    /// Initializes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
 
 public:
 
@@ -280,26 +302,23 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vcpu *> vcpu);
+    bool handle(vcpu *vcpu);
 
     /// @endcond
 
 private:
 
-    bool handle_in(gsl::not_null<vcpu *> vcpu, info_t &info);
-    bool handle_out(gsl::not_null<vcpu *> vcpu, info_t &info);
+    bool handle_in(vcpu *vcpu, info_t &info);
+    bool handle_out(vcpu *vcpu, info_t &info);
 
     void emulate_in(info_t &info);
     void emulate_out(info_t &info);
 
-    void load_operand(gsl::not_null<vcpu *> vcpu, info_t &info);
-    void store_operand(gsl::not_null<vcpu *> vcpu, info_t &info);
+    void load_operand(vcpu *vcpu, info_t &info);
+    void store_operand(vcpu *vcpu, info_t &info);
 
 private:
 
-    vcpu *m_vcpu;
-
-    gsl::span<uint8_t> m_msr_bitmap;
     gsl::span<uint8_t> m_io_bitmap_a;
     gsl::span<uint8_t> m_io_bitmap_b;
 
@@ -320,6 +339,8 @@ public:
 
     /// @endcond
 };
+
+using io_instruction_handler_delegate_t = io_instruction_handler::handler_delegate_t;
 
 }
 

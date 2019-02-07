@@ -19,14 +19,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef BFVMM_DELEGATOR_MSR_INTEL_X64_H
-#define BFVMM_DELEGATOR_MSR_INTEL_X64_H
+#ifndef VMEXIT_NMI_WINDOW_HANDLER_INTEL_X64_H
+#define VMEXIT_NMI_WINDOW_HANDLER_INTEL_X64_H
 
-#include <stdint.h>
-#include <bfdelegate.h>
 #include <bfgsl.h>
-
-#include "../../../../vmm_types.h"
+#include <bfdelegate.h>
 
 // -----------------------------------------------------------------------------
 // Exports
@@ -44,58 +41,105 @@
 #define EXPORT_HVE
 #endif
 
-namespace bfvmm::intel_x64::msr
+// -----------------------------------------------------------------------------
+// Definitions
+// -----------------------------------------------------------------------------
+
+namespace bfvmm::intel_x64
 {
 
-/// MSR delegator
-///
-/// Delegates processing of model-specific register based vmexits to registered
-/// handlers
-///
-class EXPORT_HVE delegator
-{
+class vcpu;
 
+/// NMI window
+///
+class EXPORT_HVE nmi_window_handler
+{
 public:
 
-    /// Default Constructor
+    /// Constructor
     ///
-    /// @expects none
-    /// @ensures none
+    /// @expects
+    /// @ensures
     ///
-    delegator() = default;
+    /// @param vcpu the vcpu object for this handler
+    ///
+    nmi_window_handler(gsl::not_null<vcpu *> vcpu);
 
     /// Destructor
     ///
-    /// @expects none
-    /// @ensures none
+    /// @expects
+    /// @ensures
     ///
-    ~delegator() = default;
+    ~nmi_window_handler() = default;
 
-    /// Handle
+    /// Init
     ///
-    /// Handle an MSR read vmexit using registered handlers
+    /// Initializes the handler's hardware state, if any.
     ///
     /// @expects none
     /// @ensures none
     ///
-    /// @param vcpu The vcpu the vmexit occurred on
+    /// @param vcpu the vcpu object for this handler
     ///
-    /// @return True if the vmexit was successfully handled, false otherwise
-    ///
-    bool handle_rdmsr(vcpu_t vcpu);
+    void init(gsl::not_null<vcpu *> vcpu);
 
-    /// Handle
+    /// Fini
     ///
-    /// Handle an MSR write vmexit using registered handlers
+    /// Finalizes the handler's hardware state, if any.
     ///
     /// @expects none
     /// @ensures none
     ///
-    /// @param vcpu The vcpu the vmexit occurred on
+    /// @param vcpu the vcpu object for this handler
     ///
-    /// @return True if the vmexit was successfully handled, false otherwise
+    void fini(gsl::not_null<vcpu *> vcpu);
+
+public:
+
+    /// Queue NMI
     ///
-    bool handle_wrmsr(vcpu_t vcpu);
+    /// Queues an NMI for injection.
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    void queue_nmi();
+
+    /// Inject NMI
+    ///
+    /// Inject an NMI on the next VM entry.
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param vector the vector to inject into the guest
+    ///
+    void inject_nmi();
+
+public:
+
+    /// @cond
+
+    bool handle(vcpu *vcpu);
+
+    /// @endcond
+
+private:
+
+    void enable_exiting();
+    void disable_exiting();
+
+public:
+
+    /// @cond
+
+    nmi_window_handler(nmi_window_handler &&) = default;
+    nmi_window_handler &operator=(nmi_window_handler &&) = default;
+
+    nmi_window_handler(const nmi_window_handler &) = delete;
+    nmi_window_handler &operator=(const nmi_window_handler &) = delete;
+
+    /// @endcond
 };
 
 }

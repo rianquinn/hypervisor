@@ -33,16 +33,16 @@ vpid_handler::vpid_handler(
     m_id = s_id++;
 }
 
-vmcs_n::value_type vpid_handler::id() const noexcept
-{ return m_id; }
-
-void vpid_handler::enable()
+void vpid_handler::init()
 {
     vmcs_n::virtual_processor_identifier::set(m_id);
     vmcs_n::secondary_processor_based_vm_execution_controls::enable_vpid::enable();
 }
 
-void vpid_handler::disable()
-{ vmcs_n::secondary_processor_based_vm_execution_controls::enable_vpid::disable(); }
+void vpid_handler::fini()
+{
+    vmcs_n::virtual_processor_identifier::set(0);
+    vmcs_n::secondary_processor_based_vm_execution_controls::enable_vpid::disable();
+}
 
 }

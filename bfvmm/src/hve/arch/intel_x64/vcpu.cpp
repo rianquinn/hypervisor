@@ -41,28 +41,47 @@ vcpu::vcpu(
     vcpu_global_state_t *vcpu_global_state
 ) :
     bfvmm::vcpu{id},
-    m_vcpu_global_state{vcpu_global_state != nullptr ? vcpu_global_state : & g_vcpu_global_state},
+
     m_vmx{is_host_vm_vcpu() ? std::make_unique<vmx>() : nullptr},
-    m_vmcs{std::make_unique<bfvmm::intel_x64::vmcs>(this)},
-    m_exit_handler{std::make_unique<intel_x64::exit_handler>()},
+    m_vcpu_global_state{vcpu_global_state != nullptr ? vcpu_global_state : & g_vcpu_global_state},
+
+    m_vmcs{this},
+    m_exit_handler{this},
+
     m_control_register_handler{this},
     m_cpuid_handler{this},
-    m_io_instruction_handler{this},
-    m_monitor_trap_handler{this},
-    m_rdmsr_handler{this},
-    m_wrmsr_handler{this},
-    m_xsetbv_handler{this},
     m_ept_misconfiguration_handler{this},
     m_ept_violation_handler{this},
     m_external_interrupt_handler{this},
     m_init_signal_handler{this},
     m_interrupt_window_handler{this},
+    m_io_instruction_handler{this},
+    m_monitor_trap_handler{this},
+    m_nmi_window_handler{this},
+    m_nmi_handler{this},
+    m_preemption_timer_handler{this},
+    m_rdmsr_handler{this},
     m_sipi_signal_handler{this},
+    m_wrmsr_handler{this},
+    m_xsetbv_handler{this},
+
     m_ept_handler{this},
     m_microcode_handler{this},
-    m_vpid_handler{this},
-    m_preemption_timer_handler{this}
+    m_vpid_handler{this}
 {
+    // TODO:
+    //
+    // We need to copy the physical CPUID to the save state as well from the
+    // parent vCPU. This will be needed for VMCS migration so that we know
+    // which stack to grab.
+    //
+    // Note that there is likely a bug with guest vCPUs for the same reason as
+    // they are creating their own stack and TLS instead of using the TLS
+    // that was provided, so it is likely that TLS is not working properly
+    // for guest vCPUs. Either way, knowing which physical core the vCPU is
+    // on is a good thing to have that we are currently not tracking properly
+    //
+
     this->add_run_delegate(
         run_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::run_delegate>(this)
     );
@@ -70,7 +89,28 @@ vcpu::vcpu(
     this->add_hlt_delegate(
         hlt_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::hlt_delegate>(this)
     );
+
+    this->add_init_delegate(
+        init_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::init_delegate>(this)
+    );
+
+    this->add_fini_delegate(
+        fini_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::fini_delegate>(this)
+    );
+
+    m_vmcs.save_state()->vcpuid = this->id();
+    m_vmcs.save_state()->pcpuid = this->id();
+
+    m_vmcs.save_state()->vcpu_ptr =
+        reinterpret_cast<uintptr_t>(this);
+
+    m_vmcs.save_state()->exit_handler_ptr =
+        reinterpret_cast<uintptr_t>(&m_exit_handler);
 }
+
+    this->enable_vpid();
+    this->enable_nmis();
+
 
 void
 vcpu::run_delegate(bfobject *obj)
@@ -82,24 +122,26 @@ vcpu::run_delegate(bfobject *obj)
     // way, the next time this function is executed, a launch takes place
     // again. This is needed in order to perform a VMCS migration.
     //
+    // We will also need to handle TLS properly, likely by locating the proper
+    // stack to use. Otherwise, TLS will not have the properly memory
+    // associated with it as TLS is on a physical core basis, not a virtual
+    // core basis.
+    //
     // Question: Do we need to re-setup all of the VMCS fields?
     //
 
     bfignored(obj);
 
     if (m_launched) {
-        m_vmcs->resume();
+        m_vmcs.resume();
     }
     else {
-        if (this->is_host_vm_vcpu()) {
-            m_vmx->enable();
-        }
+
+        m_launched = true;
 
         try {
-            m_vmcs->init();
-            m_vmcs->load();
-            m_vmcs->launch();
-            m_launched = true;
+            m_vmcs.load();
+            m_vmcs.launch();
         }
         catch (...) {
             m_launched = false;
@@ -107,6 +149,7 @@ vcpu::run_delegate(bfobject *obj)
         }
 
         ::x64::cpuid::get(0x4BF00010, 0, 0, 0);
+        ::x64::cpuid::get(0x4BF00011, 0, 0, 0);
     }
 }
 
@@ -116,6 +159,71 @@ vcpu::hlt_delegate(bfobject *obj)
     bfignored(obj);
 
     ::x64::cpuid::get(0x4BF00020, 0, 0, 0);
+    ::x64::cpuid::get(0x4BF00021, 0, 0, 0);
+}
+
+void
+vcpu::init_delegate(bfobject *obj)
+{
+    bfignored(obj);
+
+    m_vmx->init(this);
+
+    m_vmcs.init(this);
+    m_exit_handler.init(this);
+
+    m_control_register_handler.init(this);
+    m_cpuid_handler.init(this);
+    m_ept_misconfiguration_handler.init(this);
+    m_ept_violation_handler.init(this);
+    m_external_interrupt_handler.init(this);
+    m_init_signal_handler.init(this);
+    m_interrupt_window_handler.init(this);
+    m_io_instruction_handler.init(this);
+    m_monitor_trap_handler.init(this);
+    m_nmi_window_handler.init(this);
+    m_nmi_handler.init(this);
+    m_preemption_timer_handler.init(this);
+    m_rdmsr_handler.init(this);
+    m_sipi_signal_handler.init(this);
+    m_wrmsr_handler.init(this);
+    m_xsetbv_handler.init(this);
+
+    m_ept_handler.init(this);
+    m_microcode_handler.init(this);
+    m_vpid_handler.init(this);
+}
+
+void
+vcpu::fini_delegate(bfobject *obj)
+{
+    bfignored(obj);
+
+    m_ept_handler.fini(this);
+    m_microcode_handler.fini(this);
+    m_vpid_handler.fini(this);
+
+    m_control_register_handler.fini(this);
+    m_cpuid_handler.fini(this);
+    m_ept_misconfiguration_handler.fini(this);
+    m_ept_violation_handler.fini(this);
+    m_external_interrupt_handler.fini(this);
+    m_init_signal_handler.fini(this);
+    m_interrupt_window_handler.fini(this);
+    m_io_instruction_handler.fini(this);
+    m_monitor_trap_handler.fini(this);
+    m_nmi_window_handler.fini(this);
+    m_nmi_handler.fini(this);
+    m_preemption_timer_handler.fini(this);
+    m_rdmsr_handler.fini(this);
+    m_sipi_signal_handler.fini(this);
+    m_wrmsr_handler.fini(this);
+    m_xsetbv_handler.fini(this);
+
+    m_vmcs.fini(this);
+    m_exit_handler.fini(this);
+
+    m_vmx->fini(this);
 }
 
 void
@@ -193,19 +301,6 @@ vcpu::advance()
 
     this->set_rip(this->rip() + vm_exit_instruction_length::get());
     return true;
-}
-
-void
-vcpu::vmexit_handler() noexcept
-{
-    guard_exceptions([&]() {
-        if (m_exit_handler->handle(this)) {
-            this->run();
-        }
-        else {
-            this->halt();
-        }
-    });
 }
 
 //==========================================================================

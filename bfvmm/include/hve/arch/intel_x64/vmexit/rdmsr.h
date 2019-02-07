@@ -46,6 +46,12 @@
 #endif
 
 // -----------------------------------------------------------------------------
+// Helpers
+// -----------------------------------------------------------------------------
+
+::x64::msrs::value_type emulate_rdmsr(::x64::msrs::field_type msr);
+
+// -----------------------------------------------------------------------------
 // Definitions
 // -----------------------------------------------------------------------------
 
@@ -110,14 +116,14 @@ public:
     /// handlers
     ///
     using handler_delegate_t =
-        delegate<bool(gsl::not_null<vcpu *>, info_t &)>;
+        delegate<bool(vcpu *, info_t &)>;
 
     /// Constructor
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this rdmsr handler
+    /// @param vcpu the vcpu object for this handler
     ///
     rdmsr_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -128,6 +134,28 @@ public:
     /// @ensures
     ///
     ~rdmsr_handler() = default;
+
+    /// Init
+    ///
+    /// Initializes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
 
 public:
 
@@ -248,13 +276,12 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vcpu *> vcpu);
+    bool handle(vcpu *vcpu);
 
     /// @endcond
 
 private:
 
-    vcpu *m_vcpu;
     gsl::span<uint8_t> m_msr_bitmap;
 
     ::handler_delegate_t m_default_handler;
@@ -273,6 +300,8 @@ public:
 
     /// @endcond
 };
+
+using rdmsr_handler_delegate_t = rdmsr_handler::handler_delegate_t;
 
 }
 

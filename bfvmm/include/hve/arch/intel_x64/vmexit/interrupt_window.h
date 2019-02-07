@@ -54,8 +54,6 @@ class vcpu;
 
 /// Interrupt window
 ///
-/// Provides an interface for registering handlers of the interrupt-window exit.
-///
 class EXPORT_HVE interrupt_window_handler
 {
 public:
@@ -65,7 +63,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this interrupt window handler
+    /// @param vcpu the vcpu object for this handler
     ///
     interrupt_window_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -76,6 +74,28 @@ public:
     /// @ensures
     ///
     ~interrupt_window_handler() = default;
+
+    /// Init
+    ///
+    /// Initializes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
 
 public:
 
@@ -122,7 +142,7 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vcpu *> vcpu);
+    bool handle(vcpu *vcpu);
 
     /// @endcond
 
@@ -132,8 +152,6 @@ private:
     void disable_exiting();
 
 private:
-
-    vcpu *m_vcpu;
 
     bool m_enabled{false};
     interrupt_queue m_interrupt_queue;

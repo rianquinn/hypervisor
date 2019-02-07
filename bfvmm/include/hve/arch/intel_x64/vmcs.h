@@ -90,9 +90,9 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    /// @param vcpu The vCPU associated with this VMCS
+    /// @param vcpu the vcpu object for this handler
     ///
-    vmcs(vcpu_t vcpu);
+    vmcs(gsl::not_null<vcpu *> vcpu);
 
     /// Destructor
     ///
@@ -103,12 +103,27 @@ public:
 
     /// Init
     ///
-    /// Initizlizes the VMCS stucture to be used by hardware
+    /// Initializes the vmcs's hardware state.
     ///
-    /// @expects VMX is enabled
+    /// @expects none
     /// @ensures none
     ///
-    void init();
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the vmcs's hardware state.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu);
+
+public:
 
     /// Launch
     ///
@@ -262,16 +277,19 @@ private:
     page_ptr<save_state_t> m_save_state;
     page_ptr<uint32_t> m_vmcs_region;
     uintptr_t m_vmcs_region_phys;
+
     page_ptr<uint8_t> m_msr_bitmap;
     page_ptr<uint8_t> m_io_bitmap_a;
     page_ptr<uint8_t> m_io_bitmap_b;
+
     std::unique_ptr<gsl::byte[]> m_ist1;
     std::unique_ptr<gsl::byte[]> m_stack;
+
     x64::tss m_host_tss{};
     x64::gdt m_host_gdt{512};
     x64::idt m_host_idt{256};
 
-    void write_host_state(vcpuid::type vcpuid);
+    void write_host_state();
     void write_guest_state();
     void write_control_state();
 
