@@ -35,10 +35,10 @@
 namespace bfvmm::intel_x64
 {
 
-exit_handler::exit_handler(vcpu *vcpu)
+exit_handler::init(gsl::not_null<vcpu *> vcpu)
 { bfignored(vcpu); }
 
-exit_handler::init(vcpu *vcpu)
+exit_handler::fini(gsl::not_null<vcpu *> vcpu)
 { bfignored(vcpu); }
 
 void
@@ -74,25 +74,9 @@ exit_handler::handle(
                 vcpu->run();
             }
         }
-
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bferror_lnbr(0, msg);
-            bferror_info(0, "unhandled exit reason", msg);
-            bferror_brk1(0, msg);
-
-            bferror_subtext(
-                0, "exit_reason",
-                exit_reason::basic_exit_reason::description(), msg
-            );
-        });
-
-        if (exit_reason::vm_entry_failure::is_enabled()) {
-            debug::dump();
-            check::all();
-        }
     });
 
-    vcpu->halt();
+    vcpu->halt("unhandled vm exit");
 }
 
 }

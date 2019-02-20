@@ -35,6 +35,14 @@ monitor_trap_handler::monitor_trap_handler(
     );
 }
 
+void
+monitor_trap_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+monitor_trap_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Add Handler / Enablers
 // -----------------------------------------------------------------------------

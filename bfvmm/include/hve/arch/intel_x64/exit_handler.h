@@ -83,14 +83,14 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    exit_handler(gsl::not_null<vcpu *> vcpu);
+    exit_handler(gsl::not_null<vcpu *> vcpu) = default;
 
     /// Destructor
     ///
     /// @expects none
     /// @ensures none
     ///
-    VIRTUAL ~exit_handler() = default;
+    ~exit_handler() = default;
 
     /// Init
     ///
@@ -134,7 +134,7 @@ public:
     /// @param reason The exit reason for the handler being registered
     /// @param d The delegate being registered
     ///
-    VIRTUAL void add_handler(
+    void add_handler(
         ::intel_x64::vmcs::value_type reason,
         const handler_delegate_t &d
     );
@@ -152,7 +152,7 @@ public:
     ///
     /// @param d The delegate being registered
     ///
-    VIRTUAL void add_exit_handler(
+    void add_exit_handler(
         const handler_delegate_t &d
     );
 

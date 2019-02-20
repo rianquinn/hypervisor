@@ -57,7 +57,7 @@ class vcpu;
 
 /// VMXON (Intel x86_64)
 ///
-/// This class is respobsible for turning Intel's VMX (also know as VT-x)
+/// This class is responsible for turning Intel's VMX (also know as VT-x)
 /// on / off. To do that, it performs a series of checks that are described
 /// in the Intel manual, and then runs either vmxon or vmxoff.
 ///
@@ -74,14 +74,14 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    vmx(gsl::not_null<vcpu *> vcpu);
+    vmx(gsl::not_null<vcpu *> vcpu) = default;
 
     /// Destructor
     ///
     /// @expects none
     /// @ensures none
     ///
-    ~vmx();
+    ~vmx() = default;
 
     /// Init
     ///
@@ -125,8 +125,8 @@ private:
 
 private:
 
-    page_ptr<uint32_t> m_vmx_region;
-    uintptr_t m_vmx_region_phys;
+    page_ptr<uint32_t> m_vmx_region{};
+    uintptr_t m_vmx_region_phys{};
 
 public:
 

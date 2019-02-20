@@ -42,9 +42,10 @@ vcpu::vcpu(
 ) :
     bfvmm::vcpu{id},
 
-    m_vmx{is_host_vm_vcpu() ? std::make_unique<vmx>() : nullptr},
+    m_mmap{},
     m_vcpu_global_state{vcpu_global_state != nullptr ? vcpu_global_state : & g_vcpu_global_state},
 
+    m_vmx{this},
     m_vmcs{this},
     m_exit_handler{this},
 
@@ -71,6 +72,14 @@ vcpu::vcpu(
 {
     using namespace vmcs_n;
 
+    this->add_init_delegate(
+        init_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::init_delegate>(this)
+    );
+
+    this->add_fini_delegate(
+        fini_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::fini_delegate>(this)
+    );
+
     this->add_run_delegate(
         run_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::run_delegate>(this)
     );
@@ -79,26 +88,89 @@ vcpu::vcpu(
         hlt_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::hlt_delegate>(this)
     );
 
+    m_vmcs.save_state()->vcpuid = this->id();
+    m_vmcs.save_state()->pcpuid = this->id();
+
     m_vmcs.save_state()->vcpu_ptr =
         reinterpret_cast<uintptr_t>(this);
 
     m_vmcs.save_state()->exit_handler_ptr =
         reinterpret_cast<uintptr_t>(&m_exit_handler);
+}
 
-    address_of_msr_bitmap::set(g_mm->virtptr_to_physint(m_msr_bitmap.get()));
-    address_of_io_bitmap_a::set(g_mm->virtptr_to_physint(m_io_bitmap_a.get()));
-    address_of_io_bitmap_b::set(g_mm->virtptr_to_physint(m_io_bitmap_b.get()));
+void
+vcpu::init_delegate(bfobject *obj)
+{
+    bfignored(obj);
 
-    primary_processor_based_vm_execution_controls::use_msr_bitmap::enable();
-    primary_processor_based_vm_execution_controls::use_io_bitmaps::enable();
+    if (this->is_host_vm_vcpu()) {
+        m_vmx.init(this);
+    }
 
-    this->enable_vpid();
-    this->enable_nmis();
+    m_vmcs.init(this);
+    m_exit_handler.init(this);
+
+    m_control_register_handler.init(this);
+    m_cpuid_handler.init(this);
+    m_ept_misconfiguration_handler.init(this);
+    m_ept_violation_handler.init(this);
+    m_external_interrupt_handler.init(this);
+    m_init_signal_handler.init(this);
+    m_interrupt_window_handler.init(this);
+    m_io_instruction_handler.init(this);
+    m_monitor_trap_handler.init(this);
+    m_nmi_window_handler.init(this);
+    m_nmi_handler.init(this);
+    m_preemption_timer_handler.init(this);
+    m_rdmsr_handler.init(this);
+    m_sipi_signal_handler.init(this);
+    m_wrmsr_handler.init(this);
+    m_xsetbv_handler.init(this);
+
+    m_ept_handler.init(this);
+    m_microcode_handler.init(this);
+    m_vpid_handler.init(this);
+}
+
+void
+vcpu::fini_delegate(bfobject *obj)
+{
+    bfignored(obj);
+
+    m_ept_handler.fini(this);
+    m_microcode_handler.fini(this);
+    m_vpid_handler.fini(this);
+
+    m_control_register_handler.fini(this);
+    m_cpuid_handler.fini(this);
+    m_ept_misconfiguration_handler.fini(this);
+    m_ept_violation_handler.fini(this);
+    m_external_interrupt_handler.fini(this);
+    m_init_signal_handler.fini(this);
+    m_interrupt_window_handler.fini(this);
+    m_io_instruction_handler.fini(this);
+    m_monitor_trap_handler.fini(this);
+    m_nmi_window_handler.fini(this);
+    m_nmi_handler.fini(this);
+    m_preemption_timer_handler.fini(this);
+    m_rdmsr_handler.fini(this);
+    m_sipi_signal_handler.fini(this);
+    m_wrmsr_handler.fini(this);
+    m_xsetbv_handler.fini(this);
+
+    m_vmcs.fini(this);
+    m_exit_handler.fini(this);
+
+    if (this->is_host_vm_vcpu()) {
+        m_vmx.fini(this);
+    }
 }
 
 void
 vcpu::run_delegate(bfobject *obj)
 {
+    bfignored(obj);
+
     // TODO
     //
     // We need to implement a vCPU clear() function that is capable of
@@ -108,8 +180,6 @@ vcpu::run_delegate(bfobject *obj)
     //
     // Question: Do we need to re-setup all of the VMCS fields?
     //
-
-    bfignored(obj);
 
     if (m_launched) {
         m_vmcs.resume();
@@ -141,6 +211,10 @@ vcpu::hlt_delegate(bfobject *obj)
     ::x64::cpuid::get(0x4BF00021, 0, 0, 0);
 }
 
+//==============================================================================
+// VMCS Operations
+//==============================================================================
+
 void
 vcpu::load()
 { m_vmcs.load(); }
@@ -148,6 +222,19 @@ vcpu::load()
 void
 vcpu::promote()
 { m_vmcs.promote(); }
+
+bool
+vcpu::advance()
+{
+    using namespace ::intel_x64::vmcs;
+
+    this->set_rip(this->rip() + vm_exit_instruction_length::get());
+    return true;
+}
+
+//==========================================================================
+// Handlers
+//==========================================================================
 
 void
 vcpu::add_handler(
@@ -159,6 +246,10 @@ void
 vcpu::add_exit_handler(
     const handler_delegate_t &d)
 { m_exit_handler.add_exit_handler(d); }
+
+//==========================================================================
+// Misc
+//==========================================================================
 
 void
 vcpu::dump(const char *str)
@@ -207,6 +298,11 @@ vcpu::dump(const char *str)
         bferror_info(0, "exit info", msg);
         bferror_subnhex(0, "exit reason", exit_reason::get(), msg);
         bferror_subnhex(0, "exit qualification", exit_qualification::get(), msg);
+        bferror_subtext(0, "exit description", exit_reason::basic_exit_reason::description(), msg);
+
+        if (exit_reason::vm_entry_failure::is_enabled()) {
+            vcpu->check();
+        }
     });
 }
 
@@ -215,79 +311,6 @@ vcpu::halt(const std::string &str)
 {
     this->dump(("halting vcpu: " + str).c_str());
     ::x64::pm::stop();
-}
-
-bool
-vcpu::advance()
-{
-    using namespace ::intel_x64::vmcs;
-
-    this->set_rip(this->rip() + vm_exit_instruction_length::get());
-    return true;
-}
-
-//==========================================================================
-// MISC
-//==========================================================================
-
-//--------------------------------------------------------------------------
-// EPT
-//--------------------------------------------------------------------------
-
-void
-vcpu::set_eptp(ept::mmap &map)
-{
-    m_ept_handler.set_eptp(&map);
-    m_mmap = &map;
-}
-
-void
-vcpu::disable_ept()
-{
-    m_ept_handler.set_eptp(nullptr);
-    m_mmap = nullptr;
-}
-
-//--------------------------------------------------------------------------
-// VPID
-//--------------------------------------------------------------------------
-
-void
-vcpu::enable_vpid()
-{ m_vpid_handler.enable(); }
-
-void
-vcpu::disable_vpid()
-{ m_vpid_handler.disable(); }
-
-//--------------------------------------------------------------------------
-// VMX preemption timer
-//--------------------------------------------------------------------------
-
-void
-vcpu::enable_preemption_timer()
-{ m_preemption_timer_handler.enable_exiting(); }
-
-void
-vcpu::disable_preemption_timer()
-{ m_preemption_timer_handler.disable_exiting(); }
-
-//==========================================================================
-// Helpers
-//==========================================================================
-
-void
-vcpu::trap_on_msr_access(vmcs_n::value_type msr)
-{
-    this->trap_on_rdmsr_access(msr);
-    this->trap_on_wrmsr_access(msr);
-}
-
-void
-vcpu::pass_through_msr_access(vmcs_n::value_type msr)
-{
-    this->pass_through_rdmsr_access(msr);
-    this->pass_through_wrmsr_access(msr);
 }
 
 //==========================================================================
@@ -516,6 +539,35 @@ vcpu::disable_nmis()
 { m_nmi_handler.disable_exiting(); }
 
 //--------------------------------------------------------------------------
+// Preemption timer
+//--------------------------------------------------------------------------
+
+void
+vcpu::add_preemption_timer_handler(
+    const preemption_timer_handler::handler_delegate_t &d)
+{ m_preemption_timer_handler.add_handler(d); }
+
+void
+vcpu::set_preemption_timer(
+    const preemption_timer_handler::value_t val)
+{
+    m_preemption_timer_handler.enable_exiting();
+    m_preemption_timer_handler.set_timer(val);
+}
+
+preemption_timer_handler::value_t
+vcpu::get_preemption_timer()
+{ return m_preemption_timer_handler.get_timer(); }
+
+void
+vcpu::enable_preemption_timer()
+{ m_preemption_timer_handler.enable_exiting(); }
+
+void
+vcpu::disable_preemption_timer()
+{ m_preemption_timer_handler.disable_exiting(); }
+
+//--------------------------------------------------------------------------
 // Read MSR
 //--------------------------------------------------------------------------
 
@@ -606,26 +658,53 @@ vcpu::add_xsetbv_handler(
     const xsetbv_handler::handler_delegate_t &d)
 { m_xsetbv_handler.add_handler(d); }
 
-//--------------------------------------------------------------------------
-// VMX preemption timer
-//--------------------------------------------------------------------------
+//==========================================================================
+// EPT
+//==========================================================================
 
 void
-vcpu::add_preemption_timer_handler(
-    const preemption_timer_handler::handler_delegate_t &d)
-{ m_preemption_timer_handler.add_handler(d); }
-
-void
-vcpu::set_preemption_timer(
-    const preemption_timer_handler::value_t val)
+vcpu::set_eptp(ept::mmap &map)
 {
-    m_preemption_timer_handler.enable_exiting();
-    m_preemption_timer_handler.set_timer(val);
+    m_ept_handler.set_eptp(&map);
+    m_mmap = &map;
 }
 
-preemption_timer_handler::value_t
-vcpu::get_preemption_timer()
-{ return m_preemption_timer_handler.get_timer(); }
+void
+vcpu::disable_ept()
+{
+    m_ept_handler.set_eptp(nullptr);
+    m_mmap = nullptr;
+}
+
+//==========================================================================
+// VPID
+//==========================================================================
+
+void
+vcpu::enable_vpid()
+{ m_vpid_handler.enable(); }
+
+void
+vcpu::disable_vpid()
+{ m_vpid_handler.disable(); }
+
+//==========================================================================
+// Helpers
+//==========================================================================
+
+void
+vcpu::trap_on_msr_access(vmcs_n::value_type msr)
+{
+    this->trap_on_rdmsr_access(msr);
+    this->trap_on_wrmsr_access(msr);
+}
+
+void
+vcpu::pass_through_msr_access(vmcs_n::value_type msr)
+{
+    this->pass_through_rdmsr_access(msr);
+    this->pass_through_wrmsr_access(msr);
+}
 
 //==============================================================================
 // Memory Mapping
@@ -1300,9 +1379,5 @@ vcpu::ldtr_access_rights() const noexcept
 void
 vcpu::set_ldtr_access_rights(uint64_t val) noexcept
 { vmcs_n::guest_ldtr_access_rights::set(val); }
-
-gsl::not_null<save_state_t *>
-vcpu::save_state() const
-{ return m_vmcs.save_state(); }
 
 }

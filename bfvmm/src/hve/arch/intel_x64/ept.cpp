@@ -24,12 +24,6 @@
 namespace bfvmm::intel_x64
 {
 
-ept_handler::ept_handler(
-    gsl::not_null<vcpu *> vcpu
-) :
-    m_vcpu{vcpu}
-{ }
-
 void ept_handler::set_eptp(ept::mmap *map)
 {
     using namespace vmcs_n;

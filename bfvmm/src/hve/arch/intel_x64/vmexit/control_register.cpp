@@ -255,18 +255,14 @@ control_register_handler::control_register_handler(
 }
 
 void
-control_register_handler::init(
-    gsl::not_null<vcpu *> vcpu)
+control_register_handler::init(gsl::not_null<vcpu *> vcpu)
 {
-    bfignored(vcpu);
-
-    this->enable_wrcr0_exiting(0);
-    this->enable_wrcr4_exiting(0);
+    this->enable_wrcr0_exiting(0, vcpu);
+    this->enable_wrcr4_exiting(0, vcpu);
 }
 
 void
-control_register_handler::fini(
-    gsl::not_null<vcpu *> vcpu)
+control_register_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
 { bfignored(vcpu); }
 
 // -----------------------------------------------------------------------------

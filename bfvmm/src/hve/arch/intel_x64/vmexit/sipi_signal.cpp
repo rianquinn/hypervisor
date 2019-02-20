@@ -35,6 +35,14 @@ sipi_signal_handler::sipi_signal_handler(
     );
 }
 
+void
+sipi_signal_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+sipi_signal_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Handlers
 // -----------------------------------------------------------------------------

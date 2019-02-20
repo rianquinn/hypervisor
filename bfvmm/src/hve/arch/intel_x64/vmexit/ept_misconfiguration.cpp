@@ -35,6 +35,14 @@ ept_misconfiguration_handler::ept_misconfiguration_handler(
     );
 }
 
+void
+ept_misconfiguration_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+ept_misconfiguration_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Add Handler / Enablers
 // -----------------------------------------------------------------------------

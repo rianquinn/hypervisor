@@ -50,6 +50,14 @@ nmi_window_handler::nmi_window_handler(
     );
 }
 
+void
+nmi_window_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+nmi_window_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Add Handler / Enablers
 // -----------------------------------------------------------------------------

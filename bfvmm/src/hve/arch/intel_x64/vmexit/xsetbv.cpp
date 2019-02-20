@@ -35,6 +35,14 @@ xsetbv_handler::xsetbv_handler(
     );
 }
 
+void
+xsetbv_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+xsetbv_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Add Handler / Enablers
 // -----------------------------------------------------------------------------

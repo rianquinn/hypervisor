@@ -65,8 +65,7 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    ept_handler(
-        gsl::not_null<vcpu *> vcpu);
+    ept_handler(gsl::not_null<vcpu *> vcpu) = default;
 
 
     /// Destructor

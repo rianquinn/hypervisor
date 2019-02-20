@@ -35,17 +35,15 @@ namespace bfvmm
 namespace intel_x64
 {
 
-vmx::vmx() :
-    m_vmx_region{make_page<uint32_t>()},
-    m_vmx_region_phys{g_mm->virtptr_to_physint(m_vmx_region.get())}
+void
+vmx::init(gsl::not_null<vcpu *> vcpu)
 {
     this->check_cpuid_vmx_supported();
     this->check_vmx_capabilities_msr();
-}
 
-void
-vmx::init(vcpu *vcpu)
-{
+    m_vmx_region = make_page<uint32_t>();
+    m_vmx_region_phys = g_mm->virtptr_to_physint(m_vmx_region.get());
+
     this->reset_vmx();
     this->setup_vmx_region();
 
@@ -62,7 +60,7 @@ vmx::init(vcpu *vcpu)
 }
 
 void
-vmx::fini(vcpu *vcpu) nonexcept
+vmx::fini(gsl::not_null<vcpu *> vcpu) noexcept
 {
     guard_exceptions([&]() {
         this->execute_vmxoff();

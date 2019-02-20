@@ -105,7 +105,7 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    void fini(gsl::not_null<vcpu *> vcpu);
+    void fini(gsl::not_null<vcpu *> vcpu) noexcept;
 
 public:
 
@@ -115,11 +115,21 @@ public:
     /// handler is registered, at least one handler must return true, otherwise
     /// the base exit handler will be returned false which will result in
     /// a halt(). Emulation handlers should be used by guest vCPUs, or for
-    /// hardware that doesn't actually exist. All (IN) registers defined by
-    /// the spec are initialized to 0 or all Fs, depending on the type of
-    /// hardware access, and OUT registers are never written back to hardware.
-    /// If the physical hardware actually needs to be written to, the handler
-    /// must do this manually.
+    /// hardware that doesn't actually exist. All registers affected by the
+    /// VM exit are set to 0 or F (depending on the exit type) prior to the
+    /// handlers being executed.
+    ///
+    /// Note: Handlers must also execute advance() manually
+    /// by executing "return vcpu->advance()". This does two things:
+    /// - it ensures that the instruction pointer is advanced, but gives the
+    ///   handler control if advancement should not be done (for example
+    ///   in the case of throwing a hardware exception)
+    /// - the advance() function always returns true, which tells the APIs to
+    ///   stop executing additional handlers. Calling advance() should always
+    ///   be done using a return to ensure that an advance doesn't
+    ///   occur twice. Calling advance() and returning tells the APIs that
+    ///   the exit is done, and no further processing is needed as true
+    ///   is returned.
     ///
     /// @expects
     /// @ensures
@@ -131,18 +141,24 @@ public:
 
     /// Add Pass-Through Handler
     ///
-    /// Prior to a pass-through handler being called, the (IN) registers
+    /// Prior to a pass-through handler being called, the registers
     /// are filled in with information from the actual hardware. Once this
     /// is done, the pass-through handlers are executed until at least one
     /// handler returns true. If no handler returns true, the data in the
-    /// OUT registers will be written to hardware. This
+    /// registers will be written to hardware if applicable. This
     /// allows the user to register a pass-through handler, without having
     /// to completely handle the exit, allowing the base implementation to
-    /// do this. It should be noted that in most cases, pass-through handlers
-    /// should never be used for guest vCPUs, only host vCPUs. The only case
-    /// where a pass-through handler should be used for a guest vCPU is when
-    /// the data being passed to the guest is benign, and there are no
-    /// reserved bits.
+    /// do this.
+    ///
+    /// Note: Unlike emulation handlers, advance() doesn't need to be called
+    /// manually. Instead, the handler can return false, allowing other
+    /// handlers to also execute, or allow the base implementation to complete
+    /// the exit for you, and advance the instruction pointer. Returning
+    /// false should be the default approach unless you exlicitly wish to
+    /// prevent additonal handlers from executing, in which case you can
+    /// execute "return vcpu->advance()" which will complete the VM exit.
+    /// If you return true and don't execute advance(), the instruction will
+    /// not be advanced.
     ///
     /// @expects
     /// @ensures

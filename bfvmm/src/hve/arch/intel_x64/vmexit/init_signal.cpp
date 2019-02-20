@@ -35,6 +35,14 @@ init_signal_handler::init_signal_handler(
     );
 }
 
+void
+init_signal_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+init_signal_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Handlers
 // -----------------------------------------------------------------------------

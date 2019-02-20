@@ -35,6 +35,14 @@ interrupt_window_handler::interrupt_window_handler(
     );
 }
 
+void
+interrupt_window_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+interrupt_window_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Add Handler / Enablers
 // -----------------------------------------------------------------------------

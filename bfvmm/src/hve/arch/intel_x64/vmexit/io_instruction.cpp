@@ -46,6 +46,14 @@ io_instruction_handler::io_instruction_handler(
     );
 }
 
+void
+io_instruction_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+io_instruction_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Add Handler
 // -----------------------------------------------------------------------------

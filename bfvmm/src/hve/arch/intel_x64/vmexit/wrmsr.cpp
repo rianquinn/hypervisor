@@ -85,6 +85,14 @@ wrmsr_handler::wrmsr_handler(
     );
 }
 
+void
+wrmsr_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+wrmsr_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Add Handler
 // -----------------------------------------------------------------------------

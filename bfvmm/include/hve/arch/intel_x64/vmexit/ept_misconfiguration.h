@@ -137,7 +137,7 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    void fini(gsl::not_null<vcpu *> vcpu);
+    void fini(gsl::not_null<vcpu *> vcpu) noexcept;
 
 public:
 

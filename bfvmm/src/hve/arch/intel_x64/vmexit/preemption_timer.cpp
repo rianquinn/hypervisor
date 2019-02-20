@@ -36,6 +36,14 @@ preemption_timer_handler::preemption_timer_handler(
     );
 }
 
+void
+preemption_timer_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+preemption_timer_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Add Handler / Enablers
 // -----------------------------------------------------------------------------

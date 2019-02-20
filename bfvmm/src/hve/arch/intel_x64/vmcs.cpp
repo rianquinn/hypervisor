@@ -136,15 +136,17 @@ vmcs::vmcs(vcpu_t vcpu) :
     m_ist1{std::make_unique<gsl::byte[]>(STACK_SIZE * 2)},
     m_stack{std::make_unique<gsl::byte[]>(STACK_SIZE * 2)}
 {
-    bfn::call_once(g_once_flag, setup);
+    bfignored(vcpu);
 }
 
 void
-vmcs::init()
+vmcs::init(gsl::not_null<vcpu *> vcpu)
 {
     using namespace bfvmm::x64;
     using namespace ::intel_x64::vmcs;
     using namespace ::x64::access_rights;
+
+    bfn::call_once(g_once_flag, setup);
 
     gsl::span<uint32_t> id{m_vmcs_region.get(), 1024};
     id[0] = gsl::narrow<uint32_t>(::intel_x64::msrs::ia32_vmx_basic::revision_id::get());
@@ -157,13 +159,13 @@ vmcs::init()
     m_host_gdt.set(4, nullptr, 0xFFFFFFFF, ring0_gs_descriptor);
     m_host_gdt.set(5, &m_host_tss, sizeof(m_host_tss), ring0_tr_descriptor);
 
-    m_host_tss.ist1 = setup_stack(m_ist1.get(), m_save_state->vcpuid);
+    m_host_tss.ist1 = setup_stack(m_ist1.get(), vcpu->id());
     set_default_esrs(&m_host_idt, 8);
 
     this->write_host_state();
     this->write_control_state();
 
-    if (vcpuid::is_host_vm_vcpu(m_save_state->vcpuid)) {
+    if (vcpu->is_host_vm_vcpu()) {
         this->write_guest_state();
     }
 
@@ -177,6 +179,10 @@ vmcs::init()
 
     this->clear();
 }
+
+void
+vmcs::fini(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
 
 void
 vmcs::launch()

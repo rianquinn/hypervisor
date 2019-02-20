@@ -221,6 +221,8 @@ public:
     ///
     bool check() const noexcept;
 
+public:
+
     /// Save State
     ///
     /// Returns the VMCS's save state. This is state that is above and beyond
@@ -273,6 +275,12 @@ public:
 
 private:
 
+    void write_host_state();
+    void write_guest_state();
+    void write_control_state();
+
+private:
+
     page_ptr<save_state_t> m_save_state;
     page_ptr<uint32_t> m_vmcs_region;
     uintptr_t m_vmcs_region_phys;
@@ -287,10 +295,6 @@ private:
     x64::tss m_host_tss{};
     x64::gdt m_host_gdt{512};
     x64::idt m_host_idt{256};
-
-    void write_host_state();
-    void write_guest_state();
-    void write_control_state();
 
 public:
 

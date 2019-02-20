@@ -33,29 +33,24 @@ namespace bfvmm::intel_x64
 {
 
 static bool
-handle_cpuid_feature_information(
-    vcpu *vcpu, cpuid_handler::info_t &info)
+handle_cpuid_feature_information(vcpu *vcpu)
 {
-    bfignored(vcpu);
+    using namespace ::intel_x64::cpuid;
 
     // Currently, we do not support nested virtualization. As a result,
     // the EAPIs adds a default handler to disable support for VMXE here.
     //
 
-    info.rcx =
-        clear_bit(
-            info.rcx, ::intel_x64::cpuid::feature_information::ecx::vmx::from
-        );
+    vcpu->set_rcx(
+        clear_bit(vcpu->rcx(), feature_information::ecx::vmx::from)
+    );
 
-    return true;
+    return false;
 }
 
 static bool
-handle_cpuid_0x4BF00000(
-    vcpu *vcpu, cpuid_handler::info_t &info)
+handle_cpuid_0x4BF00000(vcpu *vcpu)
 {
-    bfignored(vcpu);
-
     /// Ack
     ///
     /// This can be used by an application to ack the existence of the
@@ -64,17 +59,13 @@ handle_cpuid_0x4BF00000(
     /// which means it can be used to ack safely from any application.
     ///
 
-    info.rax = 0x4BF00001;
-    return true;
+    vcpu->set_rax(0x4BF00001);
+    return vcpu->advance();
 }
 
 static bool
-handle_cpuid_0x4BF00010(
-    vcpu *vcpu, cpuid_handler::info_t &info)
+handle_cpuid_0x4BF00010(vcpu *vcpu)
 {
-    bfignored(vcpu);
-    bfignored(info);
-
     /// Init
     ///
     /// Some initialization is required after the hypervisor has started. For
@@ -83,15 +74,12 @@ handle_cpuid_0x4BF00010(
     ///
 
     vcpu_init_root(vcpu);
-    return true;
+    return vcpu->advance();
 }
 
 static bool
-handle_cpuid_0x4BF00011(
-    vcpu *vcpu, cpuid_handler::info_t &info)
+handle_cpuid_0x4BF00011(vcpu *vcpu)
 {
-    bfignored(info);
-
     /// Say Hi
     ///
     /// If the vCPU is a host vCPU and not a guest vCPU, we should say hi
@@ -100,15 +88,12 @@ handle_cpuid_0x4BF00011(
     ///
 
     bfdebug_info(0, "host os is" bfcolor_green " now " bfcolor_end "in a vm");
-    return true;
+    return vcpu->advance();
 }
 
 static bool
-handle_cpuid_0x4BF00020(
-    vcpu *vcpu, cpuid_handler::info_t &info)
+handle_cpuid_0x4BF00020(vcpu *vcpu)
 {
-    bfignored(info);
-
     /// Fini
     ///
     /// Some teardown logic is required before the hypervisor stops running.
@@ -116,15 +101,12 @@ handle_cpuid_0x4BF00020(
     ///
 
     vcpu_fini_root(vcpu);
-    return true;
+    return vcpu->advance();
 }
 
 static bool
-handle_cpuid_0x4BF00021(
-    vcpu *vcpu, cpuid_handler::info_t &info)
+handle_cpuid_0x4BF00021(vcpu *vcpu)
 {
-    bfignored(info);
-
     /// Say Goobye
     ///
     /// The most reliable method for turning off the hypervisor is from the
@@ -136,8 +118,7 @@ handle_cpuid_0x4BF00021(
     bfdebug_info(0, "host os is" bfcolor_red " not " bfcolor_end "in a vm");
     vcpu->promote();
 
-    // Unreachable
-    return true;
+    throw std::runtime_error("unreachable exception");
 }
 
 cpuid_handler::cpuid_handler(
@@ -181,6 +162,14 @@ cpuid_handler::cpuid_handler(
     );
 }
 
+void
+cpuid_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+cpuid_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 // -----------------------------------------------------------------------------
 // Add Handler / Enablers
 // -----------------------------------------------------------------------------
@@ -210,7 +199,7 @@ handle_emulation(
 
     for (const auto &d : handlers->second) {
         if (d(vcpu, info)) {
-            return vcpu->advance();
+            return true;
         }
     }
 
@@ -223,7 +212,7 @@ handle_pass_through(
 {
     for (const auto &d : handlers->second) {
         if (d(vcpu, info)) {
-            return vcpu->advance();
+            return true;
         }
     }
 

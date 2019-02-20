@@ -110,11 +110,31 @@ public:
     ///
     ~vcpu() override = default;
 
+    /// Init Delegate
+    ///
+    /// Provides the base implementation for initializing the vCPU.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param obj ignored
+    ///
+    VIRTUAL void init_delegate(bfobject *obj);
+
+    /// Fini Delegate
+    ///
+    /// Provides the base implementation for finalizing the vCPU.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param obj ignored
+    ///
+    VIRTUAL void fini_delegate(bfobject *obj);
+
     /// Run Delegate
     ///
-    /// Provides the base implementation for starting the vCPU. This delegate
-    /// does not "resume" a vCPU as the base implementation does not support
-    /// guest VMs.
+    /// Provides the base implementation for starting the vCPU.
     ///
     /// @expects none
     /// @ensures none
@@ -157,6 +177,17 @@ public:
     /// @ensures none
     ///
     VIRTUAL void promote();
+
+    /// Advance vCPU
+    ///
+    /// Advances the vCPU.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @return always returns true
+    ///
+    VIRTUAL bool advance();
 
     //==========================================================================
     // Handlers
@@ -216,87 +247,6 @@ public:
     /// @param str the reason for the halt
     ///
     virtual void halt(const std::string &str = {});
-
-    /// Advance vCPU
-    ///
-    /// Advances the vCPU.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return always returns true
-    ///
-    VIRTUAL bool advance();
-
-    //==========================================================================
-    // EPT
-    //==========================================================================
-
-    /// Set EPTP
-    ///
-    /// Enables EPT and sets the EPTP to point to the provided mmap.
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param map The map to set EPTP to.
-    ///
-    VIRTUAL void set_eptp(ept::mmap &map);
-
-    /// Disable EPT
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    VIRTUAL void disable_ept();
-
-    //==========================================================================
-    // VPID
-    //==========================================================================
-
-    /// Enable VPID
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    VIRTUAL void enable_vpid();
-
-    /// Disable VPID
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    VIRTUAL void disable_vpid();
-
-    //==========================================================================
-    // Helpers
-    //==========================================================================
-
-    /// Trap MSR Access
-    ///
-    /// Sets a '1' in the MSR bitmap corresponding with the provided msr. All
-    /// attempts made by the guest to read/write from the provided msr will be
-    /// trapped by the hypervisor.
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param msr the msr to trap
-    ///
-    VIRTUAL void trap_on_msr_access(vmcs_n::value_type msr);
-
-    /// Pass Through Access
-    ///
-    /// Sets a '0' in the MSR bitmap corresponding with the provided msr. All
-    /// attempts made by the guest to read/write from the provided msr will be
-    /// executed by the guest and will not trap to the hypervisor.
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param msr the msr to pass through
-    ///
-    VIRTUAL void pass_through_msr_access(vmcs_n::value_type msr);
 
     //==========================================================================
     // VMExit
@@ -680,6 +630,53 @@ public:
     VIRTUAL void disable_nmis();
 
     //--------------------------------------------------------------------------
+    // Preemption timer
+    //--------------------------------------------------------------------------
+
+    /// Add VMX preemption timer handler
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param d the delegate to call when a VMX PET exit occurs
+    ///
+    VIRTUAL void add_preemption_timer_handler(
+        const preemption_timer_handler::handler_delegate_t &d);
+
+    /// Set VMX preemption timer
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param val the value to write to the preemption timer
+    ///
+    VIRTUAL void set_preemption_timer(
+        const preemption_timer_handler::value_t val);
+
+    /// Get VMX preemption timer
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @return the value of the VMX-preemption timer field
+    ///
+    VIRTUAL preemption_timer_handler::value_t get_preemption_timer();
+
+    /// Enable VMX preemption timer exiting
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void enable_preemption_timer();
+
+    /// Disable VMX preemption timer exiting
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void disable_preemption_timer();
+
+    //--------------------------------------------------------------------------
     // Read MSR
     //--------------------------------------------------------------------------
 
@@ -851,52 +848,75 @@ public:
     VIRTUAL void add_xsetbv_handler(
         const xsetbv_handler::handler_delegate_t &d);
 
-    //--------------------------------------------------------------------------
-    // VMX preemption timer
-    //--------------------------------------------------------------------------
+    //==========================================================================
+    // EPT
+    //==========================================================================
 
-    /// Add VMX preemption timer handler
+    /// Set EPTP
+    ///
+    /// Enables EPT and sets the EPTP to point to the provided mmap.
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param d the delegate to call when a VMX PET exit occurs
+    /// @param map The map to set EPTP to.
     ///
-    VIRTUAL void add_preemption_timer_handler(
-        const preemption_timer_handler::handler_delegate_t &d);
+    VIRTUAL void set_eptp(ept::mmap &map);
 
-    /// Set VMX preemption timer
+    /// Disable EPT
     ///
     /// @expects
     /// @ensures
     ///
-    /// @param val the value to write to the preemption timer
-    ///
-    VIRTUAL void set_preemption_timer(
-        const preemption_timer_handler::value_t val);
+    VIRTUAL void disable_ept();
 
-    /// Get VMX preemption timer
+    //==========================================================================
+    // VPID
+    //==========================================================================
+
+    /// Enable VPID
     ///
     /// @expects
     /// @ensures
     ///
-    /// @return the value of the VMX-preemption timer field
-    ///
-    VIRTUAL preemption_timer_handler::value_t get_preemption_timer();
+    VIRTUAL void enable_vpid();
 
-    /// Enable VMX preemption timer exiting
+    /// Disable VPID
     ///
     /// @expects
     /// @ensures
     ///
-    VIRTUAL void enable_preemption_timer();
+    VIRTUAL void disable_vpid();
 
-    /// Disable VMX preemption timer exiting
+    //==========================================================================
+    // Helpers
+    //==========================================================================
+
+    /// Trap MSR Access
+    ///
+    /// Sets a '1' in the MSR bitmap corresponding with the provided msr. All
+    /// attempts made by the guest to read/write from the provided msr will be
+    /// trapped by the hypervisor.
     ///
     /// @expects
     /// @ensures
     ///
-    VIRTUAL void disable_preemption_timer();
+    /// @param msr the msr to trap
+    ///
+    VIRTUAL void trap_on_msr_access(vmcs_n::value_type msr);
+
+    /// Pass Through Access
+    ///
+    /// Sets a '0' in the MSR bitmap corresponding with the provided msr. All
+    /// attempts made by the guest to read/write from the provided msr will be
+    /// executed by the guest and will not trap to the hypervisor.
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param msr the msr to pass through
+    ///
+    VIRTUAL void pass_through_msr_access(vmcs_n::value_type msr);
 
     //==========================================================================
     // Resources
@@ -911,6 +931,16 @@ public:
     ///
     VIRTUAL gsl::not_null<vcpu_global_state_t *> global_state() const
     { return m_vcpu_global_state; }
+
+    /// Global State
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @return the global state object associated with this vCPU.
+    ///
+    VIRTUAL gsl::not_null<save_state_t *> save_state() const
+    { return m_vmcs.save_state(); }
 
     /// MSR bitmap
     ///
@@ -1640,6 +1670,10 @@ public:
     auto map_arg(void *gva)
     { return map_gva_4k<T>(gva, 1); }
 
+private:
+
+    uintptr_t get_entry(uintptr_t tble_gpa, std::ptrdiff_t index);
+
 public:
 
     /// @cond
@@ -1772,27 +1806,16 @@ public:
     VIRTUAL uint64_t ldtr_access_rights() const noexcept;
     VIRTUAL void set_ldtr_access_rights(uint64_t val) noexcept;
 
-    // TODO:
-    //
-    // Remove me. This causes a trainwreck
-    //
-    VIRTUAL gsl::not_null<save_state_t *> save_state() const;
-
     /// @endcond
 
 private:
 
-    uintptr_t get_entry(uintptr_t tble_gpa, std::ptrdiff_t index);
+    ept::mmap *m_mmap;
+    vcpu_global_state_t *m_vcpu_global_state;
 
 private:
 
-    std::unique_ptr<vmx> m_vmx{};
-
-    ept::mmap *m_mmap{};
-    vcpu_global_state_t *m_vcpu_global_state{};
-
-private:
-
+    vmx m_vmx;
     vmcs m_vmcs;
     exit_handler m_exit_handler;
 

@@ -153,7 +153,7 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    void fini(gsl::not_null<vcpu *> vcpu);
+    void fini(gsl::not_null<vcpu *> vcpu) noexcept;
 
 public:
 
@@ -205,9 +205,10 @@ public:
     /// @expects
     /// @ensures
     ///
+    /// @param vcpu the vcpu to enable exiting on
     /// @param mask the value of the cr0 guest/host mask to set in the vmcs
     ///
-    void enable_wrcr0_exiting(vmcs_n::value_type mask);
+    void enable_wrcr0_exiting(gsl::not_null<vcpu *> vcpu, vmcs_n::value_type mask);
 
     /// Enable Read CR3 Exiting
     ///
@@ -219,7 +220,9 @@ public:
     /// @expects
     /// @ensures
     ///
-    void enable_rdcr3_exiting();
+    /// @param vcpu the vcpu to enable exiting on
+    ///
+    void enable_rdcr3_exiting(gsl::not_null<vcpu *> vcpu);
 
     /// Enable Write CR3 Exiting
     ///
@@ -231,7 +234,9 @@ public:
     /// @expects
     /// @ensures
     ///
-    void enable_wrcr3_exiting();
+    /// @param vcpu the vcpu to enable exiting on
+    ///
+    void enable_wrcr3_exiting(gsl::not_null<vcpu *> vcpu);
 
     /// Enable Write CR4 Exiting
     ///
@@ -243,9 +248,12 @@ public:
     /// @expects
     /// @ensures
     ///
+    /// @param vcpu the vcpu to enable exiting on
     /// @param mask the value of the cr4 guest/host mask to set in the vmcs
     ///
-    void enable_wrcr4_exiting(vmcs_n::value_type mask);
+    void enable_wrcr4_exiting(gsl::not_null<vcpu *> vcpu, vmcs_n::value_type mask);
+
+public:
 
     /// @cond
 
