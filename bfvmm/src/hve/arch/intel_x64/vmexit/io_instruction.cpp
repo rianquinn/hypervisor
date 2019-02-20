@@ -35,9 +35,8 @@ namespace bfvmm::intel_x64
 io_instruction_handler::io_instruction_handler(
     gsl::not_null<vcpu *> vcpu
 ) :
-    m_vcpu{vcpu},
-    m_io_bitmap_a{vcpu->m_io_bitmap_a.get(), ::x64::pt::page_size},
-    m_io_bitmap_b{vcpu->m_io_bitmap_b.get(), ::x64::pt::page_size}
+    m_io_bitmap_a{vcpu->io_bitmap_a().get(), ::x64::pt::page_size},
+    m_io_bitmap_b{vcpu->io_bitmap_b().get(), ::x64::pt::page_size}
 {
     using namespace vmcs_n;
 
@@ -303,7 +302,7 @@ io_instruction_handler::load_operand(
         switch (info.size_of_access) {
             case io_instruction::size_of_access::one_byte: {
                 auto map =
-                    m_vcpu->map_gva_4k<uint8_t>(
+                    vcpu->map_gva_4k<uint8_t>(
                         info.address,
                         info.size_of_access
                     );
@@ -314,7 +313,7 @@ io_instruction_handler::load_operand(
 
             case io_instruction::size_of_access::two_byte: {
                 auto map =
-                    m_vcpu->map_gva_4k<uint16_t>(
+                    vcpu->map_gva_4k<uint16_t>(
                         info.address,
                         info.size_of_access
                     );
@@ -325,7 +324,7 @@ io_instruction_handler::load_operand(
 
             default: {
                 auto map =
-                    m_vcpu->map_gva_4k<uint32_t>(
+                    vcpu->map_gva_4k<uint32_t>(
                         info.address,
                         info.size_of_access
                     );
@@ -362,7 +361,7 @@ io_instruction_handler::store_operand(
         switch (info.size_of_access) {
             case io_instruction::size_of_access::one_byte: {
                 auto map =
-                    m_vcpu->map_gva_4k<uint8_t>(
+                    vcpu->map_gva_4k<uint8_t>(
                         info.address,
                         info.size_of_access
                     );
@@ -373,7 +372,7 @@ io_instruction_handler::store_operand(
 
             case io_instruction::size_of_access::two_byte: {
                 auto map =
-                    m_vcpu->map_gva_4k<uint16_t>(
+                    vcpu->map_gva_4k<uint16_t>(
                         info.address,
                         info.size_of_access
                     );
@@ -384,7 +383,7 @@ io_instruction_handler::store_operand(
 
             default: {
                 auto map =
-                    m_vcpu->map_gva_4k<uint32_t>(
+                    vcpu->map_gva_4k<uint32_t>(
                         info.address,
                         info.size_of_access
                     );

@@ -88,6 +88,7 @@ namespace bfvmm::intel_x64
 ///
 class EXPORT_HVE vcpu : public bfvmm::vcpu
 {
+
 public:
 
     /// Default Constructor
@@ -133,29 +134,29 @@ public:
     ///
     VIRTUAL void hlt_delegate(bfobject *obj);
 
-    /// Init Delegate
-    ///
-    /// Provides the base implementation for initializing the vCPU.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param obj ignored
-    ///
-    VIRTUAL void init_delegate(bfobject *obj);
-
-    /// Fini Delegate
-    ///
-    /// Provides the base implementation for finalizing the vCPU.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param obj ignored
-    ///
-    VIRTUAL void fini_delegate(bfobject *obj);
-
 public:
+
+    //==========================================================================
+    // VMCS Operations
+    //==========================================================================
+
+    /// Load vCPU
+    ///
+    /// Loads the vCPU into hardware.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    VIRTUAL void load();
+
+    /// Promote vCPU
+    ///
+    /// Promotes the vCPU.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    VIRTUAL void promote();
 
     //==========================================================================
     // Handlers
@@ -297,33 +298,13 @@ public:
     ///
     VIRTUAL void pass_through_msr_access(vmcs_n::value_type msr);
 
-    /// Enable write to CR0 exiting
-    ///
-    /// Temporary interface to control_register_handler::enable_wrcr0_exiting
-    /// during delegator refactor. This will be deprecated
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param mask the mask
-    ///
-    VIRTUAL void enable_wrcr0_exiting(vmcs_n::value_type mask);
-
-    /// Enable write to CR4 exiting
-    ///
-    /// Temporary interface to control_register_handler::enable_wrcr4_exiting
-    /// during delegator refactor. This will be deprecated
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param mask the mask
-    ///
-    VIRTUAL void enable_wrcr4_exiting(vmcs_n::value_type mask);
-
     //==========================================================================
-    // Legacy Handler Mechanism, these will be deprecated
+    // VMExit
     //==========================================================================
+
+    //--------------------------------------------------------------------------
+    // Control Register
+    //--------------------------------------------------------------------------
 
     /// Add Write CR0 Handler
     ///
@@ -369,6 +350,10 @@ public:
         vmcs_n::value_type mask,
         const control_register_handler::handler_delegate_t &d);
 
+    //--------------------------------------------------------------------------
+    // CPUID
+    //--------------------------------------------------------------------------
+
     /// Add CPUID Handler
     ///
     /// @expects
@@ -404,6 +389,10 @@ public:
     VIRTUAL void add_default_cpuid_handler(
         const ::handler_delegate_t &d);
 
+    //--------------------------------------------------------------------------
+    // EPT Misconfiguration
+    //--------------------------------------------------------------------------
+
     /// Add EPT Misconfiguration Handler
     ///
     /// @expects
@@ -413,6 +402,10 @@ public:
     ///
     VIRTUAL void add_ept_misconfiguration_handler(
         const ept_misconfiguration_handler::handler_delegate_t &d);
+
+    //--------------------------------------------------------------------------
+    // EPT Violation
+    //--------------------------------------------------------------------------
 
     /// Add EPT read violation handler
     ///
@@ -474,6 +467,10 @@ public:
     VIRTUAL void add_default_ept_execute_violation_handler(
         const ::handler_delegate_t &d);
 
+    //--------------------------------------------------------------------------
+    // External Interrupt
+    //--------------------------------------------------------------------------
+
     /// Add External Interrupt Handler
     ///
     /// Turns on external interrupt handling and adds an external interrupt
@@ -494,12 +491,13 @@ public:
     ///
     VIRTUAL void disable_external_interrupts();
 
+    //--------------------------------------------------------------------------
+    // Interrupt Window
+    //--------------------------------------------------------------------------
+
     /// Queue External Interrupt
     ///
-    /// Queues an external interrupt for injection. If the interrupt window
-    /// is open, and there are no interrupts queued for injection, the
-    /// interrupt may be injected on the upcoming VM-entry, othewise the
-    /// interrupt is queued, and injected when appropriate.
+    /// Queues an external interrupt for injection.
     ///
     /// @expects
     /// @ensures
@@ -525,7 +523,7 @@ public:
     /// Inject External Interrupt
     ///
     /// Inject an external interrupt on the next VM entry. Note that this will
-    /// overwriteany interrupts that are already injected for the next VM entry
+    /// overwrite any interrupts that are already injected for the next VM entry
     /// so care should be taken when using this function
     ///
     /// @expects
@@ -534,6 +532,10 @@ public:
     /// @param vector the vector to inject into the guest
     ///
     VIRTUAL void inject_external_interrupt(uint64_t vector);
+
+    //--------------------------------------------------------------------------
+    // IO Instruction
+    //--------------------------------------------------------------------------
 
     /// Trap All IO Instruction Accesses
     ///
@@ -601,6 +603,10 @@ public:
     VIRTUAL void add_default_io_instruction_handler(
         const ::handler_delegate_t &d);
 
+    //--------------------------------------------------------------------------
+    // Monitor Trap
+    //--------------------------------------------------------------------------
+
     /// Add Monitor Trap Flag Handler
     ///
     /// @expects
@@ -617,6 +623,65 @@ public:
     /// @ensures
     ///
     VIRTUAL void enable_monitor_trap_flag();
+
+    //--------------------------------------------------------------------------
+    // Non-Mackable Interrupt Window
+    //--------------------------------------------------------------------------
+
+    /// Queue NMI
+    ///
+    /// Queues an NMI for injection.
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void queue_nmi();
+
+    /// Inject NMI
+    ///
+    /// Inject an NMI on the next VM entry. Note that this will
+    /// overwrite any interrupts that are already injected for the next VM entry
+    /// so care should be taken when using this function
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void inject_nmi();
+
+    //--------------------------------------------------------------------------
+    // Non-Maskable Interrupts
+    //--------------------------------------------------------------------------
+
+    /// Add NMI Handler
+    ///
+    /// Turns on NMI handling and adds an NMI
+    /// handler to handle NMIs
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param d the delegate to call when an exit occurs
+    ///
+    VIRTUAL void add_nmi_handler(
+        const nmi_handler::handler_delegate_t &d);
+
+    /// Enable NMI Support
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void enable_nmis();
+
+    /// Disable NMI Support
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void disable_nmis();
+
+    //--------------------------------------------------------------------------
+    // Read MSR
+    //--------------------------------------------------------------------------
 
     /// Trap On Access
     ///
@@ -693,6 +758,10 @@ public:
     VIRTUAL void add_default_rdmsr_handler(
         const ::handler_delegate_t &d);
 
+    //--------------------------------------------------------------------------
+    // Write MSR
+    //--------------------------------------------------------------------------
+
     /// Trap On Access
     ///
     /// Sets a '1' in the MSR bitmap corresponding with the provided msr. All
@@ -768,6 +837,10 @@ public:
     VIRTUAL void add_default_wrmsr_handler(
         const ::handler_delegate_t &d);
 
+    //--------------------------------------------------------------------------
+    // XSetBV
+    //--------------------------------------------------------------------------
+
     /// Add XSetBV Handler
     ///
     /// @expects
@@ -777,6 +850,10 @@ public:
     ///
     VIRTUAL void add_xsetbv_handler(
         const xsetbv_handler::handler_delegate_t &d);
+
+    //--------------------------------------------------------------------------
+    // VMX preemption timer
+    //--------------------------------------------------------------------------
 
     /// Add VMX preemption timer handler
     ///
@@ -832,8 +909,44 @@ public:
     ///
     /// @return the global state object associated with this vCPU.
     ///
-    gsl::not_null<vcpu_global_state_t *> global_state() const
+    VIRTUAL gsl::not_null<vcpu_global_state_t *> global_state() const
     { return m_vcpu_global_state; }
+
+    /// MSR bitmap
+    ///
+    /// Returns the vCPU's msr bitmap
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @return returns the vCPU's msr bitmap
+    ///
+    VIRTUAL gsl::not_null<uint8_t *> msr_bitmap() const
+    { return m_vmcs.msr_bitmap(); }
+
+    /// IO bitmap a
+    ///
+    /// Returns the vCPU's io bitmap a
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @return returns the vCPU's io bitmap a
+    ///
+    VIRTUAL gsl::not_null<uint8_t *> io_bitmap_a() const
+    { return m_vmcs.io_bitmap_a(); }
+
+    /// IO bitmap b
+    ///
+    /// Returns the vCPU's io bitmap b
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @return returns the vCPU's io bitmap b
+    ///
+    VIRTUAL gsl::not_null<uint8_t *> io_bitmap_b() const
+    { return m_vmcs.io_bitmap_b(); }
 
     //==========================================================================
     // Memory Mapping
@@ -1658,6 +1771,12 @@ public:
     VIRTUAL void set_ldtr_limit(uint64_t val) noexcept;
     VIRTUAL uint64_t ldtr_access_rights() const noexcept;
     VIRTUAL void set_ldtr_access_rights(uint64_t val) noexcept;
+
+    // TODO:
+    //
+    // Remove me. This causes a trainwreck
+    //
+    VIRTUAL gsl::not_null<save_state_t *> save_state() const;
 
     /// @endcond
 

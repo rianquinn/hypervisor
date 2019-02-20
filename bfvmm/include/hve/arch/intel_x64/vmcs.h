@@ -32,7 +32,6 @@
 #include "../x64/tss.h"
 
 #include "../../../memory_manager/memory_manager.h"
-#include "../../../vmm_types.h"
 
 // -----------------------------------------------------------------------------
 // Exports

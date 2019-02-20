@@ -32,9 +32,7 @@ handle_nmi(vcpu *vcpu)
 }
 
 nmi_handler::nmi_handler(
-    gsl::not_null<vcpu *> vcpu
-) :
-    m_vcpu{vcpu}
+    gsl::not_null<vcpu *> vcpu)
 {
     using namespace vmcs_n;
 

@@ -256,7 +256,7 @@ control_register_handler::control_register_handler(
 
 void
 control_register_handler::init(
-    gsl::not_null<vcpu *> vcpu
+    gsl::not_null<vcpu *> vcpu)
 {
     bfignored(vcpu);
 
@@ -266,7 +266,7 @@ control_register_handler::init(
 
 void
 control_register_handler::fini(
-    gsl::not_null<vcpu *> vcpu
+    gsl::not_null<vcpu *> vcpu)
 { bfignored(vcpu); }
 
 // -----------------------------------------------------------------------------
@@ -442,7 +442,7 @@ control_register_handler::handle_wrcr0(vcpu *vcpu)
     };
 
     info.shadow = info.val;
-    info.val |= m_vcpu->global_state()->ia32_vmx_cr0_fixed0;
+    info.val |= vcpu->global_state()->ia32_vmx_cr0_fixed0;
 
     for (const auto &d : m_wrcr0_handlers) {
         if (d(vcpu, info)) {
@@ -528,7 +528,7 @@ control_register_handler::handle_wrcr4(vcpu *vcpu)
 
     info.shadow = info.val;
     info.val |= ::intel_x64::cr4::vmx_enable_bit::mask;
-    info.val |= m_vcpu->global_state()->ia32_vmx_cr4_fixed0;
+    info.val |= vcpu->global_state()->ia32_vmx_cr4_fixed0;
 
     for (const auto &d : m_wrcr4_handlers) {
         if (d(vcpu, info)) {

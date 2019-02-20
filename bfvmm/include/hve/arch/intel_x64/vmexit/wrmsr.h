@@ -283,8 +283,6 @@ public:
 
 private:
 
-    gsl::span<uint8_t> m_msr_bitmap;
-
     ::handler_delegate_t m_default_handler;
     std::unordered_map<vmcs_n::value_type, bool> m_emulate;
     std::unordered_map<vmcs_n::value_type, std::list<handler_delegate_t>> m_handlers;

@@ -25,9 +25,7 @@ namespace bfvmm::intel_x64
 {
 
 interrupt_window_handler::interrupt_window_handler(
-    gsl::not_null<vcpu *> vcpu
-) :
-    m_vcpu{vcpu}
+    gsl::not_null<vcpu *> vcpu)
 {
     using namespace vmcs_n;
 

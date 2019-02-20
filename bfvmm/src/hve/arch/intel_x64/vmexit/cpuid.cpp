@@ -22,11 +22,11 @@
 #include <hve/arch/intel_x64/vcpu.h>
 
 void
-WEAK_SYM per_vcpu_init_root(vcpu_t *vcpu)
+WEAK_SYM vcpu_init_root(vcpu_t *vcpu)
 { bfignored(vcpu); }
 
 void
-WEAK_SYM per_vcpu_fini_root(vcpu_t *vcpu)
+WEAK_SYM vcpu_fini_root(vcpu_t *vcpu)
 { bfignored(vcpu); }
 
 namespace bfvmm::intel_x64
@@ -82,7 +82,7 @@ handle_cpuid_0x4BF00010(
     /// initalized using the VMM's CR3, and not the hosts.
     ///
 
-    per_vcpu_init_root(vcpu);
+    vcpu_init_root(vcpu);
     return true;
 }
 
@@ -115,7 +115,7 @@ handle_cpuid_0x4BF00020(
     /// These handlers can be used in these scenarios.
     ///
 
-    per_vcpu_fini_root(vcpu);
+    vcpu_fini_root(vcpu);
     return true;
 }
 
@@ -141,40 +141,43 @@ handle_cpuid_0x4BF00021(
 }
 
 cpuid_handler::cpuid_handler(
-    gsl::not_null<vcpu *> vcpu
-) :
-    m_vcpu{vcpu}
+    gsl::not_null<vcpu *> vcpu)
 {
     using namespace vmcs_n;
 
     vcpu->add_handler(
         exit_reason::basic_exit_reason::cpuid,
-        ::handler_delegate_t::create<cpuid_handler, &cpuid_handler::handle>(this)
+        handler_delegate_t::create<cpuid_handler, &cpuid_handler::handle>(this)
     );
 
-    this->add_handler(
+    this->add_pass_through_handler(
         ::intel_x64::cpuid::feature_information::addr,
-        cpuid_handler_delegate_t::create<handle_cpuid_feature_information>()
+        handler_delegate_t::create<handle_cpuid_feature_information>()
     );
 
-    this->add_handler(
-        0x4BF00000, cpuid_handler_delegate_t::create<handle_cpuid_0x4BF00000>()
+    this->add_emulate_handler(
+        0x4BF00000,
+        handler_delegate_t::create<handle_cpuid_0x4BF00000>()
     );
 
-    this->add_handler(
-        0x4BF00010, cpuid_handler_delegate_t::create<handle_cpuid_0x4BF00010>()
+    this->add_emulate_handler(
+        0x4BF00010,
+        handler_delegate_t::create<handle_cpuid_0x4BF00010>()
     );
 
-    this->add_handler(
-        0x4BF00011, cpuid_handler_delegate_t::create<handle_cpuid_0x4BF00011>()
+    this->add_emulate_handler(
+        0x4BF00011,
+        handler_delegate_t::create<handle_cpuid_0x4BF00011>()
     );
 
-    this->add_handler(
-        0x4BF00020, cpuid_handler_delegate_t::create<handle_cpuid_0x4BF00020>()
+    this->add_emulate_handler(
+        0x4BF00020,
+        handler_delegate_t::create<handle_cpuid_0x4BF00020>()
     );
 
-    this->add_handler(
-        0x4BF00021, cpuid_handler_delegate_t::create<handle_cpuid_0x4BF00021>()
+    this->add_emulate_handler(
+        0x4BF00021,
+        handler_delegate_t::create<handle_cpuid_0x4BF00021>()
     );
 }
 
@@ -183,80 +186,61 @@ cpuid_handler::cpuid_handler(
 // -----------------------------------------------------------------------------
 
 void
-cpuid_handler::add_handler(
+cpuid_handler::add_emulation_handler(
     leaf_t leaf, const handler_delegate_t &d)
-{ m_handlers[leaf].push_front(d); }
+{ m_emulation_handlers[leaf].push_front(d); }
 
 void
-cpuid_handler::emulate(leaf_t leaf)
-{ m_emulate[leaf] = true; }
-
-void
-cpuid_handler::set_default_handler(
-    const ::handler_delegate_t &d)
-{ m_default_handler = d; }
+cpuid_handler::add_pass_through_handler(
+    leaf_t leaf, const handler_delegate_t &d)
+{ m_pass_through_handlers[leaf].push_front(d); }
 
 // -----------------------------------------------------------------------------
 // Handlers
 // -----------------------------------------------------------------------------
 
+static bool
+handle_emulation(
+    vcpu *vcpu, const std::list<handler_delegate_t> &handlers)
+{
+    vcpu->set_rax(0);
+    vcpu->set_rbx(0);
+    vcpu->set_rcx(0);
+    vcpu->set_rdx(0);
+
+    for (const auto &d : handlers->second) {
+        if (d(vcpu, info)) {
+            return vcpu->advance();
+        }
+    }
+
+    return false;
+}
+
+static bool
+handle_pass_through(
+    vcpu *vcpu, const std::list<handler_delegate_t> &handlers)
+{
+    for (const auto &d : handlers->second) {
+        if (d(vcpu, info)) {
+            return vcpu->advance();
+        }
+    }
+
+    return vcpu->advance();
+}
+
 bool
 cpuid_handler::handle(vcpu *vcpu)
 {
-    auto user_already_emulating = m_emulate[vcpu->rax()];
+    const auto &emulation_handlers =
+        m_emulation_handlers.find(vcpu->rax());
 
-    const auto &hdlrs =
-        m_handlers.find(vcpu->rax());
-
-    if (hdlrs != m_handlers.end()) {
-
-        struct info_t info = {
-            0, 0, 0, 0, false, false
-        };
-
-        if (!user_already_emulating) {
-            auto [rax, rbx, rcx, rdx] =
-                ::x64::cpuid::get(
-                    gsl::narrow_cast<::x64::cpuid::field_type>(vcpu->rax()),
-                    gsl::narrow_cast<::x64::cpuid::field_type>(vcpu->rbx()),
-                    gsl::narrow_cast<::x64::cpuid::field_type>(vcpu->rcx()),
-                    gsl::narrow_cast<::x64::cpuid::field_type>(vcpu->rdx())
-                );
-
-            info.rax = rax;
-            info.rbx = rbx;
-            info.rcx = rcx;
-            info.rdx = rdx;
-        }
-
-        for (const auto &d : hdlrs->second) {
-            if (d(vcpu, info)) {
-
-                if (!info.ignore_write) {
-                    vcpu->set_rax(info.rax);
-                    vcpu->set_rbx(info.rbx);
-                    vcpu->set_rcx(info.rcx);
-                    vcpu->set_rdx(info.rdx);
-                }
-
-                if (!info.ignore_advance) {
-                    return vcpu->advance();
-                }
-
-                return true;
-            }
-        }
+    if (emulation_handlers != m_emulation_handlers.end()) {
+        return handle_emulation(vcpu, emulation_handlers);
     }
 
-    if (m_default_handler.is_valid()) {
-        return m_default_handler(vcpu);
-    }
-
-    if (user_already_emulating) {
-        return false;
-    }
-
-    auto ret =
+    auto [rax, rbx, rcx, rdx] =
         ::x64::cpuid::get(
             gsl::narrow_cast<::x64::cpuid::field_type>(vcpu->rax()),
             gsl::narrow_cast<::x64::cpuid::field_type>(vcpu->rbx()),
@@ -264,10 +248,17 @@ cpuid_handler::handle(vcpu *vcpu)
             gsl::narrow_cast<::x64::cpuid::field_type>(vcpu->rdx())
         );
 
-    vcpu->set_rax(ret.rax);
-    vcpu->set_rbx(ret.rbx);
-    vcpu->set_rcx(ret.rcx);
-    vcpu->set_rdx(ret.rdx);
+    vcpu->set_rax(rax);
+    vcpu->set_rbx(rbx);
+    vcpu->set_rcx(rcx);
+    vcpu->set_rdx(rdx);
+
+    const auto &pass_through_handlers =
+        m_pass_through_handlers.find(vcpu->rax());
+
+    if (pass_through_handlers != m_pass_through_handlers.end()) {
+        return handle_emulation(vcpu, pass_through_handlers);
+    }
 
     return vcpu->advance();
 }

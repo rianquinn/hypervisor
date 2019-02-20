@@ -69,18 +69,7 @@ vcpu::vcpu(
     m_microcode_handler{this},
     m_vpid_handler{this}
 {
-    // TODO:
-    //
-    // We need to copy the physical CPUID to the save state as well from the
-    // parent vCPU. This will be needed for VMCS migration so that we know
-    // which stack to grab.
-    //
-    // Note that there is likely a bug with guest vCPUs for the same reason as
-    // they are creating their own stack and TLS instead of using the TLS
-    // that was provided, so it is likely that TLS is not working properly
-    // for guest vCPUs. Either way, knowing which physical core the vCPU is
-    // on is a good thing to have that we are currently not tracking properly
-    //
+    using namespace vmcs_n;
 
     this->add_run_delegate(
         run_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::run_delegate>(this)
@@ -90,27 +79,22 @@ vcpu::vcpu(
         hlt_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::hlt_delegate>(this)
     );
 
-    this->add_init_delegate(
-        init_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::init_delegate>(this)
-    );
-
-    this->add_fini_delegate(
-        fini_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::fini_delegate>(this)
-    );
-
-    m_vmcs.save_state()->vcpuid = this->id();
-    m_vmcs.save_state()->pcpuid = this->id();
-
     m_vmcs.save_state()->vcpu_ptr =
         reinterpret_cast<uintptr_t>(this);
 
     m_vmcs.save_state()->exit_handler_ptr =
         reinterpret_cast<uintptr_t>(&m_exit_handler);
-}
+
+    address_of_msr_bitmap::set(g_mm->virtptr_to_physint(m_msr_bitmap.get()));
+    address_of_io_bitmap_a::set(g_mm->virtptr_to_physint(m_io_bitmap_a.get()));
+    address_of_io_bitmap_b::set(g_mm->virtptr_to_physint(m_io_bitmap_b.get()));
+
+    primary_processor_based_vm_execution_controls::use_msr_bitmap::enable();
+    primary_processor_based_vm_execution_controls::use_io_bitmaps::enable();
 
     this->enable_vpid();
     this->enable_nmis();
-
+}
 
 void
 vcpu::run_delegate(bfobject *obj)
@@ -121,11 +105,6 @@ vcpu::run_delegate(bfobject *obj)
     // setting m_launched back to false and then clearing the VMCS. This
     // way, the next time this function is executed, a launch takes place
     // again. This is needed in order to perform a VMCS migration.
-    //
-    // We will also need to handle TLS properly, likely by locating the proper
-    // stack to use. Otherwise, TLS will not have the properly memory
-    // associated with it as TLS is on a physical core basis, not a virtual
-    // core basis.
     //
     // Question: Do we need to re-setup all of the VMCS fields?
     //
@@ -163,79 +142,23 @@ vcpu::hlt_delegate(bfobject *obj)
 }
 
 void
-vcpu::init_delegate(bfobject *obj)
-{
-    bfignored(obj);
-
-    m_vmx->init(this);
-
-    m_vmcs.init(this);
-    m_exit_handler.init(this);
-
-    m_control_register_handler.init(this);
-    m_cpuid_handler.init(this);
-    m_ept_misconfiguration_handler.init(this);
-    m_ept_violation_handler.init(this);
-    m_external_interrupt_handler.init(this);
-    m_init_signal_handler.init(this);
-    m_interrupt_window_handler.init(this);
-    m_io_instruction_handler.init(this);
-    m_monitor_trap_handler.init(this);
-    m_nmi_window_handler.init(this);
-    m_nmi_handler.init(this);
-    m_preemption_timer_handler.init(this);
-    m_rdmsr_handler.init(this);
-    m_sipi_signal_handler.init(this);
-    m_wrmsr_handler.init(this);
-    m_xsetbv_handler.init(this);
-
-    m_ept_handler.init(this);
-    m_microcode_handler.init(this);
-    m_vpid_handler.init(this);
-}
+vcpu::load()
+{ m_vmcs.load(); }
 
 void
-vcpu::fini_delegate(bfobject *obj)
-{
-    bfignored(obj);
-
-    m_ept_handler.fini(this);
-    m_microcode_handler.fini(this);
-    m_vpid_handler.fini(this);
-
-    m_control_register_handler.fini(this);
-    m_cpuid_handler.fini(this);
-    m_ept_misconfiguration_handler.fini(this);
-    m_ept_violation_handler.fini(this);
-    m_external_interrupt_handler.fini(this);
-    m_init_signal_handler.fini(this);
-    m_interrupt_window_handler.fini(this);
-    m_io_instruction_handler.fini(this);
-    m_monitor_trap_handler.fini(this);
-    m_nmi_window_handler.fini(this);
-    m_nmi_handler.fini(this);
-    m_preemption_timer_handler.fini(this);
-    m_rdmsr_handler.fini(this);
-    m_sipi_signal_handler.fini(this);
-    m_wrmsr_handler.fini(this);
-    m_xsetbv_handler.fini(this);
-
-    m_vmcs.fini(this);
-    m_exit_handler.fini(this);
-
-    m_vmx->fini(this);
-}
+vcpu::promote()
+{ m_vmcs.promote(); }
 
 void
 vcpu::add_handler(
     ::intel_x64::vmcs::value_type reason,
     const handler_delegate_t &d)
-{ m_exit_handler->add_handler(reason, d); }
+{ m_exit_handler.add_handler(reason, d); }
 
 void
 vcpu::add_exit_handler(
     const handler_delegate_t &d)
-{ m_exit_handler->add_exit_handler(d); }
+{ m_exit_handler.add_exit_handler(d); }
 
 void
 vcpu::dump(const char *str)
@@ -367,21 +290,13 @@ vcpu::pass_through_msr_access(vmcs_n::value_type msr)
     this->pass_through_wrmsr_access(msr);
 }
 
-void
-vcpu::enable_wrcr0_exiting(vmcs_n::value_type mask)
-{
-    m_control_register_handler.enable_wrcr0_exiting(mask);
-}
-
-void
-vcpu::enable_wrcr4_exiting(vmcs_n::value_type mask)
-{
-    m_control_register_handler.enable_wrcr4_exiting(mask);
-}
-
 //==========================================================================
-// Legacy handler mechanism, these will be deprecated
+// VMExit
 //==========================================================================
+
+//--------------------------------------------------------------------------
+// Control Register
+//--------------------------------------------------------------------------
 
 void
 vcpu::add_wrcr0_handler(
@@ -417,6 +332,10 @@ vcpu::add_wrcr4_handler(
     m_control_register_handler.enable_wrcr4_exiting(mask);
 }
 
+//--------------------------------------------------------------------------
+// CPUID
+//--------------------------------------------------------------------------
+
 void
 vcpu::add_cpuid_handler(
     cpuid_handler::leaf_t leaf, const cpuid_handler::handler_delegate_t &d)
@@ -435,10 +354,18 @@ vcpu::add_default_cpuid_handler(
     const ::handler_delegate_t &d)
 { m_cpuid_handler.set_default_handler(d); }
 
+//--------------------------------------------------------------------------
+// EPT Misconfiguration
+//--------------------------------------------------------------------------
+
 void
 vcpu::add_ept_misconfiguration_handler(
     const ept_misconfiguration_handler::handler_delegate_t &d)
 { m_ept_misconfiguration_handler.add_handler(d); }
+
+//--------------------------------------------------------------------------
+// EPT Violation
+//--------------------------------------------------------------------------
 
 void
 vcpu::add_ept_read_violation_handler(
@@ -470,6 +397,10 @@ vcpu::add_default_ept_execute_violation_handler(
     const ::handler_delegate_t &d)
 { m_ept_violation_handler.set_default_execute_handler(d); }
 
+//--------------------------------------------------------------------------
+// External Interrupt
+//--------------------------------------------------------------------------
+
 void
 vcpu::add_external_interrupt_handler(
     const external_interrupt_handler::handler_delegate_t &d)
@@ -482,6 +413,10 @@ void
 vcpu::disable_external_interrupts()
 { m_external_interrupt_handler.disable_exiting(); }
 
+//--------------------------------------------------------------------------
+// Interrupt Window
+//--------------------------------------------------------------------------
+
 void
 vcpu::queue_external_interrupt(uint64_t vector)
 { m_interrupt_window_handler.queue_external_interrupt(vector); }
@@ -493,6 +428,10 @@ vcpu::inject_exception(uint64_t vector, uint64_t ec)
 void
 vcpu::inject_external_interrupt(uint64_t vector)
 { m_interrupt_window_handler.inject_external_interrupt(vector); }
+
+//--------------------------------------------------------------------------
+// IO Instruction
+//--------------------------------------------------------------------------
 
 void
 vcpu::trap_on_all_io_instruction_accesses()
@@ -531,6 +470,10 @@ vcpu::add_default_io_instruction_handler(
     const ::handler_delegate_t &d)
 { m_io_instruction_handler.set_default_handler(d); }
 
+//--------------------------------------------------------------------------
+// Monitor Trap
+//--------------------------------------------------------------------------
+
 void
 vcpu::add_monitor_trap_handler(
     const monitor_trap_handler::handler_delegate_t &d)
@@ -539,6 +482,42 @@ vcpu::add_monitor_trap_handler(
 void
 vcpu::enable_monitor_trap_flag()
 { m_monitor_trap_handler.enable(); }
+
+//--------------------------------------------------------------------------
+// Non-Maskable Interrupt Window
+//--------------------------------------------------------------------------
+
+void
+vcpu::queue_nmi()
+{ m_nmi_window_handler.queue_nmi(); }
+
+void
+vcpu::inject_nmi()
+{ m_nmi_window_handler.inject_nmi(); }
+
+//--------------------------------------------------------------------------
+// Non-Maskable Interrupts
+//--------------------------------------------------------------------------
+
+void
+vcpu::add_nmi_handler(
+    const nmi_handler::handler_delegate_t &d)
+{
+    m_nmi_handler.add_handler(d);
+    m_nmi_handler.enable_exiting();
+}
+
+void
+vcpu::enable_nmis()
+{ m_nmi_handler.enable_exiting(); }
+
+void
+vcpu::disable_nmis()
+{ m_nmi_handler.disable_exiting(); }
+
+//--------------------------------------------------------------------------
+// Read MSR
+//--------------------------------------------------------------------------
 
 void
 vcpu::trap_on_rdmsr_access(vmcs_n::value_type msr)
@@ -577,6 +556,10 @@ vcpu::add_default_rdmsr_handler(
     const ::handler_delegate_t &d)
 { m_rdmsr_handler.set_default_handler(d); }
 
+//--------------------------------------------------------------------------
+// Write MSR
+//--------------------------------------------------------------------------
+
 void
 vcpu::trap_on_wrmsr_access(vmcs_n::value_type msr)
 { m_wrmsr_handler.trap_on_access(msr); }
@@ -614,10 +597,18 @@ vcpu::add_default_wrmsr_handler(
     const ::handler_delegate_t &d)
 { m_wrmsr_handler.set_default_handler(d); }
 
+//--------------------------------------------------------------------------
+// XSetBV
+//--------------------------------------------------------------------------
+
 void
 vcpu::add_xsetbv_handler(
     const xsetbv_handler::handler_delegate_t &d)
 { m_xsetbv_handler.add_handler(d); }
+
+//--------------------------------------------------------------------------
+// VMX preemption timer
+//--------------------------------------------------------------------------
 
 void
 vcpu::add_preemption_timer_handler(
@@ -847,139 +838,139 @@ vcpu::get_entry(uintptr_t tble_gpa, std::ptrdiff_t index)
 
 uint64_t
 vcpu::rax() const noexcept
-{ return m_vmcs->save_state()->rax; }
+{ return m_vmcs.save_state()->rax; }
 
 void
 vcpu::set_rax(uint64_t val) noexcept
-{ m_vmcs->save_state()->rax = val; }
+{ m_vmcs.save_state()->rax = val; }
 
 uint64_t
 vcpu::rbx() const noexcept
-{ return m_vmcs->save_state()->rbx; }
+{ return m_vmcs.save_state()->rbx; }
 
 void
 vcpu::set_rbx(uint64_t val) noexcept
-{ m_vmcs->save_state()->rbx = val; }
+{ m_vmcs.save_state()->rbx = val; }
 
 uint64_t
 vcpu::rcx() const noexcept
-{ return m_vmcs->save_state()->rcx; }
+{ return m_vmcs.save_state()->rcx; }
 
 void
 vcpu::set_rcx(uint64_t val) noexcept
-{ m_vmcs->save_state()->rcx = val; }
+{ m_vmcs.save_state()->rcx = val; }
 
 uint64_t
 vcpu::rdx() const noexcept
-{ return m_vmcs->save_state()->rdx; }
+{ return m_vmcs.save_state()->rdx; }
 
 void
 vcpu::set_rdx(uint64_t val) noexcept
-{ m_vmcs->save_state()->rdx = val; }
+{ m_vmcs.save_state()->rdx = val; }
 
 uint64_t
 vcpu::rbp() const noexcept
-{ return m_vmcs->save_state()->rbp; }
+{ return m_vmcs.save_state()->rbp; }
 
 void
 vcpu::set_rbp(uint64_t val) noexcept
-{ m_vmcs->save_state()->rbp = val; }
+{ m_vmcs.save_state()->rbp = val; }
 
 uint64_t
 vcpu::rsi() const noexcept
-{ return m_vmcs->save_state()->rsi; }
+{ return m_vmcs.save_state()->rsi; }
 
 void
 vcpu::set_rsi(uint64_t val) noexcept
-{ m_vmcs->save_state()->rsi = val; }
+{ m_vmcs.save_state()->rsi = val; }
 
 uint64_t
 vcpu::rdi() const noexcept
-{ return m_vmcs->save_state()->rdi; }
+{ return m_vmcs.save_state()->rdi; }
 
 void
 vcpu::set_rdi(uint64_t val) noexcept
-{ m_vmcs->save_state()->rdi = val; }
+{ m_vmcs.save_state()->rdi = val; }
 
 uint64_t
 vcpu::r08() const noexcept
-{ return m_vmcs->save_state()->r08; }
+{ return m_vmcs.save_state()->r08; }
 
 void
 vcpu::set_r08(uint64_t val) noexcept
-{ m_vmcs->save_state()->r08 = val; }
+{ m_vmcs.save_state()->r08 = val; }
 
 uint64_t
 vcpu::r09() const noexcept
-{ return m_vmcs->save_state()->r09; }
+{ return m_vmcs.save_state()->r09; }
 
 void
 vcpu::set_r09(uint64_t val) noexcept
-{ m_vmcs->save_state()->r09 = val; }
+{ m_vmcs.save_state()->r09 = val; }
 
 uint64_t
 vcpu::r10() const noexcept
-{ return m_vmcs->save_state()->r10; }
+{ return m_vmcs.save_state()->r10; }
 
 void
 vcpu::set_r10(uint64_t val) noexcept
-{ m_vmcs->save_state()->r10 = val; }
+{ m_vmcs.save_state()->r10 = val; }
 
 uint64_t
 vcpu::r11() const noexcept
-{ return m_vmcs->save_state()->r11; }
+{ return m_vmcs.save_state()->r11; }
 
 void
 vcpu::set_r11(uint64_t val) noexcept
-{ m_vmcs->save_state()->r11 = val; }
+{ m_vmcs.save_state()->r11 = val; }
 
 uint64_t
 vcpu::r12() const noexcept
-{ return m_vmcs->save_state()->r12; }
+{ return m_vmcs.save_state()->r12; }
 
 void
 vcpu::set_r12(uint64_t val) noexcept
-{ m_vmcs->save_state()->r12 = val; }
+{ m_vmcs.save_state()->r12 = val; }
 
 uint64_t
 vcpu::r13() const noexcept
-{ return m_vmcs->save_state()->r13; }
+{ return m_vmcs.save_state()->r13; }
 
 void
 vcpu::set_r13(uint64_t val) noexcept
-{ m_vmcs->save_state()->r13 = val; }
+{ m_vmcs.save_state()->r13 = val; }
 
 uint64_t
 vcpu::r14() const noexcept
-{ return m_vmcs->save_state()->r14; }
+{ return m_vmcs.save_state()->r14; }
 
 void
 vcpu::set_r14(uint64_t val) noexcept
-{ m_vmcs->save_state()->r14 = val; }
+{ m_vmcs.save_state()->r14 = val; }
 
 uint64_t
 vcpu::r15() const noexcept
-{ return m_vmcs->save_state()->r15; }
+{ return m_vmcs.save_state()->r15; }
 
 void
 vcpu::set_r15(uint64_t val) noexcept
-{ m_vmcs->save_state()->r15 = val; }
+{ m_vmcs.save_state()->r15 = val; }
 
 uint64_t
 vcpu::rip() const noexcept
-{ return m_vmcs->save_state()->rip; }
+{ return m_vmcs.save_state()->rip; }
 
 void
 vcpu::set_rip(uint64_t val) noexcept
-{ m_vmcs->save_state()->rip = val; }
+{ m_vmcs.save_state()->rip = val; }
 
 uint64_t
 vcpu::rsp() const noexcept
-{ return m_vmcs->save_state()->rsp; }
+{ return m_vmcs.save_state()->rsp; }
 
 void
 vcpu::set_rsp(uint64_t val) noexcept
-{ m_vmcs->save_state()->rsp = val; }
+{ m_vmcs.save_state()->rsp = val; }
 
 uint64_t
 vcpu::gdt_base() const noexcept
@@ -1310,12 +1301,8 @@ void
 vcpu::set_ldtr_access_rights(uint64_t val) noexcept
 { vmcs_n::guest_ldtr_access_rights::set(val); }
 
-gsl::not_null<intel_x64::exit_handler *>
-vcpu::exit_handler() const
-{ return m_exit_handler.get(); }
-
-gsl::not_null<intel_x64::vmcs *>
-vcpu::vmcs() const
-{ return m_vmcs.get(); }
+gsl::not_null<save_state_t *>
+vcpu::save_state() const
+{ return m_vmcs.save_state(); }
 
 }

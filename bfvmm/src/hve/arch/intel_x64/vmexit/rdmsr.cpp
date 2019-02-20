@@ -65,8 +65,7 @@ namespace bfvmm::intel_x64
 rdmsr_handler::rdmsr_handler(
     gsl::not_null<vcpu *> vcpu
 ) :
-    m_vcpu{vcpu},
-    m_msr_bitmap{vcpu->m_msr_bitmap.get(), ::x64::pt::page_size}
+    m_msr_bitmap{vcpu->msr_bitmap().get(), ::x64::pt::page_size}
 {
     using namespace vmcs_n;
 

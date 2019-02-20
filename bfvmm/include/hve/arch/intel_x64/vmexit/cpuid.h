@@ -68,58 +68,6 @@ public:
     ///
     using leaf_t = uint64_t;
 
-    /// Info
-    ///
-    /// This struct is created by cpuid_handler::handle before being
-    /// passed to each registered handler.
-    ///
-    struct info_t {
-
-        /// RAX (in/out)
-        ///
-        uint64_t rax;
-
-        /// RBX (in/out)
-        ///
-        uint64_t rbx;
-
-        /// RCX (in/out)
-        ///
-        uint64_t rcx;
-
-        /// RDX (in/out)
-        ///
-        uint64_t rdx;
-
-        /// Ignore write (out)
-        ///
-        /// If true, do not update the guest's register state with the four
-        /// register values above. Set this to true if you do not want the guest
-        /// rax, rbx, rcx, or rdx to be written to after your handler completes.
-        ///
-        /// default: false
-        ///
-        bool ignore_write;
-
-        /// Ignore advance (out)
-        ///
-        /// If true, do not advance the guest's instruction pointer.
-        /// Set this to true if your handler returns true and has already
-        /// advanced the guest's instruction pointer.
-        ///
-        /// default: false
-        ///
-        bool ignore_advance;
-    };
-
-    /// Handler delegate type
-    ///
-    /// The type of delegate clients must use when registering
-    /// handlers
-    ///
-    using handler_delegate_t =
-        delegate<bool(vcpu *, info_t &)>;
-
     /// Constructor
     ///
     /// @expects
@@ -161,7 +109,40 @@ public:
 
 public:
 
-    /// Add Handler
+    /// Add Emulation Handler
+    ///
+    /// Emulate the VM exit instead of passing it through. If an emulation
+    /// handler is registered, at least one handler must return true, otherwise
+    /// the base exit handler will be returned false which will result in
+    /// a halt(). Emulation handlers should be used by guest vCPUs, or for
+    /// hardware that doesn't actually exist. All (IN) registers defined by
+    /// the spec are initialized to 0 or all Fs, depending on the type of
+    /// hardware access, and OUT registers are never written back to hardware.
+    /// If the physical hardware actually needs to be written to, the handler
+    /// must do this manually.
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param leaf the address to emulate
+    /// @param d the handler to call when an exit occurs
+    ///
+    void add_emulation_handler(leaf_t leaf, const handler_delegate_t &d);
+
+    /// Add Pass-Through Handler
+    ///
+    /// Prior to a pass-through handler being called, the (IN) registers
+    /// are filled in with information from the actual hardware. Once this
+    /// is done, the pass-through handlers are executed until at least one
+    /// handler returns true. If no handler returns true, the data in the
+    /// OUT registers will be written to hardware. This
+    /// allows the user to register a pass-through handler, without having
+    /// to completely handle the exit, allowing the base implementation to
+    /// do this. It should be noted that in most cases, pass-through handlers
+    /// should never be used for guest vCPUs, only host vCPUs. The only case
+    /// where a pass-through handler should be used for a guest vCPU is when
+    /// the data being passed to the guest is benign, and there are no
+    /// reserved bits.
     ///
     /// @expects
     /// @ensures
@@ -169,39 +150,7 @@ public:
     /// @param leaf the cpuid leaf to call d
     /// @param d the handler to call when an exit occurs
     ///
-    void add_handler(leaf_t leaf, const handler_delegate_t &d);
-
-    /// Emulate
-    ///
-    /// Prevents the APIs from talking to physical hardware which means that
-    /// no reads or writes are happening with the actual hardware, and
-    /// everything must be emulated. This should be used for guests to
-    /// prevent guest operations from leaking to the host.
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param leaf the address to emulate
-    ///
-    void emulate(leaf_t leaf);
-
-    /// Add Default Handler
-    ///
-    /// This is called when no registered handlers have been called and
-    /// the internal implementation is needed. Note that this function
-    /// can still return false and let the internal implementation pass
-    /// the instruction through
-    ///
-    /// Also note that the handler registered here is a base exit handler
-    /// delegate. The info structure is not passed, and therefor,
-    /// no emulation is provided to this handler.
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param d the handler to call when an exit occurs
-    ///
-    void set_default_handler(const ::handler_delegate_t &d);
+    void add_pass_through_handler(leaf_t leaf, const handler_delegate_t &d);
 
 public:
 
@@ -213,9 +162,8 @@ public:
 
 private:
 
-    ::handler_delegate_t m_default_handler;
-    std::unordered_map<leaf_t, bool> m_emulate;
-    std::unordered_map<leaf_t, std::list<handler_delegate_t>> m_handlers;
+    std::unordered_map<leaf_t, std::list<handler_delegate_t>> m_emulation_handlers;
+    std::unordered_map<leaf_t, std::list<handler_delegate_t>> m_pass_through_handlers;
 
 public:
 
@@ -229,8 +177,6 @@ public:
 
     /// @endcond
 };
-
-using cpuid_handler_delegate_t = cpuid_handler::handler_delegate_t;
 
 }
 

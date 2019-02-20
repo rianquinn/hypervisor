@@ -30,13 +30,6 @@
 
 #include <intrinsics.h>
 
-#include "delegator/cpuid.h"
-#include "delegator/nmi.h"
-#include "delegator/cr.h"
-#include "delegator/invd.h"
-#include "delegator/msr.h"
-#include "delegator/fallback.h"
-
 // -----------------------------------------------------------------------------
 // Exports
 // -----------------------------------------------------------------------------

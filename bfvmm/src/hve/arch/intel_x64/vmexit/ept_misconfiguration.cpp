@@ -25,9 +25,7 @@ namespace bfvmm::intel_x64
 {
 
 ept_misconfiguration_handler::ept_misconfiguration_handler(
-    gsl::not_null<vcpu *> vcpu
-) :
-    m_vcpu{vcpu}
+    gsl::not_null<vcpu *> vcpu)
 {
     using namespace vmcs_n;
 

@@ -40,9 +40,7 @@ namespace bfvmm::intel_x64
 //
 
 nmi_window_handler::nmi_window_handler(
-    gsl::not_null<vcpu *> vcpu
-) :
-    m_vcpu{vcpu}
+    gsl::not_null<vcpu *> vcpu)
 {
     using namespace vmcs_n;
 
