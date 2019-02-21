@@ -83,7 +83,8 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    exit_handler(gsl::not_null<vcpu *> vcpu) = default;
+    exit_handler(gsl::not_null<vcpu *> vcpu)
+    { bfignored(vcpu); }
 
     /// Destructor
     ///
@@ -112,7 +113,7 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    void fini(gsl::not_null<vcpu *> vcpu);
+    void fini(gsl::not_null<vcpu *> vcpu) noexcept;
 
 public:
 
@@ -156,6 +157,8 @@ public:
         const handler_delegate_t &d
     );
 
+public:
+
     /// Handle
     ///
     /// Handles a VM exit. This function should only be called by the exit
@@ -170,7 +173,7 @@ public:
     /// @param vcpu the vcpu this exit occurred on
     /// @return true if the vmexit was successfully handled, false otherwise
     ///
-    bool handle(vcpu *vcpu, exit_handler *exit_handler);
+    static bool handle(vcpu *vcpu, exit_handler *exit_handler);
 
 private:
 

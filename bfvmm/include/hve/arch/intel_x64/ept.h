@@ -65,8 +65,8 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    ept_handler(gsl::not_null<vcpu *> vcpu) = default;
-
+    ept_handler(gsl::not_null<vcpu *> vcpu)
+    { bfignored(vcpu); }
 
     /// Destructor
     ///
@@ -95,7 +95,7 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    void fini(gsl::not_null<vcpu *> vcpu);
+    void fini(gsl::not_null<vcpu *> vcpu) noexcept;
 
 public:
 
@@ -104,10 +104,11 @@ public:
     /// @expects
     /// @ensures
     ///
+    /// @param vcpu the vcpu to set the eptp on
     /// @param map A pointer to the map to set EPTP to. If the pointer is
     ///     a nullptr, EPT is disabled.
     ///
-    void set_eptp(ept::mmap *map);
+    void set_eptp(gsl::not_null<vcpu *> vcpu, ept::mmap *map);
 
 public:
 

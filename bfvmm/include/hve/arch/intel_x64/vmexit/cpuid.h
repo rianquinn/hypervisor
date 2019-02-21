@@ -154,8 +154,8 @@ public:
     /// manually. Instead, the handler can return false, allowing other
     /// handlers to also execute, or allow the base implementation to complete
     /// the exit for you, and advance the instruction pointer. Returning
-    /// false should be the default approach unless you exlicitly wish to
-    /// prevent additonal handlers from executing, in which case you can
+    /// false should be the default approach unless you explicitly wish to
+    /// prevent additional handlers from executing, in which case you can
     /// execute "return vcpu->advance()" which will complete the VM exit.
     /// If you return true and don't execute advance(), the instruction will
     /// not be advanced.

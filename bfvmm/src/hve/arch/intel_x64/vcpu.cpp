@@ -223,6 +223,10 @@ void
 vcpu::promote()
 { m_vmcs.promote(); }
 
+void
+vcpu::check() noexcept
+{ m_vmcs.check(); }
+
 bool
 vcpu::advance()
 {
@@ -301,7 +305,7 @@ vcpu::dump(const char *str)
         bferror_subtext(0, "exit description", exit_reason::basic_exit_reason::description(), msg);
 
         if (exit_reason::vm_entry_failure::is_enabled()) {
-            vcpu->check();
+            this->check();
         }
     });
 }
@@ -360,22 +364,14 @@ vcpu::add_wrcr4_handler(
 //--------------------------------------------------------------------------
 
 void
-vcpu::add_cpuid_handler(
-    cpuid_handler::leaf_t leaf, const cpuid_handler::handler_delegate_t &d)
-{ m_cpuid_handler.add_handler(leaf, d); }
+vcpu::add_cpuid_emulation_handler(
+    cpuid_handler::leaf_t leaf, const handler_delegate_t &d)
+{ m_cpuid_handler.add_emulation_handler(leaf, d); }
 
 void
-vcpu::emulate_cpuid(
-    cpuid_handler::leaf_t leaf, const cpuid_handler::handler_delegate_t &d)
-{
-    this->add_cpuid_handler(leaf, d);
-    m_cpuid_handler.emulate(leaf);
-}
-
-void
-vcpu::add_default_cpuid_handler(
-    const ::handler_delegate_t &d)
-{ m_cpuid_handler.set_default_handler(d); }
+vcpu::add_cpuid_pass_through_handler(
+    cpuid_handler::leaf_t leaf, const handler_delegate_t &d)
+{ m_cpuid_handler.add_pass_through_handler(leaf, d); }
 
 //--------------------------------------------------------------------------
 // EPT Misconfiguration
@@ -665,28 +661,16 @@ vcpu::add_xsetbv_handler(
 void
 vcpu::set_eptp(ept::mmap &map)
 {
-    m_ept_handler.set_eptp(&map);
+    m_ept_handler.set_eptp(this, &map);
     m_mmap = &map;
 }
 
 void
 vcpu::disable_ept()
 {
-    m_ept_handler.set_eptp(nullptr);
+    m_ept_handler.set_eptp(this, nullptr);
     m_mmap = nullptr;
 }
-
-//==========================================================================
-// VPID
-//==========================================================================
-
-void
-vcpu::enable_vpid()
-{ m_vpid_handler.enable(); }
-
-void
-vcpu::disable_vpid()
-{ m_vpid_handler.disable(); }
 
 //==========================================================================
 // Helpers

@@ -82,9 +82,9 @@ default_esr(
         bferror_lnbr(0, msg);
         bferror_lnbr(0, msg);
         bferror_lnbr(0, msg);
-        bferror_info(0, "###############################################################", msg);
-        bferror_info(0, "# FATAL: VMM Exception Caught (Host State)                    #", msg);
-        bferror_info(0, "###############################################################", msg);
+        bferror_info(0, "###################################################################", msg);
+        bferror_info(0, "# FATAL: VMM Exception Caught (Host State)                        #", msg);
+        bferror_info(0, "###################################################################", msg);
 
         bferror_lnbr(0, msg);
         if (vector == 0x0E && ::intel_x64::cr2::get() == 0) {
@@ -137,9 +137,9 @@ default_esr(
         bferror_lnbr(0, msg);
         bferror_lnbr(0, msg);
         bferror_lnbr(0, msg);
-        bferror_info(0, "###############################################################", msg);
-        bferror_info(0, "# FATAL: VMM Exception Caught (Guest State)                   #", msg);
-        bferror_info(0, "###############################################################", msg);
+        bferror_info(0, "###################################################################", msg);
+        bferror_info(0, "# FATAL: VMM Exception Caught (Guest State)                       #", msg);
+        bferror_info(0, "###################################################################", msg);
     });
 
     static_cast<bfvmm::intel_x64::vcpu *>(vcpu)->halt();

@@ -19,20 +19,8 @@
 #ifndef BFVMM_SDK_INTEL_X64_CPUID
 #define BFVMM_SDK_INTEL_X64_CPUID
 
-#include "../../../bfvmm.h"
-#include "../../../hve/arch/intel_x64/delegator/cpuid.h"
-
 namespace bfvmm::intel_x64::cpuid
 {
-
-/// Emulate the given cpuid leaf using the given cpuid handler on
-/// the given vcpu
-///
-/// @param vcpu the vcpu to apply emulation to
-/// @param leaf the cpuid leaf to emulate
-/// @param handler the handler to be called for the emulation of @param leaf
-///
-void emulate(vcpu_t vcpu, leaf_t leaf, delegate_t handler);
 
 }
 

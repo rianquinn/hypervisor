@@ -124,7 +124,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this handler
+    /// @param vcpu the vcpu pointer for this wrmsr handler
     ///
     wrmsr_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -282,6 +282,8 @@ public:
     /// @endcond
 
 private:
+
+    gsl::span<uint8_t> m_msr_bitmap;
 
     ::handler_delegate_t m_default_handler;
     std::unordered_map<vmcs_n::value_type, bool> m_emulate;

@@ -178,6 +178,15 @@ public:
     ///
     VIRTUAL void promote();
 
+    /// Check vCPU
+    ///
+    /// Checks the vCPU for issues.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    VIRTUAL void check() noexcept;
+
     /// Advance vCPU
     ///
     /// Advances the vCPU.
@@ -304,40 +313,33 @@ public:
     // CPUID
     //--------------------------------------------------------------------------
 
-    /// Add CPUID Handler
+    /// Add CPUID Emulation Handler
+    ///
+    /// Add a delegate to emulate the execution of CPUID. Unlike pass-through
+    /// the hardware is not read/written, only the vCPU's register state.
     ///
     /// @expects
     /// @ensures
     ///
     /// @param leaf the leaf to call d on
-    /// @param d the delegate to call when the guest executes CPUID
+    /// @param d the delegate to call on the vm exit
     ///
-    VIRTUAL void add_cpuid_handler(
-        cpuid_handler::leaf_t leaf, const cpuid_handler::handler_delegate_t &d);
+    VIRTUAL void add_cpuid_emulation_handler(
+        cpuid_handler::leaf_t leaf, const handler_delegate_t &d);
 
-    /// Emulate CPUID
+    /// Add CPUID Pass-Through Handler
     ///
-    /// Adds a handler, and tells the APIs that full emulation is desired.
-    /// This will prevent the real hardware from being touched.
+    /// Add a delegate to handle a CPUID vm exit. Unlike an emulation handler,
+    /// the hardware is read/written in addition to the vCPU's register state.
     ///
     /// @expects
     /// @ensures
     ///
     /// @param leaf the leaf to call d on
-    /// @param d the delegate to call when the guest executes CPUID
+    /// @param d the delegate to call on the vm exit
     ///
-    VIRTUAL void emulate_cpuid(
-        cpuid_handler::leaf_t leaf, const cpuid_handler::handler_delegate_t &d);
-
-    /// Add CPUID Default Handler
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param d the delegate to call when the guest executes CPUID
-    ///
-    VIRTUAL void add_default_cpuid_handler(
-        const ::handler_delegate_t &d);
+    VIRTUAL void add_cpuid_pass_through_handler(
+        cpuid_handler::leaf_t leaf, const handler_delegate_t &d);
 
     //--------------------------------------------------------------------------
     // EPT Misconfiguration
@@ -869,24 +871,6 @@ public:
     /// @ensures
     ///
     VIRTUAL void disable_ept();
-
-    //==========================================================================
-    // VPID
-    //==========================================================================
-
-    /// Enable VPID
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    VIRTUAL void enable_vpid();
-
-    /// Disable VPID
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    VIRTUAL void disable_vpid();
 
     //==========================================================================
     // Helpers

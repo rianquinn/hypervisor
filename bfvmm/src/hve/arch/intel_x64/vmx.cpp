@@ -35,6 +35,13 @@ namespace bfvmm
 namespace intel_x64
 {
 
+vmx::vmx(gsl::not_null<vcpu *> vcpu) :
+    m_vmx_region{make_nullptr_page<uint32_t>()},
+    m_vmx_region_phys{}
+{
+    bfignored(vcpu);
+}
+
 void
 vmx::init(gsl::not_null<vcpu *> vcpu)
 {

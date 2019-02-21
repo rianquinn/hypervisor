@@ -257,8 +257,10 @@ control_register_handler::control_register_handler(
 void
 control_register_handler::init(gsl::not_null<vcpu *> vcpu)
 {
-    this->enable_wrcr0_exiting(0, vcpu);
-    this->enable_wrcr4_exiting(0, vcpu);
+    bfignored(vcpu);
+
+    this->enable_wrcr0_exiting(0);
+    this->enable_wrcr4_exiting(0);
 }
 
 void
@@ -290,8 +292,7 @@ control_register_handler::add_wrcr4_handler(
 { m_wrcr4_handlers.push_front(d); }
 
 void
-control_register_handler::enable_wrcr0_exiting(
-    vmcs_n::value_type mask)
+control_register_handler::enable_wrcr0_exiting(vmcs_n::value_type mask)
 {
     using namespace vmcs_n;
     mask |= m_vcpu->global_state()->ia32_vmx_cr0_fixed0;
@@ -315,8 +316,7 @@ control_register_handler::enable_wrcr3_exiting()
 }
 
 void
-control_register_handler::enable_wrcr4_exiting(
-    vmcs_n::value_type mask)
+control_register_handler::enable_wrcr4_exiting(vmcs_n::value_type mask)
 {
     using namespace vmcs_n;
     mask |= m_vcpu->global_state()->ia32_vmx_cr4_fixed0;

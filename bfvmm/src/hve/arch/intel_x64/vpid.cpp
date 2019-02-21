@@ -31,16 +31,15 @@ vpid_handler::vpid_handler(
     m_id = s_id++;
 }
 
-void vpid_handler::init(gsl::not_null<vcpu *> vcpu)
+void
+vpid_handler::init(gsl::not_null<vcpu *> vcpu)
 {
     vmcs_n::virtual_processor_identifier::set(m_id);
     vmcs_n::secondary_processor_based_vm_execution_controls::enable_vpid::enable();
 }
 
-void vpid_handler::fini(gsl::not_null<vcpu *> vcpu)
-{
-    vmcs_n::virtual_processor_identifier::set(0);
-    vmcs_n::secondary_processor_based_vm_execution_controls::enable_vpid::disable();
-}
+void
+vpid_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
 
 }

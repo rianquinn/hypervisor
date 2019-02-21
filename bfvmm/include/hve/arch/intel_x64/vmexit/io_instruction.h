@@ -145,7 +145,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this handler
+    /// @param vcpu the vcpu object for this io instruction handler
     ///
     io_instruction_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -318,6 +318,9 @@ private:
     void store_operand(vcpu *vcpu, info_t &info);
 
 private:
+
+    gsl::span<uint8_t> m_io_bitmap_a;
+    gsl::span<uint8_t> m_io_bitmap_b;
 
     ::handler_delegate_t m_default_handler;
     std::unordered_map<vmcs_n::value_type, bool> m_emulate;

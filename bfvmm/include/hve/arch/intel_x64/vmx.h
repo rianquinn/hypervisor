@@ -74,7 +74,7 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    vmx(gsl::not_null<vcpu *> vcpu) = default;
+    vmx(gsl::not_null<vcpu *> vcpu);
 
     /// Destructor
     ///
@@ -103,7 +103,7 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    void fini(gsl::not_null<vcpu *> vcpu);
+    void fini(gsl::not_null<vcpu *> vcpu) noexcept;
 
 private:
 
@@ -125,8 +125,8 @@ private:
 
 private:
 
-    page_ptr<uint32_t> m_vmx_region{};
-    uintptr_t m_vmx_region_phys{};
+    page_ptr<uint32_t> m_vmx_region;
+    uintptr_t m_vmx_region_phys;
 
 public:
 

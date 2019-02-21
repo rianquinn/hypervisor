@@ -26,7 +26,7 @@ namespace bfvmm::intel_x64
 
 static bool
 ia32_bios_updt_trig__rdmsr_handler(
-    vcpu_t vcpu, rdmsr_handler::info_t &info)
+    vcpu_t *vcpu, rdmsr_handler::info_t &info)
 {
     bfignored(vcpu);
 
@@ -36,7 +36,7 @@ ia32_bios_updt_trig__rdmsr_handler(
 
 static bool
 ia32_bios_updt_trig__wrmsr_handler(
-    vcpu_t vcpu, wrmsr_handler::info_t &info)
+    vcpu_t *vcpu, wrmsr_handler::info_t &info)
 {
     bfignored(vcpu);
 
@@ -46,7 +46,7 @@ ia32_bios_updt_trig__wrmsr_handler(
 
 static bool
 ia32_bios_sign_id__rdmsr_handler(
-    vcpu_t vcpu, rdmsr_handler::info_t &info)
+    vcpu_t *vcpu, rdmsr_handler::info_t &info)
 {
     bfignored(vcpu);
 
@@ -66,7 +66,7 @@ ia32_bios_sign_id__rdmsr_handler(
 
 static bool
 ia32_bios_sign_id__wrmsr_handler(
-    vcpu_t vcpu, wrmsr_handler::info_t &info)
+    vcpu_t *vcpu, wrmsr_handler::info_t &info)
 {
     bfignored(vcpu);
 
@@ -75,9 +75,7 @@ ia32_bios_sign_id__wrmsr_handler(
 }
 
 microcode_handler::microcode_handler(
-    gsl::not_null<vcpu *> vcpu
-) :
-    m_vcpu{vcpu}
+    gsl::not_null<vcpu *> vcpu)
 {
     using namespace vmcs_n;
 
@@ -101,5 +99,14 @@ microcode_handler::microcode_handler(
         wrmsr_handler::handler_delegate_t::create<ia32_bios_sign_id__wrmsr_handler>()
     );
 }
+
+void
+microcode_handler::init(gsl::not_null<vcpu *> vcpu)
+{ bfignored(vcpu); }
+
+void
+microcode_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
+{ bfignored(vcpu); }
+
 
 }

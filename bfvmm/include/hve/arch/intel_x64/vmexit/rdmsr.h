@@ -123,7 +123,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    /// @param vcpu the vcpu object for this handler
+    /// @param vcpu the vcpu object for this rdmsr handler
     ///
     rdmsr_handler(
         gsl::not_null<vcpu *> vcpu);
@@ -134,28 +134,6 @@ public:
     /// @ensures
     ///
     ~rdmsr_handler() = default;
-
-    /// Init
-    ///
-    /// Initializes the handler's hardware state, if any.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param vcpu the vcpu object for this handler
-    ///
-    void init(gsl::not_null<vcpu *> vcpu);
-
-    /// Fini
-    ///
-    /// Finalizes the handler's hardware state, if any.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param vcpu the vcpu object for this handler
-    ///
-    void fini(gsl::not_null<vcpu *> vcpu) noexcept;
 
 public:
 
@@ -272,6 +250,28 @@ public:
     ///
     void pass_through_all_accesses();
 
+    /// Init
+    ///
+    /// Initializes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void init(gsl::not_null<vcpu *> vcpu);
+
+    /// Fini
+    ///
+    /// Finalizes the handler's hardware state, if any.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param vcpu the vcpu object for this handler
+    ///
+    void fini(gsl::not_null<vcpu *> vcpu) noexcept;
+
 public:
 
     /// @cond
@@ -281,6 +281,8 @@ public:
     /// @endcond
 
 private:
+
+    gsl::span<uint8_t> m_msr_bitmap;
 
     ::handler_delegate_t m_default_handler;
     std::unordered_map<vmcs_n::value_type, bool> m_emulate;

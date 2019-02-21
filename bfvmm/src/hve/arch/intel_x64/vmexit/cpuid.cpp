@@ -35,6 +35,7 @@ namespace bfvmm::intel_x64
 static bool
 handle_cpuid_feature_information(vcpu *vcpu)
 {
+bfline
     using namespace ::intel_x64::cpuid;
 
     // Currently, we do not support nested virtualization. As a result,
@@ -51,6 +52,7 @@ handle_cpuid_feature_information(vcpu *vcpu)
 static bool
 handle_cpuid_0x4BF00000(vcpu *vcpu)
 {
+bfline
     /// Ack
     ///
     /// This can be used by an application to ack the existence of the
@@ -66,6 +68,7 @@ handle_cpuid_0x4BF00000(vcpu *vcpu)
 static bool
 handle_cpuid_0x4BF00010(vcpu *vcpu)
 {
+bfline
     /// Init
     ///
     /// Some initialization is required after the hypervisor has started. For
@@ -74,12 +77,14 @@ handle_cpuid_0x4BF00010(vcpu *vcpu)
     ///
 
     vcpu_init_root(vcpu);
+bfline
     return vcpu->advance();
 }
 
 static bool
 handle_cpuid_0x4BF00011(vcpu *vcpu)
 {
+bfline
     /// Say Hi
     ///
     /// If the vCPU is a host vCPU and not a guest vCPU, we should say hi
@@ -88,12 +93,14 @@ handle_cpuid_0x4BF00011(vcpu *vcpu)
     ///
 
     bfdebug_info(0, "host os is" bfcolor_green " now " bfcolor_end "in a vm");
+bfline
     return vcpu->advance();
 }
 
 static bool
 handle_cpuid_0x4BF00020(vcpu *vcpu)
 {
+bfline
     /// Fini
     ///
     /// Some teardown logic is required before the hypervisor stops running.
@@ -101,6 +108,7 @@ handle_cpuid_0x4BF00020(vcpu *vcpu)
     ///
 
     vcpu_fini_root(vcpu);
+bfline
     return vcpu->advance();
 }
 
@@ -136,27 +144,27 @@ cpuid_handler::cpuid_handler(
         handler_delegate_t::create<handle_cpuid_feature_information>()
     );
 
-    this->add_emulate_handler(
+    this->add_emulation_handler(
         0x4BF00000,
         handler_delegate_t::create<handle_cpuid_0x4BF00000>()
     );
 
-    this->add_emulate_handler(
+    this->add_emulation_handler(
         0x4BF00010,
         handler_delegate_t::create<handle_cpuid_0x4BF00010>()
     );
 
-    this->add_emulate_handler(
+    this->add_emulation_handler(
         0x4BF00011,
         handler_delegate_t::create<handle_cpuid_0x4BF00011>()
     );
 
-    this->add_emulate_handler(
+    this->add_emulation_handler(
         0x4BF00020,
         handler_delegate_t::create<handle_cpuid_0x4BF00020>()
     );
 
-    this->add_emulate_handler(
+    this->add_emulation_handler(
         0x4BF00021,
         handler_delegate_t::create<handle_cpuid_0x4BF00021>()
     );
@@ -192,17 +200,21 @@ static bool
 handle_emulation(
     vcpu *vcpu, const std::list<handler_delegate_t> &handlers)
 {
+bfline
     vcpu->set_rax(0);
     vcpu->set_rbx(0);
     vcpu->set_rcx(0);
     vcpu->set_rdx(0);
 
-    for (const auto &d : handlers->second) {
-        if (d(vcpu, info)) {
+bfline
+    for (const auto &d : handlers) {
+bfline
+        if (d(vcpu)) {
             return true;
         }
     }
 
+bfline
     return false;
 }
 
@@ -210,8 +222,8 @@ static bool
 handle_pass_through(
     vcpu *vcpu, const std::list<handler_delegate_t> &handlers)
 {
-    for (const auto &d : handlers->second) {
-        if (d(vcpu, info)) {
+    for (const auto &d : handlers) {
+        if (d(vcpu)) {
             return true;
         }
     }
@@ -222,13 +234,16 @@ handle_pass_through(
 bool
 cpuid_handler::handle(vcpu *vcpu)
 {
+bfline
     const auto &emulation_handlers =
         m_emulation_handlers.find(vcpu->rax());
 
+bfline
     if (emulation_handlers != m_emulation_handlers.end()) {
-        return handle_emulation(vcpu, emulation_handlers);
+        return handle_emulation(vcpu, emulation_handlers->second);
     }
 
+bfline
     auto [rax, rbx, rcx, rdx] =
         ::x64::cpuid::get(
             gsl::narrow_cast<::x64::cpuid::field_type>(vcpu->rax()),
@@ -237,18 +252,22 @@ cpuid_handler::handle(vcpu *vcpu)
             gsl::narrow_cast<::x64::cpuid::field_type>(vcpu->rdx())
         );
 
+bfline
     vcpu->set_rax(rax);
     vcpu->set_rbx(rbx);
     vcpu->set_rcx(rcx);
     vcpu->set_rdx(rdx);
 
+bfline
     const auto &pass_through_handlers =
         m_pass_through_handlers.find(vcpu->rax());
 
+bfline
     if (pass_through_handlers != m_pass_through_handlers.end()) {
-        return handle_emulation(vcpu, pass_through_handlers);
+        return handle_emulation(vcpu, pass_through_handlers->second);
     }
 
+bfline
     return vcpu->advance();
 }
 

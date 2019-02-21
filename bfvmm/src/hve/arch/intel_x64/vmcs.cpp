@@ -26,16 +26,19 @@
 #include <bfcallonce.h>
 
 #include <hve/arch/intel_x64/vmcs.h>
-#include <hve/arch/intel_x64/vcpu.h>
-#include <hve/arch/intel_x64/nmi.h>
 #include <hve/arch/intel_x64/exception.h>
-#include <intrinsics.h>
+#include <hve/arch/intel_x64/vcpu.h>
+
 #include <memory_manager/arch/x64/cr3.h>
 #include <memory_manager/memory_manager.h>
+
+#include <intrinsics.h>
 
 // -----------------------------------------------------------------------------
 // Prototypes
 // -----------------------------------------------------------------------------
+
+extern "C" void exit_handler_entry(void) noexcept;
 
 extern "C" void vmcs_launch(
     bfvmm::intel_x64::save_state_t *save_state) noexcept;
@@ -45,8 +48,6 @@ extern "C" void vmcs_promote(
 
 extern "C" void vmcs_resume(
     bfvmm::intel_x64::save_state_t *save_state) noexcept;
-
-extern "C" void vmexit_entry(void) noexcept;
 
 // -----------------------------------------------------------------------------
 // Global Variables
@@ -124,7 +125,9 @@ setup()
 namespace bfvmm::intel_x64
 {
 
-vmcs::vmcs(vcpu_t vcpu) :
+vmcs::vmcs(
+    gsl::not_null<vcpu *> vcpu
+) :
     m_save_state{make_page<save_state_t>()},
     m_vmcs_region{make_page<uint32_t>()},
     m_vmcs_region_phys{g_mm->virtptr_to_physint(m_vmcs_region.get())},
@@ -137,6 +140,7 @@ vmcs::vmcs(vcpu_t vcpu) :
     m_stack{std::make_unique<gsl::byte[]>(STACK_SIZE * 2)}
 {
     bfignored(vcpu);
+    bfn::call_once(g_once_flag, setup);
 }
 
 void
@@ -146,7 +150,7 @@ vmcs::init(gsl::not_null<vcpu *> vcpu)
     using namespace ::intel_x64::vmcs;
     using namespace ::x64::access_rights;
 
-    bfn::call_once(g_once_flag, setup);
+    this->clear();
 
     gsl::span<uint32_t> id{m_vmcs_region.get(), 1024};
     id[0] = gsl::narrow<uint32_t>(::intel_x64::msrs::ia32_vmx_basic::revision_id::get());
@@ -162,12 +166,16 @@ vmcs::init(gsl::not_null<vcpu *> vcpu)
     m_host_tss.ist1 = setup_stack(m_ist1.get(), vcpu->id());
     set_default_esrs(&m_host_idt, 8);
 
-    this->write_host_state();
-    this->write_control_state();
+    this->write_host_state(vcpu);
+    this->write_control_state(vcpu);
 
     if (vcpu->is_host_vm_vcpu()) {
-        this->write_guest_state();
+        this->write_guest_state(vcpu);
     }
+
+    address_of_msr_bitmap::set(g_mm->virtptr_to_physint(m_msr_bitmap.get()));
+    address_of_io_bitmap_a::set(g_mm->virtptr_to_physint(m_io_bitmap_a.get()));
+    address_of_io_bitmap_b::set(g_mm->virtptr_to_physint(m_io_bitmap_b.get()));
 
     bfdebug_transaction(1, [&](std::string * msg) {
         bfdebug_pass(1, "vmcs region", msg);
@@ -176,12 +184,10 @@ vmcs::init(gsl::not_null<vcpu *> vcpu)
         bfdebug_pass(1, "save state", msg);
         bfdebug_subnhex(1, "virt address", m_save_state.get(), msg);
     });
-
-    this->clear();
 }
 
 void
-vmcs::fini(gsl::not_null<vcpu *> vcpu)
+vmcs::fini(gsl::not_null<vcpu *> vcpu) noexcept
 { bfignored(vcpu); }
 
 void
@@ -250,7 +256,7 @@ vmcs::check() const noexcept
 }
 
 void
-vmcs::write_host_state(vcpuid::type vcpuid)
+vmcs::write_host_state(gsl::not_null<vcpu *> vcpu)
 {
     using namespace ::intel_x64::vmcs;
 
@@ -273,13 +279,15 @@ vmcs::write_host_state(vcpuid::type vcpuid)
     host_gdtr_base::set(m_host_gdt.base());
     host_idtr_base::set(m_host_idt.base());
 
-    host_rip::set(vmexit_entry);
-    host_rsp::set(setup_stack(m_stack.get(), m_save_state->vcpuid));
+    host_rip::set(exit_handler_entry);
+    host_rsp::set(setup_stack(m_stack.get(), vcpu->id()));
 }
 
 void
-vmcs::write_guest_state()
+vmcs::write_guest_state(gsl::not_null<vcpu *> vcpu)
 {
+    bfignored(vcpu);
+
     using namespace ::intel_x64;
     using namespace ::intel_x64::vmcs;
     using namespace ::intel_x64::cpuid;
@@ -363,12 +371,10 @@ vmcs::write_guest_state()
     guest_ia32_sysenter_cs::set(msrs::ia32_sysenter_cs::get());
     guest_ia32_sysenter_esp::set(msrs::ia32_sysenter_esp::get());
     guest_ia32_sysenter_eip::set(msrs::ia32_sysenter_eip::get());
-
-    cr4_read_shadow::set(cr4::get());
 }
 
 void
-vmcs::write_control_state()
+vmcs::write_control_state(gsl::not_null<vcpu *> vcpu)
 {
     using namespace ::intel_x64::vmcs;
 
@@ -405,13 +411,16 @@ vmcs::write_control_state()
     using namespace primary_processor_based_vm_execution_controls;
     using namespace secondary_processor_based_vm_execution_controls;
 
-    nmi_exiting::enable();
-    virtual_nmis::enable();
+    use_msr_bitmap::enable();
+    use_io_bitmaps::enable();
 
     activate_secondary_controls::enable_if_allowed();
-    enable_rdtscp::enable_if_allowed();
-    enable_invpcid::enable_if_allowed();
-    enable_xsaves_xrstors::enable_if_allowed();
+
+    if (vcpu->is_host_vm_vcpu()) {
+        enable_rdtscp::enable_if_allowed();
+        enable_invpcid::enable_if_allowed();
+        enable_xsaves_xrstors::enable_if_allowed();
+    }
 
     vm_exit_controls::save_debug_controls::enable();
     vm_exit_controls::host_address_space_size::enable();
@@ -426,15 +435,6 @@ vmcs::write_control_state()
     vm_entry_controls::load_ia32_perf_global_ctrl::enable_if_allowed();
     vm_entry_controls::load_ia32_pat::enable();
     vm_entry_controls::load_ia32_efer::enable();
-
-    cr4_guest_host_mask::set(::intel_x64::cr4::vmx_enable_bit::mask);
-
-    address_of_msr_bitmap::set(g_mm->virtptr_to_physint(m_msr_bitmap.get()));
-    address_of_io_bitmap_a::set(g_mm->virtptr_to_physint(m_io_bitmap_a.get()));
-    address_of_io_bitmap_b::set(g_mm->virtptr_to_physint(m_io_bitmap_b.get()));
-
-    primary_processor_based_vm_execution_controls::use_msr_bitmap::enable();
-    primary_processor_based_vm_execution_controls::use_io_bitmaps::enable();
 }
 
 }

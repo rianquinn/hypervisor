@@ -120,7 +120,7 @@ public:
     ///
     /// @param vcpu the vcpu object for this handler
     ///
-    void fini(gsl::not_null<vcpu *> vcpu);
+    void fini(gsl::not_null<vcpu *> vcpu) noexcept;
 
 public:
 
@@ -275,9 +275,9 @@ public:
 
 private:
 
-    void write_host_state();
-    void write_guest_state();
-    void write_control_state();
+    void write_host_state(gsl::not_null<vcpu *> vcpu);
+    void write_guest_state(gsl::not_null<vcpu *> vcpu);
+    void write_control_state(gsl::not_null<vcpu *> vcpu);
 
 private:
 

@@ -52,7 +52,6 @@ sipi_signal_handler::handle(vcpu *vcpu)
 {
     using namespace vmcs_n::guest_activity_state;
     using namespace vmcs_n::vm_entry_controls;
-    bfignored(vcpu);
 
     // .........................................................................
     // Ignore SIPI - SIPI
@@ -99,9 +98,9 @@ sipi_signal_handler::handle(vcpu *vcpu)
     vmcs_n::guest_rflags::set(0x00000002);
     vcpu->set_rip(0x0000FFF0);
 
-    vmcs_n::guest_cr0::set(0x60000010 | m_vcpu->global_state()->ia32_vmx_cr0_fixed0);
+    vmcs_n::guest_cr0::set(0x60000010 | vcpu->global_state()->ia32_vmx_cr0_fixed0);
     vmcs_n::guest_cr3::set(0);
-    vmcs_n::guest_cr4::set(0x00000000 | m_vcpu->global_state()->ia32_vmx_cr4_fixed0);
+    vmcs_n::guest_cr4::set(0x00000000 | vcpu->global_state()->ia32_vmx_cr4_fixed0);
 
     vmcs_n::cr0_read_shadow::set(0x60000010);
     vmcs_n::cr4_read_shadow::set(0);

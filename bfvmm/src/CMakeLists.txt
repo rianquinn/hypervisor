@@ -39,5 +39,3 @@ add_subdirectory(sdk)
 # ------------------------------------------------------------------------------
 
 install(FILES ../include/vmm.h DESTINATION include)
-install(FILES ../include/bfvmm.h DESTINATION include/bfvmm)
-install(FILES ../include/vmm_types.h DESTINATION include/bfvmm)

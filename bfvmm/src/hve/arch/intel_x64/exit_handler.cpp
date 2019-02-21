@@ -30,15 +30,20 @@
 #include <bfgsl.h>
 #include <bfexception.h>
 
+#include <hve/arch/intel_x64/vcpu.h>
 #include <hve/arch/intel_x64/exit_handler.h>
 
 namespace bfvmm::intel_x64
 {
 
+void
 exit_handler::init(gsl::not_null<vcpu *> vcpu)
-{ bfignored(vcpu); }
+{ bfignored(vcpu);
+handle(vcpu, this);
+}
 
-exit_handler::fini(gsl::not_null<vcpu *> vcpu)
+void
+exit_handler::fini(gsl::not_null<vcpu *> vcpu) noexcept
 { bfignored(vcpu); }
 
 void
@@ -57,26 +62,31 @@ exit_handler::handle(
     vcpu *vcpu, exit_handler *exit_handler)
 {
     using namespace ::intel_x64::vmcs;
-
+bfline
     guard_exceptions([&]() {
-
+bfline
         for (const auto &d : exit_handler->m_exit_handlers) {
             d(vcpu);
         }
-
+bfline
         const auto &handlers =
             exit_handler->m_exit_handlers_array.at(
                 exit_reason::basic_exit_reason::get()
             );
-
+bfline
         for (const auto &d : handlers) {
+bfline
             if (d(vcpu)) {
+bfline
                 vcpu->run();
             }
         }
     });
 
     vcpu->halt("unhandled vm exit");
+
+    // Unreachable
+    return false;
 }
 
 }

@@ -19,16 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <vcpu/vcpu.h>
-
-#include "sdk/arch/intel_x64/cpuid.h"
-
 namespace bfvmm::intel_x64::cpuid
 {
-
-void emulate(vcpu_t vcpu, leaf_t leaf, delegate_t handler)
-{
-    vcpu->exit_handler()->cpuid_delegator()->add_handler(leaf, handler);
-}
 
 }
