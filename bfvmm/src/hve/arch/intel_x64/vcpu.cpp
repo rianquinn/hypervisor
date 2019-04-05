@@ -129,7 +129,7 @@ vcpu::vcpu(
     m_ist1{std::make_unique<gsl::byte[]>(STACK_SIZE * 2)},
     m_stack{std::make_unique<gsl::byte[]>(STACK_SIZE * 2)},
 
-    m_vmx{is_host_vm_vcpu() ? std::make_unique<vmx>() : nullptr},
+    m_vmx{is_host_vcpu() ? std::make_unique<vmx>() : nullptr},
 
     m_vmcs{this},
     m_exit_handler{this},
@@ -158,10 +158,6 @@ vcpu::vcpu(
     using namespace vmcs_n;
     bfn::call_once(g_once_flag, setup);
 
-    this->add_run_delegate(
-        vcpu_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::run_delegate>(this)
-    );
-
     m_state.vcpu_ptr =
         reinterpret_cast<uintptr_t>(this);
 
@@ -185,7 +181,7 @@ vcpu::vcpu(
     this->write_host_state();
     this->write_control_state();
 
-    if (this->is_host_vm_vcpu()) {
+    if (this->is_host_vcpu()) {
         this->write_guest_state();
     }
 
@@ -193,6 +189,35 @@ vcpu::vcpu(
     m_nmi_handler.enable_exiting();
     m_control_register_handler.enable_wrcr0_exiting(0);
     m_control_register_handler.enable_wrcr4_exiting(0);
+}
+
+void
+vcpu::run()
+{
+    if (m_launched) {
+
+        for (const auto &d : m_resume_delegates) {
+            d(this);
+        }
+
+        m_vmcs.resume();
+    }
+    else {
+
+        try {
+
+            for (const auto &d : m_launch_delegates) {
+                d(this);
+            }
+
+            m_launched = true;
+            m_vmcs.launch();
+        }
+        catch (...) {
+            m_launched = false;
+            throw;
+        }
+    }
 }
 
 //==============================================================================
@@ -372,7 +397,7 @@ vcpu::write_control_state()
 
     activate_secondary_controls::enable_if_allowed();
 
-    if (this->is_host_vm_vcpu()) {
+    if (this->is_host_vcpu()) {
         enable_rdtscp::enable_if_allowed();
         enable_invpcid::enable_if_allowed();
         enable_xsaves_xrstors::enable_if_allowed();
@@ -394,43 +419,6 @@ vcpu::write_control_state()
 }
 
 //==============================================================================
-// vCPU Delegates
-//==============================================================================
-
-void
-vcpu::run_delegate(bfobject *obj)
-{
-    bfignored(obj);
-
-    if (m_launched) {
-
-        for (const auto &d : m_resume_delegates) {
-            d(obj);
-        }
-
-        m_vmcs.resume();
-    }
-    else {
-
-        m_launched = true;
-
-        try {
-
-            for (const auto &d : m_launch_delegates) {
-                d(obj);
-            }
-
-            m_launched = true;
-            m_vmcs.launch();
-        }
-        catch (...) {
-            m_launched = false;
-            throw;
-        }
-    }
-}
-
-//==============================================================================
 // VMCS Operations
 //==============================================================================
 
@@ -441,6 +429,10 @@ vcpu::load()
 void
 vcpu::clear()
 {
+    for (const auto &d : m_clear_delegates) {
+        d(this);
+    }
+
     m_vmcs.clear();
     m_launched = false;
 }
@@ -463,15 +455,15 @@ vcpu::advance()
 //==============================================================================
 
 void
-vcpu::add_handler(
-    ::intel_x64::vmcs::value_type reason,
-    const handler_delegate_t &d)
-{ m_exit_handler.add_handler(reason, d); }
-
-void
 vcpu::add_exit_handler(
     const handler_delegate_t &d)
 { m_exit_handler.add_exit_handler(d); }
+
+void
+vcpu::add_exit_handler_for_reason(
+    ::intel_x64::vmcs::value_type reason,
+    const handler_delegate_t &d)
+{ m_exit_handler.add_handler(reason, d); }
 
 //==============================================================================
 // Fault Handling

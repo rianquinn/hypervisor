@@ -127,7 +127,7 @@ cpuid_handler::cpuid_handler(
 {
     using namespace vmcs_n;
 
-    vcpu->add_handler(
+    vcpu->add_exit_handler_for_reason(
         exit_reason::basic_exit_reason::cpuid,
         handler_delegate_t::create<cpuid_handler, &cpuid_handler::handle>(this)
     );
@@ -149,7 +149,7 @@ cpuid_handler::cpuid_handler(
         0x4BF00020, handler_delegate_t::create<handle_cpuid_0x4BF00020>()
     );
 
-    if (vcpu->is_guest_vm_vcpu()) {
+    if (vcpu->is_guest_vcpu()) {
         return;
     }
 
