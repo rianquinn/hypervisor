@@ -1018,7 +1018,7 @@ public:
     /// @return the state object associated with this vCPU.
     ///
     VIRTUAL gsl::not_null<vcpu_state_t *> state()
-    { return &m_state; }
+    { return m_state.get(); }
 
     /// MSR bitmap
     ///
@@ -1913,7 +1913,7 @@ private:
 private:
 
     vcpu_global_state_t *m_global_state{};
-    vcpu_state_t m_state{};
+    std::unique_ptr<vcpu_state_t> m_state;
 
     page_ptr<uint8_t> m_msr_bitmap;
     page_ptr<uint8_t> m_io_bitmap_a;
