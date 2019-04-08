@@ -137,7 +137,6 @@ vcpu::vcpu(
 
     m_control_register_handler{this},
     m_cpuid_handler{this},
-    m_ept_misconfiguration_handler{this},
     m_ept_violation_handler{this},
     m_external_interrupt_handler{this},
     m_init_signal_handler{this},
@@ -612,15 +611,6 @@ vcpu::execute_cpuid()
 void
 vcpu::enable_cpuid_whitelisting() noexcept
 { m_cpuid_handler.enable_whitelisting(); }
-
-//--------------------------------------------------------------------------
-// EPT Misconfiguration
-//--------------------------------------------------------------------------
-
-void
-vcpu::add_ept_misconfiguration_handler(
-    const ept_misconfiguration_handler::handler_delegate_t &d)
-{ m_ept_misconfiguration_handler.add_handler(d); }
 
 //--------------------------------------------------------------------------
 // EPT Violation

@@ -20,20 +20,19 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.6)
-project(bfvmm C CXX)
+project(bfvmm_test C CXX)
 
 include(${SOURCE_CMAKE_DIR}/project.cmake)
 init_project(
     INCLUDES ${CMAKE_CURRENT_LIST_DIR}/../include
 )
 
-add_subdirectory(debug)
-add_subdirectory(memory_manager)
-add_subdirectory(hve)
-add_subdirectory(entry)
+add_subdirectory(../src/debug ${CMAKE_CURRENT_BINARY_DIR}/src/debug)
+add_subdirectory(../src/hve ${CMAKE_CURRENT_BINARY_DIR}/src/hve)
+add_subdirectory(../src/memory_manager ${CMAKE_CURRENT_BINARY_DIR}/src/memory_manager)
 
-install(FILES ../include/vmm.h DESTINATION include)
-install(DIRECTORY ../include/debug/ DESTINATION include/bfvmm/debug)
-install(DIRECTORY ../include/hve/ DESTINATION include/bfvmm/hve)
-install(DIRECTORY ../include/memory_manager/ DESTINATION include/bfvmm/memory_manager)
-install(DIRECTORY ../include/vcpu/ DESTINATION include/bfvmm/vcpu)
+add_subdirectory(debug)
+add_subdirectory(hve)
+add_subdirectory(memory_manager)
+
+install(DIRECTORY ../include/test/ DESTINATION include/bfvmm/test)

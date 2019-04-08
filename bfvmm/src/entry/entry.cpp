@@ -57,6 +57,14 @@ void
 WEAK_SYM vcpu_fini_nonroot(vcpu_t *vcpu)
 { bfignored(vcpu); }
 
+void
+WEAK_SYM vcpu_init_nonroot_running(vcpu_t *vcpu)
+{ bfignored(vcpu); }
+
+void
+WEAK_SYM vcpu_fini_nonroot_running(vcpu_t *vcpu)
+{ bfignored(vcpu); }
+
 extern "C" int64_t
 private_add_md(struct memory_descriptor *md) noexcept
 {
@@ -94,6 +102,7 @@ private_init_vmm(uint64_t arg) noexcept
         ::x64::cpuid::get(0x4BF00010, 0, 0, 0);
         ::x64::cpuid::get(0x4BF00011, 0, 0, 0);
 
+        vcpu_init_nonroot_running(vcpu);
         return ENTRY_SUCCESS;
     });
 }
@@ -103,12 +112,13 @@ private_fini_vmm(uint64_t arg) noexcept
 {
     return guard_exceptions(ENTRY_ERROR_VMM_STOP_FAILED, [&]() {
 
+        auto vcpu = g_vcm->get<vcpu_t *>(arg);
+        vcpu_fini_nonroot_running(vcpu);
+
         ::x64::cpuid::get(0x4BF00020, 0, 0, 0);
         ::x64::cpuid::get(0x4BF00021, 0, 0, 0);
 
-        auto vcpu = g_vcm->get<vcpu_t *>(arg);
         vcpu_fini_nonroot(vcpu);
-
         g_vcm->destroy(arg);
 
         return ENTRY_SUCCESS;

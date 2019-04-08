@@ -47,9 +47,9 @@ alignas(0x1000) std::array<uint8_t, 0x1000> buffer1;
 alignas(0x1000) std::array<uint8_t, 0x1000> buffer2;
 
 void
-test_hlt_delegate(bfobject *obj)
+vcpu_fini_nonroot_running(vcpu_t *vcpu)
 {
-    bfignored(obj);
+    bfignored(vcpu);
 
     ::x64::cpuid::get(
         42, 0, 0, 0
@@ -67,10 +67,6 @@ public:
     {
         this->add_cpuid_emulator(
             42, handler_delegate_t::create<vcpu, &vcpu::test_cpuid_handler>(this)
-        );
-
-        this->add_hlt_delegate(
-            vcpu_delegate_t::create<test_hlt_delegate>()
         );
 
         for (auto &elem : buffer1) {
@@ -142,10 +138,7 @@ namespace bfvmm
 {
 
 std::unique_ptr<vcpu>
-vcpu_factory::make(vcpuid::type vcpuid, bfobject *obj)
-{
-    bfignored(obj);
-    return std::make_unique<test::vcpu>(vcpuid);
-}
+vcpu_factory::make(vcpuid::type vcpuid)
+{ return std::make_unique<test::vcpu>(vcpuid); }
 
 }

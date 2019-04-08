@@ -278,7 +278,7 @@ vcpu_init_nonroot(vcpu_t *vcpu)
     // Add a VMCall handler. This will catch the VMCalls made by the
     // userspace application and call the vmcall_handler() function.
     //
-    vcpu->add_handler(
+    vcpu->add_exit_handler_for_reason(
         exit_reason::basic_exit_reason::vmcall,
         ::handler_delegate_t::create<vmcall_handler>()
     );

@@ -24,7 +24,6 @@
 
 #include "vmexit/control_register.h"
 #include "vmexit/cpuid.h"
-#include "vmexit/ept_misconfiguration.h"
 #include "vmexit/ept_violation.h"
 #include "vmexit/external_interrupt.h"
 #include "vmexit/init_signal.h"
@@ -416,20 +415,6 @@ public:
     /// @ensures
     ///
     VIRTUAL void enable_cpuid_whitelisting() noexcept;
-
-    //--------------------------------------------------------------------------
-    // EPT Misconfiguration
-    //--------------------------------------------------------------------------
-
-    /// Add EPT Misconfiguration Handler
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param d the delegate to call when an exit occurs
-    ///
-    VIRTUAL void add_ept_misconfiguration_handler(
-        const ept_misconfiguration_handler::handler_delegate_t &d);
 
     //--------------------------------------------------------------------------
     // EPT Violation
@@ -1935,7 +1920,6 @@ private:
 
     control_register_handler m_control_register_handler;
     cpuid_handler m_cpuid_handler;
-    ept_misconfiguration_handler m_ept_misconfiguration_handler;
     ept_violation_handler m_ept_violation_handler;
     external_interrupt_handler m_external_interrupt_handler;
     init_signal_handler m_init_signal_handler;

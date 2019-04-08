@@ -19,21 +19,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.6)
-project(bfvmm C CXX)
-
-include(${SOURCE_CMAKE_DIR}/project.cmake)
-init_project(
-    INCLUDES ${CMAKE_CURRENT_LIST_DIR}/../include
+add_vmm_executable(
+    integration_intel_x64_test_all
+    SOURCES test_all.cpp
 )
 
-add_subdirectory(debug)
-add_subdirectory(memory_manager)
-add_subdirectory(hve)
-add_subdirectory(entry)
+add_vmm_executable(
+    integration_intel_x64_test_all_inheritance
+    SOURCES test_all_inheritance.cpp
+)
 
-install(FILES ../include/vmm.h DESTINATION include)
-install(DIRECTORY ../include/debug/ DESTINATION include/bfvmm/debug)
-install(DIRECTORY ../include/hve/ DESTINATION include/bfvmm/hve)
-install(DIRECTORY ../include/memory_manager/ DESTINATION include/bfvmm/memory_manager)
-install(DIRECTORY ../include/vcpu/ DESTINATION include/bfvmm/vcpu)
+add_subdirectory(efi)
+add_subdirectory(ept)
+add_subdirectory(vmexit/control_register)
+add_subdirectory(vmexit/cpuid)
+add_subdirectory(vmexit/ept_violation)
+add_subdirectory(vmexit/external_interrupt)
+add_subdirectory(vmexit/io_instruction)
+add_subdirectory(vmexit/monitor_trap)
+add_subdirectory(vmexit/rdmsr)
+add_subdirectory(vmexit/wrmsr)
+add_subdirectory(vpid)
