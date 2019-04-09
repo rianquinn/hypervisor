@@ -40,7 +40,7 @@ namespace bfvmm
 /// of Bareflank above and beyond what is already provided. This seem also
 /// provides a means to unit test the vcpu_manager.
 ///
-class EXPORT_VCPU vcpu_factory
+class vcpu_factory
 {
 public:
 

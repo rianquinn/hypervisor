@@ -30,13 +30,6 @@
 #include <bfgsl.h>
 #include <bftypes.h>
 #include <bfvcpuid.h>
-#include <bfdelegate.h>
-
-// -----------------------------------------------------------------------------
-// Delegate Types
-// -----------------------------------------------------------------------------
-
-using vcpu_delegate_t = delegate<void(bfobject *)>;      ///< vCPU delegate type
 
 // -----------------------------------------------------------------------------
 // Definitions

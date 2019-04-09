@@ -113,15 +113,6 @@ set(ENABLE_DEVELOPER_MODE OFF)
 # ==============================================================================
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/cache)
-
-# Cache
-#
-# THe build system maintains it's own cache of all external dependencies to
-# eliminate the need to download these dependencies multiple times. The default
-# location is in the build folder, but if you plan to do more than one build,
-# moving this cache outside of the build folder will speed up build times, and
-# prevent needless downloading.
-#
 set(CACHE_DIR ${CMAKE_CURRENT_LIST_DIR}/cache)
 
 if(ENABLE_DEVELOPER_MODE)
