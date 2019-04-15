@@ -311,7 +311,7 @@ control_register_handler::enable_wrcr0_exiting(
     mask |= ::intel_x64::cr0::not_write_through::mask;
     mask |= ::intel_x64::cr0::cache_disable::mask;
 
-    mask |= m_vcpu->global_state()->ia32_vmx_cr0_fixed0;
+    mask |= m_vcpu->ia32_vmx_cr0_fixed0();
     vmcs_n::cr0_guest_host_mask::set(mask);
 }
 
@@ -333,7 +333,7 @@ void
 control_register_handler::enable_wrcr4_exiting(
     vmcs_n::value_type mask)
 {
-    mask |= m_vcpu->global_state()->ia32_vmx_cr4_fixed0;
+    mask |= m_vcpu->ia32_vmx_cr4_fixed0();
     vmcs_n::cr4_guest_host_mask::set(mask);
 }
 

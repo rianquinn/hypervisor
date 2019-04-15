@@ -22,9 +22,11 @@
 #ifndef VCPU_INTEL_X64_H
 #define VCPU_INTEL_X64_H
 
-#include "interface/cpuid.h"
+#include "uapis/cpuid.h"
+#include "uapis/state.h"
 
 #include "implementation/cpuid.h"
+#include "implementation/state.h"
 
 #include "vmexit/control_register.h"
 #include "vmexit/ept_misconfiguration.h"
@@ -46,8 +48,6 @@
 #include "exit_handler.h"
 #include "interrupt_queue.h"
 #include "microcode.h"
-#include "vcpu_global_state.h"
-#include "vcpu_state.h"
 #include "vmcs.h"
 #include "vmx.h"
 #include "vpid.h"
@@ -71,7 +71,13 @@ namespace bfvmm::intel_x64
 ///
 class vcpu :
     public bfvmm::vcpu,
-    public interface::cpuid<implementation::cpuid>
+
+    // private implementation::vmx,
+    // public uapis::vmcs<implementation::vmcs>,
+    // public uapis::exit_handler<implementation::exit_handler>,
+    public uapis::state<implementation::state>,
+
+    public uapis::cpuid<implementation::cpuid>
 {
 
 public:
@@ -84,9 +90,7 @@ public:
     /// @param id the id of the vcpu
     /// @param global_state a pointer to the vCPUs state
     ///
-    explicit vcpu(
-        vcpuid::type id,
-        vcpu_global_state_t *global_state = nullptr);
+    explicit vcpu(vcpuid::type id);
 
     /// Destructor
     ///
@@ -934,26 +938,6 @@ public:
     // Resources
     //==========================================================================
 
-    /// Global State
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return the global state object associated with this vCPU.
-    ///
-    VIRTUAL gsl::not_null<vcpu_global_state_t *> global_state()
-    { return m_global_state; }
-
-    /// State
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return the state object associated with this vCPU.
-    ///
-    VIRTUAL gsl::not_null<vcpu_state_t *> state()
-    { return m_state.get(); }
-
     /// MSR bitmap
     ///
     /// @expects none
@@ -1694,40 +1678,6 @@ public:
     /// VMCS is being modified.
     ///
 
-    VIRTUAL uint64_t rax() const noexcept;
-    VIRTUAL void set_rax(uint64_t val) noexcept;
-    VIRTUAL uint64_t rbx() const noexcept;
-    VIRTUAL void set_rbx(uint64_t val) noexcept;
-    VIRTUAL uint64_t rcx() const noexcept;
-    VIRTUAL void set_rcx(uint64_t val) noexcept;
-    VIRTUAL uint64_t rdx() const noexcept;
-    VIRTUAL void set_rdx(uint64_t val) noexcept;
-    VIRTUAL uint64_t rbp() const noexcept;
-    VIRTUAL void set_rbp(uint64_t val) noexcept;
-    VIRTUAL uint64_t rsi() const noexcept;
-    VIRTUAL void set_rsi(uint64_t val) noexcept;
-    VIRTUAL uint64_t rdi() const noexcept;
-    VIRTUAL void set_rdi(uint64_t val) noexcept;
-    VIRTUAL uint64_t r08() const noexcept;
-    VIRTUAL void set_r08(uint64_t val) noexcept;
-    VIRTUAL uint64_t r09() const noexcept;
-    VIRTUAL void set_r09(uint64_t val) noexcept;
-    VIRTUAL uint64_t r10() const noexcept;
-    VIRTUAL void set_r10(uint64_t val) noexcept;
-    VIRTUAL uint64_t r11() const noexcept;
-    VIRTUAL void set_r11(uint64_t val) noexcept;
-    VIRTUAL uint64_t r12() const noexcept;
-    VIRTUAL void set_r12(uint64_t val) noexcept;
-    VIRTUAL uint64_t r13() const noexcept;
-    VIRTUAL void set_r13(uint64_t val) noexcept;
-    VIRTUAL uint64_t r14() const noexcept;
-    VIRTUAL void set_r14(uint64_t val) noexcept;
-    VIRTUAL uint64_t r15() const noexcept;
-    VIRTUAL void set_r15(uint64_t val) noexcept;
-    VIRTUAL uint64_t rip() const noexcept;
-    VIRTUAL void set_rip(uint64_t val) noexcept;
-    VIRTUAL uint64_t rsp() const noexcept;
-    VIRTUAL void set_rsp(uint64_t val) noexcept;
     VIRTUAL uint64_t gdt_base() const noexcept;
     VIRTUAL void set_gdt_base(uint64_t val) noexcept;
     VIRTUAL uint64_t gdt_limit() const noexcept;
@@ -1816,38 +1766,25 @@ public:
 
 public:
 
-    /// General Register
-    ///
-    /// The GRs are registers used as input into the VM exit
-    /// handlers. The meaning of each general register depends
-    /// on the VM exit handler you are registering. See the execute
-    /// functions for more details.
-    ///
-
-    /// @cond
-
-    VIRTUAL uint64_t gr1() const noexcept;
-    VIRTUAL void set_gr1(uint64_t val) noexcept;
-    VIRTUAL uint64_t gr2() const noexcept;
-    VIRTUAL void set_gr2(uint64_t val) noexcept;
-    VIRTUAL uint64_t gr3() const noexcept;
-    VIRTUAL void set_gr3(uint64_t val) noexcept;
-    VIRTUAL uint64_t gr4() const noexcept;
-    VIRTUAL void set_gr4(uint64_t val) noexcept;
-
-    /// @endcond
-
-private:
-
+    // REMOVE ME
     uint64_t m_gr1{};
     uint64_t m_gr2{};
-    uint64_t m_gr3{};
-    uint64_t m_gr4{};
+    uint64_t gr1() const noexcept
+    { return m_gr1; }
+    void set_gr1(uint64_t val) noexcept
+    { m_gr1 = val; }
+    uint64_t gr2() const noexcept
+    { return m_gr2; }
+    void set_gr2(uint64_t val) noexcept
+    { m_gr2 = val; }
+    // REMOVE ME
 
 private:
 
-    vcpu_global_state_t *m_global_state{};
-    std::unique_ptr<vcpu_state_t> m_state{};
+    std::unique_ptr<vmx> m_vmx;
+
+    vmcs m_vmcs;
+    exit_handler m_exit_handler;
 
     page_ptr<uint8_t> m_msr_bitmap;
     page_ptr<uint8_t> m_io_bitmap_a;
@@ -1859,13 +1796,6 @@ private:
     x64::tss m_host_tss{};
     x64::gdt m_host_gdt{512};
     x64::idt m_host_idt{256};
-
-private:
-
-    std::unique_ptr<vmx> m_vmx;
-
-    vmcs m_vmcs;
-    exit_handler m_exit_handler;
 
     control_register_handler m_control_register_handler;
     ept_misconfiguration_handler m_ept_misconfiguration_handler;

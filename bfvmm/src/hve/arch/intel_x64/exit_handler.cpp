@@ -58,26 +58,22 @@ exit_handler::add_exit_handler(
 
 }
 
-extern "C"  void
-handle_exit(
-    vcpu_t *vcpu, exit_handler_t *exit_handler)
+template<typename T>
+inline void handle(vcpu_t *vcpu, const T &handlers)
 {
-    guard_exceptions([&]() {
-
-        for (const auto &d : exit_handler->m_exit_handlers) {
-            d(vcpu);
+    for (const auto &d : handlers) {
+        if (d(vcpu)) {
+            vcpu->run();
         }
+    }
+}
 
-        const auto &handlers =
-            exit_handler->m_exit_handlers_array.at(
-                vmcs_n::exit_reason::basic_exit_reason::get()
-            );
-
-        for (const auto &d : handlers) {
-            if (d(vcpu)) {
-                vcpu->run();
-            }
-        }
+extern "C"  void
+handle_exit(vcpu_t *vcpu)
+{
+    guard_exceptions([vcpu]() {
+        handle(vcpu->exit_handlers());
+        handle(vcpu->exit_handlers_for_reason(vcpu->exit_reason()));
     });
 
     vcpu->halt("unhandled vm exit");

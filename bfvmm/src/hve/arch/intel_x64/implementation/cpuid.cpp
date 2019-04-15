@@ -22,8 +22,6 @@
 #include <hve/arch/intel_x64/vcpu.h>
 #include <hve/arch/intel_x64/implementation/cpuid.h>
 
-using namespace vmcs_n::exit_reason;
-
 namespace bfvmm::intel_x64::implementation
 {
 
@@ -41,42 +39,13 @@ cpuid::emulate(
     vcpu->set_rdx(set_bits(vcpu->rdx(), 0x00000000FFFFFFFFULL, rdx));
 }
 
-cpuid_n::leaf_t
-cpuid::leaf(const vcpu *vcpu) const
-{
-    // if (vcpu->exit_reason() != basic_exit_reason::cpuid) {
-    //     throw std::runtime_error(
-    //         "accessed cpuid_leaf() from non-cpuid vmexit");
-    // }
-
-    return vcpu->gr1();
-}
-
-cpuid_n::subleaf_t
-cpuid::subleaf(const vcpu *vcpu) const
-{
-    // if (vcpu->exit_reason() != basic_exit_reason::cpuid) {
-    //     throw std::runtime_error(
-    //         "accessed cpuid_leaf() from non-cpuid vmexit");
-    // }
-
-    return vcpu->gr2();
-}
-
-#ifdef ENABLE_BUILD_TEST
-
-void
-cpuid::mock(
-    MockRepository &mocks, gsl::not_null<vcpu *> vcpu)
-{
+MOCK_FUNCTION(cpuid, {
     mocks.OnCall(vcpu->cpuid_impl().get(), cpuid::add_handler);
     mocks.OnCall(vcpu->cpuid_impl().get(), cpuid::add_emulator);
     mocks.OnCall(vcpu->cpuid_impl().get(), cpuid::execute);
     mocks.OnCall(vcpu->cpuid_impl().get(), cpuid::emulate);
     mocks.OnCall(vcpu->cpuid_impl().get(), cpuid::leaf);
     mocks.OnCall(vcpu->cpuid_impl().get(), cpuid::subleaf);
-}
-
-#endif
+})
 
 }

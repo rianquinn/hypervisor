@@ -33,12 +33,15 @@ ept_handler::ept_handler(
 void ept_handler::set_eptp(ept::mmap *map)
 {
     using namespace vmcs_n;
-    using namespace vmcs_n::secondary_processor_based_vm_execution_controls;
+    using namespace ::intel_x64::cr0;
+    using namespace secondary_processor_based_vm_execution_controls;
 
     if (map != nullptr) {
         if (ept_pointer::phys_addr::get() == 0) {
-            m_vcpu->global_state()->ia32_vmx_cr0_fixed0 &= ~::intel_x64::cr0::paging::mask;
-            m_vcpu->global_state()->ia32_vmx_cr0_fixed0 &= ~::intel_x64::cr0::protection_enable::mask;
+
+            m_vcpu->set_ia32_vmx_cr0_fixed0(
+                m_vcpu->ia32_vmx_cr0_fixed0() & ~(paging::mask | protection_enable::mask)
+            );
 
             ept_pointer::memory_type::set(ept_pointer::memory_type::write_back);
             ept_pointer::accessed_and_dirty_flags::disable();
@@ -52,8 +55,10 @@ void ept_handler::set_eptp(ept::mmap *map)
     }
     else {
         if (ept_pointer::phys_addr::get() != 0) {
-            m_vcpu->global_state()->ia32_vmx_cr0_fixed0 |= ::intel_x64::cr0::paging::mask;
-            m_vcpu->global_state()->ia32_vmx_cr0_fixed0 |= ::intel_x64::cr0::protection_enable::mask;
+
+            m_vcpu->set_ia32_vmx_cr0_fixed0(
+                m_vcpu->ia32_vmx_cr0_fixed0() | (paging::mask | protection_enable::mask)
+            );
 
             ept_pointer::memory_type::set(0);
             ept_pointer::accessed_and_dirty_flags::disable();

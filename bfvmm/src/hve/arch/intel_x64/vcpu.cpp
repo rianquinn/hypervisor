@@ -115,47 +115,46 @@ setup()
 namespace bfvmm::intel_x64
 {
 
+// *INDENT-OFF*
+
 vcpu::vcpu(
-    vcpuid::type id,
-    vcpu_global_state_t *global_state
+    vcpuid::type id
 ) :
-    bfvmm::vcpu{id},
-    interface::cpuid<implementation::cpuid> {this},
+    bfvmm::vcpu(id),
 
-          m_global_state{global_state != nullptr ? global_state : & g_vcpu_global_state},
-          m_state{std::make_unique<vcpu_state_t>()},
+    // interface::vmx<implementation::vmx>(this),
+    // interface::vmcs<implementation::vmcs>(this),
+    // interface::exit_handler<implementation::exit_handler>(this),
+    interface::state<implementation::state>(this),
 
-          m_msr_bitmap{make_page<uint8_t>()},
-          m_io_bitmap_a{make_page<uint8_t>()},
-          m_io_bitmap_b{make_page<uint8_t>()},
+    interface::cpuid<implementation::cpuid>(this),
 
-          m_ist1{std::make_unique<gsl::byte[]>(STACK_SIZE * 2)},
-          m_stack{std::make_unique<gsl::byte[]>(STACK_SIZE * 2)},
+    m_msr_bitmap{make_page<uint8_t>()},
+    m_io_bitmap_a{make_page<uint8_t>()},
+    m_io_bitmap_b{make_page<uint8_t>()},
 
-          m_vmx{is_host_vm_vcpu() ? std::make_unique<vmx>() : nullptr},
+    m_ist1{std::make_unique<gsl::byte[]>(STACK_SIZE * 2)},
+    m_stack{std::make_unique<gsl::byte[]>(STACK_SIZE * 2)},
 
-          m_vmcs{this},
-          m_exit_handler{this},
+    m_control_register_handler{this},
+    m_ept_misconfiguration_handler{this},
+    m_ept_violation_handler{this},
+    m_external_interrupt_handler{this},
+    m_init_signal_handler{this},
+    m_interrupt_window_handler{this},
+    m_io_instruction_handler{this},
+    m_monitor_trap_handler{this},
+    m_nmi_window_handler{this},
+    m_nmi_handler{this},
+    m_preemption_timer_handler{this},
+    m_rdmsr_handler{this},
+    m_sipi_signal_handler{this},
+    m_wrmsr_handler{this},
+    m_xsetbv_handler{this},
 
-          m_control_register_handler{this},
-          m_ept_misconfiguration_handler{this},
-          m_ept_violation_handler{this},
-          m_external_interrupt_handler{this},
-          m_init_signal_handler{this},
-          m_interrupt_window_handler{this},
-          m_io_instruction_handler{this},
-          m_monitor_trap_handler{this},
-          m_nmi_window_handler{this},
-          m_nmi_handler{this},
-          m_preemption_timer_handler{this},
-          m_rdmsr_handler{this},
-          m_sipi_signal_handler{this},
-          m_wrmsr_handler{this},
-          m_xsetbv_handler{this},
-
-          m_ept_handler{this},
-          m_microcode_handler{this},
-          m_vpid_handler{this}
+    m_ept_handler{this},
+    m_microcode_handler{this},
+    m_vpid_handler{this}
 {
     using namespace vmcs_n;
     bfn::call_once(g_once_flag, setup);
@@ -163,12 +162,6 @@ vcpu::vcpu(
     this->add_run_delegate(
         vcpu_delegate_t::create<intel_x64::vcpu, &intel_x64::vcpu::run_delegate>(this)
     );
-
-    m_state->vcpu_ptr =
-        reinterpret_cast<uintptr_t>(this);
-
-    m_state->exit_handler_ptr =
-        reinterpret_cast<uintptr_t>(&m_exit_handler);
 
     // Note:
     //
@@ -196,6 +189,8 @@ vcpu::vcpu(
     m_control_register_handler.enable_wrcr0_exiting(0);
     m_control_register_handler.enable_wrcr4_exiting(0);
 }
+
+// *INDENT-ON*
 
 //==============================================================================
 // Initial VMCS State
@@ -226,7 +221,6 @@ vcpu::write_host_state()
     host_cr3::set(g_cr3_reg);
     host_cr4::set(g_cr4_reg);
 
-    host_gs_base::set(reinterpret_cast<uintptr_t>(m_state.get()));
     host_tr_base::set(m_host_gdt.base(5));
 
     host_gdtr_base::set(m_host_gdt.base());
@@ -1138,142 +1132,6 @@ vcpu::get_entry(uintptr_t tble_gpa, std::ptrdiff_t index)
 //==============================================================================
 // Registers
 //==============================================================================
-
-uint64_t
-vcpu::rax() const noexcept
-{ return m_state->rax; }
-
-void
-vcpu::set_rax(uint64_t val) noexcept
-{ m_state->rax = val; }
-
-uint64_t
-vcpu::rbx() const noexcept
-{ return m_state->rbx; }
-
-void
-vcpu::set_rbx(uint64_t val) noexcept
-{ m_state->rbx = val; }
-
-uint64_t
-vcpu::rcx() const noexcept
-{ return m_state->rcx; }
-
-void
-vcpu::set_rcx(uint64_t val) noexcept
-{ m_state->rcx = val; }
-
-uint64_t
-vcpu::rdx() const noexcept
-{ return m_state->rdx; }
-
-void
-vcpu::set_rdx(uint64_t val) noexcept
-{ m_state->rdx = val; }
-
-uint64_t
-vcpu::rbp() const noexcept
-{ return m_state->rbp; }
-
-void
-vcpu::set_rbp(uint64_t val) noexcept
-{ m_state->rbp = val; }
-
-uint64_t
-vcpu::rsi() const noexcept
-{ return m_state->rsi; }
-
-void
-vcpu::set_rsi(uint64_t val) noexcept
-{ m_state->rsi = val; }
-
-uint64_t
-vcpu::rdi() const noexcept
-{ return m_state->rdi; }
-
-void
-vcpu::set_rdi(uint64_t val) noexcept
-{ m_state->rdi = val; }
-
-uint64_t
-vcpu::r08() const noexcept
-{ return m_state->r08; }
-
-void
-vcpu::set_r08(uint64_t val) noexcept
-{ m_state->r08 = val; }
-
-uint64_t
-vcpu::r09() const noexcept
-{ return m_state->r09; }
-
-void
-vcpu::set_r09(uint64_t val) noexcept
-{ m_state->r09 = val; }
-
-uint64_t
-vcpu::r10() const noexcept
-{ return m_state->r10; }
-
-void
-vcpu::set_r10(uint64_t val) noexcept
-{ m_state->r10 = val; }
-
-uint64_t
-vcpu::r11() const noexcept
-{ return m_state->r11; }
-
-void
-vcpu::set_r11(uint64_t val) noexcept
-{ m_state->r11 = val; }
-
-uint64_t
-vcpu::r12() const noexcept
-{ return m_state->r12; }
-
-void
-vcpu::set_r12(uint64_t val) noexcept
-{ m_state->r12 = val; }
-
-uint64_t
-vcpu::r13() const noexcept
-{ return m_state->r13; }
-
-void
-vcpu::set_r13(uint64_t val) noexcept
-{ m_state->r13 = val; }
-
-uint64_t
-vcpu::r14() const noexcept
-{ return m_state->r14; }
-
-void
-vcpu::set_r14(uint64_t val) noexcept
-{ m_state->r14 = val; }
-
-uint64_t
-vcpu::r15() const noexcept
-{ return m_state->r15; }
-
-void
-vcpu::set_r15(uint64_t val) noexcept
-{ m_state->r15 = val; }
-
-uint64_t
-vcpu::rip() const noexcept
-{ return m_state->rip; }
-
-void
-vcpu::set_rip(uint64_t val) noexcept
-{ m_state->rip = val; }
-
-uint64_t
-vcpu::rsp() const noexcept
-{ return m_state->rsp; }
-
-void
-vcpu::set_rsp(uint64_t val) noexcept
-{ m_state->rsp = val; }
 
 uint64_t
 vcpu::gdt_base() const noexcept

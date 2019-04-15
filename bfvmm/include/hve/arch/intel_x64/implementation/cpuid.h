@@ -22,7 +22,7 @@
 #ifndef IMPLEMENTATION_CPUID_INTEL_X64_H
 #define IMPLEMENTATION_CPUID_INTEL_X64_H
 
-#include "../interface/cpuid.h"
+#include "../uapis/cpuid.h"
 #include "../vmexit/cpuid.h"
 
 // -----------------------------------------------------------------------------
@@ -46,23 +46,9 @@ public:
     VIRTUAL void emulate(
         vcpu *vcpu, reg_t rax, reg_t rbx, reg_t rcx, reg_t rdx) noexcept;
 
-    VIRTUAL cpuid_n::leaf_t leaf(const vcpu *vcpu) const;
-    VIRTUAL cpuid_n::subleaf_t subleaf(const vcpu *vcpu) const;
-
 public:
-
-    cpuid(cpuid &&) = default;
-    cpuid &operator=(cpuid &&) = default;
-
-    cpuid(const cpuid &) = delete;
-    cpuid &operator=(const cpuid &) = delete;
-
-public:
-
-#ifdef ENABLE_BUILD_TEST
-    static void mock(
-        MockRepository &mocks, gsl::not_null<vcpu *> vcpu);
-#endif
+    MOCK_PROTOTYPE(cpuid);
+    COPY_MOVE_SEMANTICS(cpuid);
 };
 
 }

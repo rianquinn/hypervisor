@@ -31,6 +31,7 @@ target_sources(bfvmm_hve PRIVATE
     $<${X64}:arch/x64/unmapper.cpp>
 
     $<${X64}:arch/intel_x64/implementation/cpuid.cpp>
+    $<${X64}:arch/intel_x64/implementation/state.cpp>
 
     $<${X64}:arch/intel_x64/vmexit/control_register.cpp>
     $<${X64}:arch/intel_x64/vmexit/cpuid.cpp>

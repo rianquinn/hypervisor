@@ -22,7 +22,7 @@
 #ifndef EXIT_HANDLER_INTEL_X64_H
 #define EXIT_HANDLER_INTEL_X64_H
 
-#include "interface/types.h"
+#include "uapis/types.h"
 
 #include <list>
 #include <array>
@@ -44,24 +44,6 @@ namespace bfvmm::intel_x64
 class vcpu;
 class exit_handler;
 }
-
-// -----------------------------------------------------------------------------
-// Dispatcher
-// -----------------------------------------------------------------------------
-
-/// Private Handler
-///
-/// This function is called by the exit_handler_entry and is used to
-/// dispatch the exit handlers for the class defined here. Ther other way
-/// to implement this would be to use a member function in the exit_handler
-/// but that would require an even deeper knowledge of the C++ ABI, which
-/// we would like to avoid in the ASM code where possible.
-///
-/// @param vcpu the vcpu associated with the VM exit
-/// @param exit_handler the exit handler associated with the provided vcpu
-///
-extern "C" void handle_exit(
-    bfvmm::intel_x64::vcpu *vcpu, bfvmm::intel_x64::exit_handler *exit_handler);
 
 // -----------------------------------------------------------------------------
 // Exit Handler
@@ -160,11 +142,6 @@ public:
     exit_handler &operator=(const exit_handler &) = delete;
 
     /// @endcond
-
-private:
-
-    friend void (::handle_exit)(
-        bfvmm::intel_x64::vcpu *vcpu, bfvmm::intel_x64::exit_handler *exit_handler);
 };
 
 }

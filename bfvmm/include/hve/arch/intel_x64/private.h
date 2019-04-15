@@ -19,6 +19,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#ifndef UAPIS_PRIVATE_INTEL_X64_H
+#define UAPIS_PRIVATE_INTEL_X64_H
+
 // Note:
 //
 // This file defines private portions of the interfaces. The interfaces
@@ -26,47 +29,38 @@
 // extensions. You have been warned.
 //
 
-#include "types.h"
 #include <bfgsl.h>
+#include "uapis/types.h"
+
+#define COPY_MOVE_SEMANTICS(name)                                               \
+    public:                                                                     \
+    name(name &&) = default;                                                    \
+    name &operator=(name &&) = default;                                         \
+    name(const name &) = delete;                                                \
+    name &operator=(const name &) = delete;                                     \
 
 #ifdef ENABLE_BUILD_TEST
 #include <hippomocks.h>
 #define PRIVATE_INTERFACES(name)                                                \
-    \
+    COPY_MOVE_SEMANTICS(name)                                                   \
+    public:                                                                     \
+    static void name ## _mock(MockRepository &mocks, vcpu *vcpu)                \
+    { IMPL::mock(mocks, vcpu); }                                                \
+    gsl::not_null<IMPL *> name ## _impl()                                       \
+    { return &m_impl; }                                                         \
     private:                                                                    \
-    \
-    IMPL m_impl;                                                            \
-    \
-    public:                                                                     \
-    \
-    name(name &&) = default;                                                \
-    name &operator=(name &&) = default;                                     \
-    \
-    name(const name &) = delete;                                            \
-    name &operator=(const name &) = delete;                                 \
-    \
-    public:                                                                     \
-    \
-    static void name ## _mock(                                              \
-            MockRepository &mocks, gsl::not_null<vcpu *> vcpu)                  \
-    { IMPL::mock(mocks, vcpu); }                                            \
-    \
-    gsl::not_null<IMPL *> name ## _impl()                                   \
-    { return &m_impl; }
-
+    IMPL m_impl;
+#define MOCK_PROTOTYPE(unused)                                                  \
+    static void mock(MockRepository &mocks, vcpu *vcpu)
+#define MOCK_FUNCTION(name, func)                                               \
+    static void name::mock(MockRepository &mocks, vcpu *vcpu) func
 #else
 #define PRIVATE_INTERFACES(name)                                                \
-    \
+    COPY_MOVE_SEMANTICS(name)                                                   \
     private:                                                                    \
-    \
-    IMPL m_impl;                                                            \
-    \
-    public:                                                                     \
-    \
-    name(name &&) = default;                                                \
-    name &operator=(name &&) = default;                                     \
-    \
-    name(const name &) = delete;                                            \
-    name &operator=(const name &) = delete;
+    IMPL m_impl;
+#define MOCK_PROTOTYPE(unused)
+#define MOCK_FUNCTION(unused1, unused2)
+#endif
 
 #endif

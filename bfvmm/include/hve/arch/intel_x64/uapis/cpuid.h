@@ -19,28 +19,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef INTERFACE_CPUID_INTEL_X64_H
-#define INTERFACE_CPUID_INTEL_X64_H
+#ifndef UAPIS_CPUID_INTEL_X64_H
+#define UAPIS_CPUID_INTEL_X64_H
 
-#include "private.h"
+#include "../private.h"
 
 // -----------------------------------------------------------------------------
 // Types/Namespaces
 // -----------------------------------------------------------------------------
 
+// *INDENT-OFF*
+
 namespace bfvmm::intel_x64::cpuid
 {
-/// Leaf Type
-///
-/// This defines the CPUID leaf type that is used in this interface
-///
-using leaf_t = uint64_t;
+    /// Leaf Type
+    ///
+    /// This defines the CPUID leaf type that is used in this interface
+    ///
+    using leaf_t = uint64_t;
 
-/// Subleaf Type
-///
-/// This defines the CPUID subleaf type that is used in this interface
-///
-using subleaf_t = uint64_t;
+    /// Subleaf Type
+    ///
+    /// This defines the CPUID subleaf type that is used in this interface
+    ///
+    using subleaf_t = uint64_t;
 }
 
 /// CPUID Namespace
@@ -49,11 +51,13 @@ using subleaf_t = uint64_t;
 ///
 namespace cpuid_n = bfvmm::intel_x64::cpuid;
 
+// *INDENT-ON*
+
 // -----------------------------------------------------------------------------
 // Interface Defintion
 // -----------------------------------------------------------------------------
 
-namespace bfvmm::intel_x64::interface
+namespace bfvmm::intel_x64::uapis
 {
 
 /// CPUID
@@ -181,7 +185,7 @@ public:
     /// @ensures
     ///
     inline void cpuid_execute() noexcept
-    { m_impl.execute(this); }
+    { m_impl.execute(static_cast<vcpu *>(this)); }
 
     /// Emulate
     ///
@@ -203,21 +207,35 @@ public:
     ///
     inline void cpuid_emulate(
         reg_t rax, reg_t rbx, reg_t rcx, reg_t rdx) noexcept
-    { m_impl.emulate(this, rax, rbx, rcx, rdx); }
+    { m_impl.emulate(static_cast<vcpu *>(this), rax, rbx, rcx, rdx); }
 
     /// CPUID Leaf (VMExit-Only)
     ///
     /// This function will return the CPUID leaf that generated the current
     /// VMExit. If this function is called outside of a VMExit or from a VMExit
-    /// that is not a CPUID VMExit, this function will throw.
+    /// that is not a CPUID VMExit, this function return 0.
     ///
     /// @expects executing in a CPUID VMExit
     /// @ensures
     ///
     /// @return the value of rax when the VMEXit occurred
     ///
-    inline cpuid_n::leaf_t cpuid_leaf() const
-    { return m_impl.leaf(static_cast<const vcpu *>(this)); }
+    inline cpuid_n::leaf_t cpuid_leaf() const noexcept
+    { return m_impl.leaf(); }
+
+    /// CPUID Set Leaf (VMExit-Only)
+    ///
+    /// This function will set the CPUID leaf that was generated in the current
+    /// VMExit. If this function is called outside of a VMExit or from a VMExit
+    /// that is not a CPUID VMExit, this function will be ignored.
+    ///
+    /// @expects executing in a CPUID VMExit
+    /// @ensures
+    ///
+    /// @param val the value of rax when the VMEXit occurred
+    ///
+    inline void cpuid_set_leaf(cpuid_n::leaf_t val) noexcept
+    { m_impl.set_leaf(val); }
 
     /// CPUID Subleaf (VMExit-Only)
     ///
@@ -230,11 +248,24 @@ public:
     ///
     /// @return the value of rcx when the VMEXit occurred
     ///
-    inline cpuid_n::subleaf_t cpuid_subleaf() const
-    { return m_impl.subleaf(this); }
+    inline cpuid_n::subleaf_t cpuid_subleaf() const noexcept
+    { return m_impl.subleaf(); }
+
+    /// CPUID Set Subleaf (VMExit-Only)
+    ///
+    /// This function will set the CPUID subleaf that was generated in the current
+    /// VMExit. If this function is called outside of a VMExit or from a VMExit
+    /// that is not a CPUID VMExit, this function will be ignored.
+    ///
+    /// @expects executing in a CPUID VMExit
+    /// @ensures
+    ///
+    /// @param val the value of rcx when the VMEXit occurred
+    ///
+    inline void cpuid_set_subleaf(cpuid_n::subleaf_t val) noexcept
+    { m_impl.set_subleaf(val); }
 
 private:
-
     PRIVATE_INTERFACES(cpuid);
 };
 
@@ -270,6 +301,7 @@ void vcpu_fini_root(vcpu_t *vcpu);
 
 namespace bfvmm::intel_x64::cpuid
 {
+
 /// Add Handler (Wrapper)
 ///
 /// Wraps the cpuid_add_handler() function.
@@ -292,7 +324,7 @@ namespace bfvmm::intel_x64::cpuid
 ///
 template<typename IMPL, typename... Args>
 inline void add_handler(
-    gsl::not_null<interface::cpuid<IMPL> *> vcpu,
+    gsl::not_null<uapis::cpuid<IMPL> *> vcpu,
     Args &&...args)
 { vcpu->cpuid_add_handler(std::forward<Args>(args)...); }
 
@@ -318,7 +350,7 @@ inline void add_handler(
 ///
 template<typename IMPL, typename... Args>
 inline void add_emulator(
-    gsl::not_null<interface::cpuid<IMPL> *> vcpu,
+    gsl::not_null<uapis::cpuid<IMPL> *> vcpu,
     Args &&...args)
 { vcpu->cpuid_add_emulator(std::forward<Args>(args)...); }
 
@@ -343,7 +375,7 @@ inline void add_emulator(
 ///
 template<typename IMPL>
 inline void execute(
-    gsl::not_null<interface::cpuid<IMPL> *> vcpu)
+    gsl::not_null<uapis::cpuid<IMPL> *> vcpu)
 { vcpu->cpuid_execute(); }
 
 /// Emulate (Wrapper)
@@ -368,8 +400,8 @@ inline void execute(
 ///
 template<typename IMPL, typename... Args>
 inline void emulate(
-    gsl::not_null<interface::cpuid<IMPL> *> vcpu,
-    Args &&...args)
+    gsl::not_null<uapis::cpuid<IMPL> *> vcpu,
+    Args &&...args) noexcept
 { vcpu->cpuid_emulate(std::forward<Args>(args)...); }
 
 /// Leaf (Wrapper)
@@ -394,8 +426,34 @@ inline void emulate(
 ///
 template<typename IMPL>
 inline cpuid_n::leaf_t leaf(
-    gsl::not_null<const interface::cpuid<IMPL> *> vcpu)
+    gsl::not_null<const uapis::cpuid<IMPL> *> vcpu) noexcept
 { return vcpu->cpuid_leaf(); }
+
+/// Set Leaf (Wrapper)
+///
+/// Wraps the cpuid_set_leaf() function.
+///
+/// @code
+/// vcpu->cpuid_set_leaf(...);
+/// @endcode
+///
+/// or
+///
+/// @code
+/// cpuid::set_leaf(vcpu, ...);
+/// @endcode
+///
+/// @expects vcpu != nullptr
+/// @ensures
+///
+/// @param vcpu a pointer to the cpuid interface
+/// @param args cpuid_set_leaf() arguments
+///
+template<typename IMPL>
+inline void set_leaf(
+    gsl::not_null<uapis::cpuid<IMPL> *> vcpu,
+    cpuid_n::leaf_t val) noexcept
+{ vcpu->cpuid_set_leaf(val); }
 
 /// Subleaf (Wrapper)
 ///
@@ -419,58 +477,101 @@ inline cpuid_n::leaf_t leaf(
 ///
 template<typename IMPL>
 inline cpuid_n::subleaf_t subleaf(
-    gsl::not_null<const interface::cpuid<IMPL> *> vcpu)
+    gsl::not_null<const uapis::cpuid<IMPL> *> vcpu) noexcept
 { return vcpu->cpuid_subleaf(); }
+
+/// Set Subleaf (Wrapper)
+///
+/// Wraps the cpuid_set_subleaf() function.
+///
+/// @code
+/// vcpu->cpuid_set_subleaf(...);
+/// @endcode
+///
+/// or
+///
+/// @code
+/// cpuid::set_subleaf(vcpu, ...);
+/// @endcode
+///
+/// @expects vcpu != nullptr
+/// @ensures
+///
+/// @param vcpu a pointer to the cpuid interface
+/// @param args cpuid_set_subleaf() arguments
+///
+template<typename IMPL>
+inline void set_subleaf(
+    gsl::not_null<uapis::cpuid<IMPL> *> vcpu,
+    cpuid_n::subleaf_t val) noexcept
+{ vcpu->cpuid_set_subleaf(val); }
+
 }
+
+// -----------------------------------------------------------------------------
+// Wrapper Overloads
+// -----------------------------------------------------------------------------
 
 /// @cond
 
 namespace bfvmm::intel_x64::cpuid
 {
+
 template<typename IMPL, typename... Args>
 inline void add_handler(
-    interface::cpuid<IMPL> *vcpu, Args &&...args)
+    uapis::cpuid<IMPL> *vcpu, Args &&...args)
 {
     add_handler(
-        gsl::not_null<interface::cpuid<IMPL> *>(vcpu),
+        gsl::not_null<uapis::cpuid<IMPL> *>(vcpu),
         std::forward<Args>(args)...
     );
 }
 
 template<typename IMPL, typename... Args>
 inline void add_emulator(
-    interface::cpuid<IMPL> *vcpu, Args &&...args)
+    uapis::cpuid<IMPL> *vcpu, Args &&...args)
 {
     add_emulator(
-        gsl::not_null<interface::cpuid<IMPL> *>(vcpu),
+        gsl::not_null<uapis::cpuid<IMPL> *>(vcpu),
         std::forward<Args>(args)...
     );
 }
 
 template<typename IMPL>
 inline void execute(
-    interface::cpuid<IMPL> *vcpu)
-{ execute(gsl::not_null<interface::cpuid<IMPL> *>(vcpu)); }
+    uapis::cpuid<IMPL> *vcpu)
+{ execute(gsl::not_null<uapis::cpuid<IMPL> *>(vcpu)); }
 
 template<typename IMPL, typename... Args>
 inline void emulate(
-    interface::cpuid<IMPL> *vcpu, Args &&...args)
+    uapis::cpuid<IMPL> *vcpu, Args &&...args) noexcept
 {
     emulate(
-        gsl::not_null<interface::cpuid<IMPL> *>(vcpu),
+        gsl::not_null<uapis::cpuid<IMPL> *>(vcpu),
         std::forward<Args>(args)...
     );
 }
 
 template<typename IMPL>
 inline cpuid_n::leaf_t leaf(
-    const interface::cpuid<IMPL> *vcpu)
-{ return leaf(gsl::not_null<const interface::cpuid<IMPL> *>(vcpu)); }
+    const uapis::cpuid<IMPL> *vcpu) noexcept
+{ return leaf(gsl::not_null<const uapis::cpuid<IMPL> *>(vcpu)); }
+
+template<typename IMPL>
+inline void leaf(
+    uapis::cpuid<IMPL> *vcpu, cpuid_n::leaf_t val) noexcept
+{ leaf(gsl::not_null<uapis::cpuid<IMPL> *>(vcpu, val)); }
 
 template<typename IMPL>
 inline cpuid_n::subleaf_t subleaf(
-    const interface::cpuid<IMPL> *vcpu)
-{ return subleaf(gsl::not_null<const interface::cpuid<IMPL> *>(vcpu)); }
+    const uapis::cpuid<IMPL> *vcpu) noexcept
+{ return subleaf(gsl::not_null<const uapis::cpuid<IMPL> *>(vcpu)); }
+
+template<typename IMPL>
+inline void subleaf(
+    uapis::cpuid<IMPL> *vcpu, cpuid_n::subleaf_t val) noexcept
+{ subleaf(gsl::not_null<uapis::cpuid<IMPL> *>(vcpu, val)); }
+
 }
 
 /// @endcond

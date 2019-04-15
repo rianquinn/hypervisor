@@ -25,7 +25,7 @@
 #include <list>
 #include <unordered_map>
 
-#include "../interface/cpuid.h"
+#include "../uapis/cpuid.h"
 
 // -----------------------------------------------------------------------------
 // Definitions
@@ -52,23 +52,26 @@ public:
         cpuid_n::leaf_t leaf, const handler_delegate_t &d);
     VIRTUAL void execute(vcpu *vcpu) noexcept;
 
+    VIRTUAL cpuid_n::leaf_t leaf() const noexcept;
+    VIRTUAL void set_leaf(cpuid_n::leaf_t val) noexcept;
+
+    VIRTUAL cpuid_n::subleaf_t subleaf() const noexcept;
+    VIRTUAL void set_subleaf(cpuid_n::subleaf_t val) noexcept;
+
 public:
 
     bool handle(vcpu *vcpu);
 
 private:
 
+    cpuid_n::leaf_t m_leaf{};
+    cpuid_n::subleaf_t m_subleaf{};
+
     std::unordered_map<cpuid_n::leaf_t, std::list<handler_delegate_t>> m_handlers;
     std::unordered_map<cpuid_n::leaf_t, std::list<handler_delegate_t>> m_emulators;
 
 public:
-
-    cpuid(cpuid &&) = default;
-    cpuid &operator=(cpuid &&) = default;
-
-    cpuid(const cpuid &) = delete;
-    cpuid &operator=(const cpuid &) = delete;
-
+    COPY_MOVE_SEMANTICS(cpuid);
 };
 
 }

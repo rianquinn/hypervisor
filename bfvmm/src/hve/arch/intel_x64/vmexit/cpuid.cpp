@@ -175,6 +175,22 @@ cpuid::execute(vcpu *vcpu) noexcept
     vcpu->set_rdx(rdx);
 }
 
+cpuid_n::leaf_t
+cpuid::leaf() const noexcept
+{ return m_leaf; }
+
+void
+cpuid::set_leaf(cpuid_n::leaf_t val) noexcept
+{ m_leaf = val; }
+
+cpuid_n::subleaf_t
+cpuid::subleaf() const noexcept
+{ return m_subleaf; }
+
+void
+cpuid::set_subleaf(cpuid_n::subleaf_t val) noexcept
+{ m_subleaf = val; }
+
 // -----------------------------------------------------------------------------
 // Handlers
 // -----------------------------------------------------------------------------
@@ -212,12 +228,12 @@ cpuid::handle(vcpu *vcpu)
         m_emulators.find(vcpu->rax());
 
     const auto ___ = gsl::finally([vcpu] {
-        vcpu->set_gr1(0);
-        vcpu->set_gr2(0);
+        vcpu->cpuid_set_leaf(0);
+        vcpu->cpuid_set_subleaf(0);
     });
 
-    vcpu->set_gr1(vcpu->rax());
-    vcpu->set_gr2(vcpu->rcx());
+    vcpu->cpuid_set_leaf(vcpu->rax());
+    vcpu->cpuid_set_subleaf(vcpu->rcx());
 
     if (emulators != m_emulators.end()) {
         return execute_emulators(vcpu, emulators->second);

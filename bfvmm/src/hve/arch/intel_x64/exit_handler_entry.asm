@@ -24,6 +24,7 @@ default rel
 
 %define VMCS_GUEST_RSP 0x0000681C
 %define VMCS_GUEST_RIP 0x0000681E
+%define VMCS_EXIT_REASON 0x00004402
 
 extern handle_exit
 global exit_handler_entry:function
@@ -70,9 +71,10 @@ exit_handler_entry:
     vmread [gs:0x078], rdi
     mov rdi, VMCS_GUEST_RSP
     vmread [gs:0x080], rdi
+    mov rdi, VMCS_EXIT_REASON
+    vmread [gs:0x088], rdi
 
-    mov rdi, [gs:0x0098]
-    mov rsi, [gs:0x00A0]
+    mov rdi, [gs:0x090]
     call handle_exit wrt ..plt
 
 ; The code should never get this far as the exit handler should resume back
