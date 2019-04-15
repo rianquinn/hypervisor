@@ -32,6 +32,9 @@
 #include <bfgsl.h>
 #include "uapis/types.h"
 
+#include <intrinsics.h>
+using namespace vmcs_n::exit_reason;
+
 #define COPY_MOVE_SEMANTICS(name)                                               \
     public:                                                                     \
     name(name &&) = default;                                                    \

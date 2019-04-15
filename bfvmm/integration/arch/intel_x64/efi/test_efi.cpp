@@ -84,10 +84,7 @@ namespace bfvmm
 {
 
 std::unique_ptr<vcpu>
-vcpu_factory::make(vcpuid::type vcpuid, bfobject *obj)
-{
-    bfignored(obj);
-    return std::make_unique<test::vcpu>(vcpuid);
-}
+vcpu_factory::make(vcpuid::type vcpuid)
+{ return std::make_unique<test::vcpu>(vcpuid); }
 
 }

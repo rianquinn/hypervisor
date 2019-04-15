@@ -78,10 +78,8 @@ wrmsr_handler::wrmsr_handler(
     m_vcpu{vcpu},
     m_msr_bitmap{vcpu->msr_bitmap(), ::x64::pt::page_size}
 {
-    using namespace vmcs_n;
-
-    vcpu->add_handler(
-        exit_reason::basic_exit_reason::wrmsr,
+    vcpu->add_exit_handler_for_reason(
+        vmcs_n::exit_reason::basic_exit_reason::wrmsr,
         ::handler_delegate_t::create<wrmsr_handler, &wrmsr_handler::handle>(this)
     );
 }

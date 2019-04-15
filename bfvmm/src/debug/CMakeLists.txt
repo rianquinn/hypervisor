@@ -37,6 +37,3 @@ target_sources(bfvmm_debug PRIVATE
 
 install(TARGETS bfvmm_debug DESTINATION lib EXPORT bfvmm-${PREFIX}-targets)
 
-if(PREFIX STREQUAL vmm)
-    install(DIRECTORY ../../include/debug/ DESTINATION include/bfvmm/debug)
-endif()

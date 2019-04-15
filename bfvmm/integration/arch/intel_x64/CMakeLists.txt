@@ -19,18 +19,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-add_library(bfvmm_memory_manager)
-
-target_link_libraries(bfvmm_memory_manager PUBLIC ${PREFIX}::bfroot)
-target_include_directories(bfvmm_memory_manager PUBLIC
-    $<${BUILD_INCLUDE}:${PROJECT_ROOT}/include>
-    $<${BUILD_INCLUDE}:${PROJECT_ROOT}/../bfintrinsics/include>
-    $<${BUILD_INCLUDE}:${PROJECT_ROOT}/../bfsdk/include>
-)
-target_sources(bfvmm_memory_manager PRIVATE
-    memory_manager.cpp
-    $<$<STREQUAL:${BUILD_TARGET_ARCH},x86_64>:arch/x64/cr3/helpers.cpp>
+add_vmm_executable(
+    integration_intel_x64_test_all
+    SOURCES test_all.cpp
 )
 
-install(TARGETS bfvmm_memory_manager DESTINATION lib EXPORT bfvmm-${PREFIX}-targets)
+add_vmm_executable(
+    integration_intel_x64_test_all_inheritance
+    SOURCES test_all_inheritance.cpp
+)
 
+add_subdirectory(efi)
+add_subdirectory(ept)
+add_subdirectory(vmexit/control_register)
+add_subdirectory(vmexit/cpuid)
+# add_subdirectory(vmexit/ept_violation)
+add_subdirectory(vmexit/external_interrupt)
+add_subdirectory(vmexit/io_instruction)
+add_subdirectory(vmexit/monitor_trap)
+add_subdirectory(vmexit/rdmsr)
+add_subdirectory(vmexit/wrmsr)
+add_subdirectory(vpid)

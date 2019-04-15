@@ -39,10 +39,8 @@ io_instruction_handler::io_instruction_handler(
     m_io_bitmap_a{vcpu->io_bitmap_a(), ::x64::pt::page_size},
     m_io_bitmap_b{vcpu->io_bitmap_b(), ::x64::pt::page_size}
 {
-    using namespace vmcs_n;
-
-    vcpu->add_handler(
-        exit_reason::basic_exit_reason::io_instruction,
+    vcpu->add_exit_handler_for_reason(
+        vmcs_n::exit_reason::basic_exit_reason::io_instruction,
         ::handler_delegate_t::create<io_instruction_handler, &io_instruction_handler::handle>(this)
     );
 }

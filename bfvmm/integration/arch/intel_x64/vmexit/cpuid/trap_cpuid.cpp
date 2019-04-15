@@ -28,6 +28,13 @@ global_init()
     bfdebug_lnbr(0);
 }
 
+void
+global_init()
+{
+    bfdebug_info(0, "running trap_cpuid integration test");
+    bfdebug_lnbr(0);
+}
+
 bool
 handle_cpuid(vcpu_t *vcpu)
 {
@@ -35,13 +42,13 @@ handle_cpuid(vcpu_t *vcpu)
         vcpu->set_rcx(42);
     }
 
-    return true;
+    return vcpu->advance();
 }
 
 void
-hlt_delegate(bfobject *obj)
+vcpu_fini_nonroot_running(vcpu_t *vcpu)
 {
-    bfignored(obj);
+    bfignored(vcpu);
 
     auto [rax, rbx, rcx, rdx] =
         ::x64::cpuid::get(
@@ -60,11 +67,8 @@ hlt_delegate(bfobject *obj)
 void
 vcpu_init_nonroot(vcpu_t *vcpu)
 {
-    vcpu->add_hlt_delegate(
-        vcpu_delegate_t::create<hlt_delegate>()
-    );
-
-    cpuid::add_emulator(
-        vcpu, 42, handler_delegate_t::create<handle_cpuid>()
+    vcpu->cpuid_add_emulator(
+        42, handler_delegate_t::create<test_cpuid_handler>()
     );
 }
+

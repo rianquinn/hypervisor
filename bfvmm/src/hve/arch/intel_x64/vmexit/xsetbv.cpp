@@ -29,9 +29,7 @@ xsetbv_handler::xsetbv_handler(
 ) :
     m_vcpu{vcpu}
 {
-    using namespace vmcs_n;
-
-    vcpu->add_handler(
+    vcpu->add_exit_handler_for_reason(
         vmcs_n::exit_reason::basic_exit_reason::xsetbv,
         ::handler_delegate_t::create<xsetbv_handler, &xsetbv_handler::handle>(this)
     );

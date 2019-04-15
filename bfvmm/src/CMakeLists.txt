@@ -19,18 +19,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-add_library(bfvmm_vcpu)
+cmake_minimum_required(VERSION 3.6)
+project(bfvmm C CXX)
 
-target_sources(bfvmm_vcpu PRIVATE vcpu.cpp)
-target_link_libraries(bfvmm_vcpu PUBLIC ${PREFIX}::bfroot)
-target_include_directories(bfvmm_vcpu PUBLIC
-    $<${BUILD_INCLUDE}:${PROJECT_ROOT}/include>
-    $<${BUILD_INCLUDE}:${PROJECT_ROOT}/../bfintrinsics/include>
-    $<${BUILD_INCLUDE}:${PROJECT_ROOT}/../bfsdk/include>
+include(${SOURCE_CMAKE_DIR}/project.cmake)
+init_project(
+    INCLUDES ${CMAKE_CURRENT_LIST_DIR}/../include
 )
 
-install(TARGETS bfvmm_vcpu DESTINATION lib EXPORT bfvmm-${PREFIX}-targets)
+add_subdirectory(debug)
+add_subdirectory(memory_manager)
+add_subdirectory(hve)
+add_subdirectory(entry)
 
-if(PREFIX STREQUAL vmm)
-    install(DIRECTORY ../../include/vcpu/ DESTINATION include/bfvmm/vcpu)
-endif()
+install(FILES ../include/vmm.h DESTINATION include)
+install(DIRECTORY ../include/debug/ DESTINATION include/bfvmm/debug)
+install(DIRECTORY ../include/hve/ DESTINATION include/bfvmm/hve)
+install(DIRECTORY ../include/memory_manager/ DESTINATION include/bfvmm/memory_manager)
+install(DIRECTORY ../include/vcpu/ DESTINATION include/bfvmm/vcpu)

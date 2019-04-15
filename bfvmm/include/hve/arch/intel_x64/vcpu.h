@@ -29,7 +29,6 @@
 #include "implementation/state.h"
 
 #include "vmexit/control_register.h"
-#include "vmexit/ept_misconfiguration.h"
 #include "vmexit/ept_violation.h"
 #include "vmexit/external_interrupt.h"
 #include "vmexit/init_signal.h"
@@ -63,6 +62,8 @@
 
 namespace bfvmm::intel_x64
 {
+
+using vcpu_delegate_t = delegate<void(vcpu *)>;  ///< vCPU delegate type
 
 /// Intel vCPU
 ///
@@ -101,27 +102,25 @@ public:
 
 public:
 
-    /// Run Delegate
+    /// Run
     ///
-    /// Provides the base implementation for starting the vCPU. This will
-    /// either launch the vCPU or resume it (if it has already been launched).
-    /// If clear() is executed, this will lanuch the vCPU the next time this
-    /// is executed.
+    /// Executes the vCPU. This is executed before a launch/resume. This means
+    /// that this is executed in the context of the kernel if this is a host
+    /// vCPU and in the context of the parent vCPU if this is a guest vCPU.
     ///
-    /// Note that this function will also execute the launch and resume
-    /// delegates as requested.
+    /// In addition, this is also executed as a means to resume back into the
+    /// guest after an exit, so this can also be run from the vCPU's own point
+    /// of view if an exit has occurred and you are simply resuming.
     ///
     /// @expects none
     /// @ensures none
     ///
-    /// @param obj ignored
-    ///
-    VIRTUAL void run_delegate(bfobject *obj);
+    VIRTUAL void run();
 
     /// Add Launch Delegate
     ///
     /// Adds a launch delegate to the VCPU. The delegates are added to a queue and
-    /// executed in FIFO order. All delegates are executed unless an exception
+    /// executed in FILO order. All delegates are executed unless an exception
     /// is thrown that is not handled.
     ///
     /// Note that this is executed during a vcpu->run() if the vCPU is being
@@ -138,7 +137,7 @@ public:
     /// Add Resume Delegate
     ///
     /// Adds a resume delegate to the VCPU. The delegates are added to a queue and
-    /// executed in FIFO order. All delegates are executed unless an exception
+    /// executed in FILO order. All delegates are executed unless an exception
     /// is thrown that is not handled.
     ///
     /// Note that this is executed during a vcpu->run() if the vCPU is being
@@ -150,6 +149,22 @@ public:
     /// @param d the delegate to add to the vcpu
     ///
     VIRTUAL void add_resume_delegate(const vcpu_delegate_t &d) noexcept
+    { m_resume_delegates.push_front(std::move(d)); }
+
+    /// Add Clear Delegate
+    ///
+    /// Adds a clear delegate to the VCPU. The delegates are added to a queue and
+    /// executed in FILO order. All delegates are executed unless an exception
+    /// is thrown that is not handled.
+    ///
+    /// Note that this is executed during a vcpu->clear().
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param d the delegate to add to the vcpu
+    ///
+    VIRTUAL void add_clear_delegate(const vcpu_delegate_t &d) noexcept
     { m_resume_delegates.push_front(std::move(d)); }
 
 private:
@@ -206,21 +221,7 @@ public:
     // Handler Operations
     //==========================================================================
 
-    /// Add Handler vCPU
-    ///
-    /// Adds an exit handler to the vCPU
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param reason The exit reason for the handler being registered
-    /// @param d The delegate being registered
-    ///
-    VIRTUAL void add_handler(
-        ::intel_x64::vmcs::value_type reason,
-        const handler_delegate_t &d);
-
-    /// Add Exit Delegate
+    /// Add Exit Handler
     ///
     /// Adds an exit function to the exit list. Exit functions are executed
     /// right after a vCPU exits for any reason. Use this with care because
@@ -233,8 +234,20 @@ public:
     ///
     /// @param d The delegate being registered
     ///
-    VIRTUAL void add_exit_handler(
-        const handler_delegate_t &d);
+    VIRTUAL void add_exit_handler(const handler_delegate_t &d);
+
+    /// Add Exit Handler (for specific reason)
+    ///
+    /// Adds an exit handler to the vCPU for a specific reason
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param reason The exit reason for the handler being registered
+    /// @param d The delegate being registered
+    ///
+    VIRTUAL void add_exit_handler_for_reason(
+        ::intel_x64::vmcs::value_type reason, const handler_delegate_t &d);
 
     //==========================================================================
     // Fault Handling
@@ -354,20 +367,6 @@ public:
     /// @ensures
     ///
     VIRTUAL void execute_wrcr4();
-
-    //--------------------------------------------------------------------------
-    // EPT Misconfiguration
-    //--------------------------------------------------------------------------
-
-    /// Add EPT Misconfiguration Handler
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param d the delegate to call when an exit occurs
-    ///
-    VIRTUAL void add_ept_misconfiguration_handler(
-        const ept_misconfiguration_handler::handler_delegate_t &d);
 
     //--------------------------------------------------------------------------
     // EPT Violation
@@ -1781,11 +1780,6 @@ public:
 
 private:
 
-    std::unique_ptr<vmx> m_vmx;
-
-    vmcs m_vmcs;
-    exit_handler m_exit_handler;
-
     page_ptr<uint8_t> m_msr_bitmap;
     page_ptr<uint8_t> m_io_bitmap_a;
     page_ptr<uint8_t> m_io_bitmap_b;
@@ -1798,7 +1792,6 @@ private:
     x64::idt m_host_idt{256};
 
     control_register_handler m_control_register_handler;
-    ept_misconfiguration_handler m_ept_misconfiguration_handler;
     ept_violation_handler m_ept_violation_handler;
     external_interrupt_handler m_external_interrupt_handler;
     init_signal_handler m_init_signal_handler;
@@ -1820,8 +1813,10 @@ private:
 private:
 
     bool m_launched{false};
-    std::list<vcpu_delegate_t> m_launch_delegates;
-    std::list<vcpu_delegate_t> m_resume_delegates;
+
+    std::list<vcpu_delegate_t> m_launch_delegates{};
+    std::list<vcpu_delegate_t> m_resume_delegates{};
+    std::list<vcpu_delegate_t> m_clear_delegates{};
 
     ept::mmap *m_mmap{};
 };

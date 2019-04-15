@@ -29,10 +29,8 @@ init_signal_handler::init_signal_handler(
 ) :
     m_vcpu{vcpu}
 {
-    using namespace vmcs_n;
-
-    vcpu->add_handler(
-        exit_reason::basic_exit_reason::init_signal,
+    vcpu->add_exit_handler_for_reason(
+        vmcs_n::exit_reason::basic_exit_reason::init_signal,
         ::handler_delegate_t::create<init_signal_handler, &init_signal_handler::handle>(this)
     );
 }

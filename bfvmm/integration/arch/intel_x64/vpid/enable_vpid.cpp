@@ -31,27 +31,19 @@ using namespace bfvmm::intel_x64;
 namespace test
 {
 
-void
-test_hlt_delegate(bfobject *obj)
-{
-    bfignored(obj);
-    bfdebug_pass(0, "test");
-}
-
 class vcpu : public bfvmm::intel_x64::vcpu
 {
 public:
     explicit vcpu(vcpuid::type id) :
         bfvmm::intel_x64::vcpu{id}
     {
-        this->add_hlt_delegate(
-            vcpu_delegate_t::create<test_hlt_delegate>()
-        );
-
         this->enable_vpid();
     }
 
-    ~vcpu() override = default;
+    ~vcpu() override
+    {
+        bfdebug_pass(0, "test");
+    }
 
 public:
 
@@ -76,10 +68,7 @@ namespace bfvmm
 {
 
 std::unique_ptr<vcpu>
-vcpu_factory::make(vcpuid::type vcpuid, bfobject *obj)
-{
-    bfignored(obj);
-    return std::make_unique<test::vcpu>(vcpuid);
-}
+vcpu_factory::make(vcpuid::type vcpuid)
+{ return std::make_unique<test::vcpu>(vcpuid); }
 
 }

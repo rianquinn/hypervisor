@@ -29,10 +29,8 @@ sipi_signal_handler::sipi_signal_handler(
 ) :
     m_vcpu{vcpu}
 {
-    using namespace vmcs_n;
-
-    vcpu->add_handler(
-        exit_reason::basic_exit_reason::sipi,
+    vcpu->add_exit_handler_for_reason(
+        vmcs_n::exit_reason::basic_exit_reason::sipi,
         ::handler_delegate_t::create<sipi_signal_handler, &sipi_signal_handler::handle>(this)
     );
 }

@@ -29,10 +29,8 @@ ept_violation_handler::ept_violation_handler(
 ) :
     m_vcpu{vcpu}
 {
-    using namespace vmcs_n;
-
-    vcpu->add_handler(
-        exit_reason::basic_exit_reason::ept_violation,
+    vcpu->add_exit_handler_for_reason(
+        vmcs_n::exit_reason::basic_exit_reason::ept_violation,
         ::handler_delegate_t::create<ept_violation_handler, &ept_violation_handler::handle>(this)
     );
 }

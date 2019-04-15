@@ -53,8 +53,8 @@ vcpu_init_nonroot(vcpu_t *vcpu)
 {
     using namespace vmcs_n::exit_reason;
 
-    vcpu->add_handler(
-        basic_exit_reason::cpuid, ::handler_delegate_t::create<handle_cpuid>()
+    vcpu->add_exit_handler_for_reason(
+        cpuid, ::handler_delegate_t::create<handle_cpuid>()
     );
 
     vcpu->set_data<uint64_t>(0);
