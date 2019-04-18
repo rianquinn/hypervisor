@@ -30,7 +30,7 @@ ept_violation_handler::ept_violation_handler(
     m_vcpu{vcpu}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::ept_violation,
+        exit_handler_n::ept_violation,
         ::handler_delegate_t::create<ept_violation_handler, &ept_violation_handler::handle>(this)
     );
 }

@@ -30,7 +30,7 @@ external_interrupt_handler::external_interrupt_handler(
     m_vcpu{vcpu}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::external_interrupt,
+        exit_handler_n::external_interrupt,
         ::handler_delegate_t::create<external_interrupt_handler, &external_interrupt_handler::handle>(this)
     );
 }

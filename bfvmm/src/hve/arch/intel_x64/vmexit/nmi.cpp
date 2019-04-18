@@ -37,7 +37,7 @@ nmi_handler::nmi_handler(
     m_vcpu{vcpu}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::exception_or_non_maskable_interrupt,
+        exit_handler_n::exception_or_nmi,
         ::handler_delegate_t::create<nmi_handler, &nmi_handler::handle>(this)
     );
 

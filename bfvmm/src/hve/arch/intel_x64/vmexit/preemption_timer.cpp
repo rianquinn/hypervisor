@@ -30,7 +30,7 @@ preemption_timer_handler::preemption_timer_handler(
     m_vcpu{vcpu}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::preemption_timer_expired,
+        exit_handler_n::preemption_timer,
         ::handler_delegate_t::create <preemption_timer_handler, &preemption_timer_handler::handle > (this)
     );
 }

@@ -30,10 +30,12 @@
 //
 
 #include <bfgsl.h>
-#include "uapis/types.h"
+#include <bfdebug.h>
+#include <bfexception.h>
 
 #include <intrinsics.h>
-using namespace vmcs_n::exit_reason;
+
+#include "uapis/types.h"
 
 #define COPY_MOVE_SEMANTICS(name)                                               \
     public:                                                                     \

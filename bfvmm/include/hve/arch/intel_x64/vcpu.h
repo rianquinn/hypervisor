@@ -23,10 +23,16 @@
 #define VCPU_INTEL_X64_H
 
 #include "uapis/cpuid.h"
+#include "uapis/exit_handler.h"
 #include "uapis/state.h"
+#include "uapis/types.h"
+#include "uapis/vmcs.h"
 
 #include "implementation/cpuid.h"
+#include "implementation/exit_handler.h"
 #include "implementation/state.h"
+#include "implementation/vmcs.h"
+#include "implementation/vmx.h"
 
 #include "vmexit/control_register.h"
 #include "vmexit/ept_violation.h"
@@ -44,11 +50,8 @@
 #include "vmexit/xsetbv.h"
 
 #include "ept.h"
-#include "exit_handler.h"
 #include "interrupt_queue.h"
 #include "microcode.h"
-#include "vmcs.h"
-#include "vmx.h"
 #include "vpid.h"
 
 #include "../x64/unmapper.h"
@@ -63,8 +66,6 @@
 namespace bfvmm::intel_x64
 {
 
-using vcpu_delegate_t = delegate<void(vcpu *)>;  ///< vCPU delegate type
-
 /// Intel vCPU
 ///
 /// This class provides the base implementation for an Intel based vCPU. For
@@ -73,10 +74,10 @@ using vcpu_delegate_t = delegate<void(vcpu *)>;  ///< vCPU delegate type
 class vcpu :
     public bfvmm::vcpu,
 
-    // private implementation::vmx,
-    // public uapis::vmcs<implementation::vmcs>,
-    // public uapis::exit_handler<implementation::exit_handler>,
+    private implementation::vmx,
     public uapis::state<implementation::state>,
+    public uapis::exit_handler<implementation::exit_handler>,
+    public uapis::vmcs<implementation::vmcs>,
 
     public uapis::cpuid<implementation::cpuid>
 {
@@ -100,73 +101,6 @@ public:
     ///
     ~vcpu() override = default;
 
-public:
-
-    /// Run
-    ///
-    /// Executes the vCPU. This is executed before a launch/resume. This means
-    /// that this is executed in the context of the kernel if this is a host
-    /// vCPU and in the context of the parent vCPU if this is a guest vCPU.
-    ///
-    /// In addition, this is also executed as a means to resume back into the
-    /// guest after an exit, so this can also be run from the vCPU's own point
-    /// of view if an exit has occurred and you are simply resuming.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    VIRTUAL void run();
-
-    /// Add Launch Delegate
-    ///
-    /// Adds a launch delegate to the VCPU. The delegates are added to a queue and
-    /// executed in FILO order. All delegates are executed unless an exception
-    /// is thrown that is not handled.
-    ///
-    /// Note that this is executed during a vcpu->run() if the vCPU is being
-    /// launched and not resumed.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param d the delegate to add to the vcpu
-    ///
-    VIRTUAL void add_launch_delegate(const vcpu_delegate_t &d) noexcept
-    { m_launch_delegates.push_front(std::move(d)); }
-
-    /// Add Resume Delegate
-    ///
-    /// Adds a resume delegate to the VCPU. The delegates are added to a queue and
-    /// executed in FILO order. All delegates are executed unless an exception
-    /// is thrown that is not handled.
-    ///
-    /// Note that this is executed during a vcpu->run() if the vCPU is being
-    /// resumed and not launched.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param d the delegate to add to the vcpu
-    ///
-    VIRTUAL void add_resume_delegate(const vcpu_delegate_t &d) noexcept
-    { m_resume_delegates.push_front(std::move(d)); }
-
-    /// Add Clear Delegate
-    ///
-    /// Adds a clear delegate to the VCPU. The delegates are added to a queue and
-    /// executed in FILO order. All delegates are executed unless an exception
-    /// is thrown that is not handled.
-    ///
-    /// Note that this is executed during a vcpu->clear().
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param d the delegate to add to the vcpu
-    ///
-    VIRTUAL void add_clear_delegate(const vcpu_delegate_t &d) noexcept
-    { m_resume_delegates.push_front(std::move(d)); }
-
 private:
 
     void write_host_state();
@@ -174,80 +108,6 @@ private:
     void write_control_state();
 
 public:
-
-    //==========================================================================
-    // VMCS Operations
-    //==========================================================================
-
-    /// Load vCPU
-    ///
-    /// Loads the vCPU into hardware.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    VIRTUAL void load();
-
-    /// Clear vCPU
-    ///
-    /// Clears the vCPU in hardware.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    VIRTUAL void clear();
-
-    /// Promote vCPU
-    ///
-    /// Promotes the vCPU.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    VIRTUAL void promote();
-
-    /// Advance vCPU
-    ///
-    /// Advances the vCPU.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return always returns true
-    ///
-    VIRTUAL bool advance();
-
-    //==========================================================================
-    // Handler Operations
-    //==========================================================================
-
-    /// Add Exit Handler
-    ///
-    /// Adds an exit function to the exit list. Exit functions are executed
-    /// right after a vCPU exits for any reason. Use this with care because
-    /// this function will be executed a lot.
-    ///
-    /// Note the return value of the delegate is ignored
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param d The delegate being registered
-    ///
-    VIRTUAL void add_exit_handler(const handler_delegate_t &d);
-
-    /// Add Exit Handler (for specific reason)
-    ///
-    /// Adds an exit handler to the vCPU for a specific reason
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param reason The exit reason for the handler being registered
-    /// @param d The delegate being registered
-    ///
-    VIRTUAL void add_exit_handler_for_reason(
-        ::intel_x64::vmcs::value_type reason, const handler_delegate_t &d);
 
     //==========================================================================
     // Fault Handling
@@ -1665,106 +1525,6 @@ private:
 
 public:
 
-    /// @cond
-
-    /// vCPU Registers
-    ///
-    /// These functions read/write the register values of the vCPU. Some of
-    /// these functions will touch the save state while others will read/write
-    /// to the VMCS which means that the vCPU must be loaded prior to touching
-    /// those registers. Care should be taken to ensure that loading the vCPU
-    /// is kept at a minimum while at the same time ensuring that the right
-    /// VMCS is being modified.
-    ///
-
-    VIRTUAL uint64_t gdt_base() const noexcept;
-    VIRTUAL void set_gdt_base(uint64_t val) noexcept;
-    VIRTUAL uint64_t gdt_limit() const noexcept;
-    VIRTUAL void set_gdt_limit(uint64_t val) noexcept;
-    VIRTUAL uint64_t idt_base() const noexcept;
-    VIRTUAL void set_idt_base(uint64_t val) noexcept;
-    VIRTUAL uint64_t idt_limit() const noexcept;
-    VIRTUAL void set_idt_limit(uint64_t val) noexcept;
-    VIRTUAL uint64_t cr0() const noexcept;
-    VIRTUAL void set_cr0(uint64_t val) noexcept;
-    VIRTUAL uint64_t cr3() const noexcept;
-    VIRTUAL void set_cr3(uint64_t val) noexcept;
-    VIRTUAL uint64_t cr4() const noexcept;
-    VIRTUAL void set_cr4(uint64_t val) noexcept;
-    VIRTUAL uint64_t ia32_efer() const noexcept;
-    VIRTUAL void set_ia32_efer(uint64_t val) noexcept;
-    VIRTUAL uint64_t ia32_pat() const noexcept;
-    VIRTUAL void set_ia32_pat(uint64_t val) noexcept;
-
-    VIRTUAL uint64_t es_selector() const noexcept;
-    VIRTUAL void set_es_selector(uint64_t val) noexcept;
-    VIRTUAL uint64_t es_base() const noexcept;
-    VIRTUAL void set_es_base(uint64_t val) noexcept;
-    VIRTUAL uint64_t es_limit() const noexcept;
-    VIRTUAL void set_es_limit(uint64_t val) noexcept;
-    VIRTUAL uint64_t es_access_rights() const noexcept;
-    VIRTUAL void set_es_access_rights(uint64_t val) noexcept;
-    VIRTUAL uint64_t cs_selector() const noexcept;
-    VIRTUAL void set_cs_selector(uint64_t val) noexcept;
-    VIRTUAL uint64_t cs_base() const noexcept;
-    VIRTUAL void set_cs_base(uint64_t val) noexcept;
-    VIRTUAL uint64_t cs_limit() const noexcept;
-    VIRTUAL void set_cs_limit(uint64_t val) noexcept;
-    VIRTUAL uint64_t cs_access_rights() const noexcept;
-    VIRTUAL void set_cs_access_rights(uint64_t val) noexcept;
-    VIRTUAL uint64_t ss_selector() const noexcept;
-    VIRTUAL void set_ss_selector(uint64_t val) noexcept;
-    VIRTUAL uint64_t ss_base() const noexcept;
-    VIRTUAL void set_ss_base(uint64_t val) noexcept;
-    VIRTUAL uint64_t ss_limit() const noexcept;
-    VIRTUAL void set_ss_limit(uint64_t val) noexcept;
-    VIRTUAL uint64_t ss_access_rights() const noexcept;
-    VIRTUAL void set_ss_access_rights(uint64_t val) noexcept;
-    VIRTUAL uint64_t ds_selector() const noexcept;
-    VIRTUAL void set_ds_selector(uint64_t val) noexcept;
-    VIRTUAL uint64_t ds_base() const noexcept;
-    VIRTUAL void set_ds_base(uint64_t val) noexcept;
-    VIRTUAL uint64_t ds_limit() const noexcept;
-    VIRTUAL void set_ds_limit(uint64_t val) noexcept;
-    VIRTUAL uint64_t ds_access_rights() const noexcept;
-    VIRTUAL void set_ds_access_rights(uint64_t val) noexcept;
-    VIRTUAL uint64_t fs_selector() const noexcept;
-    VIRTUAL void set_fs_selector(uint64_t val) noexcept;
-    VIRTUAL uint64_t fs_base() const noexcept;
-    VIRTUAL void set_fs_base(uint64_t val) noexcept;
-    VIRTUAL uint64_t fs_limit() const noexcept;
-    VIRTUAL void set_fs_limit(uint64_t val) noexcept;
-    VIRTUAL uint64_t fs_access_rights() const noexcept;
-    VIRTUAL void set_fs_access_rights(uint64_t val) noexcept;
-    VIRTUAL uint64_t gs_selector() const noexcept;
-    VIRTUAL void set_gs_selector(uint64_t val) noexcept;
-    VIRTUAL uint64_t gs_base() const noexcept;
-    VIRTUAL void set_gs_base(uint64_t val) noexcept;
-    VIRTUAL uint64_t gs_limit() const noexcept;
-    VIRTUAL void set_gs_limit(uint64_t val) noexcept;
-    VIRTUAL uint64_t gs_access_rights() const noexcept;
-    VIRTUAL void set_gs_access_rights(uint64_t val) noexcept;
-    VIRTUAL uint64_t tr_selector() const noexcept;
-    VIRTUAL void set_tr_selector(uint64_t val) noexcept;
-    VIRTUAL uint64_t tr_base() const noexcept;
-    VIRTUAL void set_tr_base(uint64_t val) noexcept;
-    VIRTUAL uint64_t tr_limit() const noexcept;
-    VIRTUAL void set_tr_limit(uint64_t val) noexcept;
-    VIRTUAL uint64_t tr_access_rights() const noexcept;
-    VIRTUAL void set_tr_access_rights(uint64_t val) noexcept;
-    VIRTUAL uint64_t ldtr_selector() const noexcept;
-    VIRTUAL void set_ldtr_selector(uint64_t val) noexcept;
-    VIRTUAL uint64_t ldtr_base() const noexcept;
-    VIRTUAL void set_ldtr_base(uint64_t val) noexcept;
-    VIRTUAL uint64_t ldtr_limit() const noexcept;
-    VIRTUAL void set_ldtr_limit(uint64_t val) noexcept;
-    VIRTUAL uint64_t ldtr_access_rights() const noexcept;
-    VIRTUAL void set_ldtr_access_rights(uint64_t val) noexcept;
-
-    /// @endcond
-
-public:
-
     // REMOVE ME
     uint64_t m_gr1{};
     uint64_t m_gr2{};
@@ -1811,12 +1571,6 @@ private:
     vpid_handler m_vpid_handler;
 
 private:
-
-    bool m_launched{false};
-
-    std::list<vcpu_delegate_t> m_launch_delegates{};
-    std::list<vcpu_delegate_t> m_resume_delegates{};
-    std::list<vcpu_delegate_t> m_clear_delegates{};
 
     ept::mmap *m_mmap{};
 };

@@ -30,7 +30,7 @@ sipi_signal_handler::sipi_signal_handler(
     m_vcpu{vcpu}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::sipi,
+        exit_handler_n::sipi,
         ::handler_delegate_t::create<sipi_signal_handler, &sipi_signal_handler::handle>(this)
     );
 }

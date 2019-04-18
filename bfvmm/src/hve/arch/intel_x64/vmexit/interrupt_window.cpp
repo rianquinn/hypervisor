@@ -30,7 +30,7 @@ interrupt_window_handler::interrupt_window_handler(
     m_vcpu{vcpu}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::interrupt_window,
+        exit_handler_n::interrupt_window,
         ::handler_delegate_t::create<interrupt_window_handler, &interrupt_window_handler::handle>(this)
     );
 }

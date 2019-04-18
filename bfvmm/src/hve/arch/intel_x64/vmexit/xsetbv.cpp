@@ -30,7 +30,7 @@ xsetbv_handler::xsetbv_handler(
     m_vcpu{vcpu}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::xsetbv,
+        exit_handler_n::xsetbv,
         ::handler_delegate_t::create<xsetbv_handler, &xsetbv_handler::handle>(this)
     );
 }

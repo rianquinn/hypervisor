@@ -47,8 +47,6 @@ namespace bfvmm::intel_x64::cpuid
 
 /// CPUID Namespace
 ///
-/// This defines the CPUID namespace.
-///
 namespace cpuid_n = bfvmm::intel_x64::cpuid;
 
 // *INDENT-ON*
@@ -223,20 +221,6 @@ public:
     inline cpuid_n::leaf_t cpuid_leaf() const noexcept
     { return m_impl.leaf(); }
 
-    /// CPUID Set Leaf (VMExit-Only)
-    ///
-    /// This function will set the CPUID leaf that was generated in the current
-    /// VMExit. If this function is called outside of a VMExit or from a VMExit
-    /// that is not a CPUID VMExit, this function will be ignored.
-    ///
-    /// @expects executing in a CPUID VMExit
-    /// @ensures
-    ///
-    /// @param val the value of rax when the VMEXit occurred
-    ///
-    inline void cpuid_set_leaf(cpuid_n::leaf_t val) noexcept
-    { m_impl.set_leaf(val); }
-
     /// CPUID Subleaf (VMExit-Only)
     ///
     /// This function will return the CPUID subleaf that generated the current
@@ -251,19 +235,24 @@ public:
     inline cpuid_n::subleaf_t cpuid_subleaf() const noexcept
     { return m_impl.subleaf(); }
 
-    /// CPUID Set Subleaf (VMExit-Only)
+public:
+
+    /// Private
     ///
-    /// This function will set the CPUID subleaf that was generated in the current
-    /// VMExit. If this function is called outside of a VMExit or from a VMExit
-    /// that is not a CPUID VMExit, this function will be ignored.
+    /// The following APIs are private and should not be used by an end user.
+    /// These are made public for internal use only, and these APIs are subject
+    /// to change. You have been warned.
     ///
-    /// @expects executing in a CPUID VMExit
-    /// @ensures
+    /// @cond
     ///
-    /// @param val the value of rcx when the VMEXit occurred
-    ///
+
+    inline void cpuid_set_leaf(cpuid_n::leaf_t val) noexcept
+    { m_impl.set_leaf(val); }
+
     inline void cpuid_set_subleaf(cpuid_n::subleaf_t val) noexcept
     { m_impl.set_subleaf(val); }
+
+    /// @endcond
 
 private:
     PRIVATE_INTERFACES(cpuid);
@@ -429,32 +418,6 @@ inline cpuid_n::leaf_t leaf(
     gsl::not_null<const uapis::cpuid<IMPL> *> vcpu) noexcept
 { return vcpu->cpuid_leaf(); }
 
-/// Set Leaf (Wrapper)
-///
-/// Wraps the cpuid_set_leaf() function.
-///
-/// @code
-/// vcpu->cpuid_set_leaf(...);
-/// @endcode
-///
-/// or
-///
-/// @code
-/// cpuid::set_leaf(vcpu, ...);
-/// @endcode
-///
-/// @expects vcpu != nullptr
-/// @ensures
-///
-/// @param vcpu a pointer to the cpuid interface
-/// @param args cpuid_set_leaf() arguments
-///
-template<typename IMPL>
-inline void set_leaf(
-    gsl::not_null<uapis::cpuid<IMPL> *> vcpu,
-    cpuid_n::leaf_t val) noexcept
-{ vcpu->cpuid_set_leaf(val); }
-
 /// Subleaf (Wrapper)
 ///
 /// Wraps the cpuid_subleaf() function.
@@ -479,32 +442,6 @@ template<typename IMPL>
 inline cpuid_n::subleaf_t subleaf(
     gsl::not_null<const uapis::cpuid<IMPL> *> vcpu) noexcept
 { return vcpu->cpuid_subleaf(); }
-
-/// Set Subleaf (Wrapper)
-///
-/// Wraps the cpuid_set_subleaf() function.
-///
-/// @code
-/// vcpu->cpuid_set_subleaf(...);
-/// @endcode
-///
-/// or
-///
-/// @code
-/// cpuid::set_subleaf(vcpu, ...);
-/// @endcode
-///
-/// @expects vcpu != nullptr
-/// @ensures
-///
-/// @param vcpu a pointer to the cpuid interface
-/// @param args cpuid_set_subleaf() arguments
-///
-template<typename IMPL>
-inline void set_subleaf(
-    gsl::not_null<uapis::cpuid<IMPL> *> vcpu,
-    cpuid_n::subleaf_t val) noexcept
-{ vcpu->cpuid_set_subleaf(val); }
 
 }
 
@@ -558,19 +495,9 @@ inline cpuid_n::leaf_t leaf(
 { return leaf(gsl::not_null<const uapis::cpuid<IMPL> *>(vcpu)); }
 
 template<typename IMPL>
-inline void leaf(
-    uapis::cpuid<IMPL> *vcpu, cpuid_n::leaf_t val) noexcept
-{ leaf(gsl::not_null<uapis::cpuid<IMPL> *>(vcpu, val)); }
-
-template<typename IMPL>
 inline cpuid_n::subleaf_t subleaf(
     const uapis::cpuid<IMPL> *vcpu) noexcept
 { return subleaf(gsl::not_null<const uapis::cpuid<IMPL> *>(vcpu)); }
-
-template<typename IMPL>
-inline void subleaf(
-    uapis::cpuid<IMPL> *vcpu, cpuid_n::subleaf_t val) noexcept
-{ subleaf(gsl::not_null<uapis::cpuid<IMPL> *>(vcpu, val)); }
 
 }
 

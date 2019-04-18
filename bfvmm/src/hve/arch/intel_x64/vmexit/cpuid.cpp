@@ -110,7 +110,7 @@ cpuid::cpuid(
     gsl::not_null<vcpu *> vcpu)
 {
     vcpu->add_exit_handler_for_reason(
-        basic_exit_reason::cpuid,
+        exit_handler_n::cpuid,
         handler_delegate_t::create<cpuid, &cpuid::handle>(this)
     );
 
@@ -179,13 +179,13 @@ cpuid_n::leaf_t
 cpuid::leaf() const noexcept
 { return m_leaf; }
 
-void
-cpuid::set_leaf(cpuid_n::leaf_t val) noexcept
-{ m_leaf = val; }
-
 cpuid_n::subleaf_t
 cpuid::subleaf() const noexcept
 { return m_subleaf; }
+
+void
+cpuid::set_leaf(cpuid_n::leaf_t val) noexcept
+{ m_leaf = val; }
 
 void
 cpuid::set_subleaf(cpuid_n::subleaf_t val) noexcept
@@ -221,35 +221,25 @@ execute_emulators(
     return false;
 }
 
-class vmexit_registers
-{
-public:
-    explicit vmexit_registers(vcpu *vcpu) noexcept
-    {
-        vcpu->cpuid_set_leaf(vcpu->rax());
-        vcpu->cpuid_set_subleaf(vcpu->rcx());
-    }
-
-    ~vmexit_registers()
-    {
-        vcpu->cpuid_set_leaf(0);
-        vcpu->cpuid_set_subleaf(0);
-    }
-};
-
 bool
-cpuid::handle(vcpu *vcpu)
+cpuid::handle(vcpu_t *vcpu)
 {
     const auto &emulators =
         m_emulators.find(vcpu->rax());
 
-    vmexit_registers ___;
+    auto ___ = gsl::finally([vcpu] {
+        vcpu->cpuid_set_leaf(0);
+        vcpu->cpuid_set_subleaf(0);
+    });
+
+    vcpu->cpuid_set_leaf(vcpu->rax());
+    vcpu->cpuid_set_subleaf(vcpu->rcx());
 
     if (emulators != m_emulators.end()) {
         return execute_emulators(vcpu, emulators->second);
     }
 
-    if (vcpu->is_guest_vm_vcpu()) {
+    if (vcpu->is_guest_vcpu()) {
         return false;
     }
 

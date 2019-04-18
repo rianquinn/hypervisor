@@ -39,8 +39,7 @@ class cpuid :
 {
 public:
 
-    explicit cpuid(
-        gsl::not_null<vcpu *> vcpu);
+    explicit cpuid(gsl::not_null<vcpu *> vcpu);
     VIRTUAL ~cpuid() = default;
 
     VIRTUAL void emulate(

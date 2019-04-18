@@ -30,7 +30,7 @@ monitor_trap_handler::monitor_trap_handler(
     m_vcpu{vcpu}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::monitor_trap_flag,
+        exit_handler_n::monitor_trap_flag,
         ::handler_delegate_t::create<monitor_trap_handler, &monitor_trap_handler::handle>(this)
     );
 }

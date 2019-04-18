@@ -30,7 +30,7 @@ init_signal_handler::init_signal_handler(
     m_vcpu{vcpu}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::init_signal,
+        exit_handler_n::init_signal,
         ::handler_delegate_t::create<init_signal_handler, &init_signal_handler::handle>(this)
     );
 }

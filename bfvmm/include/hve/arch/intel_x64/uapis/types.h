@@ -58,13 +58,13 @@ using vcpu_t = bfvmm::intel_x64::vcpu;
 ///
 using reg_t = uint64_t;
 
-/// Handler Type
+/// VMCS Delegate Type
 ///
-/// This defines the function prototype for an exit handler. Any exit handler
-/// that an extension of the base registers with the vCPU must have this
-/// same signature.
+/// This defines the function prototype for vmcs operations. This provides an
+/// extension with the ability to extend most the VMCS operations that take
+/// place within the vCPU
 ///
-using handler_t = bool(vcpu_t *);
+using vmcs_delegate_t = delegate<void(vcpu_t *)>;
 
 /// Handler Delegate Type
 ///
@@ -72,6 +72,6 @@ using handler_t = bool(vcpu_t *);
 /// used when creating exit handler delegates both in the base and in a user
 /// extension.
 ///
-using handler_delegate_t = delegate<handler_t>;
+using handler_delegate_t = delegate<bool(vcpu_t *)>;
 
 #endif

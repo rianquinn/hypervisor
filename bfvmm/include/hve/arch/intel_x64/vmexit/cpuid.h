@@ -53,14 +53,14 @@ public:
     VIRTUAL void execute(vcpu *vcpu) noexcept;
 
     VIRTUAL cpuid_n::leaf_t leaf() const noexcept;
-    VIRTUAL void set_leaf(cpuid_n::leaf_t val) noexcept;
-
     VIRTUAL cpuid_n::subleaf_t subleaf() const noexcept;
+
+    VIRTUAL void set_leaf(cpuid_n::leaf_t val) noexcept;
     VIRTUAL void set_subleaf(cpuid_n::subleaf_t val) noexcept;
 
 public:
 
-    bool handle(vcpu *vcpu);
+    bool handle(vcpu_t *vcpu);
 
 private:
 

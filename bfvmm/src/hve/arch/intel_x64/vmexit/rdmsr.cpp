@@ -69,7 +69,7 @@ rdmsr_handler::rdmsr_handler(
     m_msr_bitmap{vcpu->msr_bitmap(), ::x64::pt::page_size}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::rdmsr,
+        exit_handler_n::rdmsr,
         ::handler_delegate_t::create<rdmsr_handler, &rdmsr_handler::handle>(this)
     );
 }

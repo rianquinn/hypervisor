@@ -73,8 +73,6 @@ inline uintptr_t g_rsdp = 0;
 #include <arch/intel_x64/vmcs/natural_width_host_state_fields.h>
 #include <arch/intel_x64/vmcs/natural_width_read_only_data_fields.h>
 
-namespace vmcs_n = ::intel_x64::vmcs;
-
 #endif
 
 #ifdef BF_AARCH64

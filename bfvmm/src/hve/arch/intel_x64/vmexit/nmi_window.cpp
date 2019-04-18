@@ -45,7 +45,7 @@ nmi_window_handler::nmi_window_handler(
     m_vcpu{vcpu}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::nmi_window,
+        exit_handler_n::nmi_window,
         ::handler_delegate_t::create<nmi_window_handler, &nmi_window_handler::handle>(this)
     );
 }

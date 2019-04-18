@@ -38,8 +38,7 @@ class state
 {
 public:
 
-    explicit state(
-        gsl::not_null<vcpu *> vcpu);
+    explicit state(gsl::not_null<vcpu *> vcpu);
     VIRTUAL ~state() = default;
 
     VIRTUAL reg_t rax() const noexcept;

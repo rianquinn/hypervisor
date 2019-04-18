@@ -40,7 +40,7 @@ io_instruction_handler::io_instruction_handler(
     m_io_bitmap_b{vcpu->io_bitmap_b(), ::x64::pt::page_size}
 {
     vcpu->add_exit_handler_for_reason(
-        vmcs_n::exit_reason::basic_exit_reason::io_instruction,
+        exit_handler_n::io_instruction,
         ::handler_delegate_t::create<io_instruction_handler, &io_instruction_handler::handle>(this)
     );
 }
