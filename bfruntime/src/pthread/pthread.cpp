@@ -289,14 +289,3 @@ pthread_setspecific(pthread_key_t __key, const void *__value)
     thread_context_tlsptr()[__key] = reinterpret_cast<uint64_t>(__value);
     return 0;
 }
-
-extern "C" uint64_t *_thread_context_tlsptr(void);
-extern "C" uint64_t _thread_context_cpuid(void);
-
-extern "C" uint64_t *
-thread_context_tlsptr(void)
-{ return _thread_context_tlsptr(); }
-
-extern "C" uint64_t
-thread_context_cpuid(void)
-{ return _thread_context_cpuid(); }

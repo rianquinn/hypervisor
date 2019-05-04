@@ -78,6 +78,6 @@ string(CONCAT BFFLAGS_VMM_LINK
     "-nostdlib "
     "-pie "
     "-static "
-    "-z noexecstack "
+    # "-z noexecstack "
     "-z defs "
 )

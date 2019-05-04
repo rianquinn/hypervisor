@@ -30,11 +30,11 @@ using fini_t = void (*)();
 eh_frame_t __g_eh_frame = {};
 
 extern "C" status_t
-bfmain(uint64_t request, uint64_t arg1, uint64_t arg2);
+bfmain(uint64_t request, uint64_t arg1, uint64_t arg2) noexcept;
 
-extern "C" void
+static inline void
 __bareflank_init(
-    uint64_t init_array_addr, uint64_t init_array_size)
+    uint64_t init_array_addr, uint64_t init_array_size) noexcept
 {
     if (init_array_addr != 0) {
         auto n = init_array_size >> 3;
@@ -47,13 +47,13 @@ __bareflank_init(
     }
 }
 
-extern "C" void
-__bareflank_register_eh_frame(
-    uint64_t eh_frame_addr, uint64_t eh_frame_size)
-{
-    __g_eh_frame.addr = reinterpret_cast<void *>(eh_frame_addr);
-    __g_eh_frame.size = eh_frame_size;
-}
+// static inline void
+// __bareflank_register_eh_frame(
+//     uint64_t eh_frame_addr, uint64_t eh_frame_size) noexcept
+// {
+//     __g_eh_frame.addr = reinterpret_cast<void *>(eh_frame_addr);
+//     __g_eh_frame.size = eh_frame_size;
+// }
 
 extern "C" status_t
 _start_c(const _start_args_t *info) noexcept
@@ -63,10 +63,10 @@ _start_c(const _start_args_t *info) noexcept
         return BFSUCCESS;
     }
 
-    if (info->request == BF_REQUEST_EH_FRAME) {
-        __bareflank_register_eh_frame(info->arg1, info->arg2);
-        return BFSUCCESS;
-    }
+    // if (info->request == BF_REQUEST_EH_FRAME) {
+    //     __bareflank_register_eh_frame(info->arg1, info->arg2);
+    //     return BFSUCCESS;
+    // }
 
     return bfmain(info->request, info->arg1, info->arg2);
 }

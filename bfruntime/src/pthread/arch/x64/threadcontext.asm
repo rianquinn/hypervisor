@@ -24,46 +24,8 @@ default rel
 
 section .text
 
-; For more information about how these functions work, please see the
-; following reference:
-;
-; https://github.com/Bareflank/hypervisor/issues/213
-;
-; Note: If the constants.h file changes, or the thread_context structure
-;       changes, this code might also have to change as well.
-
-global _thread_context_tlsptr:function
-_thread_context_tlsptr:
-
-    mov rdx, 0x8000
-    sub rdx, 0x1
+global _thread_context_get_sp:function
+_thread_context_get_sp:
 
     mov rax, rsp
-    mov rcx, rdx
-    not rcx
-    and rax, rcx
-
-    add rax, rdx
-
-    sub rax, 24
-
-    mov rax, [rax]
-    ret
-
-global _thread_context_cpuid:function
-_thread_context_cpuid:
-
-    mov rdx, 0x8000
-    sub rdx, 0x1
-
-    mov rax, rsp
-    mov rcx, rdx
-    not rcx
-    and rax, rcx
-
-    add rax, rdx
-
-    sub rax, 32
-
-    mov rax, [rax]
     ret

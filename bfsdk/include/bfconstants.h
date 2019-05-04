@@ -81,9 +81,7 @@
  *
  * Note: defined in bytes
  */
-#ifndef MAP_POOL_START
 #define MAP_POOL_START reinterpret_cast<void *>(0xBF000000000ULL)
-#endif
 
 /*
  * Debug Ring Size
@@ -112,15 +110,9 @@
  * Note: Must be defined using a bit shift as we will mask to get the
  *       bottom of the stack if needed.
  *
- * Note: This is hard coded in the thread_context.asm as there is no way to
- *       use this include in NASM. If you change this, you must change the
- *       value in that file as well.
- *
  * Note: defined in bytes
  */
-#ifndef STACK_SIZE
 #define STACK_SIZE (1ULL << 15ULL)
-#endif
 
 /*
  * Thread Local Storage (TLS) Size
@@ -134,9 +126,7 @@
  *
  * Note: Defined in bytes
  */
-#ifndef THREAD_LOCAL_STORAGE_SIZE
 #define THREAD_LOCAL_STORAGE_SIZE (0x1000ULL)
-#endif
 
 /*
  * Default Serial COM Port
@@ -151,7 +141,9 @@
  *    - 0xEFF0U  // Windows COM4
  *    - 0xEFF8U  // Windows COM5
  */
+#ifndef DEFAULT_COM_PORT
 #define DEFAULT_COM_PORT (0x03F8U)
+#endif
 
 /*
  * Default Serial Baud Rate

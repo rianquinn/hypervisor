@@ -259,6 +259,9 @@ _exit(int __status)
 {
     bfignored(__status);
 
+    int *i = 0;
+    *i = 42;
+
     while (true)
     { }
 }
@@ -455,3 +458,7 @@ calloc(size_t __nmemb, size_t __size)
 extern "C" void *
 realloc(void *__r, size_t __size)
 { return _realloc_r(nullptr, __r, __size); }
+
+
+
+volatile int n = 30;

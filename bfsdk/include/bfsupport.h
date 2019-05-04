@@ -71,15 +71,36 @@ struct _start_args_t {
 
 /* @endcond */
 
+#ifdef __cplusplus
+
 /**
  * Start Type
  *
  * Defines the function signature for the _start function
  */
-#ifdef __cplusplus
 using _start_t = status_t (*)(uintptr_t stack, const struct _start_args_t *args);
+
+/**
+ * Main Function. This is called by the runtime code and is the main entry
+ * point for any program that uses this environment.
+ * 
+ * @param request the request being made
+ * @param arg1 optional arg #1
+ * @param arg2 optional arg #2
+ * @return BFSUCCESS on success, BFFAILURE otherwise
+ */
+extern "C" status_t
+bfmain(uint64_t request, uint64_t arg1, uint64_t arg2) noexcept;
+
 #else
+
+/**
+ * Start Type
+ *
+ * Defines the function signature for the _start function
+ */
 typedef status_t (*_start_t)(uintptr_t stack, const struct _start_args_t *args);
+
 #endif
 
 #ifdef __cplusplus

@@ -26,12 +26,12 @@
 
 using namespace bfvmm::implementation;
 
-// #include <mutex>
-// std::mutex g_write_mutex;
+#include <mutex>
+std::mutex g_write_mutex;
 
-// extern "C" void
-// unlock_write(void)
-// { g_write_mutex.unlock(); }
+extern "C" void
+unlock_write(void)
+{ g_write_mutex.unlock(); }
 
 static auto
 g_debug_ring() noexcept
@@ -44,7 +44,7 @@ extern "C" uint64_t
 write_str(const std::string &str)
 {
     try {
-        // std::lock_guard<std::mutex> guard(g_write_mutex);
+        std::lock_guard<std::mutex> guard(g_write_mutex);
 
         g_debug_ring()->write(str);
 

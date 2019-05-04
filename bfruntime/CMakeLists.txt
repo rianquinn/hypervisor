@@ -20,18 +20,6 @@ cmake_minimum_required(VERSION 3.13)
 project(bfruntime CXX)
 
 # -----------------------------------------------------------------------------
-# bfcrt
-# -----------------------------------------------------------------------------
-
-add_library(bfcrt
-    src/crt/crt.cpp
-    $<${X64}:src/crt/arch/x64/start.asm>
-    $<${ARM}:src/crt/arch/aarch64/start.S>
-)
-
-do_test(tests/crt/test_crt.cpp DEPENDS bfcrt)
-
-# -----------------------------------------------------------------------------
 # bfdso
 # -----------------------------------------------------------------------------
 
@@ -57,10 +45,29 @@ add_library(bfsyscall
 )
 
 # -----------------------------------------------------------------------------
+# bfcrt
+# -----------------------------------------------------------------------------
+
+# There is a chicken/egg issue with the CRT. It cannot have the stack 
+# protector becuase it is responsbile for setting this up and it ends 
+# up in a scenario where it tries to protect itself before it is setup
+# resulting in a false positive fail. 
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-stack-protector")
+
+add_library(bfcrt
+    src/crt/crt.cpp
+    $<${X64}:src/crt/arch/x64/start.asm>
+    $<${ARM}:src/crt/arch/aarch64/start.S>
+)
+
+do_test(tests/crt/test_crt.cpp DEPENDS bfcrt)
+
+# -----------------------------------------------------------------------------
 # installs
 # -----------------------------------------------------------------------------
 
-install(TARGETS bfcrt DESTINATION lib)
 install(TARGETS bfdso DESTINATION lib)
 install(TARGETS bfpthread DESTINATION lib)
 install(TARGETS bfsyscall DESTINATION lib)
+install(TARGETS bfcrt DESTINATION lib)

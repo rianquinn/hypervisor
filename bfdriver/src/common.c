@@ -31,8 +31,6 @@
 #include <bfelf_loader.h>
 #include <bfthreadcontext.h>
 
-typedef struct thread_context_t tc_t;
-
 /* -------------------------------------------------------------------------- */
 /* Global                                                                     */
 /* -------------------------------------------------------------------------- */
@@ -46,14 +44,13 @@ uint64_t g_vmm_mem_node_tree_size = 0;
 _start_t g_vmm_start = nullptr;
 status_t g_vmm_status = VMM_UNLOADED;
 
-uint64_t g_num_cpus_started = 0;
-
-uint64_t g_tls = 0;
-uint64_t g_stack = 0;
-
+uint8_t *g_tls = nullptr;
 uint64_t g_tls_size = 0;
+
+uint8_t *g_stack = nullptr;
 uint64_t g_stack_size = 0;
-uint64_t g_stack_top = 0;
+
+uint64_t g_num_cpus_started = 0;
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
@@ -82,15 +79,12 @@ private_setup_stack(void)
 {
     g_stack_size = STACK_SIZE * 2;
 
-    g_stack = (uint64_t)platform_alloc_rw(g_stack_size);
+    g_stack = (uint8_t *)platform_alloc_rw(g_stack_size);
     if (g_stack == 0) {
         return BFFAILURE;
     }
 
-    g_stack_top = g_stack + g_stack_size;
-    g_stack_top = (g_stack_top & ~(STACK_SIZE - 1)) - 1;
-
-    platform_memset((void *)g_stack, 0, g_stack_size);
+    platform_memset(g_stack, 0, g_stack_size);
     return BFSUCCESS;
 }
 
@@ -99,32 +93,32 @@ private_setup_tls(void)
 {
     g_tls_size = THREAD_LOCAL_STORAGE_SIZE * platform_num_cpus();
 
-    g_tls = (uint64_t)platform_alloc_rw(g_tls_size);
+    g_tls = (uint8_t *)platform_alloc_rw(g_tls_size);
     if (g_tls == 0) {
         return BFFAILURE;
     }
 
-    platform_memset((void *)g_tls, 0, g_tls_size);
+    platform_memset(g_tls, 0, g_tls_size);
     return BFSUCCESS;
 }
 
-static inline status_t
-private_add_md(uint64_t virt, uint64_t type)
-{
-    status_t ret = 0;
-    struct memory_descriptor md = {0, 0, 0};
+// static inline status_t
+// private_add_md(uint64_t virt, uint64_t type)
+// {
+//     status_t ret = 0;
+//     struct memory_descriptor md = {0, 0, 0};
 
-    md.virt = virt;
-    md.phys = (uint64_t)platform_virt_to_phys((void *)md.virt);
-    md.type = type;
+//     md.virt = virt;
+//     md.phys = (uint64_t)platform_virt_to_phys((void *)md.virt);
+//     md.type = type;
 
-    ret = platform_call_vmm_on_core(0, BF_REQUEST_ADD_MD, (uint64_t)&md, 0);
-    if (ret != BFSUCCESS) {
-        return ret;
-    }
+//     ret = platform_call_vmm_on_core(0, BF_REQUEST_ADD_MD, (uint64_t)&md, 0);
+//     if (ret != BFSUCCESS) {
+//         return ret;
+//     }
 
-    return BFSUCCESS;
-}
+//     return BFSUCCESS;
+// }
 
 // static inline status_t
 // private_add_md_to_memory_manager(struct bfelf_binary_t *module)
@@ -166,21 +160,21 @@ private_add_md(uint64_t virt, uint64_t type)
 //     return BFSUCCESS;
 // }
 
-static inline status_t
-private_add_tss_mds(void)
-{
-    uint64_t i = 0;
-    status_t ret = 0;
+// static inline status_t
+// private_add_tss_mds(void)
+// {
+//     uint64_t i = 0;
+//     status_t ret = 0;
 
-    for (i = 0; i < g_tls_size; i += BAREFLANK_PAGE_SIZE) {
-        ret = private_add_md(g_tls + i, MEMORY_TYPE_R | MEMORY_TYPE_W);
-        if (ret != BFSUCCESS) {
-            return ret;
-        }
-    }
+//     for (i = 0; i < g_tls_size; i += BAREFLANK_PAGE_SIZE) {
+//         ret = private_add_md(g_tls + i, MEMORY_TYPE_R | MEMORY_TYPE_W);
+//         if (ret != BFSUCCESS) {
+//             return ret;
+//         }
+//     }
 
-    return ret;
-}
+//     return ret;
+// }
 
 /* -------------------------------------------------------------------------- */
 /* Implementation                                                             */
@@ -193,21 +187,11 @@ common_vmm_status(void)
 void
 common_reset(void)
 {
-    if (g_vmm != nullptr) {
-        platform_free_rwe(g_vmm, g_vmm_size);
-    }
-
-    if (g_vmm_mem != nullptr) {
-        platform_free_rw(g_vmm_mem, g_vmm_mem_size);
-    }
-
-    if (g_tls != 0) {
-        platform_free_rw((void *)g_tls, g_tls_size);
-    }
-
-    if (g_stack != 0) {
-        platform_free_rw((void *)g_stack, g_stack_size);
-    }
+    platform_free_rwe(g_vmm, g_vmm_size);
+    platform_free_rw(g_vmm_mem, g_vmm_mem_size);
+    platform_free_rw(g_vmm_mem_node_tree, g_vmm_mem_node_tree_size);
+    platform_free_rw(g_tls, g_tls_size);
+    platform_free_rw(g_stack, g_stack_size);
 
     g_vmm = nullptr;
     g_vmm_size = 0;
@@ -218,14 +202,13 @@ common_reset(void)
     g_vmm_start = nullptr;
     g_vmm_status = VMM_UNLOADED;
 
-    g_num_cpus_started = 0;
-
-    g_tls = 0;
-    g_stack = 0;
-
+    g_tls = nullptr;
     g_tls_size = 0;
+
+    g_stack = nullptr;
     g_stack_size = 0;
-    g_stack_top = 0;
+
+    g_num_cpus_started = 0;
 }
 
 status_t
@@ -324,6 +307,7 @@ BFALERT("line: %d\n", __LINE__);
 
 BFALERT("g_vmm: %llx\n", (uint64_t)g_vmm);
 BFALERT("g_vmm_mem: %llx\n", (uint64_t)g_vmm_mem);
+BFALERT("g_vmm_mem: %llx\n", (uint64_t)g_stack);
     g_vmm_mem_node_tree_size = platform_call_vmm_on_core(
         0, BF_REQUEST_SET_MEM, (uint64_t)g_vmm_mem, g_vmm_mem_size);
     if (g_vmm_mem_node_tree_size == 0) {
@@ -481,11 +465,8 @@ status_t
 common_call_vmm(
     uint64_t cpuid, uint64_t request, uint64_t arg1, uint64_t arg2)
 {
+    uint64_t stack = setup_stack(g_stack, cpuid, g_tls + (THREAD_LOCAL_STORAGE_SIZE * cpuid));
     struct _start_args_t args = {request, arg1, arg2};
-    tc_t *tc = (tc_t *)(g_stack_top - sizeof(tc_t));
 
-    tc->cpuid = cpuid;
-    tc->tlsptr = (uint64_t *)(g_tls + (THREAD_LOCAL_STORAGE_SIZE * cpuid));
-
-    return g_vmm_start(g_stack_top - sizeof(tc_t) - 1, &args);
+    return g_vmm_start(stack, &args);
 }

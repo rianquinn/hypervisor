@@ -121,7 +121,7 @@ private_fini_vmm(uint64_t arg) noexcept
 }
 
 extern "C" status_t
-bfmain(uint64_t request, uint64_t arg1, uint64_t arg2)
+bfmain(uint64_t request, uint64_t arg1, uint64_t arg2) noexcept
 {
     bfignored(arg2);
 
