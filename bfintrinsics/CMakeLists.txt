@@ -20,14 +20,14 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(bfintrinsics C CXX)
+project(bfintrinsics CXX)
 
-init_project(bfintrinsics)
+# -----------------------------------------------------------------------------
+# bfintrinsics
+# -----------------------------------------------------------------------------
 
-set(X64 $<STREQUAL:${BUILD_TARGET_ARCH},x86_64>)
-
-target_link_libraries(bfintrinsics PUBLIC ${PREFIX}::bfroot)
-target_sources(bfintrinsics PRIVATE
+add_library(bfintrinsics
+    src/null.cpp
     $<${X64}:src/arch/x64/cache.asm>
     $<${X64}:src/arch/x64/cpuid.asm>
     $<${X64}:src/arch/x64/gdt.asm>
@@ -39,16 +39,16 @@ target_sources(bfintrinsics PRIVATE
     $<${X64}:src/arch/x64/rflags.asm>
     $<${X64}:src/arch/x64/srs.asm>
     $<${X64}:src/arch/x64/tlb.asm>
-    $<${X64}:src/arch/intel_x64/barrier.asm>
-    $<${X64}:src/arch/intel_x64/bit.asm>
-    $<${X64}:src/arch/intel_x64/crs.asm>
-    $<${X64}:src/arch/intel_x64/drs.asm>
-    $<${X64}:src/arch/intel_x64/pause.asm>
-    $<${X64}:src/arch/intel_x64/vmx.asm>
+    $<${INTEL_X64}:src/arch/intel_x64/barrier.asm>
+    $<${INTEL_X64}:src/arch/intel_x64/bit.asm>
+    $<${INTEL_X64}:src/arch/intel_x64/crs.asm>
+    $<${INTEL_X64}:src/arch/intel_x64/drs.asm>
+    $<${INTEL_X64}:src/arch/intel_x64/pause.asm>
+    $<${INTEL_X64}:src/arch/intel_x64/vmx.asm>
 )
 
-if(PREFIX STREQUAL vmm)
-    install(DIRECTORY include/ DESTINATION include)
-endif()
+# -----------------------------------------------------------------------------
+# installs
+# -----------------------------------------------------------------------------
 
-fini_project()
+install(TARGETS bfintrinsics DESTINATION lib)

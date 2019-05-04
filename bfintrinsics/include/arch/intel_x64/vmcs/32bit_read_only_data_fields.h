@@ -225,8 +225,8 @@ namespace exit_reason
         inline auto basic_exit_reason_description(value_type reason)
         {
             switch (reason) {
-                case exception_or_non_maskable_interrupt:
-                    return "exception_or_non_maskable_interrupt";
+                case exception_or_nmi:
+                    return "exception_or_nmi";
 
                 case external_interrupt:
                     return "external_interrupt";
@@ -372,8 +372,8 @@ namespace exit_reason
                 case rdtscp:
                     return "rdtscp";
 
-                case preemption_timer_expired:
-                    return "preemption_timer_expired";
+                case preemption_timer:
+                    return "preemption_timer";
 
                 case invvpid:
                     return "invvpid";

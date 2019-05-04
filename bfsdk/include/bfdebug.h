@@ -34,10 +34,10 @@
 #ifdef __cplusplus
 
 #include <bfgsl.h>
+#include <bftypes.h>
 #include <bfstring.h>
 
-#include <exception>
-#include <type_traits>
+#include <stdexcept>
 
 #ifdef _MSC_VER
 #define bfcolor_black ""
@@ -303,10 +303,10 @@ __bfdebug_type(gsl::not_null<std::string *> msg, cstr_t color, cstr_t type)
 }
 
 inline void
-__bfdebug_jtfy(gsl::not_null<std::string *> msg, int64_t width, cstr_t title, cstr_t indent)
+__bfdebug_jtfy(gsl::not_null<std::string *> msg, std::size_t width, cstr_t title, cstr_t indent)
 {
     if (title != nullptr) {
-        int64_t len = width - strlen(title);
+        std::size_t len = width - strlen(title);
 
         if (indent != nullptr) {
             len -= strlen(indent);
@@ -315,12 +315,12 @@ __bfdebug_jtfy(gsl::not_null<std::string *> msg, int64_t width, cstr_t title, cs
 
         *msg += title;
 
-        for (int64_t i = 0; i < len; i++) {
+        for (std::size_t i = 0; i < len; i++) {
             *msg += ' ';
         }
     }
     else {
-        for (int64_t i = 0; i < width; i++) {
+        for (std::size_t i = 0; i < width; i++) {
             *msg += ' ';
         }
     }
@@ -500,7 +500,7 @@ __bfdebug_brk1_core(cstr_t color, cstr_t type, gsl::not_null<std::string *> msg)
     auto digits = __bfdebug_core(msg);
     __bfdebug_type(msg, color, type);
 
-    for (auto i = 0; i < 70 - digits; i++) {
+    for (std::size_t i = 0; i < 70 - digits; i++) {
         *msg += '=';
     }
 
@@ -559,7 +559,7 @@ __bfdebug_brk2_core(cstr_t color, cstr_t type, gsl::not_null<std::string *> msg)
     auto digits = __bfdebug_core(msg);
     __bfdebug_type(msg, color, type);
 
-    for (auto i = 0; i < 70 - digits; i++) {
+    for (std::size_t i = 0; i < 70 - digits; i++) {
         *msg += '-';
     }
 
@@ -618,7 +618,7 @@ __bfdebug_brk3_core(cstr_t color, cstr_t type, gsl::not_null<std::string *> msg)
     auto digits = __bfdebug_core(msg);
     __bfdebug_type(msg, color, type);
 
-    for (auto i = 0; i < 70 - digits; i++) {
+    for (std::size_t i = 0; i < 70 - digits; i++) {
         *msg += '.';
     }
 

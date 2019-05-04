@@ -25,9 +25,9 @@
 int main()
 {
     if (bfack() != 0) {
-        std::clog << "ack: success" << '\n';
+        std::cout << "ack: success" << '\n';
     }
     else {
-        std::clog << "ack: failure" << '\n';
+        std::cout << "ack: failure" << '\n';
     }
 }

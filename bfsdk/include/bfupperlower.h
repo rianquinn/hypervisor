@@ -27,7 +27,6 @@
 #define BFUPPERLOWER_H
 
 #include <bftypes.h>
-#include <type_traits>
 
 namespace bfn
 {
@@ -41,7 +40,7 @@ template <
     typename T,
     typename = std::enable_if<std::is_integral<T>::value>
     >
-auto
+constexpr auto
 lower(T val) noexcept
 {
     return static_cast<T>(static_cast<uintptr_t>(val) & (0xFFFULL));
@@ -53,7 +52,7 @@ lower(T val) noexcept
 /// @return the lower 12 bits of val
 ///
 template<class T>
-auto
+constexpr auto
 lower(T *val) noexcept
 {
     return reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(val) & (0xFFFULL));
@@ -69,7 +68,7 @@ template <
     typename T,
     typename = std::enable_if<std::is_integral<T>::value>
     >
-auto
+constexpr auto
 lower(T val, uintptr_t from) noexcept
 {
     return static_cast<T>(static_cast<uintptr_t>(val) & ((0x1ULL << from) - 1));
@@ -82,7 +81,7 @@ lower(T val, uintptr_t from) noexcept
 /// @return the lower "from" bits of val
 ///
 template<class T>
-auto
+constexpr auto
 lower(T *val, uintptr_t from) noexcept
 {
     return reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(val) & ((0x1ULL << from) - 1));
@@ -97,7 +96,7 @@ template <
     typename T,
     typename = std::enable_if<std::is_integral<T>::value>
     >
-auto
+constexpr auto
 upper(T val) noexcept
 {
     return static_cast<T>(static_cast<uintptr_t>(val) & ~(0xFFFULL));
@@ -109,7 +108,7 @@ upper(T val) noexcept
 /// @return the upper 12 bits of val
 ///
 template<class T>
-auto
+constexpr auto
 upper(T *val) noexcept
 {
     return reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(val) & ~(0xFFFULL));
@@ -125,7 +124,7 @@ template <
     typename T,
     typename = std::enable_if<std::is_integral<T>::value>
     >
-auto
+constexpr auto
 upper(T val, uintptr_t from) noexcept
 {
     return static_cast<T>(static_cast<uintptr_t>(val) & ~((0x1ULL << from) - 1));
@@ -138,7 +137,7 @@ upper(T val, uintptr_t from) noexcept
 /// @return the upper "from" bits of val
 ///
 template<class T>
-auto
+constexpr auto
 upper(T *val, uintptr_t from) noexcept
 {
     return reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(val) & ~((0x1ULL << from) - 1));

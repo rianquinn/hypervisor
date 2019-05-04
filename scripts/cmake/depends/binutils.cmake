@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if((ENABLE_BUILD_VMM OR ENABLE_BUILD_TEST) AND NOT WIN32 AND ENABLE_BUILD_BINUTILS)
+if(ENABLE_BUILD_VMM)
     message(STATUS "Including dependency: binutils")
 
     download_dependency(
@@ -39,7 +39,7 @@ if((ENABLE_BUILD_VMM OR ENABLE_BUILD_TEST) AND NOT WIN32 AND ENABLE_BUILD_BINUTI
     add_dependency(
         binutils vmm
         CONFIGURE_COMMAND   ${CACHE_DIR}/binutils/configure ${BINUTILS_CONFIGURE_FLAGS}
-        BUILD_COMMAND       make -j${BUILD_TARGET_CORES}
+        BUILD_COMMAND       make -j${HOST_NUMBER_CORES}
         INSTALL_COMMAND     make install
     )
 
@@ -49,6 +49,4 @@ if((ENABLE_BUILD_VMM OR ENABLE_BUILD_TEST) AND NOT WIN32 AND ENABLE_BUILD_BINUTI
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${PREFIXES_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${PREFIXES_DIR}/share
     )
-else()
-    add_custom_target(binutils_${VMM_PREFIX})
 endif()

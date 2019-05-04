@@ -27,7 +27,7 @@
 //     impractical.
 //
 
-#include <catch/catch.hpp>
+#include <catch2/catch.hpp>
 #include <bfdebug.h>
 
 TEST_CASE("__BFFUNC__")

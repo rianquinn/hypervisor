@@ -50,7 +50,6 @@
 
 #include <bfgsl.h>
 #include <bfdebug.h>
-#include <bfexports.h>
 #include <bfthreadcontext.h>
 
 #define MAX_THREAD_SPECIFIC_DATA 512
@@ -295,9 +294,9 @@ extern "C" uint64_t *_thread_context_tlsptr(void);
 extern "C" uint64_t _thread_context_cpuid(void);
 
 extern "C" uint64_t *
-WEAK_SYM thread_context_tlsptr(void)
+thread_context_tlsptr(void)
 { return _thread_context_tlsptr(); }
 
 extern "C" uint64_t
-WEAK_SYM thread_context_cpuid(void)
+thread_context_cpuid(void)
 { return _thread_context_cpuid(); }

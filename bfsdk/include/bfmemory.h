@@ -28,8 +28,6 @@
 #define BFMEMORY_H
 
 #include <bftypes.h>
-#include <bfconstants.h>
-#include <bferrorcodes.h>
 
 #pragma pack(push, 1)
 

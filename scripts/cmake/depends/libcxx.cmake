@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if(ENABLE_BUILD_VMM OR (ENABLE_BUILD_TEST AND NOT WIN32))
+if(ENABLE_BUILD_VMM)
     message(STATUS "Including dependency: libcxx")
 
     download_dependency(
@@ -28,10 +28,9 @@ if(ENABLE_BUILD_VMM OR (ENABLE_BUILD_TEST AND NOT WIN32))
         URL_MD5      ${LIBCXX_URL_MD5}
     )
 
-    generate_flags(
+    setup_flags(
         vmm
         NOWARNINGS
-        CXX_FLAGS -Wno-constant-conversion
     )
 
     list(APPEND LIBCXX_CONFIGURE_FLAGS

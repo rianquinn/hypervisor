@@ -23,7 +23,6 @@
 #define EH_FRAME_H
 
 #include <stdint.h>
-#include <bfconstants.h>
 #include <bfehframelist.h>
 
 #include <registers_intel_x64.h>

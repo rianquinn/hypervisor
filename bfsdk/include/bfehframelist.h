@@ -28,7 +28,6 @@
 #define BFEHFRAMELIST_H
 
 #include <bftypes.h>
-#include <bferrorcodes.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,19 +49,9 @@ struct eh_frame_t {
 };
 
 /**
- * Get EH Framework List
- *
- * @expects none
- * @ensures ret != nullptr
- *
- * Returns a list of ".eh_frame" sections, containing their start address,
- * and size. This is used by the unwind library to find stack frames. The
- * list should have one .eh_frame section for each module that is loaded.
- *
- * @return eh_frame list (of size MAX_NUM_MODULES)
+ * EH Framework Table
  */
-struct eh_frame_t *
-get_eh_frame_list() noexcept;
+extern eh_frame_t __g_eh_frame;
 
 #ifdef __cplusplus
 }

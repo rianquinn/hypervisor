@@ -23,6 +23,14 @@
 #ifndef BFTYPES_H
 #define BFTYPES_H
 
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC system_header
+#endif
+
+#ifdef __cplusplus
+#include <type_traits>
+#endif
+
 /* -------------------------------------------------------------------------- */
 /* Helper Macros                                                              */
 /* -------------------------------------------------------------------------- */
@@ -52,6 +60,9 @@
 #endif
 
 #define bfignored(a) (void)a
+
+#define BFALIGN(x,a) __BFALIGN_MASK(x,a-1)
+#define __BFALIGN_MASK(x,mask) (((x)+(mask))&~(mask))
 
 /* -------------------------------------------------------------------------- */
 /* Stringify                                                                  */
@@ -92,12 +103,9 @@
 /* Userspace                                                                  */
 /* -------------------------------------------------------------------------- */
 
-#if !defined(KERNEL) && !defined(_WIN32)
-#if defined(__cplusplus) && __has_include("cstdint")
-#include <cstdint>
-#else
+#if !defined(KERNEL)
 #include <stdint.h>
-#endif
+#include <inttypes.h>
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -137,5 +145,20 @@ typedef INT_PTR intptr_t;
 #include "efilib.h"
 #define PRId64 "lld"
 #endif
+
+/* -------------------------------------------------------------------------- */
+/* Status Type                                                                */
+/* -------------------------------------------------------------------------- */
+
+#ifdef __cplusplus
+using status_t = int64_t;
+#else
+typedef int64_t status_t;
+#endif
+
+#define BFSUCCESS 0
+#define BFFAILURE bfscast(status_t, 0xFFFFFFFFFFFFFFFF)
+#define BFFAILURE_SUSPEND bfscast(status_t, 0xBF00000000051EE9)
+#define BFFAILURE_BAD_ALLOC bfscast(status_t, 0xBF000000BADA110C)
 
 #endif

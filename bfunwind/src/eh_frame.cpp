@@ -418,17 +418,13 @@ fd_entry::non_virtual_parse(char *addr)
 fd_entry
 eh_frame::find_fde(register_state *state)
 {
-    auto eh_frame_list = get_eh_frame_list();
+    for (auto fde = fd_entry(__g_eh_frame); fde; ++fde) {
+        if (fde.is_cie()) {
+            continue;
+        }
 
-    for (auto m = 0U; m < MAX_NUM_MODULES; m++) {
-        for (auto fde = fd_entry(eh_frame_list[m]); fde; ++fde) {
-            if (fde.is_cie()) {
-                continue;
-            }
-
-            if (fde.is_in_range(state->get_ip())) {
-                return fde;
-            }
+        if (fde.is_in_range(state->get_ip())) {
+            return fde;
         }
     }
 

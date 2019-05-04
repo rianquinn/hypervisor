@@ -38,4 +38,5 @@ list(APPEND BFFLAGS_WARNING_CXX
     -Wnon-virtual-dtor
     -Wold-style-cast
     -Woverloaded-virtual
+    -Wno-main
 )

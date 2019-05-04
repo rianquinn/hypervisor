@@ -27,3 +27,15 @@ set(ENABLE_BUILD_TEST ON)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(ENABLE_COMPILER_WARNINGS ON)
+
+list(APPEND BFFLAGS_CODECOV
+    -g
+    -O0
+    -fprofile-arcs
+    -ftest-coverage
+    -DDEBUG_LEVEL=5
+)
+
+list(APPEND BFFLAGS_CODECOV_LINKER
+    --coverage
+)

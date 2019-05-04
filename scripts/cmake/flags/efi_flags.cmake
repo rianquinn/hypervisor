@@ -22,8 +22,6 @@
 unset(BFFLAGS_EFI)
 unset(BFFLAGS_EFI_C)
 unset(BFFLAGS_EFI_CXX)
-unset(BFFLAGS_EFI_X86_64)
-unset(BFFLAGS_EFI_AARCH64)
 
 list(APPEND BFFLAGS_EFI
     -isystem ${EFI_PREFIX_PATH}/include/efi/
@@ -33,7 +31,6 @@ list(APPEND BFFLAGS_EFI
 list(APPEND BFFLAGS_EFI
     -mno-red-zone
     -mno-avx
-    # -maccumulate-outgoing-args
     -g
     -O2
     -Wall
@@ -53,11 +50,10 @@ list(APPEND BFFLAGS_EFI
 )
 
 list(APPEND BFFLAGS_EFI_C
+    ${BFFLAGS_EFI}
     --std=c11
 )
 
 list(APPEND BFFLAGS_EFI_CXX
-)
-
-list(APPEND BFFLAGS_EFI_X86_64
+    ${BFFLAGS_EFI}
 )

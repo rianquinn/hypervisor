@@ -20,62 +20,27 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(bfdummy C CXX)
+project(bfdummy CXX)
 
-init_project(bfdummy INTERFACE)
+find_package(bareflank_vmm)
 
-target_include_directories(bfdummy INTERFACE
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-)
+add_executable(dummy_main src/main.cpp)
+add_executable(dummy_main_init_fails src/main.cpp)
+add_executable(dummy_main_fini_fails src/main.cpp)
+add_executable(dummy_main_add_mdl_fails src/main.cpp)
+add_executable(dummy_main_get_drr_fails src/main.cpp)
+add_executable(dummy_main_set_rsdp_fails src/main.cpp)
+add_executable(dummy_main_vmm_init_fails src/main.cpp)
+add_executable(dummy_main_vmm_fini_fails src/main.cpp)
 
-target_link_libraries(bfdummy INTERFACE
-    --whole-archive -lbfcrt -lbfdso --no-whole-archive
-    ${CMAKE_INSTALL_PREFIX}/lib/libc++.a
-    ${CMAKE_INSTALL_PREFIX}/lib/libc++abi.a
-    vmm::bfpthread
-    vmm::bfunwind
-    ${CMAKE_INSTALL_PREFIX}/lib/libm.a
-    ${CMAKE_INSTALL_PREFIX}/lib/libc.a
-    vmm::bfsyscall
-)
-
-#------------------------------------------------------------------------------
-# Libraries
-#------------------------------------------------------------------------------
-
-add_library(dummy_lib1 src/libs/dummy_lib1.cpp)
-add_library(dummy_lib2 src/libs/dummy_lib2.cpp)
-
-target_link_libraries(dummy_lib1 PUBLIC bfdummy)
-target_link_libraries(dummy_lib2 PUBLIC bfdummy)
-
-set_target_properties(dummy_lib1 PROPERTIES LINKER_LANGUAGE C)
-set_target_properties(dummy_lib2 PROPERTIES LINKER_LANGUAGE C)
-
-install(TARGETS dummy_lib1 DESTINATION lib EXPORT bfdummy-vmm-targets)
-install(TARGETS dummy_lib2 DESTINATION lib EXPORT bfdummy-vmm-targets)
-
-#------------------------------------------------------------------------------
-# Executables
-#------------------------------------------------------------------------------
-
-add_executable(dummy_main src/main/dummy_main.cpp)
-add_executable(dummy_main_init_fails src/main/dummy_main.cpp)
-add_executable(dummy_main_fini_fails src/main/dummy_main.cpp)
-add_executable(dummy_main_add_mdl_fails src/main/dummy_main.cpp)
-add_executable(dummy_main_get_drr_fails src/main/dummy_main.cpp)
-add_executable(dummy_main_set_rsdp_fails src/main/dummy_main.cpp)
-add_executable(dummy_main_vmm_init_fails src/main/dummy_main.cpp)
-add_executable(dummy_main_vmm_fini_fails src/main/dummy_main.cpp)
-
-target_link_libraries(dummy_main PRIVATE dummy_lib1 dummy_lib2)
-target_link_libraries(dummy_main_init_fails PRIVATE dummy_lib1 dummy_lib2)
-target_link_libraries(dummy_main_fini_fails PRIVATE dummy_lib1 dummy_lib2)
-target_link_libraries(dummy_main_add_mdl_fails PRIVATE dummy_lib1 dummy_lib2)
-target_link_libraries(dummy_main_get_drr_fails PRIVATE dummy_lib1 dummy_lib2)
-target_link_libraries(dummy_main_set_rsdp_fails PRIVATE dummy_lib1 dummy_lib2)
-target_link_libraries(dummy_main_vmm_init_fails PRIVATE dummy_lib1 dummy_lib2)
-target_link_libraries(dummy_main_vmm_fini_fails PRIVATE dummy_lib1 dummy_lib2)
+target_link_libraries(dummy_main PRIVATE bareflank_internal)
+target_link_libraries(dummy_main_init_fails PRIVATE bareflank_internal)
+target_link_libraries(dummy_main_fini_fails PRIVATE bareflank_internal)
+target_link_libraries(dummy_main_add_mdl_fails PRIVATE bareflank_internal)
+target_link_libraries(dummy_main_get_drr_fails PRIVATE bareflank_internal)
+target_link_libraries(dummy_main_set_rsdp_fails PRIVATE bareflank_internal)
+target_link_libraries(dummy_main_vmm_init_fails PRIVATE bareflank_internal)
+target_link_libraries(dummy_main_vmm_fini_fails PRIVATE bareflank_internal)
 
 target_compile_definitions(dummy_main_init_fails PRIVATE REQUEST_INIT_FAILS)
 target_compile_definitions(dummy_main_fini_fails PRIVATE REQUEST_FINI_FAILS)
@@ -85,13 +50,11 @@ target_compile_definitions(dummy_main_set_rsdp_fails PRIVATE REQUEST_SET_RSDP_FA
 target_compile_definitions(dummy_main_vmm_init_fails PRIVATE REQUEST_VMM_INIT_FAILS)
 target_compile_definitions(dummy_main_vmm_fini_fails PRIVATE REQUEST_VMM_FINI_FAILS)
 
-install(TARGETS dummy_main DESTINATION bin EXPORT bfdummy-vmm-targets)
-install(TARGETS dummy_main_init_fails DESTINATION bin EXPORT bfdummy-vmm-targets)
-install(TARGETS dummy_main_fini_fails DESTINATION bin EXPORT bfdummy-vmm-targets)
-install(TARGETS dummy_main_add_mdl_fails DESTINATION bin EXPORT bfdummy-vmm-targets)
-install(TARGETS dummy_main_get_drr_fails DESTINATION bin EXPORT bfdummy-vmm-targets)
-install(TARGETS dummy_main_set_rsdp_fails DESTINATION bin EXPORT bfdummy-vmm-targets)
-install(TARGETS dummy_main_vmm_init_fails DESTINATION bin EXPORT bfdummy-vmm-targets)
-install(TARGETS dummy_main_vmm_fini_fails DESTINATION bin EXPORT bfdummy-vmm-targets)
-
-fini_project()
+install(TARGETS dummy_main DESTINATION bin)
+install(TARGETS dummy_main_init_fails DESTINATION bin)
+install(TARGETS dummy_main_fini_fails DESTINATION bin)
+install(TARGETS dummy_main_add_mdl_fails DESTINATION bin)
+install(TARGETS dummy_main_get_drr_fails DESTINATION bin)
+install(TARGETS dummy_main_set_rsdp_fails DESTINATION bin)
+install(TARGETS dummy_main_vmm_init_fails DESTINATION bin)
+install(TARGETS dummy_main_vmm_fini_fails DESTINATION bin)

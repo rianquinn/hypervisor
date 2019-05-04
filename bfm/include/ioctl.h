@@ -22,37 +22,9 @@
 #ifndef IOCTL_H
 #define IOCTL_H
 
-#include <memory>
-
 #include <bfgsl.h>
-#include <bffile.h>
-#include <bfdebugringinterface.h>
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4251)
-#endif
-
-// -----------------------------------------------------------------------------
-// Definitions
-// -----------------------------------------------------------------------------
-
-/// IOCTL Private Base
-///
-/// Only needed for dynamic cast
-///
-class ioctl_private_base
-{
-public:
-
-    /// Default Constructor
-    ///
-    ioctl_private_base() = default;
-
-    /// Default Destructor
-    ///
-    virtual ~ioctl_private_base() = default;
-};
+#include <bftypes.h>
+#include <bfdriverinterface.h>
 
 /// IOCTL
 ///
@@ -63,13 +35,6 @@ public:
 class ioctl
 {
 public:
-
-    using binary_data = file::binary_data;          ///< Binary data type
-    using drr_type = debug_ring_resources_t;        ///< Debug ring resources type
-    using drr_pointer = drr_type *;                 ///< Debug ring resources pointer type
-    using vcpuid_type = uint64_t;                   ///< VCPUID type
-    using status_type = int64_t;                    ///< Status type
-    using status_pointer = status_type *;           ///< Status pointer type
 
     /// Default Constructor
     ///
@@ -83,27 +48,7 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    virtual ~ioctl() = default;
-
-    /// Open
-    ///
-    /// Open a connection to the bareflank driver.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    virtual void open();
-
-    /// Add Module
-    ///
-    /// Add a module to the driver entry.
-    ///
-    /// @param module_data ELF file to be added to the driver entry
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    virtual void call_ioctl_add_module(const binary_data &module_data);
+    ~ioctl();
 
     /// Load VMM
     ///
@@ -112,7 +57,8 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    virtual void call_ioctl_load_vmm();
+    void call_ioctl_load_vmm(
+        gsl::not_null<const ioctl_load_args_t *> args) const;
 
     /// Unload VMM
     ///
@@ -121,7 +67,7 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    virtual void call_ioctl_unload_vmm();
+    void call_ioctl_unload_vmm() const;
 
     /// Start VMM
     ///
@@ -130,7 +76,7 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    virtual void call_ioctl_start_vmm();
+    void call_ioctl_start_vmm() const;
 
     /// Stop VMM
     ///
@@ -139,7 +85,7 @@ public:
     /// @expects none
     /// @ensures none
     ///
-    virtual void call_ioctl_stop_vmm();
+    void call_ioctl_stop_vmm() const;
 
     /// Dump VMM
     ///
@@ -149,9 +95,9 @@ public:
     /// @ensures none
     ///
     /// @param drr pointer a debug_ring_resources_t
-    /// @param vcpuid indicates which drr to get (every vcpu has its own drr)
     ///
-    virtual void call_ioctl_dump_vmm(gsl::not_null<drr_pointer> drr, vcpuid_type vcpuid);
+    void call_ioctl_dump_vmm(
+        gsl::not_null<debug_ring_resources_t *> args) const;
 
     /// VMM Status
     ///
@@ -162,15 +108,8 @@ public:
     ///
     /// @param status pointer to status variable to store the results
     ///
-    virtual void call_ioctl_vmm_status(gsl::not_null<status_pointer> status);
-
-private:
-
-    std::unique_ptr<ioctl_private_base> m_d;
+    void call_ioctl_vmm_status(
+        gsl::not_null<status_t *> args) const;
 };
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 #endif

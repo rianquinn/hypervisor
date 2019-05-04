@@ -27,19 +27,19 @@ endif()
 
 set(CMAKE_SYSTEM_NAME Linux)
 
-if(NOT WIN32)
-    if(NOT DEFINED ENV{CLANG_BIN})
-        find_program(CLANG_BIN clang)
-    else()
-        set(CLANG_BIN $ENV{CLANG_BIN})
-    endif()
+if(NOT DEFINED ENV{CLANG_BIN})
+    find_program(CLANG_BIN clang)
+else()
+    set(CLANG_BIN $ENV{CLANG_BIN})
+endif()
 
-    if(CLANG_BIN)
-        set(CMAKE_C_COMPILER ${CLANG_BIN})
-        set(CMAKE_CXX_COMPILER ${CLANG_BIN})
-    else()
-        message(FATAL_ERROR "Unable to find clang")
-    endif()
+if(CLANG_BIN)
+    set(CMAKE_C_COMPILER ${CLANG_BIN})
+    set(CMAKE_C_COMPILER_WORKS 1)
+    set(CMAKE_CXX_COMPILER ${CLANG_BIN})
+    set(CMAKE_CXX_COMPILER_WORKS 1)
+else()
+    message(FATAL_ERROR "Unable to find clang")
 endif()
 
 if(DEFINED ENV{LD_BIN})
@@ -57,15 +57,9 @@ set(CMAKE_CXX_ARCHIVE_CREATE
 )
 
 set(CMAKE_C_LINK_EXECUTABLE
-    "${LD_BIN} ${LD_FLAGS} <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
+    "${LD_BIN} <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
 )
 
 set(CMAKE_CXX_LINK_EXECUTABLE
-    "${LD_BIN} ${LD_FLAGS} <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
+    "${LD_BIN} <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
 )
-
-set(CMAKE_C_COMPILER_WORKS 1)
-set(CMAKE_C_COMPILER_TARGET "x86_64-vmm-elf")
-
-set(CMAKE_CXX_COMPILER_WORKS 1)
-set(CMAKE_CXX_COMPILER_TARGET "x86_64-vmm-elf")

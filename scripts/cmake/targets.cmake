@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if(NOT WIN32 AND NOT CYGWIN)
+if(UNIX AND NOT CYGWIN)
     set(SUDO sudo)
 else()
     set(SUDO "")
@@ -48,7 +48,7 @@ endif()
 add_custom_target(clean-depends)
 add_custom_target(clean-subprojects)
 
-if(NOT WIN32)
+if(UNIX)
     add_custom_target(info)
 endif()
 
@@ -56,11 +56,11 @@ endif()
 # Driver
 # ------------------------------------------------------------------------------
 
-if(NOT WIN32)
+if(UNIX)
     add_custom_target_category("Bareflank Driver")
 
     add_custom_target(driver_build
-        COMMAND ${SOURCE_UTIL_DIR}/driver_build.sh ${SOURCE_BFDRIVER_DIR}
+        COMMAND ${SOURCE_UTIL_DIR}/driver_build.sh ${SOURCE_ROOT_DIR}/bfdriver
         USES_TERMINAL
     )
     add_custom_target_info(
@@ -69,7 +69,7 @@ if(NOT WIN32)
     )
 
     add_custom_target(driver_clean
-        COMMAND ${SOURCE_UTIL_DIR}/driver_clean.sh ${SOURCE_BFDRIVER_DIR}
+        COMMAND ${SOURCE_UTIL_DIR}/driver_clean.sh ${SOURCE_ROOT_DIR}/bfdriver
         USES_TERMINAL
     )
     add_custom_target_info(
@@ -78,7 +78,7 @@ if(NOT WIN32)
     )
 
     add_custom_target(driver_load
-        COMMAND ${SOURCE_UTIL_DIR}/driver_load.sh ${SOURCE_BFDRIVER_DIR}
+        COMMAND ${SOURCE_UTIL_DIR}/driver_load.sh ${SOURCE_ROOT_DIR}/bfdriver
         USES_TERMINAL
     )
     add_custom_target_info(
@@ -87,7 +87,7 @@ if(NOT WIN32)
     )
 
     add_custom_target(driver_unload
-        COMMAND ${SOURCE_UTIL_DIR}/driver_unload.sh ${SOURCE_BFDRIVER_DIR}
+        COMMAND ${SOURCE_UTIL_DIR}/driver_unload.sh ${SOURCE_ROOT_DIR}/bfdriver
         USES_TERMINAL
     )
     add_custom_target_info(
@@ -113,7 +113,7 @@ endif()
 # Astyle
 # ------------------------------------------------------------------------------
 
-if(NOT WIN32)
+if(UNIX)
     add_custom_target_category("Query Commands")
 
     add_custom_target(ack
@@ -131,25 +131,16 @@ endif()
 # BFM
 # ------------------------------------------------------------------------------
 
-if(NOT WIN32 AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
+if(UNIX AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
     add_custom_target_category("Bareflank Manager")
 
-    if(UNIX)
-        add_custom_target(
-            quick
-            COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm load ${BFM_VMM_BIN_PATH}/${BFM_VMM}
-            COMMAND sync
-            COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm start
-            USES_TERMINAL
-        )
-    else()
-        add_custom_target(
-            quick
-            COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm load ${BFM_VMM_BIN_PATH}/${BFM_VMM}
-            COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm start
-            USES_TERMINAL
-        )
-    endif()
+    add_custom_target(
+        quick
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --load ${VMM_PREFIX_PATH}/bin/${VMM}
+        COMMAND sync
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --start
+        USES_TERMINAL
+    )
 
     add_custom_target_info(
         TARGET quick
@@ -158,10 +149,10 @@ if(NOT WIN32 AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
 
     add_custom_target(
         cycle
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm load ${BFM_VMM_BIN_PATH}/${BFM_VMM}
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm start
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm stop
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm unload
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --load ${VMM_PREFIX_PATH}/bin/${VMM}
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --start
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --stop
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --unload
         USES_TERMINAL
     )
     add_custom_target_info(
@@ -171,7 +162,7 @@ if(NOT WIN32 AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
 
     add_custom_target(
         load
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm load ${BFM_VMM_BIN_PATH}/${BFM_VMM}
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --load ${VMM_PREFIX_PATH}/bin/${VMM}
         USES_TERMINAL
     )
     add_custom_target_info(
@@ -179,20 +170,12 @@ if(NOT WIN32 AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
         COMMENT "Load the VMM"
     )
 
-    if(UNIX)
-        add_custom_target(
-            start
-            COMMAND sync
-            COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm start
-            USES_TERMINAL
-        )
-    else()
-        add_custom_target(
-            start
-            COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm start
-            USES_TERMINAL
-        )
-    endif()
+    add_custom_target(
+        start
+        COMMAND sync
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --start
+        USES_TERMINAL
+    )
 
     add_custom_target_info(
         TARGET start
@@ -201,7 +184,7 @@ if(NOT WIN32 AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
 
     add_custom_target(
         stop
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm stop
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --stop
         USES_TERMINAL
     )
     add_custom_target_info(
@@ -211,7 +194,7 @@ if(NOT WIN32 AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
 
     add_custom_target(
         unload
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm unload
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --unload
         USES_TERMINAL
     )
     add_custom_target_info(
@@ -221,22 +204,12 @@ if(NOT WIN32 AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
 
     add_custom_target(
         dump
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm dump
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --dump
         USES_TERMINAL
     )
     add_custom_target_info(
         TARGET dump
         COMMENT "Print the contents of the VMMs debug ring"
-    )
-
-    add_custom_target(
-        status
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm status
-        USES_TERMINAL
-    )
-    add_custom_target_info(
-        TARGET status
-        COMMENT "Display the status of the VMM"
     )
 endif()
 
@@ -247,11 +220,11 @@ endif()
 if(UNIX AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
     add_custom_target(
         oppss
-        COMMAND ${SOURCE_UTIL_DIR}/driver_load.sh ${SOURCE_BFDRIVER_DIR}
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm load ${BFM_VMM_BIN_PATH}/${BFM_VMM}
+        COMMAND ${SOURCE_UTIL_DIR}/driver_load.sh ${SOURCE_ROOT_DIR}/bfdriver
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm load ${VMM_PREFIX_PATH}/bin/${VMM}
         COMMAND sync
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm start
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm dump
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --start
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --dump
         USES_TERMINAL
     )
     add_custom_target_info(

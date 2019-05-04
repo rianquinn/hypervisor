@@ -35,7 +35,7 @@ EFI_MP_SERVICES_PROTOCOL *g_mp_services = nullptr;
 
 void _set_ne(void);
 
-int64_t
+status_t
 platform_init(void)
 {
     EFI_STATUS status;
@@ -140,7 +140,7 @@ platform_memset(void *ptr, char value, uint64_t num)
     return ptr;
 }
 
-int64_t
+status_t
 platform_memcpy(
     void *dst, uint64_t dst_size, const void *src, uint64_t src_size, uint64_t num)
 {
@@ -158,7 +158,7 @@ platform_memcpy(
     return SUCCESS;
 }
 
-int64_t
+uint64_t
 platform_num_cpus(void)
 {
     UINTN NumberOfProcessors;
@@ -196,7 +196,7 @@ call_vmm(struct call_vmm_args *args)
         common_call_vmm(args->cpuid, args->request, args->arg1, args->arg2);
 }
 
-int64_t
+status_t
 platform_call_vmm_on_core(
     uint64_t cpuid, uint64_t request, uintptr_t arg1, uintptr_t arg2)
 {
@@ -226,7 +226,3 @@ platform_call_vmm_on_core(
 
     return args.ret;
 }
-
-void *
-platform_get_rsdp(void)
-{ return 0; }

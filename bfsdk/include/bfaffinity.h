@@ -20,32 +20,31 @@
  * SOFTWARE.
  */
 
-#ifndef WIN64
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#include <sched.h>
-#endif
-
 #include <bftypes.h>
 
 #ifdef WIN64
 
 #include <windows.h>
 
-static inline int
+static inline status_t
 set_affinity(uint64_t core)
 {
     if (SetProcessAffinityMask(GetCurrentProcess(), 1ULL << core) == 0) {
-        return -1;
+        return BFFAILURE;
     }
 
-    return 0;
+    return BFSUCCESS;
 }
 
 #else
 
-static inline int
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
+#include <sched.h>
+
+static inline status_t
 set_affinity(uint64_t core)
 {
     cpu_set_t  mask;
@@ -54,10 +53,10 @@ set_affinity(uint64_t core)
     CPU_SET(core, &mask);
 
     if (sched_setaffinity(0, sizeof(mask), &mask) != 0) {
-        return -1;
+        return BFFAILURE;
     }
 
-    return 0;
+    return BFSUCCESS;
 }
 
 #endif

@@ -26,12 +26,9 @@
 #ifndef BFEXCEPTION_H
 #define BFEXCEPTION_H
 
-#include <typeinfo>
-#include <exception>
-
 #include <bftypes.h>
 #include <bfdebug.h>
-#include <bferrorcodes.h>
+#include <stdexcept>
 
 /// Guard Exceptions
 ///
@@ -57,11 +54,11 @@ guard_exceptions(int64_t error_code, FUNC func, ERROR_FUNC error_func)
 {
     try {
         func();
-        return SUCCESS;
+        return BFSUCCESS;
     }
     catch (std::bad_alloc &) {
         error_func();
-        return BF_BAD_ALLOC;
+        return BFFAILURE_BAD_ALLOC;
     }
     catch (std::exception &e) {
         bfdebug_transaction(0, [&](std::string * msg) {

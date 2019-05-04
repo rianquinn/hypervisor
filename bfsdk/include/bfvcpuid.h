@@ -22,56 +22,46 @@
 #ifndef BFVCPUID_H
 #define BFVCPUID_H
 
-#include <cstdint>
-
-// *INDENT-OFF*
+#include <bftypes.h>
 
 namespace vcpuid
 {
-    using type = uint64_t;
 
-    constexpr const auto reserved = 0x8000000000000000UL;
+using type = uint64_t;
 
-    constexpr const auto invalid = 0xFFFFFFFFFFFFFFFFUL;
-    constexpr const auto current = 0xFFFFFFFFFFFFFFF0UL;
+/// Is Bootstrap vCPU
+///
+/// @expects none
+/// @ensures none
+///
+/// @param id the id to check
+/// @return true if this vCPU is the bootstrap vCPU, false otherwise
+///
+constexpr bool is_bootstrap_vcpu(type id)
+{ return id == 0; }
 
-    constexpr const auto guest_mask = 0xFFFFFFFFFFFF0000UL;
-    constexpr const auto guest_from = 16;
+/// Is Host VM vCPU
+///
+/// @expects none
+/// @ensures none
+///
+/// @param id the id to check
+/// @return true if this vCPU belongs to the host VM, false otherwise
+///
+constexpr bool is_host_vcpu(type id)
+{ return (id & 0xFFFFFFFFFFFF0000UL) == 0; }
 
-    /// Is Bootstrap vCPU
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param id the id to check
-    /// @return true if this vCPU is the bootstrap vCPU, false otherwise
-    ///
-    constexpr inline bool is_bootstrap_vcpu(type id)
-    { return id == 0; }
+/// Is Guest VM vCPU
+///
+/// @expects none
+/// @ensures none
+///
+/// @param id the id to check
+/// @return true if this vCPU belongs to a guest VM, false otherwise
+///
+constexpr bool is_guest_vcpu(type id)
+{ return !is_host_vcpu(id); }
 
-    /// Is Host VM vCPU
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param id the id to check
-    /// @return true if this vCPU belongs to the host VM, false otherwise
-    ///
-    constexpr inline bool is_host_vcpu(type id)
-    { return (id & (vcpuid::guest_mask & ~vcpuid::reserved)) == 0; }
-
-    /// Is Guest VM vCPU
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param id the id to check
-    /// @return true if this vCPU belongs to a guest VM, false otherwise
-    ///
-    constexpr inline bool is_guest_vcpu(type id)
-    { return !is_host_vcpu(id); }
 }
-
-// *INDENT-ON*
 
 #endif

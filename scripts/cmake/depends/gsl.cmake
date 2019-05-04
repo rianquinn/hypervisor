@@ -19,21 +19,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if(ENABLE_BUILD_VMM OR ENABLE_BUILD_USERSPACE OR ENABLE_BUILD_TEST)
-    message(STATUS "Including dependency: gsl")
+message(STATUS "Including dependency: gsl")
 
-    download_dependency(
-        gsl
-        URL         ${GSL_URL}
-        URL_MD5     ${GSL_URL_MD5}
-    )
-endif()
+download_dependency(
+    gsl
+    URL         ${GSL_URL}
+    URL_MD5     ${GSL_URL_MD5}
+)
 
 list(APPEND GSL_CONFIGURE_FLAGS
     -DGSL_TEST=OFF
 )
 
-if(ENABLE_BUILD_VMM OR ENABLE_BUILD_TEST)
+if(ENABLE_BUILD_VMM)
     add_dependency(
         gsl vmm
         CMAKE_ARGS  ${GSL_CONFIGURE_FLAGS}

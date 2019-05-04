@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if(ENABLE_BUILD_EFI AND NOT WIN32)
+if(ENABLE_BUILD_EFI)
     message(STATUS "Including dependency: gnuefi")
 
     download_dependency(

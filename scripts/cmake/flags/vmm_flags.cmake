@@ -22,8 +22,7 @@
 unset(BFFLAGS_VMM)
 unset(BFFLAGS_VMM_C)
 unset(BFFLAGS_VMM_CXX)
-unset(BFFLAGS_VMM_X86_64)
-unset(BFFLAGS_VMM_AARCH64)
+unset(BFFLAGS_VMM_LINK)
 
 list(APPEND BFFLAGS_VMM
     -isystem ${VMM_PREFIX_PATH}/include/c++/v1
@@ -31,15 +30,19 @@ list(APPEND BFFLAGS_VMM
 )
 
 list(APPEND BFFLAGS_VMM
-    --target=${BUILD_TARGET_ARCH}-vmm-elf
+    --target=${CMAKE_HOST_SYSTEM_PROCESSOR}-vmm-elf
     --sysroot=${VMM_PREFIX_PATH}
     -fpic
-    -mno-red-zone
-    -mstackrealign
+    -fpie
+    # -fdata-sections
+    # -ffunction-sections
     -fstack-protector-strong
-    -DVMM
-    -D${OSTYPE}
+    -mno-red-zone
+    -march=core2
+    -mstackrealign
+    -D${HOST_OSTYPE}
     -DSYSV
+    -DENABLE_BUILD_VMM
     -DGSL_THROW_ON_CONTRACT_VIOLATION
     -DMALLOC_PROVIDED
     -DCLOCK_MONOTONIC
@@ -57,22 +60,24 @@ list(APPEND BFFLAGS_VMM
 )
 
 list(APPEND BFFLAGS_VMM_C
+    ${BFFLAGS_VMM}
     -std=c11
 )
 
 list(APPEND BFFLAGS_VMM_CXX
+    ${BFFLAGS_VMM}
     -x c++
     -std=c++17
 )
 
-list(APPEND BFFLAGS_VMM_X86_64
-    -msse
-    -msse2
-    -msse3
+string(CONCAT BFFLAGS_VMM_LINK
+    "--sysroot=${CMAKE_INSTALL_PREFIX} "
+    "--no-dynamic-linker "
+    # "--gc-sections "
+    # "--strip-all "
+    "-nostdlib "
+    "-pie "
+    "-static "
+    "-z noexecstack "
+    "-z defs "
 )
-
-if(DEFINED ENABLE_BUILD_EFI)
-    list(APPEND BFFLAGS_VMM
-        -DENABLE_BUILD_EFI
-    )
-endif()

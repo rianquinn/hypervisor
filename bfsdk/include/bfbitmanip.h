@@ -26,10 +26,10 @@
 #ifndef BFBITMANIP_H
 #define BFBITMANIP_H
 
-#include <bfgsl.h>
-
 #include <bitset>
-#include <type_traits>
+
+#include <bfgsl.h>
+#include <bftypes.h>
 
 /// Set Bit
 ///
@@ -208,25 +208,6 @@ constexpr auto
 is_bit_cleared(T t, B b) noexcept
 {
     return static_cast<uint64_t>(get_bit(t, b)) == static_cast<uint64_t>(0);
-}
-
-/// Number of Bits Set
-///
-/// @expects
-/// @ensures
-///
-/// @param t integer whose bit is to be tested
-/// @return the number of bits set in t
-///
-template <
-    typename T,
-    typename = std::enable_if<std::is_integral<T>::value>
-    >
-auto
-num_bits_set(T t) noexcept
-{
-    std::bitset<64> b{t};
-    return b.count();
 }
 
 /// Get Bits

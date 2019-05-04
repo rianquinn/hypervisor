@@ -33,25 +33,11 @@
 
 #include <bfdebug.h>
 #include <bftypes.h>
+#include <bfplatform.h>
 #include <bfconstants.h>
 #include <bfdriverinterface.h>
 
 uint64_t _vmcall(uint64_t r1, uint64_t r2, uint64_t r3, uint64_t r4);
-
-/* -------------------------------------------------------------------------- */
-/* Global                                                                     */
-/* -------------------------------------------------------------------------- */
-
-static uint64_t g_vcpuid = 0;
-static uint64_t g_module_length = 0;
-
-struct pmodule_t {
-    char *data;
-    int64_t size;
-};
-
-uint64_t g_num_pmodules = 0;
-struct pmodule_t pmodules[MAX_NUM_MODULES] = { 0 };
 
 /* -------------------------------------------------------------------------- */
 /* Status                                                                     */
@@ -78,110 +64,52 @@ dev_release(struct inode *inode, struct file *file)
 { return 0; }
 
 static long
-ioctl_add_module(const char *file)
-{
-    char *buf;
-    int64_t ret;
-
-    if (g_num_pmodules >= MAX_NUM_MODULES) {
-        BFALERT("IOCTL_ADD_MODULE: too many modules have been loaded\n");
-        return BF_IOCTL_FAILURE;
-    }
-
-    buf = platform_alloc_rw(g_module_length);
-    if (buf == NULL) {
-        BFALERT("IOCTL_ADD_MODULE: failed to allocate memory for the module\n");
-        return BF_IOCTL_FAILURE;
-    }
-
-    ret = copy_from_user(buf, file, g_module_length);
-    if (ret != 0) {
-        BFALERT("IOCTL_ADD_MODULE: failed to copy memory from userspace\n");
-        goto IOCTL_FAILURE;
-    }
-
-    ret = common_add_module(buf, g_module_length);
-    if (ret != BF_SUCCESS) {
-        BFALERT("IOCTL_ADD_MODULE: common_add_module failed: %p - %s\n", \
-                (void *)ret, ec_to_str(ret));
-        goto IOCTL_FAILURE;
-    }
-
-    pmodules[g_num_pmodules].data = buf;
-    pmodules[g_num_pmodules].size = g_module_length;
-
-    g_num_pmodules++;
-
-    return BF_IOCTL_SUCCESS;
-
-IOCTL_FAILURE:
-
-    platform_free_rw(buf, g_module_length);
-    return BF_IOCTL_FAILURE;
-}
-
-static long
-ioctl_add_module_length(uint64_t *len)
-{
-    int64_t ret;
-
-    if (len == 0) {
-        BFALERT("IOCTL_ADD_MODULE_LENGTH: failed with len == NULL\n");
-        return BF_IOCTL_FAILURE;
-    }
-
-    ret = copy_from_user(&g_module_length, len, sizeof(uint64_t));
-    if (ret != 0) {
-        BFALERT("IOCTL_ADD_MODULE_LENGTH: failed to copy memory from userspace\n");
-        return BF_IOCTL_FAILURE;
-    }
-
-    return BF_IOCTL_SUCCESS;
-}
-
-static long
 ioctl_unload_vmm(void)
 {
-    int i;
     int64_t ret;
 
     ret = common_unload_vmm();
-    if (ret != BF_SUCCESS) {
-        BFALERT("IOCTL_UNLOAD_VMM: common_unload_vmm failed: %p - %s\n", (void *)ret, ec_to_str(ret));
-        goto IOCTL_FAILURE;
+    if (ret != BFSUCCESS) {
+        return BFFAILURE;
     }
 
-    for (i = 0; i < g_num_pmodules; i++) {
-        platform_free_rw(pmodules[i].data, pmodules[i].size);
-    }
-
-    g_num_pmodules = 0;
-    platform_memset(&pmodules, 0, sizeof(pmodules));
-
-    return BF_IOCTL_SUCCESS;
-
-IOCTL_FAILURE:
-
-    return BF_IOCTL_FAILURE;
+    return BFSUCCESS;
 }
 
 static long
-ioctl_load_vmm(void)
+ioctl_load_vmm(const struct ioctl_load_args_t *args)
 {
     int64_t ret;
+    char *file;
+    struct ioctl_load_args_t _args;
 
-    ret = common_load_vmm();
-    if (ret != BF_SUCCESS) {
-        BFALERT("IOCTL_LOAD_VMM: common_load_vmm failed: %p - %s\n", (void *)ret, ec_to_str(ret));
-        goto IOCTL_FAILURE;
+    ret = copy_from_user(&_args, args, sizeof(struct ioctl_load_args_t));
+    if (ret != 0) {
+        return BFFAILURE;
     }
 
-    return BF_IOCTL_SUCCESS;
+    file = (char *)platform_alloc_rw(_args.file_size);
+    if (file == NULL) {
+        return BFFAILURE;
+    }
 
-IOCTL_FAILURE:
+    ret = copy_from_user(file, (char *)_args.file_addr, _args.file_size);
+    if (ret != 0) {
+        goto failure;
+    }
 
-    ioctl_unload_vmm();
-    return BF_IOCTL_FAILURE;
+    ret = common_load_vmm(file, _args.file_size, _args.mem);
+    if (ret != BFSUCCESS) {
+        goto failure;
+    }
+
+    platform_free_rw(file, _args.file_size);
+    return BFSUCCESS;
+
+failure:
+
+    platform_free_rw(file, _args.file_size);
+    return BFFAILURE;
 }
 
 static long
@@ -191,20 +119,19 @@ ioctl_stop_vmm(void)
     mutex_lock(&g_status_mutex);
 
     ret = common_stop_vmm();
-    if (ret != BF_SUCCESS) {
-        BFALERT("IOCTL_STOP_VMM: common_stop_vmm failed: %p - %s\n", (void *)ret, ec_to_str(ret));
-        goto IOCTL_FAILURE;
+    if (ret != BFSUCCESS) {
+        goto failure;
     }
 
     g_status = STATUS_STOPPED;
 
     mutex_unlock(&g_status_mutex);
-    return BF_IOCTL_SUCCESS;
+    return BFSUCCESS;
 
-IOCTL_FAILURE:
+failure:
 
     mutex_unlock(&g_status_mutex);
-    return BF_IOCTL_FAILURE;
+    return BFFAILURE;
 }
 
 static long
@@ -214,130 +141,103 @@ ioctl_start_vmm(void)
     mutex_lock(&g_status_mutex);
 
     ret = common_start_vmm();
-    if (ret != BF_SUCCESS) {
-        BFALERT("IOCTL_START_VMM: common_start_vmm failed: %p - %s\n", (void *)ret, ec_to_str(ret));
-        goto IOCTL_FAILURE;
+    if (ret != BFSUCCESS) {
+        goto failure;
     }
 
     g_status = STATUS_RUNNING;
 
     mutex_unlock(&g_status_mutex);
-    return BF_IOCTL_SUCCESS;
+    return BFSUCCESS;
 
-IOCTL_FAILURE:
+failure:
 
     common_stop_vmm();
 
     mutex_unlock(&g_status_mutex);
-    return BF_IOCTL_FAILURE;
+    return BFFAILURE;
 }
 
 static long
-ioctl_dump_vmm(struct debug_ring_resources_t *user_drr)
+ioctl_dump_vmm(struct debug_ring_resources_t *drr)
 {
     int64_t ret;
-    struct debug_ring_resources_t *drr = 0;
+    struct debug_ring_resources_t *_drr = 0;
 
-    ret = common_dump_vmm(&drr, g_vcpuid);
-    if (ret != BF_SUCCESS) {
-        BFALERT("IOCTL_DUMP_VMM: common_dump_vmm failed: %p - %s\n", (void *)ret, ec_to_str(ret));
-        return BF_IOCTL_FAILURE;
+    ret = common_dump_vmm(&_drr);
+    if (ret != BFSUCCESS) {
+        return BFFAILURE;
     }
 
-    ret = copy_to_user(user_drr, drr, sizeof(struct debug_ring_resources_t));
+    ret = copy_to_user(drr, _drr, sizeof(struct debug_ring_resources_t));
     if (ret != 0) {
-        BFALERT("IOCTL_DUMP_VMM: failed to copy memory from userspace\n");
-        return BF_IOCTL_FAILURE;
+        return BFFAILURE;
     }
 
-    return BF_IOCTL_SUCCESS;
+    return BFSUCCESS;
 }
 
 static long
 ioctl_vmm_status(int64_t *status)
 {
     int64_t ret;
-    int64_t vmm_status = common_vmm_status();
+    int64_t _status = common_vmm_status();
 
     if (status == 0) {
-        BFALERT("IOCTL_VMM_STATUS: common_vmm_status failed: NULL\n");
-        return BF_IOCTL_FAILURE;
+        return BFFAILURE;
     }
 
-    ret = copy_to_user(status, &vmm_status, sizeof(int64_t));
+    ret = copy_to_user(status, &_status, sizeof(int64_t));
     if (ret != 0) {
-        BFALERT("IOCTL_VMM_STATUS: failed to copy memory from userspace\n");
-        return BF_IOCTL_FAILURE;
+        return BFFAILURE;
     }
 
-    return BF_IOCTL_SUCCESS;
+    return BFSUCCESS;
 }
 
 static long
-ioctl_set_vcpuid(uint64_t *vcpuid)
+ioctl_vmcall(struct ioctl_vmcall_args_t *args)
 {
     int64_t ret;
+    struct ioctl_vmcall_args_t _args;
 
-    if (vcpuid == 0) {
-        BFALERT("IOCTL_SET_VCPUID: failed with vcpuid == NULL\n");
-        return BF_IOCTL_FAILURE;
+    if (args == 0) {
+        return BFFAILURE;
     }
 
-    ret = copy_from_user(&g_vcpuid, vcpuid, sizeof(uint64_t));
+    ret = copy_from_user(&_args, args, sizeof(struct ioctl_vmcall_args_t));
     if (ret != 0) {
-        BFALERT("IOCTL_SET_VCPUID: failed to copy memory from userspace\n");
-        return BF_IOCTL_FAILURE;
-    }
-
-    return BF_IOCTL_SUCCESS;
-}
-
-static long
-ioctl_vmcall(struct ioctl_vmcall_args_t *user_args)
-{
-    int64_t ret;
-    struct ioctl_vmcall_args_t args;
-
-    if (user_args == 0) {
-        BFALERT("IOCTL_CALL: failed with args == NULL\n");
-        return BF_IOCTL_FAILURE;
-    }
-
-    ret = copy_from_user(&args, user_args, sizeof(struct ioctl_vmcall_args_t));
-    if (ret != 0) {
-        BFALERT("IOCTL_CALL: failed to copy memory from userspace\n");
-        return BF_IOCTL_FAILURE;
+        return BFFAILURE;
     }
 
     mutex_lock(&g_status_mutex);
 
     switch (g_status) {
         case STATUS_RUNNING:
-            args.reg1 = _vmcall(args.reg1, args.reg2, args.reg3, args.reg4);
+            _args.reg1 = _vmcall(_args.reg1, _args.reg2, _args.reg3, _args.reg4);
             break;
 
         case STATUS_SUSPEND:
-            args.reg1 = SUSPEND;
+            _args.reg1 = BFFAILURE_SUSPEND;
             break;
 
         default:
-            args.reg1 = FAILURE;
+            _args.reg1 = BFFAILURE;
             break;
     };
 
     mutex_unlock(&g_status_mutex);
 
-    args.reg2 = 0;
-    args.reg3 = 0;
-    args.reg4 = 0;
+    _args.reg2 = 0;
+    _args.reg3 = 0;
+    _args.reg4 = 0;
 
-    ret = copy_to_user(user_args, &args, sizeof(struct ioctl_vmcall_args_t));
+    ret = copy_to_user(args, &_args, sizeof(struct ioctl_vmcall_args_t));
     if (ret != 0) {
-        BFALERT("IOCTL_CALL: failed to copy memory from userspace\n");
-        return BF_IOCTL_FAILURE;
+        return BFFAILURE;
     }
 
-    return BF_IOCTL_SUCCESS;
+    return BFSUCCESS;
 }
 
 static long
@@ -345,14 +245,8 @@ dev_unlocked_ioctl(
     struct file *file, unsigned int cmd, unsigned long arg)
 {
     switch (cmd) {
-        case IOCTL_ADD_MODULE:
-            return ioctl_add_module((char *)arg);
-
-        case IOCTL_ADD_MODULE_LENGTH:
-            return ioctl_add_module_length((uint64_t *)arg);
-
         case IOCTL_LOAD_VMM:
-            return ioctl_load_vmm();
+            return ioctl_load_vmm((const struct ioctl_load_args_t *)arg);
 
         case IOCTL_UNLOAD_VMM:
             return ioctl_unload_vmm();
@@ -368,9 +262,6 @@ dev_unlocked_ioctl(
 
         case IOCTL_VMM_STATUS:
             return ioctl_vmm_status((int64_t *)arg);
-
-        case IOCTL_SET_VCPUID:
-            return ioctl_set_vcpuid((uint64_t *)arg);
 
         case IOCTL_VMCALL:
             return ioctl_vmcall((struct ioctl_vmcall_args_t *)arg);
@@ -420,7 +311,7 @@ resume(void)
         return NOTIFY_DONE;
     }
 
-    if (common_start_vmm() != BF_SUCCESS) {
+    if (common_start_vmm() != BFSUCCESS) {
 
         common_fini();
         g_status = STATUS_STOPPED;
@@ -445,7 +336,7 @@ suspend(void)
         return NOTIFY_DONE;
     }
 
-    if (common_stop_vmm() != BF_SUCCESS) {
+    if (common_stop_vmm() != BFSUCCESS) {
 
         common_fini();
         g_status = STATUS_STOPPED;
@@ -497,12 +388,10 @@ dev_init(void)
     register_pm_notifier(&pm_notifier_block);
 
     if (misc_register(&bareflank_dev) != 0) {
-        BFALERT("misc_register failed\n");
         goto INIT_FAILURE;
     }
 
     if (common_init() != 0) {
-        BFALERT("common_init failed\n");
         goto INIT_FAILURE;
     }
 

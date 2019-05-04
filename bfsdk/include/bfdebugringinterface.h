@@ -28,9 +28,7 @@
 #define BFDEBUGRINGINTERFACE_H
 
 #include <bftypes.h>
-#include <bfdebug.h>
 #include <bfconstants.h>
-#include <bferrorcodes.h>
 
 #pragma pack(push, 1)
 

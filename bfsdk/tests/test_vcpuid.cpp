@@ -19,12 +19,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <catch/catch.hpp>
+#include <catch2/catch.hpp>
 #include <bfvcpuid.h>
 
 TEST_CASE("functions")
 {
     CHECK(vcpuid::is_bootstrap_vcpu(0));
-    CHECK(vcpuid::is_host_vm_vcpu(0));
-    CHECK(vcpuid::is_guest_vm_vcpu(0x10000));
+    CHECK(vcpuid::is_host_vcpu(0));
+    CHECK(vcpuid::is_guest_vcpu(0x10000));
 }

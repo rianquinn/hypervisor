@@ -20,46 +20,81 @@
 # SOFTWARE.
 
 # ------------------------------------------------------------------------------
-# Only static builds are supported
+# General
 # ------------------------------------------------------------------------------
 
 if(BUILD_SHARED_LIBS)
     invalid_config("BUILD_SHARED_LIBS not supported")
 endif()
 
+if(NOT ENABLE_BUILD_VMM AND NOT ENABLE_BUILD_USERSPACE AND NOT ENABLE_BUILD_TEST)
+    invalid_config("VMM, USERSAPCE and TEST disabled. You must enable one.")
+endif()
+
 # ------------------------------------------------------------------------------
-# EFI build validation
+# VMM
 # ------------------------------------------------------------------------------
 
-if(ENABLE_BUILD_EFI AND NOT ENABLE_BUILD_VMM)
-    invalid_config("ENABLE_BUILD_VMM must be enabled if ENABLE_BUILD_EFI is enabled")
+if(ENABLE_BUILD_VMM)
+    if(WIN32)
+        invalid_config("ENABLE_BUILD_VMM is only supported on Linux and Cygwin")
+    endif()
+endif()
+
+# ------------------------------------------------------------------------------
+# Userspace
+# ------------------------------------------------------------------------------
+
+if(ENABLE_BUILD_USERSPACE)
+endif()
+
+# ------------------------------------------------------------------------------
+# Test
+# ------------------------------------------------------------------------------
+
+if(ENABLE_BUILD_TEST)
+    if(WIN32 OR CYGWIN)
+        invalid_config("ENABLE_BUILD_TEST is only supported on Linux")
+    endif()
+    if(NOT ENABLE_BUILD_VMM)
+        invalid_config("ENABLE_BUILD_VMM must be enabled if ENABLE_BUILD_TEST is enabled")
+    endif()
+endif()
+
+# ------------------------------------------------------------------------------
+# EFI
+# ------------------------------------------------------------------------------
+
+if(ENABLE_BUILD_EFI)
+    if(WIN32 OR CYGWIN)
+        invalid_config("ENABLE_BUILD_EFI is only supported on Linux")
+    endif()
+
+    if(NOT ENABLE_BUILD_VMM)
+        invalid_config("ENABLE_BUILD_VMM must be enabled if ENABLE_BUILD_EFI is enabled")
+    endif()
+endif()
+
+# ------------------------------------------------------------------------------
+# Examples
+# ------------------------------------------------------------------------------
+
+if(ENABLE_BUILD_EXAMPLES)
+    if(NOT ENABLE_BUILD_VMM)
+        invalid_config("ENABLE_BUILD_VMM must be enabled if ENABLE_BUILD_EXAMPLES is enabled")
+    endif()
 endif()
 
 # ------------------------------------------------------------------------------
 # Developer Features
 # ------------------------------------------------------------------------------
 
-if(ENABLE_BUILD_USERSPACE)
-    if(CMAKE_C_COMPILER_ID STREQUAL Clang)
-        invalid_config("ENABLE_BUILD_USERSPACE is not supported with clang")
-    endif()
-endif()
-
-if(ENABLE_BUILD_TEST)
-    if(CMAKE_C_COMPILER_ID STREQUAL Clang)
-        invalid_config("ENABLE_BUILD_TEST is not supported with clang")
-    endif()
-endif()
-
 if(ENABLE_ASAN)
     if(ENABLE_USAN)
         invalid_config("ENABLE_USAN cannot be enabled if ENABLE_ASAN is enabled")
     endif()
-    if(NOT ENABLE_BUILD_TEST)
-        invalid_config("ENABLE_BUILD_TEST must be enabled if ENABLE_ASAN is enabled")
-    endif()
-    if(NOT CMAKE_C_COMPILER_ID STREQUAL GNU)
-        invalid_config("Must use gcc if ENABLE_ASAN is enabled")
+    if(WIN32 OR CYGWIN)
+        invalid_config("ENABLE_ASAN is only supported on Linux")
     endif()
 endif()
 
@@ -67,8 +102,8 @@ if(ENABLE_USAN)
     if(ENABLE_ASAN)
         invalid_config("ENABLE_ASAN cannot be enabled if ENABLE_USAN is enabled")
     endif()
-    if(NOT ENABLE_BUILD_TEST)
-        invalid_config("ENABLE_BUILD_TEST must be enabled if ENABLE_USAN is enabled")
+    if(WIN32 OR CYGWIN)
+        invalid_config("ENABLE_USAN is only supported on Linux")
     endif()
 endif()
 
@@ -76,47 +111,19 @@ if(ENABLE_CODECOV)
     if(NOT ENABLE_BUILD_TEST)
         invalid_config("ENABLE_BUILD_TEST must be enabled if ENABLE_CODECOV is enabled")
     endif()
+    if(WIN32 OR CYGWIN)
+        invalid_config("ENABLE_CODECOV is only supported on Linux")
+    endif()
 endif()
 
 if(ENABLE_TIDY)
-    if(NOT ENABLE_BUILD_TEST)
-        invalid_config("ENABLE_BUILD_TEST must be enabled if ENABLE_TIDY is enabled")
+    if(WIN32 OR CYGWIN)
+        invalid_config("ENABLE_TIDY is only supported on Linux")
     endif()
 endif()
 
-# ------------------------------------------------------------------------------
-# Windows build rules
-# ------------------------------------------------------------------------------
-
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-    if(ENABLE_BUILD_VMM)
-        invalid_config("ENABLE_BUILD_VMM is not supported on Windows")
-    endif()
-    if(ENABLE_ASAN)
-        invalid_config("ENABLE_ASAN is not supported on Windows")
-    endif()
-    if(ENABLE_USAN)
-        invalid_config("ENABLE_USAN is not supported on Windows")
-    endif()
-    if(ENABLE_TIDY)
-        invalid_config("ENABLE_TIDY is not supported on Windows")
-    endif()
-    if(ENABLE_CODECOV)
-        invalid_config("ENABLE_CODECOV is not supported on Windows")
-    endif()
-endif()
-
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "CYGWIN")
-    if(ENABLE_ASAN)
-        invalid_config("ENABLE_ASAN is not supported on Cygwin")
-    endif()
-    if(ENABLE_USAN)
-        invalid_config("ENABLE_USAN is not supported on Cygwin")
-    endif()
-    if(ENABLE_TIDY)
-        invalid_config("ENABLE_TIDY is not supported on Cygwin")
-    endif()
-    if(ENABLE_CODECOV)
-        invalid_config("ENABLE_CODECOV is not supported on Cygwin")
+if(ENABLE_FORMAT)
+    if(WIN32)
+        invalid_config("ENABLE_TIDY is only supported on Linux and Cygwin")
     endif()
 endif()

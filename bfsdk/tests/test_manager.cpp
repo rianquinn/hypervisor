@@ -19,7 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <catch/catch.hpp>
+#include <catch2/catch.hpp>
 #include <hippomocks.h>
 
 #include <bftypes.h>
@@ -27,10 +27,6 @@
 
 auto factory_throws = false;
 auto factory_nullptr = false;
-auto init_throws = false;
-auto fini_throws = false;
-auto run_throws = false;
-auto hlt_throws = false;
 
 class not_a_test_base
 {
@@ -54,52 +50,15 @@ public:
     ~test() override = default;
 
     using id_t = uint64_t;
-
-    void init(bfobject *obj = nullptr)
-    {
-        bfignored(obj);
-
-        if (init_throws) {
-            throw std::runtime_error("error");
-        }
-    }
-
-    void fini(bfobject *obj = nullptr)
-    {
-        bfignored(obj);
-
-        if (fini_throws) {
-            throw std::runtime_error("error");
-        }
-    }
-
-    void run(bfobject *obj = nullptr)
-    {
-        bfignored(obj);
-
-        if (run_throws) {
-            throw std::runtime_error("error");
-        }
-    }
-
-    void hlt(bfobject *obj = nullptr)
-    {
-        bfignored(obj);
-
-        if (hlt_throws) {
-            throw std::runtime_error("error");
-        }
-    }
 };
 
 class test_factory
 {
 public:
     std::unique_ptr<test>
-    make(test::id_t id, bfobject *obj)
+    make(test::id_t id)
     {
         bfignored(id);
-        bfignored(obj);
 
         if (factory_throws) {
             throw std::runtime_error("error");
@@ -118,7 +77,7 @@ public:
 TEST_CASE("test_manager: support")
 {
     test_factory factory{};
-    CHECK_NOTHROW(factory.make(0, nullptr));
+    CHECK_NOTHROW(factory.make(0));
 }
 
 TEST_CASE("test_manager: create_valid")
@@ -154,16 +113,6 @@ TEST_CASE("test_manager: factory_nullptr")
     CHECK_THROWS(g_test_manager->create(0));
 }
 
-TEST_CASE("test_manager: create_init_throws")
-{
-    init_throws = true;
-    auto ___ = gsl::finally([&] {
-        init_throws = false;
-    });
-
-    CHECK_THROWS(g_test_manager->create(0));
-}
-
 TEST_CASE("test_manager: delete_valid")
 {
     g_test_manager->create(0);
@@ -179,82 +128,6 @@ TEST_CASE("test_manager: delete_valid_twice")
 TEST_CASE("test_manager: delete_no_create")
 {
     CHECK_THROWS(g_test_manager->destroy(0));
-}
-
-TEST_CASE("test_manager: delete_fini_throws")
-{
-    fini_throws = true;
-    auto ___ = gsl::finally([&] {
-        fini_throws = false;
-    });
-
-    g_test_manager->create(0);
-    CHECK_THROWS(g_test_manager->destroy(0));
-}
-
-TEST_CASE("test_manager: run_valid")
-{
-    g_test_manager->create(0);
-    CHECK_NOTHROW(g_test_manager->run(0));
-    g_test_manager->destroy(0);
-}
-
-TEST_CASE("test_manager: run_valid_twice")
-{
-    g_test_manager->create(0);
-    CHECK_NOTHROW(g_test_manager->run(0));
-    CHECK_NOTHROW(g_test_manager->run(0));
-    g_test_manager->destroy(0);
-}
-
-TEST_CASE("test_manager: run_throws")
-{
-    run_throws = true;
-    auto ___ = gsl::finally([&] {
-        run_throws = false;
-    });
-
-    g_test_manager->create(0);
-    CHECK_THROWS(g_test_manager->run(0));
-    g_test_manager->destroy(0);
-}
-
-TEST_CASE("test_manager: run_no_create")
-{
-    CHECK_THROWS(g_test_manager->run(0));
-}
-
-TEST_CASE("test_manager: hlt_valid")
-{
-    g_test_manager->create(0);
-    g_test_manager->run(0);
-
-    CHECK_NOTHROW(g_test_manager->hlt(0));
-    g_test_manager->destroy(0);
-}
-
-TEST_CASE("test_manager: hlt_valid_twice")
-{
-    g_test_manager->create(0);
-    g_test_manager->run(0);
-
-    CHECK_NOTHROW(g_test_manager->hlt(0));
-    CHECK_NOTHROW(g_test_manager->hlt(0));
-    g_test_manager->destroy(0);
-}
-
-TEST_CASE("test_manager: hlt_hlt_throws")
-{
-    hlt_throws = true;
-    auto ___ = gsl::finally([&] {
-        hlt_throws = false;
-    });
-
-    g_test_manager->create(0);
-    g_test_manager->run(0);
-
-    CHECK_THROWS(g_test_manager->hlt(0));
-    g_test_manager->destroy(0);
 }
 
 TEST_CASE("test_manager: get without creating")

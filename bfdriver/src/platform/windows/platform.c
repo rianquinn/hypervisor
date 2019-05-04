@@ -29,7 +29,7 @@
 #define BF_TAG 'BFLK'
 #define BF_NX_TAG 'BFNX'
 
-int64_t
+status_t
 platform_init(void)
 { return BF_SUCCESS; }
 
@@ -115,7 +115,7 @@ platform_memset(void *ptr, char value, uint64_t num)
     return ptr;
 }
 
-int64_t
+status_t
 platform_memcpy(
     void *dst, uint64_t dst_size, const void *src, uint64_t src_size, uint64_t num)
 {
@@ -133,14 +133,14 @@ platform_memcpy(
     return SUCCESS;
 }
 
-int64_t
+uint64_t
 platform_num_cpus()
 {
     KAFFINITY k_affin;
     return (int64_t)KeQueryActiveProcessorCount(&k_affin);
 }
 
-int64_t
+status_t
 platform_call_vmm_on_core(
     uint64_t cpuid, uint64_t request, uintptr_t arg1, uintptr_t arg2)
 {
@@ -152,7 +152,3 @@ platform_call_vmm_on_core(
     KeRevertToUserAffinityThreadEx(old);
     return ret;
 }
-
-void *
-platform_get_rsdp(void)
-{ return 0; }

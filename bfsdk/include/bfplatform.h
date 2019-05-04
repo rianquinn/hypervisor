@@ -28,7 +28,6 @@
 #define BFPLATFORM_H
 
 #include <bftypes.h>
-#include <bfsupport.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,9 +39,9 @@ extern "C" {
  * @expects none
  * @ensures none
  *
- * @return BF_SUCCESS on success, negative error code on failure
+ * @return SUCCESS on success, negative error code on failure
  */
-int64_t platform_init(void);
+status_t platform_init(void);
 
 /**
  * Allocate Memory
@@ -132,9 +131,9 @@ void *platform_memset(void *ptr, char value, uint64_t num);
  * @param src a pointer to the memory to copy from
  * @param src_size the max size of the source
  * @param num the number of bytes to copy
- * @return BF_SUCCESS on success, negative error code on failure
+ * @return SUCCESS on success, negative error code on failure
  */
-int64_t platform_memcpy(
+status_t platform_memcpy(
     void *dst, uint64_t dst_size, const void *src, uint64_t src_size, uint64_t num);
 
 /**
@@ -145,7 +144,7 @@ int64_t platform_memcpy(
  *
  * @return returns the total number of CPUs available.
  */
-int64_t platform_num_cpus(void);
+uint64_t platform_num_cpus(void);
 
 /**
  * Call VMM on Core
@@ -158,25 +157,12 @@ int64_t platform_num_cpus(void);
  *
  * @param cpuid the core id this code is to be execute on
  * @param request the requested function in the VMM to execute
- * @param arg1 arg #1
- * @param arg2 arg #2
- * @return BF_SUCCESS on success, negative error code on failure
+ * @param arg1 optional arg #1
+ * @param arg2 optional arg #2
+ * @return SUCCESS on success, negative error code on failure
  */
-int64_t platform_call_vmm_on_core(
-    uint64_t cpuid, uint64_t request, uintptr_t arg1, uintptr_t arg2);
-
-/**
- * Get RSDP
- *
- * Returns the address of the Root System Description Pointer for ACPI.
- * If ACPI is not supported, return 0.
- *
- * @expects none
- * @ensures none
- *
- * @return returns the RSDP or 0 if ACPI is not supported
- */
-void *platform_get_rsdp(void);
+status_t platform_call_vmm_on_core(
+    uint64_t cpuid, uint64_t request, uint64_t arg1, uint64_t arg2);
 
 /**
  * Acquire Mutex

@@ -19,7 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <catch/catch.hpp>
+#include <catch2/catch.hpp>
 #include <bfdebugringinterface.h>
 
 char g_buf[DEBUG_RING_SIZE] = {};

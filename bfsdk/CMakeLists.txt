@@ -20,51 +20,19 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(bfsdk C CXX)
-
-init_project(bfsdk INTERFACE)
-
-# -----------------------------------------------------------------------------
-# Common
-# -----------------------------------------------------------------------------
-
-target_link_libraries(bfsdk INTERFACE ${PREFIX}::bfroot)
-
-if(NOT PREFIX STREQUAL test)
-    install(DIRECTORY include/ DESTINATION include)
-    fini_project()
-    return()
-endif()
-
-# -----------------------------------------------------------------------------
-# Test
-# -----------------------------------------------------------------------------
-
-target_link_libraries(bfsdk INTERFACE
-    $<$<OR:$<BOOL:${CYGWIN}>,$<BOOL:${WIN32}>>:setupapi>
-)
-target_include_directories(bfsdk INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
-)
+project(bfsdk CXX)
 
 do_test(tests/test_affinity.cpp)
-do_test(tests/test_benchmark.cpp)
 do_test(tests/test_bitmanip.cpp)
-do_test(tests/test_buffer.cpp)
 do_test(tests/test_callonce.cpp)
 do_test(tests/test_debug.cpp)
 do_test(tests/test_debugringinterface.cpp)
 do_test(tests/test_delegate.cpp)
 do_test(tests/test_errorcodes.cpp)
 do_test(tests/test_exceptions.cpp)
-do_test(tests/test_file.cpp)
 do_test(tests/test_gsl.cpp)
-do_test(tests/test_json.cpp)
 do_test(tests/test_manager.cpp)
-do_test(tests/test_shuffle.cpp)
 do_test(tests/test_string.cpp)
 do_test(tests/test_types.cpp)
 do_test(tests/test_upperlower.cpp)
-do_test(tests/test_vector.cpp)
-
-fini_project()
+do_test(tests/test_vcpuid.cpp)

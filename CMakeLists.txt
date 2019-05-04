@@ -20,126 +20,61 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(hypervisor)
+project(hypervisor CXX)
 
 # ------------------------------------------------------------------------------
-# Modules
-# ------------------------------------------------------------------------------
-
-include(ProcessorCount)
-include(ExternalProject)
-
-# ------------------------------------------------------------------------------
-# Configs
+# Initial Setup
 # ------------------------------------------------------------------------------
 
 include(${CMAKE_CURRENT_LIST_DIR}/scripts/cmake/config/default.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/scripts/cmake/macros.cmake)
+
 include_external_config()
-
-# ------------------------------------------------------------------------------
-# Macros
-# ------------------------------------------------------------------------------
-
-include(${SOURCE_CMAKE_DIR}/macros.cmake)
-
-# ------------------------------------------------------------------------------
-# Testing
-# ------------------------------------------------------------------------------
-
-if(ENABLE_BUILD_TEST)
-    include(CTest)
-    enable_testing(true)
-endif()
-
-# ------------------------------------------------------------------------------
-# Sub-project includes
-# ------------------------------------------------------------------------------
-
-add_project_include(${SOURCE_CMAKE_DIR}/macros.cmake)
-
-# ------------------------------------------------------------------------------
-# BFM VMM
-# ------------------------------------------------------------------------------
-
-set_bfm_vmm(${DEFAULT_VMM} DEFAULT TARGET bfvmm)
-message(STATUS "Bareflank Manager VMM")
-message(STATUS "    vmm: ${BFM_VMM}")
-message(STATUS "    target: ${BFM_VMM_TARGET}")
 
 # ------------------------------------------------------------------------------
 # Targets
 # ------------------------------------------------------------------------------
 
-include(${SOURCE_CMAKE_DIR}/targets.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/scripts/cmake/targets.cmake)
 
 # ------------------------------------------------------------------------------
-# General Dependencies
+# Dependencies
 # ------------------------------------------------------------------------------
 
 include_dependency(SOURCE_DEPENDS_DIR gsl)
-include_dependency(SOURCE_DEPENDS_DIR cxxopts)
 include_dependency(SOURCE_DEPENDS_DIR json)
+include_dependency(SOURCE_DEPENDS_DIR argparse)
+include_dependency(SOURCE_DEPENDS_DIR binutils)
+include_dependency(SOURCE_DEPENDS_DIR newlib)
+include_dependency(SOURCE_DEPENDS_DIR python)
+include_dependency(SOURCE_DEPENDS_DIR llvm)
+include_dependency(SOURCE_DEPENDS_DIR libcxxabi)
+include_dependency(SOURCE_DEPENDS_DIR libcxx)
 include_dependency(SOURCE_DEPENDS_DIR astyle)
 include_dependency(SOURCE_DEPENDS_DIR clang_tidy)
 include_dependency(SOURCE_DEPENDS_DIR catch)
 include_dependency(SOURCE_DEPENDS_DIR hippomocks)
-include_dependency(SOURCE_DEPENDS_DIR python)
 
 # ------------------------------------------------------------------------------
-# Package File
+# Interface
 # ------------------------------------------------------------------------------
 
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${EXPORT_DIR})
-file(APPEND ${PKG_FILE} "")
-
-# ------------------------------------------------------------------------------
-# Root Targets
-# ------------------------------------------------------------------------------
-
-add_subproject(bfroot vmm SOURCE_DIR ${SOURCE_CMAKE_DIR})
-add_subproject(bfroot efi SOURCE_DIR ${SOURCE_CMAKE_DIR})
-add_subproject(bfroot test SOURCE_DIR ${SOURCE_CMAKE_DIR} DEPENDS catch)
-add_subproject(bfroot userspace SOURCE_DIR ${SOURCE_CMAKE_DIR})
+setup_interfaces()
 
 # ------------------------------------------------------------------------------
 # VMM Components
 # ------------------------------------------------------------------------------
 
-include_dependency(SOURCE_DEPENDS_DIR binutils)
-include_dependency(SOURCE_DEPENDS_DIR newlib)
-include_dependency(SOURCE_DEPENDS_DIR llvm)
-include_dependency(SOURCE_DEPENDS_DIR libcxxabi)
-include_dependency(SOURCE_DEPENDS_DIR libcxx)
-
-add_subproject(bfsdk vmm DEPENDS bfroot)
-
-if(ENABLE_BUILD_VMM OR (ENABLE_BUILD_TEST AND NOT WIN32))
-    add_subproject(bfruntime vmm DEPENDS gsl libcxx)
-    add_subproject(bfunwind vmm DEPENDS bfruntime)
-endif()
-
 if(ENABLE_BUILD_VMM)
-    add_subproject(bfintrinsics vmm DEPENDS bfruntime)
-    add_subproject(bfvmm vmm DEPENDS bfunwind bfintrinsics bfsdk)
-endif()
+    add_subproject(bfsdk vmm DEPENDS gsl json libcxx PRIVATE NOINSTALL)
+    add_subproject(bfintrinsics vmm DEPENDS bfsdk PRIVATE)
+    add_subproject(bfruntime vmm DEPENDS bfsdk PRIVATE)
+    add_subproject(bfunwind vmm DEPENDS bfsdk PRIVATE)
+    add_subproject(bfvmm vmm DEPENDS bfruntime bfunwind bfintrinsics PRIVATE)
 
-# ------------------------------------------------------------------------------
-# Unit Tests
-# ------------------------------------------------------------------------------
-
-if(ENABLE_BUILD_TEST)
-    add_subproject(bfsdk test DEPENDS gsl json hippomocks bfroot)
-endif()
-
-if(ENABLE_BUILD_TEST AND NOT WIN32)
-    add_subproject(bfdummy vmm DEPENDS bfunwind)
-    add_subproject(bfdriver test DEPENDS bfsdk)
-endif()
-
-if(ENABLE_BUILD_TEST)
-    add_subproject(bfm test DEPENDS bfsdk)
-    add_subproject(bfruntime test DEPENDS bfsdk)
-    add_subproject(bfvmm test DEPENDS bfsdk)
+    if(ENABLE_BUILD_TEST)
+        add_subproject(bfdummy vmm DEPENDS bfruntime bfunwind bfintrinsics PRIVATE)
+    endif()
 endif()
 
 # ------------------------------------------------------------------------------
@@ -147,20 +82,46 @@ endif()
 # ------------------------------------------------------------------------------
 
 if(ENABLE_BUILD_USERSPACE)
-    add_subproject(bfsdk userspace DEPENDS bfroot)
-    add_subproject(bfintrinsics userspace DEPENDS gsl json bfroot)
-    add_subproject(bfm userspace DEPENDS gsl json cxxopts bfroot)
-    add_subproject(bfack userspace DEPENDS bfintrinsics)
+    add_subproject(bfsdk userspace DEPENDS gsl json argparse PRIVATE NOINSTALL)
+    add_subproject(bfintrinsics userspace DEPENDS bfsdk PRIVATE)
+    add_subproject(bfm userspace DEPENDS bfintrinsics PRIVATE)
+    add_subproject(bfack userspace DEPENDS bfintrinsics PRIVATE)
 endif()
 
 # ------------------------------------------------------------------------------
-# External Components
+# Unit Tests
 # ------------------------------------------------------------------------------
 
-list(APPEND EXTENSION ${SOURCE_EXAMPLES_DIR}/cpuidcount)
-list(APPEND EXTENSION ${SOURCE_EXAMPLES_DIR}/hook)
-list(APPEND EXTENSION ${SOURCE_EXAMPLES_DIR}/rdtsc)
-list(APPEND EXTENSION ${SOURCE_EXAMPLES_DIR}/vpid)
+if(ENABLE_BUILD_TEST)
+    add_subproject(bfsdk test DEPENDS gsl json catch hippomocks PRIVATE NOINSTALL)
+    add_subproject(bfm test DEPENDS bfsdk PRIVATE NOINSTALL)
+endif()
+
+# ------------------------------------------------------------------------------
+# Integration Tests
+# ------------------------------------------------------------------------------
+
+if(ENABLE_BUILD_TEST)
+endif()
+
+# ------------------------------------------------------------------------------
+# Examples
+# ------------------------------------------------------------------------------
+
+# if(NOT EXTENSION)
+    list(APPEND EXTENSION ${CMAKE_CURRENT_LIST_DIR}/examples/default)
+# endif()
+
+if(ENABLE_BUILD_EXAMPLES)
+    list(APPEND EXTENSION ${SOURCE_EXAMPLES_DIR}/cpuidcount)
+    list(APPEND EXTENSION ${SOURCE_EXAMPLES_DIR}/hook)
+    list(APPEND EXTENSION ${SOURCE_EXAMPLES_DIR}/rdtsc)
+    list(APPEND EXTENSION ${SOURCE_EXAMPLES_DIR}/vpid)
+endif()
+
+# ------------------------------------------------------------------------------
+# External Extensions
+# ------------------------------------------------------------------------------
 
 include_external_extensions()
 
@@ -168,9 +129,8 @@ include_external_extensions()
 # EFI Components
 # ------------------------------------------------------------------------------
 
-if(ENABLE_BUILD_EFI AND NOT WIN32)
-    include_dependency(SOURCE_DEPENDS_DIR gnuefi)
-    add_subproject(bfdriver efi DEPENDS bfroot gnuefi ${BFM_VMM_TARGET})
+if(ENABLE_BUILD_EFI)
+    add_subproject(bfdriver efi DEPENDS ${BUILDSYSTEM_TARGETS})
 endif()
 
 # ------------------------------------------------------------------------------
@@ -185,12 +145,6 @@ if(FORCE_REBUILD STREQUAL "ON")
     file(REMOVE_RECURSE ${PREFIXES_DIR})
     message(FATAL_ERROR "${Yellow}dependencies updated, rebuild is required. Rerun cmake${ColorReset}")
 endif()
-
-
-# TODO:
-#
-# Detect if the flags have changed, delete the depends and prefixes, and then
-# tell the user that cmake needs to be run again as a rebuild is required.
 
 # ------------------------------------------------------------------------------
 # Validate Build
@@ -207,15 +161,7 @@ print_banner()
 print_usage()
 
 # ------------------------------------------------------------------------------
-# Helpers
-# ------------------------------------------------------------------------------
-
-git_dir_script()
-
-# ------------------------------------------------------------------------------
 # Info
 # ------------------------------------------------------------------------------
 
-if(NOT WIN32)
-    add_custom_command(TARGET info COMMAND ${CMAKE_COMMAND} -E cmake_echo_color " ")
-endif()
+add_custom_command(TARGET info COMMAND ${CMAKE_COMMAND} -E cmake_echo_color " ")

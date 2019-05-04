@@ -22,7 +22,7 @@
 #ifndef TEST_SUPPORT_H
 #define TEST_SUPPORT_H
 
-#include <catch/catch.hpp>
+#include <catch2/catch.hpp>
 #include <hippomocks.h>
 
 #include <bftypes.h>

@@ -27,19 +27,25 @@ endif()
 
 set(CMAKE_SYSTEM_NAME Linux)
 
-if(NOT WIN32)
-    if(NOT DEFINED ENV{CLANG_BIN})
-        find_program(CLANG_BIN clang)
-    else()
-        set(CLANG_BIN $ENV{CLANG_BIN})
-    endif()
+if(NOT DEFINED ENV{CLANG_BIN})
+    find_program(CLANG_BIN clang)
+else()
+    set(CLANG_BIN $ENV{CLANG_BIN})
+endif()
 
-    if(CLANG_BIN)
-        set(CMAKE_C_COMPILER ${CLANG_BIN})
-        set(CMAKE_CXX_COMPILER ${CLANG_BIN})
-    else()
-        message(FATAL_ERROR "Unable to find clang")
-    endif()
+if(CLANG_BIN)
+    set(CMAKE_C_COMPILER ${CLANG_BIN})
+    set(CMAKE_C_COMPILER_WORKS 1)
+    set(CMAKE_CXX_COMPILER ${CLANG_BIN})
+    set(CMAKE_CXX_COMPILER_WORKS 1)
+else()
+    message(FATAL_ERROR "Unable to find clang")
+endif()
+
+if(DEFINED ENV{LD_BIN})
+    set(LD_BIN $ENV{LD_BIN})
+else()
+    set(LD_BIN ${CMAKE_INSTALL_PREFIX}/bin/ld)
 endif()
 
 string(CONCAT LD_FLAGS_PRE
@@ -64,6 +70,3 @@ set(CMAKE_C_CREATE_SHARED_LIBRARY
 set(CMAKE_CXX_CREATE_SHARED_LIBRARY
     "ld ${LD_FLAGS_PRE} <OBJECTS> ${LD_FLAGS_POST} -o <TARGET>"
 )
-
-set(CMAKE_C_COMPILER_WORKS 1)
-set(CMAKE_CXX_COMPILER_WORKS 1)

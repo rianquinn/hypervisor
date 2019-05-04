@@ -20,14 +20,22 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(bfack C CXX)
+project(bfack CXX)
 
-init_project(bfack BINARY)
+find_package(bareflank_userspace)
 
-target_sources(bfack PRIVATE src/ack.cpp)
-target_link_libraries(bfack PRIVATE userspace::bfintrinsics)
-target_include_directories(bfack PRIVATE
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../bfsdk/include>
+# -----------------------------------------------------------------------------
+# bfack
+# -----------------------------------------------------------------------------
+
+add_executable(bfack
+    src/ack.cpp
 )
 
-fini_project()
+target_link_libraries(bfack PRIVATE bareflank_userspace)
+
+# -----------------------------------------------------------------------------
+# installs
+# -----------------------------------------------------------------------------
+
+install(TARGETS bfack DESTINATION bin)

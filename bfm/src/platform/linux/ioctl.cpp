@@ -19,66 +19,115 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// TIDY_EXCLUSION=-cppcoreguidelines-pro-type-vararg
+//
+// Reason:
+//    The Linux APIs require the use of var-args, so this test has to be
+//    disabled.
+//
+
+#include <bfgsl.h>
 #include <ioctl.h>
-#include <ioctl_private.h>
 
-ioctl::ioctl() :
-    m_d {std::make_unique<ioctl_private>()}
-{ }
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
 
-void
-ioctl::open()
+// -----------------------------------------------------------------------------
+// Unit Test Seems
+// -----------------------------------------------------------------------------
+
+int fd;
+
+int
+bfm_ioctl_open()
 {
-    auto d = static_cast<ioctl_private *>(m_d.get());
-    d->open();
+    return open("/dev/bareflank", O_RDWR);
+}
+
+int64_t
+bfm_send_ioctl(unsigned long request)
+{
+    return ioctl(fd, request);
+}
+
+int64_t
+bfm_read_ioctl(unsigned long request, void *data)
+{
+    return ioctl(fd, request, data);
+}
+
+int64_t
+bfm_write_ioctl(unsigned long request, const void *data)
+{
+    return ioctl(fd, request, data);
+}
+
+// -----------------------------------------------------------------------------
+// Implementation
+// -----------------------------------------------------------------------------
+
+ioctl::ioctl()
+{
+    if (fd = bfm_ioctl_open(); fd < 0) {
+        throw std::runtime_error("failed to open to bfdriver");
+    }
+}
+
+ioctl::~ioctl()
+{
+    if (fd >= 0) {
+        close(fd);
+    }
 }
 
 void
-ioctl::call_ioctl_add_module(const binary_data &module_data)
+ioctl::call_ioctl_load_vmm(
+    gsl::not_null<const ioctl_load_args_t *> args) const
 {
-    auto d = static_cast<ioctl_private *>(m_d.get());
-    d->call_ioctl_add_module_length(module_data.size());
-    d->call_ioctl_add_module(module_data.data());
+    if (bfm_write_ioctl(IOCTL_LOAD_VMM, args) < 0) {
+        throw std::runtime_error("ioctl failed: IOCTL_LOAD_VMM");
+    }
 }
 
 void
-ioctl::call_ioctl_load_vmm()
+ioctl::call_ioctl_unload_vmm() const
 {
-    auto d = static_cast<ioctl_private *>(m_d.get());
-    d->call_ioctl_load_vmm();
+    if (bfm_send_ioctl(IOCTL_UNLOAD_VMM) < 0) {
+        throw std::runtime_error("ioctl failed: IOCTL_UNLOAD_VMM");
+    }
 }
 
 void
-ioctl::call_ioctl_unload_vmm()
+ioctl::call_ioctl_start_vmm() const
 {
-    auto d = static_cast<ioctl_private *>(m_d.get());
-    d->call_ioctl_unload_vmm();
+    if (bfm_send_ioctl(IOCTL_START_VMM) < 0) {
+        throw std::runtime_error("ioctl failed: IOCTL_START_VMM");
+    }
 }
 
 void
-ioctl::call_ioctl_start_vmm()
+ioctl::call_ioctl_stop_vmm() const
 {
-    auto d = static_cast<ioctl_private *>(m_d.get());
-    d->call_ioctl_start_vmm();
+    if (bfm_send_ioctl(IOCTL_STOP_VMM) < 0) {
+        throw std::runtime_error("ioctl failed: IOCTL_STOP_VMM");
+    }
 }
 
 void
-ioctl::call_ioctl_stop_vmm()
+ioctl::call_ioctl_dump_vmm(
+    gsl::not_null<debug_ring_resources_t *> args) const
 {
-    auto d = static_cast<ioctl_private *>(m_d.get());
-    d->call_ioctl_stop_vmm();
+    if (bfm_read_ioctl(IOCTL_DUMP_VMM, args) < 0) {
+        throw std::runtime_error("ioctl failed: IOCTL_DUMP_VMM");
+    }
 }
 
 void
-ioctl::call_ioctl_dump_vmm(gsl::not_null<drr_pointer> drr, vcpuid_type vcpuid)
+ioctl::call_ioctl_vmm_status(
+    gsl::not_null<status_t *> args) const
 {
-    auto d = static_cast<ioctl_private *>(m_d.get());
-    d->call_ioctl_dump_vmm(drr, vcpuid);
-}
-
-void
-ioctl::call_ioctl_vmm_status(gsl::not_null<status_pointer> status)
-{
-    auto d = static_cast<ioctl_private *>(m_d.get());
-    d->call_ioctl_vmm_status(status);
+    if (bfm_read_ioctl(IOCTL_VMM_STATUS, args) < 0) {
+        throw std::runtime_error("ioctl failed: IOCTL_VMM_STATUS");
+    }
 }

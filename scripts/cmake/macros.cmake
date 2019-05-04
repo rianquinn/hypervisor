@@ -19,37 +19,46 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# ------------------------------------------------------------------------------
-# colors
-# ------------------------------------------------------------------------------
+include(ExternalProject)
 
-if(NOT WIN32)
-    string(ASCII 27 Esc)
-    set(ColorReset  "${Esc}[m")
-    set(ColorBold   "${Esc}[1m")
-    set(Red         "${Esc}[31m")
-    set(Green       "${Esc}[32m")
-    set(Yellow      "${Esc}[33m")
-    set(Blue        "${Esc}[34m")
-    set(Magenta     "${Esc}[35m")
-    set(Cyan        "${Esc}[36m")
-    set(White       "${Esc}[37m")
-    set(BoldRed     "${Esc}[1;31m")
-    set(BoldGreen   "${Esc}[1;32m")
-    set(BoldYellow  "${Esc}[1;33m")
-    set(BoldBlue    "${Esc}[1;34m")
-    set(BoldMagenta "${Esc}[1;35m")
-    set(BoldCyan    "${Esc}[1;36m")
-    set(BoldWhite   "${Esc}[1;37m")
+if(ENABLE_BUILD_TEST)
+    include(CTest)
+    enable_testing(true)
 endif()
 
 # ------------------------------------------------------------------------------
-# Macro File List
+# include_external_config
 # ------------------------------------------------------------------------------
 
-macro(add_project_include FILE)
-    set(PROJECT_INCLUDE_LIST "${PROJECT_INCLUDE_LIST}|${FILE}")
-endmacro(add_project_include)
+macro(include_external_config)
+    if(CONFIG)
+        foreach(c ${CONFIG})
+            if(EXISTS "${SOURCE_CONFIG_DIR}/${c}.cmake")
+                message(STATUS "Config: ${SOURCE_CONFIG_DIR}/${c}.cmake")
+                include(${SOURCE_CONFIG_DIR}/${c}.cmake)
+                continue()
+            endif()
+            if(NOT IS_ABSOLUTE "${c}")
+                get_filename_component(c "${CMAKE_BINARY_DIR}/${c}" ABSOLUTE)
+            endif()
+            if(EXISTS "${c}")
+                message(STATUS "Config: ${c}")
+                include(${c})
+                continue()
+            endif()
+
+            message(FATAL_ERROR "File not found: ${c}")
+        endforeach(c)
+    elseif(EXISTS "${CMAKE_SOURCE_DIR}/../config.cmake")
+        get_filename_component(CONFIG "${CMAKE_SOURCE_DIR}/../config.cmake" ABSOLUTE)
+        message(STATUS "Config: ${CONFIG}")
+        include(${CONFIG})
+    endif()
+
+    set_vmm(vmm DEFAULT)
+    message(STATUS "Type: ${CMAKE_BUILD_TYPE}")
+
+endmacro(include_external_config)
 
 # ------------------------------------------------------------------------------
 # include_external_extensions
@@ -58,7 +67,7 @@ endmacro(add_project_include)
 macro(include_external_extensions)
     foreach(e ${EXTENSION})
         if(NOT IS_ABSOLUTE "${e}")
-            get_filename_component(e "${BUILD_ROOT_DIR}/${e}" ABSOLUTE)
+            get_filename_component(e "${CMAKE_BINARY_DIR}/${e}" ABSOLUTE)
         endif()
         if(EXISTS "${e}/CMakeLists.txt")
             message(STATUS "Extension: ${e}")
@@ -70,11 +79,9 @@ macro(include_external_extensions)
 endmacro(include_external_extensions)
 
 # ------------------------------------------------------------------------------
-# generate_flags
+# setup_flags
 # ------------------------------------------------------------------------------
 
-# Generate Flags
-#
 # Sets up CMAKE_C_FLAGS and CMAKE_CXX_FLAGS based on the provided flags and
 # prefix value. Each time this is executed, CMAKE_XXX_FLAGS are overwritten
 # and globally set. The add_subproject function performs this action on your
@@ -83,107 +90,108 @@ endmacro(include_external_extensions)
 #
 # @param PREFIX (macro arg) Defines which prefix the flags belong too. Valid
 #     values are: vmm, userspace, and test
+# @param NOWARNINGS Disable warnings
 # @param C_FLAGS Additional C flags to add to CMAKE_C_FLAGS
 # @param CXX_FLAGS Additional CXX flags to add to CMAKE_CXX_FLAGS
 #
-function(generate_flags PREFIX)
+macro(setup_flags PREFIX)
     set(options NOWARNINGS)
     set(multiVal C_FLAGS CXX_FLAGS)
     cmake_parse_arguments(ARG "${options}" "" "${multiVal}" ${ARGN})
 
-    list(APPEND _C_FLAGS ${ARG_C_FLAGS} $ENV{C_FLAGS})
-    list(APPEND _CXX_FLAGS ${ARG_CXX_FLAGS} $ENV{CXX_FLAGS})
+    unset(CMAKE_C_FLAGS)
+    unset(CMAKE_CXX_FLAGS)
+    unset(CMAKE_C_LINK_FLAGS)
+    unset(CMAKE_CXX_LINK_FLAGS)
 
-    if(PREFIX STREQUAL "vmm")
-        list(APPEND _C_FLAGS ${BFFLAGS_VMM} ${BFFLAGS_VMM_C} ${C_FLAGS_VMM})
-        list(APPEND _CXX_FLAGS ${BFFLAGS_VMM} ${BFFLAGS_VMM_CXX} ${CXX_FLAGS_VMM})
-        if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
-            list(APPEND _C_FLAGS ${BFFLAGS_VMM_X86_64})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_VMM_X86_64})
-        endif()
-        if(${BUILD_TARGET_ARCH} STREQUAL "aarch64")
-            list(APPEND _C_FLAGS ${BFFLAGS_VMM_AARCH64})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_VMM_AARCH64})
-        endif()
-    elseif(PREFIX STREQUAL "userspace")
-        list(APPEND _C_FLAGS ${BFFLAGS_USERSPACE} ${BFFLAGS_USERSPACE_C} ${C_FLAGS_USERSPACE})
-        list(APPEND _CXX_FLAGS ${BFFLAGS_USERSPACE} ${BFFLAGS_USERSPACE_CXX} ${CXX_FLAGS_USERSPACE})
-        if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
-            list(APPEND _C_FLAGS ${BFFLAGS_USERSPACE_X86_64})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_USERSPACE_X86_64})
-        endif()
-        if(${BUILD_TARGET_ARCH} STREQUAL "aarch64")
-            list(APPEND _C_FLAGS ${BFFLAGS_USERSPACE_AARCH64})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_USERSPACE_AARCH64})
-        endif()
-    elseif(PREFIX STREQUAL "test")
-        list(APPEND _C_FLAGS ${BFFLAGS_TEST} ${BFFLAGS_TEST_C} ${C_FLAGS_TEST})
-        list(APPEND _CXX_FLAGS ${BFFLAGS_TEST} ${BFFLAGS_TEST_CXX} ${CXX_FLAGS_TEST})
-        if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
-            list(APPEND _C_FLAGS ${BFFLAGS_TEST_X86_64})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_TEST_X86_64})
-        endif()
-        if(${BUILD_TARGET_ARCH} STREQUAL "aarch64")
-            list(APPEND _C_FLAGS ${BFFLAGS_TEST_AARCH64})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_TEST_AARCH64})
-        endif()
-        if(ENABLE_ASAN)
-            list(APPEND _C_FLAGS ${BFFLAGS_ASAN})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_ASAN})
-        endif()
-        if(ENABLE_USAN)
-            list(APPEND _C_FLAGS ${BFFLAGS_USAN})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_USAN})
-        endif()
-        if(ENABLE_CODECOV)
-            list(APPEND _C_FLAGS ${BFFLAGS_CODECOV})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_CODECOV})
-        endif()
-    elseif(PREFIX STREQUAL "efi")
-        list(APPEND _C_FLAGS ${BFFLAGS_EFI} ${BFFLAGS_EFI_C} ${C_FLAGS_EFI})
-        list(APPEND _CXX_FLAGS ${BFFLAGS_EFI} ${BFFLAGS_EFI_CXX} ${CXX_FLAGS_EFI})
-        if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
-            list(APPEND _C_FLAGS ${BFFLAGS_EFI_X86_64})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_EFI_X86_64})
-        endif()
-        if(${BUILD_TARGET_ARCH} STREQUAL "aarch64")
-            list(APPEND _C_FLAGS ${BFFLAGS_EFI_AARCH64})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_EFI_AARCH64})
-        endif()
+    list(APPEND CMAKE_C_FLAGS ${ARG_C_FLAGS})
+    list(APPEND CMAKE_CXX_FLAGS ${ARG_CXX_FLAGS})
+
+    if(${PREFIX} STREQUAL "vmm")
+        set(CMAKE_C_LINK_FLAGS ${BFFLAGS_VMM_LINK})
+        set(CMAKE_CXX_LINK_FLAGS ${BFFLAGS_VMM_LINK})
+        list(APPEND CMAKE_C_FLAGS ${BFFLAGS_VMM_C} ${C_FLAGS_VMM})
+        list(APPEND CMAKE_CXX_FLAGS ${BFFLAGS_VMM_CXX} ${CXX_FLAGS_VMM})
+    elseif(${PREFIX} STREQUAL "userspace")
+        list(APPEND CMAKE_C_FLAGS ${BFFLAGS_USERSPACE_C} ${C_FLAGS_USERSPACE})
+        list(APPEND CMAKE_CXX_FLAGS ${BFFLAGS_USERSPACE_CXX} ${CXX_FLAGS_USERSPACE})
+    elseif(${PREFIX} STREQUAL "test")
+        list(APPEND CMAKE_C_FLAGS ${BFFLAGS_TEST_C} ${C_FLAGS_TEST})
+        list(APPEND CMAKE_CXX_FLAGS ${BFFLAGS_TEST_CXX} ${CXX_FLAGS_TEST})
+    elseif(${PREFIX} STREQUAL "efi")
+        list(APPEND CMAKE_C_FLAGS ${BFFLAGS_EFI_C} ${C_FLAGS_EFI})
+        list(APPEND CMAKE_CXX_FLAGS ${BFFLAGS_EFI_CXX} ${CXX_FLAGS_EFI})
     else()
         message(FATAL_ERROR "Invalid prefix: ${PREFIX}")
     endif()
 
-    if(NOT ARG_NOWARNINGS)
-        if(ENABLE_COMPILER_WARNINGS)
-            list(APPEND _C_FLAGS ${BFFLAGS_WARNING_C})
-            list(APPEND _CXX_FLAGS ${BFFLAGS_WARNING_CXX})
-        endif()
-
+    if(ENABLE_COMPILER_WARNINGS AND NOT ARG_NOWARNINGS)
+        list(APPEND CMAKE_C_FLAGS ${BFFLAGS_WARNING_C})
+        list(APPEND CMAKE_CXX_FLAGS ${BFFLAGS_WARNING_CXX})
         if(CMAKE_BUILD_TYPE STREQUAL "Release")
-            if(NOT WIN32)
-                list(APPEND _C_FLAGS -Werror)
-                list(APPEND _CXX_FLAGS -Werror)
+            if(UNIX)
+                list(APPEND CMAKE_C_FLAGS -Werror)
+                list(APPEND CMAKE_CXX_FLAGS -Werror)
             else()
-                list(APPEND _C_FLAGS /WX)
-                list(APPEND _CXX_FLAGS /WX)
+                list(APPEND CMAKE_C_FLAGS /WX)
+                list(APPEND CMAKE_CXX_FLAGS /WX)
             endif()
+        endif()
+    else()
+        if(UNIX)
+            list(APPEND CMAKE_C_FLAGS -w)
+            list(APPEND CMAKE_CXX_FLAGS -w)
+        else()
+            list(APPEND CMAKE_C_FLAGS /w)
+            list(APPEND CMAKE_CXX_FLAGS /w)
         endif()
     endif()
 
-    string(REPLACE ";" " " _C_FLAGS "${_C_FLAGS}")
-    string(REPLACE ";" " " _CXX_FLAGS "${_CXX_FLAGS}")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        if(UNIX)
+            list(APPEND CMAKE_C_FLAGS -O3 -DNDEBUG)
+            list(APPEND CMAKE_CXX_FLAGS -O3 -DNDEBUG)
+        else()
+            list(APPEND CMAKE_C_FLAGS /O2 -DNDEBUG)
+            list(APPEND CMAKE_CXX_FLAGS /O2 -DNDEBUG)
+        endif()
+    else()
+        if(UNIX)
+            list(APPEND CMAKE_C_FLAGS -g)
+            list(APPEND CMAKE_CXX_FLAGS -g)
+        else()
+            list(APPEND CMAKE_C_FLAGS /Od)
+            list(APPEND CMAKE_CXX_FLAGS /Od)
+        endif()
+    endif()
 
-    set(CMAKE_C_FLAGS ${_C_FLAGS} PARENT_SCOPE)
-    set(CMAKE_CXX_FLAGS ${_CXX_FLAGS} PARENT_SCOPE)
-endfunction(generate_flags)
+    string(REPLACE ";" " " CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+endmacro(setup_flags)
+
+# ------------------------------------------------------------------------------
+# setup_generator_expression_shorthands
+# ------------------------------------------------------------------------------
+
+# Sets up some generator expression shorthands which can be used by a
+# subproject to keep their CMakeLists.txt files simpilar.
+#
+macro(setup_generator_expression_shorthands)
+    set(ARM $<STREQUAL:${CMAKE_HOST_SYSTEM_PROCESSOR},aarch64>)
+    set(X64 $<STREQUAL:${CMAKE_HOST_SYSTEM_PROCESSOR},x86_64>)
+    set(INTEL_X64 $<STREQUAL:${CMAKE_HOST_SYSTEM_PROCESSOR},x86_64>)
+
+    set(C $<COMPILE_LANGUAGE:C>)
+    set(CXX $<COMPILE_LANGUAGE:CXX>)
+
+    set(LINUX $<STREQUAL:${HOST_SYSTEM_NAME},Linux>)
+    set(WINDOWS $<STREQUAL:${HOST_SYSTEM_NAME},Windows>)
+endmacro(setup_generator_expression_shorthands)
 
 # ------------------------------------------------------------------------------
 # include_dependency
 # ------------------------------------------------------------------------------
 
-# Private
-#
 macro(include_dependency DIR NAME)
     include(${${DIR}}/${NAME}.cmake)
 endmacro(include_dependency)
@@ -192,8 +200,6 @@ endmacro(include_dependency)
 # download_dependency
 # ------------------------------------------------------------------------------
 
-# Download Dependency
-#
 # Downloads a dependency from a URL. Dependencies can either be
 # a tarball or a zip file. These downloaded files are placeed in the CACHE_DIR.
 # If the provided MD5 hash does not match, the cached download is redownloaded.
@@ -338,8 +344,6 @@ endfunction(download_dependency)
 # add_dependency
 # ------------------------------------------------------------------------------
 
-# Add Dependency
-#
 # Uses ExternalProject_Add to add the dependency to the build. All of the
 # optional arguments are passed directly to ExternalProject_Add, so most of
 # ExternalProject_Add's options are supported by this function.
@@ -367,18 +371,12 @@ function(add_dependency NAME PREFIX)
             CMAKE_ARGS -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
             CMAKE_ARGS -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
         )
-        if(NOT WIN32 AND NOT CMAKE_GENERATOR STREQUAL "Ninja")
+        if(NOT CMAKE_GENERATOR STREQUAL "Ninja")
             list(APPEND ARGN
                 CMAKE_ARGS -DCMAKE_TARGET_MESSAGES=${CMAKE_TARGET_MESSAGES}
             )
         endif()
-        if(NOT WIN32)
-            list(APPEND ARGN
-                CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-            )
-            list(APPEND ARGN LOG_DIR ${DEPENDS_DIR}/${NAME}/${PREFIX}/stamp)
-        endif()
-    else()
+    elseif(NOT CMAKE_VERBOSE_MAKEFILE)
         list(APPEND ARGN
             LOG_CONFIGURE 1
             LOG_BUILD 1
@@ -396,15 +394,6 @@ function(add_dependency NAME PREFIX)
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${DEPENDS_DIR}/${NAME}
     )
 
-    # TODO
-    #
-    # As a post install step, we need to touch a file that states that the
-    # dependency has been compiled. If this is the case, we would then only
-    # run the install step, skipping the compile step. This should allow us
-    # to move the depends directory outside of the build tree and safely use
-    # it for future compilations.
-    #
-
     ExternalProject_Add(
         ${NAME}_${PREFIX}
         ${ARGN}
@@ -412,6 +401,7 @@ function(add_dependency NAME PREFIX)
         STAMP_DIR           ${DEPENDS_DIR}/${NAME}/${PREFIX}/stamp
         TMP_DIR             ${DEPENDS_DIR}/${NAME}/${PREFIX}/tmp
         BINARY_DIR          ${DEPENDS_DIR}/${NAME}/${PREFIX}/build
+        LOG_DIR             ${DEPENDS_DIR}/${NAME}/${PREFIX}/logs
         SOURCE_DIR          ${CACHE_DIR}/${NAME}
     )
 
@@ -423,8 +413,6 @@ function(add_dependency NAME PREFIX)
     )
 endfunction(add_dependency)
 
-# Add Dependency Step
-#
 # Uses ExternalProject_Add_Step to add an additional step to external project
 # add after "install" is executed by ExternalProject_Add. Only one additional
 # step is supported. Like add_dependency, add_dependency_step passes all
@@ -460,9 +448,7 @@ endfunction(add_dependency_step)
 # add_targets
 # ------------------------------------------------------------------------------
 
-# Private
-#
-function(add_tidy_targets NAME PREFIX SOURCE_DIR)
+function(add_tidy_targets PREFIX NAME SOURCE_DIR)
     if(PREFIX STREQUAL "vmm")
         set(PREFIX ${VMM_PREFIX})
     elseif(PREFIX STREQUAL "userspace")
@@ -512,9 +498,7 @@ function(add_tidy_targets NAME PREFIX SOURCE_DIR)
     )
 endfunction(add_tidy_targets)
 
-# Private
-#
-function(add_format_targets NAME PREFIX SOURCE_DIR)
+function(add_format_targets PREFIX NAME SOURCE_DIR)
     if(PREFIX STREQUAL "vmm")
         set(PREFIX ${VMM_PREFIX})
     elseif(PREFIX STREQUAL "userspace")
@@ -558,9 +542,7 @@ function(add_format_targets NAME PREFIX SOURCE_DIR)
     )
 endfunction(add_format_targets)
 
-# Private
-#
-function(add_targets NAME PREFIX SOURCE_DIR)
+function(add_targets PREFIX NAME SOURCE_DIR)
     if(PREFIX STREQUAL "vmm")
         set(FULLPREFIX ${VMM_PREFIX})
     elseif(PREFIX STREQUAL "userspace")
@@ -597,15 +579,15 @@ function(add_targets NAME PREFIX SOURCE_DIR)
             add_custom_target(tidy-${NAME}_${FULLPREFIX})
             add_custom_target(tidy-${NAME}_${FULLPREFIX}-all)
             add_custom_target(tidy-${NAME}_${FULLPREFIX}-upstream)
-            add_tidy_targets(${NAME} ${PREFIX} ${SOURCE_DIR})
+            add_tidy_targets(${PREFIX} ${NAME} ${SOURCE_DIR})
         endif()
 
         if(ENABLE_FORMAT)
             add_custom_target(format-${NAME}_${FULLPREFIX})
             add_custom_target(format-${NAME}_${FULLPREFIX}-all)
             add_custom_target(format-${NAME}_${FULLPREFIX}-upstream)
-            add_format_targets(${NAME} ${PREFIX} ${SOURCE_DIR})
-            add_format_targets(${NAME} ${PREFIX} ${SOURCE_DIR}/../include)
+            add_format_targets(${PREFIX} ${NAME} ${SOURCE_DIR})
+            add_format_targets(${PREFIX} ${NAME} ${SOURCE_DIR}/../include)
         endif()
     endif()
 
@@ -625,100 +607,32 @@ function(add_targets NAME PREFIX SOURCE_DIR)
 endfunction(add_targets)
 
 # ------------------------------------------------------------------------------
-# right_justify
-# ------------------------------------------------------------------------------
-
-# Private
-#
-function(right_justify text width output)
-    set(str "")
-    string(LENGTH "${text}" text_len)
-    foreach(i RANGE ${text_len} ${width})
-        set(str " ${str}")
-    endforeach(i)
-    set(${output} ${str} PARENT_SCOPE)
-endfunction(right_justify)
-
-# ------------------------------------------------------------------------------
-# add_custom_target_category
-# ------------------------------------------------------------------------------
-
-# Private
-#
-function(add_custom_target_category TEXT)
-    if(NOT WIN32)
-        add_custom_command(
-            TARGET info
-            COMMAND ${CMAKE_COMMAND} -E cmake_echo_color " "
-            COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "${TEXT}:"
-        )
-    endif()
-endfunction(add_custom_target_category)
-
-# ------------------------------------------------------------------------------
-# add_custom_target_info
-# ------------------------------------------------------------------------------
-
-# Private
-#
-function(add_custom_target_info)
-    if(NOT WIN32)
-        set(oneVal TARGET COMMENT)
-        cmake_parse_arguments(ARG "" "${oneVal}" "" ${ARGN})
-
-        if(NOT_ARG_TARGET)
-            right_justify("${BUILD_COMMAND}" 20 JUSTIFY_STR)
-            add_custom_command(
-                TARGET info
-                COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --yellow --no-newline "    ${BUILD_COMMAND}"
-                COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --red --no-newline "${JUSTIFY_STR}- "
-                COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --white "${ARG_COMMENT}"
-            )
-        else()
-            right_justify("${BUILD_COMMAND} ${ARG_TARGET}" 20 JUSTIFY_STR)
-            add_custom_command(
-                TARGET info
-                COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --yellow --no-newline "    ${BUILD_COMMAND} ${ARG_TARGET}"
-                COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --red --no-newline "${JUSTIFY_STR}- "
-                COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --white "${ARG_COMMENT}"
-            )
-        endif()
-    endif()
-endfunction(add_custom_target_info)
-
-# ------------------------------------------------------------------------------
 # add_subproject
 # ------------------------------------------------------------------------------
 
-# Add Sub Project
-#
 # Adds a Bareflank specific project to the build. Unlike dependencies,
 # sub projects are checked for changes. This function is not only used
 # internally by the main build system, but can also be used by extensions
 # for adding additional logic to the hypervisor.
 #
+# @param NOINSTALL skip the install step
+# @param PRIVATE only for internal uses
 # @param SOURCE_DIR the path to the project's CMakeLists.txt.
-# @param TOOLCHAIN the path to the toolchain file to use.
 # @param DEPENDS superbuild-level dependencies of the project.
 #
 function(add_subproject NAME PREFIX)
-    set(oneVal SOURCE_DIR TOOLCHAIN)
+    set(options NOINSTALL PRIVATE)
+    set(oneVal SOURCE_DIR)
     set(multiVal DEPENDS)
-    cmake_parse_arguments(ARG "" "${oneVal}" "${multiVal}" ${ARGN})
+    cmake_parse_arguments(ARG "${options}" "${oneVal}" "${multiVal}" ${ARGN})
 
-    if(PREFIX STREQUAL "vmm" AND NOT ENABLE_BUILD_VMM AND NOT ENABLE_BUILD_TEST)
+    if(PREFIX STREQUAL "vmm" AND NOT ENABLE_BUILD_VMM)
         return()
-    endif()
-
-    if(PREFIX STREQUAL "userspace" AND NOT ENABLE_BUILD_USERSPACE)
+    elseif(PREFIX STREQUAL "userspace" AND NOT ENABLE_BUILD_USERSPACE)
         return()
-    endif()
-
-    if(PREFIX STREQUAL "test" AND NOT ENABLE_BUILD_TEST)
+    elseif(PREFIX STREQUAL "test" AND NOT ENABLE_BUILD_TEST)
         return()
-    endif()
-
-    if(PREFIX STREQUAL "efi" AND NOT ENABLE_BUILD_EFI)
+    elseif(PREFIX STREQUAL "efi"  AND NOT ENABLE_BUILD_EFI)
         return()
     endif()
 
@@ -728,26 +642,18 @@ function(add_subproject NAME PREFIX)
         set(SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/${NAME})
     endif()
 
-    set(SHORT_PREFIX ${PREFIX})
-    if(NOT PREFIX STREQUAL "efi" AND NOT ${NAME} STREQUAL "bfroot")
-        add_targets(${NAME} ${PREFIX} ${SOURCE_DIR})
+    if(PREFIX STREQUAL "vmm")
+        set(TOOLCHAIN ${VMM_TOOLCHAIN_PATH})
+    elseif(PREFIX STREQUAL "userspace")
+        set(TOOLCHAIN ${USERSPACE_TOOLCHAIN_PATH})
+    elseif(PREFIX STREQUAL "test")
+        set(TOOLCHAIN ${TEST_TOOLCHAIN_PATH})
+    elseif(PREFIX STREQUAL "efi")
+        set(TOOLCHAIN ${EFI_TOOLCHAIN_PATH})
     endif()
 
-    if(NOT ARG_TOOLCHAIN)
-        if(PREFIX STREQUAL "vmm")
-            set(TOOLCHAIN ${VMM_TOOLCHAIN_PATH})
-        elseif(PREFIX STREQUAL "userspace")
-            set(TOOLCHAIN ${USERSPACE_TOOLCHAIN_PATH})
-        elseif(PREFIX STREQUAL "test")
-            set(TOOLCHAIN ${TEST_TOOLCHAIN_PATH})
-        elseif(PREFIX STREQUAL "efi")
-            set(TOOLCHAIN ${EFI_TOOLCHAIN_PATH})
-        else()
-            message(FATAL_ERROR "Invalid prefix: ${PREFIX}")
-        endif()
-    else()
-        set(TOOLCHAIN ${ARG_TOOLCHAIN})
-    endif()
+    setup_flags(${PREFIX})
+    add_targets(${PREFIX} ${NAME} ${SOURCE_DIR})
 
     if(PREFIX STREQUAL "vmm")
         set(PREFIX ${VMM_PREFIX})
@@ -757,8 +663,6 @@ function(add_subproject NAME PREFIX)
         set(PREFIX ${TEST_PREFIX})
     elseif(PREFIX STREQUAL "efi")
         set(PREFIX ${EFI_PREFIX})
-    else()
-        message(FATAL_ERROR "Invalid prefix: ${PREFIX}")
     endif()
 
     foreach(d ${ARG_DEPENDS})
@@ -775,51 +679,62 @@ function(add_subproject NAME PREFIX)
         endif()
     endforeach(d)
 
-    get_cmake_property(_vars CACHE_VARIABLES)
-    foreach (_var ${_vars})
-        STRING(REGEX MATCH "^CMAKE" is_cmake_var ${_var})
-        if(NOT is_cmake_var)
-            list(APPEND CMAKE_ARGS -D${_var}=${${_var}})
-        endif()
-    endforeach()
+    if(PREFIX MATCHES "vmm" AND NOT ARG_PRIVATE)
+        list(APPEND DEPENDS "bfvmm_${PREFIX}")
+    endif()
 
     list(APPEND CMAKE_ARGS
-        -DCMAKE_EXPORT_COMPILE_COMMANDS=${CMAKE_EXPORT_COMPILE_COMMANDS}
-        -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
-        -DCMAKE_INSTALL_PREFIX=${PREFIXES_DIR}/${PREFIX}
-        -DCMAKE_PREFIX_PATH=${EXPORT_DIR}
-        -DCMAKE_PROJECT_${NAME}_INCLUDE=${SOURCE_CMAKE_DIR}/project.cmake
         -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN}
+        -DCMAKE_INSTALL_PREFIX=${PREFIXES_DIR}/${PREFIX}
+        -DCMAKE_PROJECT_${NAME}_INCLUDE=${SOURCE_CMAKE_DIR}/project.cmake
         -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
-        -DPROJECT_INCLUDE_LIST=${PROJECT_INCLUDE_LIST}
-        -DPKG_FILE=${PKG_FILE}
-        -DBFM_VMM=${BFM_VMM}
-        -DEFI_EXTENSION_SOURCES=${EFI_EXTENSION_SOURCES}
+        -DCMAKE_TARGET_MESSAGES=${CMAKE_TARGET_MESSAGES}
+        -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
+        -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+        -DCMAKE_CXX_LINK_FLAGS=${CMAKE_CXX_LINK_FLAGS}
     )
 
-    if(NOT WIN32 AND NOT CMAKE_GENERATOR STREQUAL "Ninja")
-        list(APPEND CMAKE_ARGS
-            -DCMAKE_TARGET_MESSAGES=${CMAKE_TARGET_MESSAGES}
-        )
-    endif()
-    if(NOT WIN32)
-        list(APPEND CMAKE_ARGS
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        )
-    endif()
-
-    ExternalProject_Add(
-        ${NAME}_${PREFIX}
-        ${EPA_ARGS}
-        PREFIX          ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}
-        STAMP_DIR       ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/stamp
-        TMP_DIR         ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/tmp
-        BINARY_DIR      ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/build
-        SOURCE_DIR      ${SOURCE_DIR}
-        CMAKE_ARGS      ${CMAKE_ARGS}
-        DEPENDS         ${DEPENDS}
-        UPDATE_COMMAND  ${CMAKE_COMMAND} -E echo "-- checking for updates"
+    list(APPEND CMAKE_ARGS
+        -DENABLE_BUILD_VMM=${ENABLE_BUILD_VMM}
+        -DENABLE_BUILD_USERSPACE=${ENABLE_BUILD_USERSPACE}
+        -DENABLE_BUILD_TEST=${ENABLE_BUILD_TEST}
+        -DENABLE_BUILD_EFI=${ENABLE_BUILD_EFI}
+        -DENABLE_BUILD_EXAMPLES=${ENABLE_BUILD_EXAMPLES}
+        -DHOST_SYSTEM_NAME=${HOST_SYSTEM_NAME}
+        -DHOST_FORMAT_TYPE=${HOST_FORMAT_TYPE}
+        -DHOST_OSTYPE=${HOST_OSTYPE}
+        -DHOST_ABITYPE=${HOST_ABITYPE}
+        -DSOURCE_ROOT_DIR=${SOURCE_ROOT_DIR}
     )
+
+    if(ARG_NOINSTALL)
+        ExternalProject_Add(
+            ${NAME}_${PREFIX}
+            PREFIX          ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}
+            STAMP_DIR       ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/stamp
+            TMP_DIR         ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/tmp
+            BINARY_DIR      ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/build
+            LOG_DIR         ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/logs
+            SOURCE_DIR      ${SOURCE_DIR}
+            CMAKE_ARGS      ${CMAKE_ARGS}
+            DEPENDS         ${DEPENDS}
+            UPDATE_COMMAND  ${CMAKE_COMMAND} -E echo "-- checking for updates"
+            INSTALL_COMMAND  ${CMAKE_COMMAND} -E echo "-- skipping install"
+        )
+    else()
+        ExternalProject_Add(
+            ${NAME}_${PREFIX}
+            PREFIX          ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}
+            STAMP_DIR       ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/stamp
+            TMP_DIR         ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/tmp
+            BINARY_DIR      ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/build
+            LOG_DIR         ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/logs
+            SOURCE_DIR      ${SOURCE_DIR}
+            CMAKE_ARGS      ${CMAKE_ARGS}
+            DEPENDS         ${DEPENDS}
+            UPDATE_COMMAND  ${CMAKE_COMMAND} -E echo "-- checking for updates"
+        )
+    endif()
 
     ExternalProject_Add_Step(
         ${NAME}_${PREFIX}
@@ -827,144 +742,156 @@ function(add_subproject NAME PREFIX)
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/${NAME}/${PREFIX}/src
         DEPENDEES configure
     )
-
-    ExternalProject_Add_Step(
-        ${NAME}_${PREFIX}
-        ${NAME}_${PREFIX}_package
-        COMMAND ${CMAKE_COMMAND}
-            -DPKG_FILE=${PKG_FILE} -DPKG=${NAME}-${SHORT_PREFIX}
-            -P ${SOURCE_CMAKE_DIR}/append.cmake
-        DEPENDEES install
-    )
 endfunction(add_subproject)
 
 # ------------------------------------------------------------------------------
-# init_project
+# setup_interfaces
 # ------------------------------------------------------------------------------
 
-# Private
+function(setup_interfaces)
+    if(ENABLE_BUILD_VMM)
+        add_library(bareflank_internal INTERFACE)
+        add_library(bareflank_vmm INTERFACE)
+
+        target_link_libraries(bareflank_internal INTERFACE
+            --whole-archive
+            ${VMM_PREFIX_PATH}/lib/libbfcrt.a
+            ${VMM_PREFIX_PATH}/lib/libbfdso.a
+            --no-whole-archive
+            ${VMM_PREFIX_PATH}/lib/libbfintrinsics.a
+            ${VMM_PREFIX_PATH}/lib/libc++.a
+            ${VMM_PREFIX_PATH}/lib/libc++abi.a
+            ${VMM_PREFIX_PATH}/lib/libbfpthread.a
+            ${VMM_PREFIX_PATH}/lib/libbfunwind.a
+            ${VMM_PREFIX_PATH}/lib/libm.a
+            ${VMM_PREFIX_PATH}/lib/libc.a
+            ${VMM_PREFIX_PATH}/lib/libbfsyscall.a
+        )
+
+        target_link_libraries(bareflank_vmm INTERFACE
+            --whole-archive
+            ${VMM_PREFIX_PATH}/lib/libbfcrt.a
+            ${VMM_PREFIX_PATH}/lib/libbfdso.a
+            --no-whole-archive
+            ${VMM_PREFIX_PATH}/lib/libbfvmm.a
+            ${VMM_PREFIX_PATH}/lib/libbfintrinsics.a
+            ${VMM_PREFIX_PATH}/lib/libc++.a
+            ${VMM_PREFIX_PATH}/lib/libc++abi.a
+            ${VMM_PREFIX_PATH}/lib/libbfpthread.a
+            ${VMM_PREFIX_PATH}/lib/libbfunwind.a
+            ${VMM_PREFIX_PATH}/lib/libm.a
+            ${VMM_PREFIX_PATH}/lib/libc.a
+            ${VMM_PREFIX_PATH}/lib/libbfsyscall.a
+            ${VMM_PREFIX_PATH}/lib/libbfvmm.a
+        )
+
+        export(TARGETS bareflank_internal FILE bareflank_vmmConfig.cmake APPEND)
+        export(TARGETS bareflank_vmm FILE bareflank_vmmConfig.cmake APPEND)
+        export(PACKAGE bareflank_vmm)
+    endif()
+
+    if(ENABLE_BUILD_USERSPACE)
+        add_library(bareflank_userspace INTERFACE)
+
+        target_link_libraries(bareflank_userspace INTERFACE
+            ${USERSPACE_PREFIX_PATH}/lib/libbfintrinsics.a
+            $<$<OR:$<BOOL:${CYGWIN}>,$<BOOL:${WIN32}>>:setupapi>
+        )
+
+        export(TARGETS bareflank_userspace FILE bareflank_userspaceConfig.cmake APPEND)
+        export(PACKAGE bareflank_userspace)
+    endif()
+
+    if(ENABLE_BUILD_TEST)
+        add_library(bareflank_test INTERFACE)
+
+        target_link_libraries(bareflank_test INTERFACE
+            ${TEST_PREFIX_PATH}/lib/libCatchMain.a
+            $<$<OR:$<BOOL:${CYGWIN}>,$<BOOL:${WIN32}>>:setupapi>
+        )
+
+        export(TARGETS bareflank_test FILE bareflank_testConfig.cmake APPEND)
+        export(PACKAGE bareflank_test)
+    endif()
+endfunction(setup_interfaces)
+
+# ------------------------------------------------------------------------------
+# enable_asm
+# ------------------------------------------------------------------------------
+
+# TODO
 #
-macro(enable_asm PREFIX)
-    if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
-        find_program(NASM_BIN nasm)
+# Remove the need for NASM internally. Instead, we should convert to either
+# already existing intrinsics, and native ASM so that NASM is no longer needed.
+#
 
-        if(NOT NASM_BIN)
-            set(NASM_BIN "c:\\Program Files\\NASM\\nasm.exe")
-            if(NOT EXISTS ${NASM_BIN})
-                message(FATAL_ERROR "Unable to find nasm, or nasm is not installed")
-            endif()
+macro(enable_asm)
+    find_program(NASM_BIN nasm)
+
+    if(NOT NASM_BIN)
+        set(NASM_BIN "c:\\Program Files\\NASM\\nasm.exe")
+        if(NOT EXISTS ${NASM_BIN})
+            message(FATAL_ERROR "Unable to find nasm, or nasm is not installed")
         endif()
+    endif()
 
-        execute_process(COMMAND ${NASM_BIN} -v OUTPUT_VARIABLE NASM_ID OUTPUT_STRIP_TRAILING_WHITESPACE)
-        set(CMAKE_ASM_NASM_COMPILER_ID ${NASM_ID})
+    execute_process(COMMAND ${NASM_BIN} -v OUTPUT_VARIABLE NASM_ID OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set(CMAKE_ASM_NASM_COMPILER_ID ${NASM_ID})
 
-        if(PREFIX STREQUAL "vmm")
+    if(CMAKE_INSTALL_PREFIX MATCHES "vmm")
+        set(CMAKE_ASM_NASM_OBJECT_FORMAT "elf64")
+    else()
+        if(CMAKE_INSTALL_PREFIX MATCHES "pe")
+            set(CMAKE_ASM_NASM_OBJECT_FORMAT "win64")
+        endif()
+        if(CMAKE_INSTALL_PREFIX MATCHES "elf")
             set(CMAKE_ASM_NASM_OBJECT_FORMAT "elf64")
-        else()
-            if(HOST_FORMAT_TYPE STREQUAL "pe")
-                set(CMAKE_ASM_NASM_OBJECT_FORMAT "win64")
-            endif()
-            if(HOST_FORMAT_TYPE STREQUAL "elf")
-                set(CMAKE_ASM_NASM_OBJECT_FORMAT "elf64")
-            endif()
         endif()
-
-        enable_language(ASM_NASM)
-
-        if(PREFIX STREQUAL "vmm")
-            set(CMAKE_ASM_NASM_FLAGS "-d ${PREFIX} -d ${OSTYPE} -d SYSV")
-        else()
-            set(CMAKE_ASM_NASM_FLAGS "-d ${PREFIX} -d ${OSTYPE} -d ${ABITYPE}")
-        endif()
-
-        set(CMAKE_ASM_NASM_CREATE_STATIC_LIBRARY TRUE)
     endif()
-    if(${BUILD_TARGET_ARCH} STREQUAL "aarch64")
-        message(WARNING "unimplemented")
+
+    enable_language(ASM_NASM)
+
+    if(CMAKE_INSTALL_PREFIX MATCHES "vmm")
+        set(CMAKE_ASM_NASM_FLAGS "-d ${HOST_OSTYPE} -d SYSV -d vmm")
+    else()
+        set(CMAKE_ASM_NASM_FLAGS "-d ${HOST_OSTYPE} -d ${HOST_ABITYPE}")
     endif()
+
+    set(CMAKE_ASM_NASM_CREATE_STATIC_LIBRARY TRUE)
 endmacro(enable_asm)
 
-# Init Project
+# ------------------------------------------------------------------------------
+# set_vmm
+# ------------------------------------------------------------------------------
+
+# Sets the VMM that will be used when running "make load" or "make quick".
+# Note that this is only used by the make targets and does not extend to BFM
+# itself which must be used manually.
 #
-# Initializes a subproject or extension.
+# @param NAME The name of the VMM to load
+# @param DEFAULT If the VMM has not yet been set, this default value will be
+#     used instead. This should not be used by extensions
 #
-# @param TARGET the name of the project target to create
-# @param INTERFACE make TARGET an interface library
-# @param BINARY make TARGET an executable
-#
-macro(init_project TARGET)
-    set(options INTERFACE BINARY)
+macro(set_vmm NAME)
+    set(options DEFAULT)
     cmake_parse_arguments(ARG "${options}" "" "" ${ARGN})
 
-    set(CMAKE_C_EXTENSIONS OFF)
-    set(CMAKE_CXX_EXTENSIONS OFF)
-
-    enable_asm(${PREFIX})
-
-    if(${ARG_INTERFACE})
-        add_library(${TARGET} INTERFACE)
-        add_library(${PREFIX}::${TARGET} ALIAS ${TARGET})
-        set(INTERFACE TRUE)
-    elseif(NOT ${ARG_BINARY})
-        add_library(${TARGET} STATIC)
-        add_library(${PREFIX}::${TARGET} ALIAS ${TARGET})
-        set_target_properties(${TARGET} PROPERTIES LINKER_LANGUAGE C)
-    else()
-        add_executable(${TARGET})
-        add_executable(${PREFIX}::${TARGET} ALIAS ${TARGET})
-        set_target_properties(${TARGET} PROPERTIES LINKER_LANGUAGE C)
-        set(BINARY TRUE)
+    if(NOT ARG_DEFAULT OR (ARG_DEFAULT AND NOT VMM))
+        set(VMM "${NAME}")
+        message(STATUS "VMM: ${VMM}")
     endif()
-
-    if(PREFIX STREQUAL "vmm")
-        set(CMAKE_SKIP_RPATH TRUE)
-    endif()
-
-    if(PREFIX STREQUAL "test")
-        set(ENABLE_MOCKING ON)
-        set(CMAKE_BUILD_TYPE "Debug")
-    endif()
-
-    get_cmake_property(_vars CACHE_VARIABLES)
-    foreach (_var ${_vars})
-        set(${_var} ${${_var}})
-    endforeach()
-endmacro(init_project)
-
-# Fini Project
-#
-macro(fini_project)
-    set(PROJECT ${CMAKE_PROJECT_NAME})
-    set(EXPORT ${PROJECT}-${PREFIX}-targets)
-
-    if(NOT BINARY)
-        install(TARGETS ${PROJECT} DESTINATION lib EXPORT ${EXPORT})
-    else()
-        install(TARGETS ${PROJECT} DESTINATION bin EXPORT ${EXPORT})
-    endif()
-
-    install(EXPORT ${EXPORT} DESTINATION ${EXPORT_DIR} NAMESPACE ${PREFIX}::)
-    configure_file(
-        ${SOURCE_CMAKE_DIR}/package.cmake.in
-        ${EXPORT_DIR}/${PROJECT}-${PREFIX}-config.cmake
-        @ONLY
-    )
-endmacro(fini_project)
+endmacro(set_vmm)
 
 # ------------------------------------------------------------------------------
 # validate_build / invalid_config
 # ------------------------------------------------------------------------------
 
-# Private
-#
 function(validate_build)
     if(BUILD_VALIDATOR_ERROR)
         message(FATAL_ERROR "Build validation failed")
     endif()
 endfunction(validate_build)
 
-# Invalidate Config
-#
 # Use this function to invalidate the configuration of the build. Unlike
 # message(FATAL_ERROR), this function will queue up errors, and exit when
 # the build is validated ensuring all errors are reported at once.
@@ -980,8 +907,6 @@ endmacro(invalid_config)
 # do_test
 # ------------------------------------------------------------------------------
 
-# Do Test
-#
 # Adds a unit test.
 #
 # @param FILEPATH the file name of the test.
@@ -994,8 +919,12 @@ endmacro(invalid_config)
 #     used.
 #
 function(do_test FILEPATH)
-    set(multiVal DEFINES DEPENDS SOURCES CMD_LINE_ARGS)
+    set(multiVal DEPENDS SOURCES)
     cmake_parse_arguments(ARG "" "" "${multiVal}" ${ARGN})
+
+    if(NOT CMAKE_INSTALL_PREFIX MATCHES "test")
+        return()
+    endif()
 
     if(NOT ARG_SOURCES)
         set(ARG_SOURCES "${FILEPATH}")
@@ -1006,17 +935,62 @@ function(do_test FILEPATH)
 
     add_executable(test_${NAME})
     target_sources(test_${NAME} PRIVATE ${ARG_SOURCES})
-    target_link_libraries(test_${NAME} PRIVATE ${ARG_DEPENDS} ${CMAKE_PROJECT_NAME})
-    target_compile_definitions(test_${NAME} PRIVATE ${ARG_DEFINES})
-    add_test(NAME test_${NAME} COMMAND test_${NAME} ${ARG_CMD_LINE_ARGS})
+    target_link_libraries(test_${NAME} PRIVATE ${ARG_DEPENDS} bareflank_test)
+    add_test(NAME test_${NAME} COMMAND test_${NAME})
 endfunction(do_test)
+
+# ------------------------------------------------------------------------------
+# add_custom_target_category
+# ------------------------------------------------------------------------------
+
+function(add_custom_target_category TEXT)
+    add_custom_command(
+        TARGET info
+        COMMAND ${CMAKE_COMMAND} -E cmake_echo_color " "
+        COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "${TEXT}:"
+    )
+endfunction(add_custom_target_category)
+
+# ------------------------------------------------------------------------------
+# add_custom_target_info
+# ------------------------------------------------------------------------------
+
+function(right_justify text width output)
+    set(str "")
+    string(LENGTH "${text}" text_len)
+    foreach(i RANGE ${text_len} ${width})
+        set(str " ${str}")
+    endforeach(i)
+    set(${output} ${str} PARENT_SCOPE)
+endfunction(right_justify)
+
+function(add_custom_target_info)
+    set(oneVal TARGET COMMENT)
+    cmake_parse_arguments(ARG "" "${oneVal}" "" ${ARGN})
+
+    if(NOT_ARG_TARGET)
+        right_justify("${BUILD_COMMAND}" 20 JUSTIFY_STR)
+        add_custom_command(
+            TARGET info
+            COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --yellow --no-newline "    ${BUILD_COMMAND}"
+            COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --red --no-newline "${JUSTIFY_STR}- "
+            COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --white "${ARG_COMMENT}"
+        )
+    else()
+        right_justify("${BUILD_COMMAND} ${ARG_TARGET}" 20 JUSTIFY_STR)
+        add_custom_command(
+            TARGET info
+            COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --yellow --no-newline "    ${BUILD_COMMAND} ${ARG_TARGET}"
+            COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --red --no-newline "${JUSTIFY_STR}- "
+            COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --white "${ARG_COMMENT}"
+        )
+    endif()
+endfunction(add_custom_target_info)
 
 # ------------------------------------------------------------------------------
 # print_xxx
 # ------------------------------------------------------------------------------
 
-# Private
-#
 function(print_banner)
     message(STATUS "${BoldMagenta}  ___                __ _           _   ${ColorReset}")
     message(STATUS "${BoldMagenta} | _ ) __ _ _ _ ___ / _| |__ _ _ _ | |__${ColorReset}")
@@ -1027,36 +1001,17 @@ function(print_banner)
     message(STATUS "")
 endfunction(print_banner)
 
-# Private
-#
 function(print_usage)
     message(STATUS "${Green} Bareflank is ready to build, usage:${ColorReset}")
     message(STATUS "${Yellow}    ${BUILD_COMMAND}${ColorReset}")
     message(STATUS "")
-
-    if(NOT WIN32)
+    if(UNIX)
         message(STATUS "${Green} For more build options:${ColorReset}")
         message(STATUS "${Yellow}    ${BUILD_COMMAND} info${ColorReset}")
-        message(STATUS "")
     else()
         message(STATUS "${Green} Additional build options:${ColorReset}")
         message(STATUS "${Yellow}    cmake --build . --target unittest${ColorReset}")
         message(STATUS "${Yellow}    cmake --build . --target clean-all${ColorReset}")
-        message(STATUS "")
     endif()
+    message(STATUS "")
 endfunction(print_usage)
-
-# ------------------------------------------------------------------------------
-# Helpers
-# ------------------------------------------------------------------------------
-
-function(git_dir_script)
-    if(NOT UNIX)
-        return()
-    endif()
-    if(NOT EXISTS "${BUILD_ROOT_DIR}/setup_git_dir.sh")
-        file(APPEND "${BUILD_ROOT_DIR}/setup_git_dir.sh" "export GIT_WORK_TREE=${SOURCE_ROOT_DIR}\n")
-        file(APPEND "${BUILD_ROOT_DIR}/setup_git_dir.sh" "export GIT_DIR=${SOURCE_ROOT_DIR}/.git\n")
-        execute_process(COMMAND chmod +x ${BUILD_ROOT_DIR}/setup_git_dir.sh)
-    endif()
-endfunction()

@@ -19,29 +19,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-string(REPLACE "|" ";" PROJECT_INCLUDE_LIST "${PROJECT_INCLUDE_LIST}")
-foreach(file ${PROJECT_INCLUDE_LIST})
-    include(${file})
-endforeach(file)
+include(${SOURCE_ROOT_DIR}/scripts/cmake/macros.cmake)
 
-file(STRINGS "${PKG_FILE}" pkg_list)
+enable_asm()
+setup_generator_expression_shorthands()
 
-foreach(pkg IN LISTS pkg_list)
-    find_package(${pkg} REQUIRED)
-endforeach(pkg)
+include_directories(
+    ${CMAKE_CURRENT_LIST_DIR}/include
+    ${SOURCE_ROOT_DIR}/bfack/include
+    ${SOURCE_ROOT_DIR}/bfdriver/include
+    ${SOURCE_ROOT_DIR}/bfdummy/include
+    ${SOURCE_ROOT_DIR}/bfelf_loader/include
+    ${SOURCE_ROOT_DIR}/bfintrinsics/include
+    ${SOURCE_ROOT_DIR}/bfm/include
+    ${SOURCE_ROOT_DIR}/bfruntime/include
+    ${SOURCE_ROOT_DIR}/bfsdk/include
+    ${SOURCE_ROOT_DIR}/bfunwind/include
+    ${SOURCE_ROOT_DIR}/bfvmm/include
+)
 
-if(ENABLE_BUILD_TEST)
-    enable_testing()
+set(CMAKE_C_COMPILER "")
+set(CMAKE_C_COMPILER_WORKS 0)
+
+if(CMAKE_INSTALL_PREFIX MATCHES "test")
+    find_package(bareflank_test)
 endif()
 
-if(CMAKE_INSTALL_PREFIX STREQUAL "${VMM_PREFIX_PATH}")
-    set(PREFIX "vmm")
-elseif(CMAKE_INSTALL_PREFIX STREQUAL "${USERSPACE_PREFIX_PATH}")
-    set(PREFIX "userspace")
-elseif(CMAKE_INSTALL_PREFIX STREQUAL "${TEST_PREFIX_PATH}")
-    set(PREFIX "test")
-elseif(CMAKE_INSTALL_PREFIX STREQUAL "${EFI_PREFIX_PATH}")
-    set(PREFIX "efi")
-else()
-    message(FATAL_ERROR "Invalid prefix: ${CMAKE_INSTALL_PREFIX}")
-endif()
+get_cmake_property(_vars CACHE_VARIABLES)
+foreach (_var ${_vars})
+    set(${_var} ${${_var}})
+endforeach()

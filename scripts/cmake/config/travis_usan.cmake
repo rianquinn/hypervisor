@@ -30,3 +30,8 @@ set(ENABLE_COMPILER_WARNINGS ON)
 
 set(C_FLAGS_TEST "-fuse-ld=gold")
 set(CXX_FLAGS_TEST "-fuse-ld=gold")
+
+
+list(APPEND BFFLAGS_USAN
+    -fsanitize=undefined
+)

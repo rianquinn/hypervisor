@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if((ENABLE_BUILD_VMM OR ENABLE_BUILD_TEST) AND NOT WIN32)
+if(ENABLE_BUILD_VMM)
     message(STATUS "Including dependency: newlib")
 
     download_dependency(
@@ -28,8 +28,18 @@ if((ENABLE_BUILD_VMM OR ENABLE_BUILD_TEST) AND NOT WIN32)
         URL_MD5     ${NEWLIB_URL_MD5}
     )
 
-    set(CC_FOR_TARGET clang)
-    set(CXX_FOR_TARGET clang)
+    if(NOT DEFINED ENV{CLANG_BIN})
+        find_program(CLANG_BIN clang)
+    else()
+        set(CLANG_BIN $ENV{CLANG_BIN})
+    endif()
+
+    if(CLANG_BIN)
+        set(CMAKE_C_COMPILER ${CLANG_BIN})
+        set(CMAKE_CXX_COMPILER ${CLANG_BIN})
+    else()
+        message(FATAL_ERROR "Unable to find clang")
+    endif()
 
     set(AR_FOR_TARGET ar)
     set(AS_FOR_TARGET as)
@@ -40,33 +50,10 @@ if((ENABLE_BUILD_VMM OR ENABLE_BUILD_TEST) AND NOT WIN32)
     set(READELF_FOR_TARGET readelf)
     set(STRIP_FOR_TARGET strip)
 
-    if(DEFINED ENV{LD_BIN})
-        set(LD_FOR_TARGET $ENV{LD_BIN})
-    else()
-        set(LD_FOR_TARGET ${VMM_PREFIX_PATH}/bin/ld)
-    endif()
-
-    generate_flags(
+    setup_flags(
         vmm
         NOWARNINGS
     )
-
-    string(CONCAT LD_FLAGS
-        "--sysroot=${CMAKE_INSTALL_PREFIX} "
-        "-z max-page-size=4096 "
-        "-z common-page-size=4096 "
-        "-z relro "
-        "-z now "
-        "-nostdlib "
-    )
-
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -DNDEBUG")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG")
-    else()
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-    endif()
 
     list(APPEND NEWLIB_CONFIGURE_FLAGS
         --disable-libgloss
@@ -74,13 +61,13 @@ if((ENABLE_BUILD_VMM OR ENABLE_BUILD_TEST) AND NOT WIN32)
         --disable-newlib-supplied-syscalls
         --enable-newlib-multithread
         --enable-newlib-iconv
+        --enable-lite-exit
         CFLAGS_FOR_TARGET=${CMAKE_C_FLAGS}
         CXXFLAGS_FOR_TARGET=${CMAKE_CXX_FLAGS}
-        CC_FOR_TARGET=${CC_FOR_TARGET}
-        CXX_FOR_TARGET=${CXX_FOR_TARGET}
+        CC_FOR_TARGET=${CLANG_BIN}
+        CXX_FOR_TARGET=${CLANG_BIN}
         AR_FOR_TARGET=${AR_FOR_TARGET}
         AS_FOR_TARGET=${AS_FOR_TARGET}
-        LD_FOR_TARGET=${LD_FOR_TARGET}
         NM_FOR_TARGET=${NM_FOR_TARGET}
         OBJCOPY_FOR_TARGET=${OBJCOPY_FOR_TARGET}
         OBJDUMP_FOR_TARGET=${OBJDUMP_FOR_TARGET}
@@ -94,23 +81,13 @@ if((ENABLE_BUILD_VMM OR ENABLE_BUILD_TEST) AND NOT WIN32)
     add_dependency(
         newlib vmm
         CONFIGURE_COMMAND   ${CACHE_DIR}/newlib/configure ${NEWLIB_CONFIGURE_FLAGS}
-        BUILD_COMMAND       make -j${BUILD_TARGET_CORES}
+        BUILD_COMMAND       make -j${HOST_NUMBER_CORES}
         INSTALL_COMMAND     make install
         DEPENDS             binutils_${VMM_PREFIX}
     )
 
     add_dependency_step(
         newlib vmm
-        COMMAND eval "${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/tmp"
-        COMMAND eval "${CMAKE_COMMAND} -E copy_if_different ${VMM_PREFIX_PATH}/lib/libc.a ${CMAKE_BINARY_DIR}/tmp"
-        COMMAND eval "${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR}/tmp ${AR_FOR_TARGET} x libc.a"
-        COMMAND eval "${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/tmp"
-
-        COMMAND eval "${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/tmp"
-        COMMAND eval "${CMAKE_COMMAND} -E copy_if_different ${VMM_PREFIX_PATH}/lib/libm.a ${CMAKE_BINARY_DIR}/tmp"
-        COMMAND eval "${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR}/tmp ${AR_FOR_TARGET} x libm.a"
-        COMMAND eval "${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/tmp"
-
         COMMAND eval "${CMAKE_COMMAND} -E remove_directory ${PREFIXES_DIR}/share"
     )
 endif()

@@ -17,86 +17,50 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 cmake_minimum_required(VERSION 3.13)
-project(bfruntime C CXX)
-
-init_project(bfruntime INTERFACE)
+project(bfruntime CXX)
 
 # -----------------------------------------------------------------------------
-# Generator expressions
+# bfcrt
 # -----------------------------------------------------------------------------
 
-set(X64 $<STREQUAL:${BUILD_TARGET_ARCH},x86_64>)
-set(ARM_ASM $<STREQUAL:${BUILD_TARGET_ARCH},aarch64>)
-set(X64_ASM $<AND:${X64},$<NOT:$<BOOL:${WIN32}>>>)
-set(BUILD $<BOOL:$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>>)
-set(C_CXX $<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>)
-set(BUILD_INCLUDE $<AND:${C_CXX},${BUILD}>)
-set(NOT_TEST $<NOT:$<STREQUAL:${PREFIX},test>>)
-
-# -----------------------------------------------------------------------------
-# Common
-# -----------------------------------------------------------------------------
-
-target_link_libraries(bfruntime INTERFACE ${PREFIX}::bfroot)
-target_include_directories(bfruntime INTERFACE
-    $<${BUILD_INCLUDE}:${CMAKE_CURRENT_LIST_DIR}/include>
-    $<${BUILD_INCLUDE}:${CMAKE_CURRENT_LIST_DIR}/../bfsdk/include>
-)
-
-# -----------------------------------------------------------------------------
-# crt
-# -----------------------------------------------------------------------------
-
-add_library(bfcrt)
-target_link_libraries(bfcrt PUBLIC bfruntime)
-target_sources(bfcrt PRIVATE
+add_library(bfcrt
     src/crt/crt.cpp
-    $<$<AND:${NOT_TEST},${X64_ASM}>:src/crt/start_x64.asm>
-    $<$<AND:${NOT_TEST},${ARM_ASM}>:src/crt/start_x64.S>
+    $<${X64}:src/crt/arch/x64/start.asm>
+    $<${ARM}:src/crt/arch/aarch64/start.S>
 )
-target_compile_options(bfcrt PRIVATE $<$<AND:${NOT_TEST},${C_CXX}>:-Wno-main>)
 
-if(PREFIX STREQUAL test)
-    do_test(tests/crt/test_crt.cpp DEPENDS bfcrt)
-    install(TARGETS bfcrt DESTINATION lib EXPORT bfruntime-test-targets)
-    fini_project()
-    return()
-endif()
+do_test(tests/crt/test_crt.cpp DEPENDS bfcrt)
 
 # -----------------------------------------------------------------------------
-# dso
+# bfdso
 # -----------------------------------------------------------------------------
 
-add_library(bfdso)
-target_link_libraries(bfdso PUBLIC bfruntime)
-target_sources(bfdso PRIVATE src/dso/dso.cpp)
+add_library(bfdso
+    src/dso/dso.cpp
+)
 
 # -----------------------------------------------------------------------------
-# pthread
+# bfpthread
 # -----------------------------------------------------------------------------
 
-add_library(bfpthread)
-target_link_libraries(bfpthread PUBLIC bfruntime)
-target_sources(bfpthread PRIVATE
+add_library(bfpthread
     src/pthread/pthread.cpp
-    $<$<AND:${NOT_TEST},${X64_ASM}>:src/pthread/threadcontext.asm>
+    $<${X64}:src/pthread/arch/x64/threadcontext.asm>
 )
 
 # -----------------------------------------------------------------------------
-# syscall
+# bfsyscall
 # -----------------------------------------------------------------------------
 
-add_library(bfsyscall)
-target_link_libraries(bfsyscall PUBLIC bfruntime)
-target_sources(bfsyscall PRIVATE src/syscall/syscall.cpp)
+add_library(bfsyscall
+    src/syscall/syscall.cpp
+)
 
 # -----------------------------------------------------------------------------
-# install
+# installs
 # -----------------------------------------------------------------------------
 
-install(TARGETS bfcrt DESTINATION lib EXPORT bfruntime-${PREFIX}-targets)
-install(TARGETS bfdso DESTINATION lib EXPORT bfruntime-${PREFIX}-targets)
-install(TARGETS bfpthread DESTINATION lib EXPORT bfruntime-${PREFIX}-targets)
-install(TARGETS bfsyscall DESTINATION lib EXPORT bfruntime-${PREFIX}-targets)
-
-fini_project()
+install(TARGETS bfcrt DESTINATION lib)
+install(TARGETS bfdso DESTINATION lib)
+install(TARGETS bfpthread DESTINATION lib)
+install(TARGETS bfsyscall DESTINATION lib)

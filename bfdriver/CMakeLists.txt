@@ -69,7 +69,6 @@ if(${PREFIX} STREQUAL efi)
         src/platform/efi/platform.c
         src/platform/efi/platform.asm
         src/common.c
-        ${EFI_EXTENSION_SOURCES}
     )
 
     add_custom_command(
@@ -78,7 +77,7 @@ if(${PREFIX} STREQUAL efi)
         COMMAND ${CMAKE_OBJCOPY}
         ARGS -j .text -j .sdata -j .data -j .dynamic -j .dynsym
         ARGS -j .rel -j .rela -j .rel.* -j .rela.* -j .rel* -j .rela* -j .reloc
-        ARGS --target efi-app-${BUILD_TARGET_ARCH} libbareflank.so ${CMAKE_BINARY_DIR}/bareflank.efi
+        ARGS --target efi-app-${CMAKE_HOST_SYSTEM_PROCESSOR} libbareflank.so ${CMAKE_BINARY_DIR}/bareflank.efi
     )
 
     install(FILES ${CMAKE_BINARY_DIR}/bareflank.efi DESTINATION bin)

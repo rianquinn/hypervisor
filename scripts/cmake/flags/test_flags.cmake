@@ -22,14 +22,17 @@
 unset(BFFLAGS_TEST)
 unset(BFFLAGS_TEST_C)
 unset(BFFLAGS_TEST_CXX)
-unset(BFFLAGS_TEST_X86_64)
-unset(BFFLAGS_TEST_AARCH64)
+
+list(APPEND BFFLAGS_TEST
+    -isystem ${TEST_PREFIX_PATH}/include
+    -L ${TEST_PREFIX_PATH}/lib
+)
 
 list(APPEND BFFLAGS_TEST
     -DGSL_THROW_ON_CONTRACT_VIOLATION
     -DNATIVE
-    -D${OSTYPE}
-    -D${ABITYPE}
+    -D${HOST_OSTYPE}
+    -D${HOST_ABITYPE}
     -DENABLE_BUILD_TEST
 )
 
@@ -42,18 +45,14 @@ if(NOT WIN32)
     )
 
     list(APPEND BFFLAGS_TEST_C
+        ${BFFLAGS_TEST}
         -std=c11
     )
 
     list(APPEND BFFLAGS_TEST_CXX
+        ${BFFLAGS_TEST}
         -std=c++17
         -fvisibility-inlines-hidden
-    )
-
-    list(APPEND BFFLAGS_TEST_X86_64
-        -msse
-        -msse2
-        -msse3
     )
 else()
     list(APPEND BFFLAGS_TEST
@@ -66,10 +65,12 @@ else()
     )
 
     list(APPEND BFFLAGS_TEST_C
+        ${BFFLAGS_TEST}
         /std:c++17
     )
 
     list(APPEND BFFLAGS_TEST_CXX
+        ${BFFLAGS_TEST}
         /std:c++17
     )
 endif()

@@ -19,15 +19,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if(ENABLE_BUILD_VMM OR ENABLE_BUILD_USERSPACE OR ENABLE_BUILD_TEST)
-    message(STATUS "Including dependency: json")
+message(STATUS "Including dependency: json")
 
-    download_dependency(
-        json
-        URL         ${JSON_URL}
-        URL_MD5     ${JSON_URL_MD5}
-    )
-endif()
+download_dependency(
+    json
+    URL         ${JSON_URL}
+    URL_MD5     ${JSON_URL_MD5}
+)
 
 list(APPEND JSON_CONFIGURE_FLAGS
     -DJSON_BuildTests=OFF

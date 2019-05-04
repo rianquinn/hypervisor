@@ -26,10 +26,16 @@ unset(BFFLAGS_USERSPACE_X86_64)
 unset(BFFLAGS_USERSPACE_AARCH64)
 
 list(APPEND BFFLAGS_USERSPACE
+    -isystem ${USERSPACE_PREFIX_PATH}/include
+    -L ${USERSPACE_PREFIX_PATH}/lib
+)
+
+list(APPEND BFFLAGS_USERSPACE
     -DGSL_THROW_ON_CONTRACT_VIOLATION
     -DNATIVE
-    -D${OSTYPE}
-    -D${ABITYPE}
+    -D${HOST_OSTYPE}
+    -D${HOST_ABITYPE}
+    -DENABLE_BUILD_USERSPACE
 )
 
 if(NOT WIN32)
@@ -38,21 +44,18 @@ if(NOT WIN32)
         -fstack-protector-strong
         -fvisibility=hidden
         -Wno-deprecated-declarations
+        -march=core2
     )
 
     list(APPEND BFFLAGS_USERSPACE_C
+        ${BFFLAGS_USERSPACE}
         -std=c11
     )
 
     list(APPEND BFFLAGS_USERSPACE_CXX
+        ${BFFLAGS_USERSPACE}
         -std=c++17
         -fvisibility-inlines-hidden
-    )
-
-    list(APPEND BFFLAGS_USERSPACE_X86_64
-        -msse
-        -msse2
-        -msse3
     )
 else()
     list(APPEND BFFLAGS_USERSPACE
@@ -65,10 +68,12 @@ else()
     )
 
     list(APPEND BFFLAGS_USERSPACE_C
+        ${BFFLAGS_USERSPACE}
         /std:c++17
     )
 
     list(APPEND BFFLAGS_USERSPACE_CXX
+        ${BFFLAGS_USERSPACE}
         /std:c++17
     )
 endif()

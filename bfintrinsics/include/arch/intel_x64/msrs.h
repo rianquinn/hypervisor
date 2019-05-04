@@ -16978,13 +16978,14 @@ namespace ia32_platform_info
         inline auto get(value_type msr) noexcept
         { return get_bits(msr, mask) >> from; }
 
-        inline void dump(int level, value_type msr, std::string *msg = nullptr)
-        {bfdebug_nhex(level, name, msr, msg); }
+        inline void dump(int level, std::string *msg = nullptr)
+        { bfdebug_nhex(level, name, get(), msg); }
     }
 
-    inline void dump(int level, value_type msr, std::string *msg = nullptr)
+    inline void dump(int level, std::string *msg = nullptr)
     {
-        max_nonturbo_ratio::dump(level, msr);
+        bfdebug_nhex(level, name, get(), msg);
+        max_nonturbo_ratio::dump(level, msg);
     }
 }
 

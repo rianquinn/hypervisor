@@ -17,34 +17,30 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 cmake_minimum_required(VERSION 3.13)
-project(bfunwind C CXX)
+project(bfunwind CXX)
 
-init_project(bfunwind)
+# -----------------------------------------------------------------------------
+# bfunwind
+# -----------------------------------------------------------------------------
 
-set(BUILD $<BOOL:$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>>)
-set(C_CXX $<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>)
-set(BUILD_INCLUDE $<AND:${C_CXX},${BUILD}>)
-
-target_link_libraries(bfunwind PUBLIC ${PREFIX}::bfroot)
-target_include_directories(bfunwind PUBLIC
-    $<${BUILD_INCLUDE}:${CMAKE_CURRENT_LIST_DIR}/include>
-    $<${BUILD_INCLUDE}:${CMAKE_CURRENT_LIST_DIR}/../bfsdk/include>
-)
-target_sources(bfunwind PRIVATE
+add_library(bfunwind
     src/dwarf4.cpp
-    src/eh_frame.cpp
-    src/ia64_cxx_abi.cpp
-    src/registers_intel_x64.asm
+    $<${X64}:src/eh_frame.cpp>
+    $<${X64}:src/ia64_cxx_abi.cpp>
+    $<${X64}:src/registers_intel_x64.asm>
 )
 
 # -----------------------------------------------------------------------------
-# Install
+# installs
 # -----------------------------------------------------------------------------
 
-install(
-    FILES ${CMAKE_CURRENT_LIST_DIR}/include/ia64_cxx_abi.h
-    DESTINATION include
-    RENAME unwind.h
-)
+# Notes
+#
+# - We have to install the ABI as unwind.h as Libcxx expects this file with
+#   this specific filename, but we cannot use this in our own tree as it
+#   would collide with the existing unwind.h (and the filename is not very
+#   descriptive anyways)
+#
 
-fini_project()
+install(TARGETS bfunwind DESTINATION lib)
+install(FILES include/ia64_cxx_abi.h DESTINATION include RENAME unwind.h)

@@ -26,23 +26,10 @@
 #ifndef BFSTRING_H
 #define BFSTRING_H
 
-#include <inttypes.h>
+#include <bftypes.h>
 
 #include <array>
-#include <vector>
 #include <string>
-#include <sstream>
-
-/// std::string literal
-///
-/// @param str string to convert to std::string
-/// @param len len of str
-/// @return std::string(str, len)
-///
-inline auto operator""_s(const char *str, std::size_t len)
-{
-    return std::string(str, len);
-}
 
 namespace bfn
 {
@@ -64,15 +51,16 @@ inline std::size_t
 digits(std::size_t val, const int base = 10)
 {
     std::array<char, 32> buf;
-    std::size_t digits = 0;
 
     switch (base) {
         case 16: {
-            return snprintf(buf.data(), buf.size(), "%" PRIx64, val);
+            return static_cast<std::size_t>(
+                snprintf(buf.data(), buf.size(), "%" PRIx64, val));
         }
 
         default: {
-            return snprintf(buf.data(), buf.size(), "%" PRIu64, val);
+            return static_cast<std::size_t>(
+                snprintf(buf.data(), buf.size(), "%" PRIu64, val));
         }
     }
 }
@@ -92,19 +80,21 @@ digits(std::size_t val, const int base = 10)
 /// @return the total number of digits of val given base
 ///
 inline std::size_t
-to_string(std::string &str, std::size_t val, const int base = 10, bool pad = true)
+to_string(
+    std::string &str, const std::size_t val, const int base = 10, bool pad = true)
 {
     std::array<char, 32> buf;
     std::size_t len, digits = 0;
 
     switch (base) {
         case 16: {
-            len = snprintf(buf.data(), buf.size(), "%" PRIx64, val);
+            len = static_cast<std::size_t>(
+                snprintf(buf.data(), buf.size(), "%" PRIx64, val));
             digits = len + 2;
 
             str += "0x";
             if (pad) {
-                for (auto i = 0; i < 16 - len; i++) {
+                for (std::size_t i = 0; i < 16 - len; i++) {
                     str += '0';
                 }
                 digits += 16 - len;
@@ -114,7 +104,8 @@ to_string(std::string &str, std::size_t val, const int base = 10, bool pad = tru
         }
 
         default: {
-            len = snprintf(buf.data(), buf.size(), "%" PRIu64, val);
+            len = static_cast<std::size_t>(
+                snprintf(buf.data(), buf.size(), "%" PRIu64, val));
             digits = len;
             break;
         }
@@ -137,63 +128,17 @@ to_string(std::string &str, std::size_t val, const int base = 10, bool pad = tru
 /// @param pad if padding should be used
 /// @return string version of val converted to the provided base
 ///
+template <
+    typename T,
+    typename = std::enable_if<std::is_integral<T>::value>
+    >
 inline std::string
-to_string(std::size_t val, const int base = 10, bool pad = false)
+to_string(const T val, const int base = 10, bool pad = false)
 {
     std::string str;
-    to_string(str, val, base, pad);
+    to_string(str, static_cast<std::size_t>(val), base, pad);
 
     return str;
-}
-
-/// Split String
-///
-/// Splits a string into a string vector based on a provided
-/// delimiter
-///
-/// @expects none
-/// @ensures none
-///
-/// @param str the string to split
-/// @param delimiter the delimiter to split the string with
-/// @return std::vector<std::string> version of str, split using delimiter
-///
-inline std::vector<std::string>
-split(const std::string &str, char delimiter)
-{
-    std::istringstream ss{str};
-    std::vector<std::string> result;
-
-    while (!ss.eof()) {
-        std::string field;
-        std::getline(ss, field, delimiter);
-
-        result.push_back(field);
-    }
-
-    return result;
-}
-
-/// Split String
-///
-/// Splits a string into a string vector based on a provided
-/// delimiter
-///
-/// @expects none
-/// @ensures none
-///
-/// @param str the string to split
-/// @param delimiter the delimiter to split the string with
-/// @return std::vector<std::string> version of str, split using delimiter
-///
-inline std::vector<std::string>
-split(const char *str, char delimiter)
-{
-    if (str == nullptr) {
-        return {};
-    }
-
-    return split(std::string(str), delimiter);
 }
 
 }

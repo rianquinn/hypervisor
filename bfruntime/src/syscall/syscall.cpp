@@ -49,10 +49,7 @@
 
 #include <bfgsl.h>
 #include <bfdebug.h>
-#include <bfexports.h>
 #include <bfconstants.h>
-#include <bfehframelist.h>
-#include <bfdwarf.h>
 
 extern "C" clock_t
 times(struct tms *buf)
@@ -443,19 +440,6 @@ __mulxc3(long double a, long double b, long double c, long double d)
     return 0;
 }
 
-int __g_eh_frame_list_num = 0;
-eh_frame_t __g_eh_frame_list[MAX_NUM_MODULES] = {};
-int __g_dwarf_sections_num = 0;
-dwarf_sections_t __g_dwarf_sections[MAX_NUM_MODULES] = {};
-
-extern "C" struct eh_frame_t *
-get_eh_frame_list() noexcept
-{ return __g_eh_frame_list; }
-
-extern "C" struct dwarf_sections_t *
-get_dwarf_sections() noexcept
-{ return __g_dwarf_sections; }
-
 extern "C" void *
 malloc(size_t __size)
 { return _malloc_r(nullptr, __size); }
@@ -471,23 +455,3 @@ calloc(size_t __nmemb, size_t __size)
 extern "C" void *
 realloc(void *__r, size_t __size)
 { return _realloc_r(nullptr, __r, __size); }
-
-extern "C" void *
-WEAK_SYM _malloc_r(struct _reent * /*unused*/, size_t /*unused*/)
-{ return nullptr; }
-
-extern "C" void
-WEAK_SYM _free_r(struct _reent * /*unused*/, void * /*unused*/)
-{ }
-
-extern "C" void *
-WEAK_SYM _calloc_r(struct _reent * /*unused*/, size_t /*unused*/, size_t /*unused*/)
-{ return nullptr; }
-
-extern "C" void *
-WEAK_SYM _realloc_r(struct _reent * /*unused*/, void * /*unused*/, size_t /*unused*/)
-{ return nullptr; }
-
-extern "C" int
-WEAK_SYM write(int /*unused*/, const void * /*unused*/, size_t /*unused*/)
-{ return 0; }
