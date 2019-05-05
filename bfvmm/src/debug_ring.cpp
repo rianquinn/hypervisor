@@ -28,16 +28,19 @@
 // Global
 // -----------------------------------------------------------------------------
 
-debug_ring_resources_t *g_drr{};
+bfvmm::implementation::debug_ring g_debug_ring;
 
-extern "C" int64_t
+static auto g_drr = debug_ring_resources_t{};
+static auto g_drr_view = gsl::span(g_drr.buf);
+
+extern "C" status_t
 get_drr(struct debug_ring_resources_t **drr) noexcept
 {
     if (drr == nullptr) {
         return BFFAILURE;
     }
 
-    *drr = g_drr;
+    *drr = &g_drr;
     return BFSUCCESS;
 }
 
@@ -50,82 +53,27 @@ namespace bfvmm::implementation
 
 debug_ring::debug_ring() noexcept
 {
-    m_drr = std::make_unique<debug_ring_resources_t>();
-
-    m_drr->epos = 0;
-    m_drr->spos = 0;
-    m_drr->tag1 = 0xDB60DB60DB60DB60;
-    m_drr->tag2 = 0x06BD06BD06BD06BD;
-
-    if (g_drr != nullptr) {
-        g_drr = m_drr.get();
-    }
+    g_drr.epos = 0;
+    g_drr.spos = 0;
+    g_drr.tag1 = 0xDB60DB60DB60DB60;
+    g_drr.tag2 = 0x06BD06BD06BD06BD;
 }
 
 void
-debug_ring::write(const std::string &str) noexcept
+debug_ring::write(const char c) noexcept
 {
-    // TODO: A more interesting implementation would use an optimized
-    //       memcpy to implement this code. Doing so would increase it's
-    //       performance, but would require some better math, and an
-    //       optimized memcpy that used both rep string instructions and
-    //       SIMD instructions
+    g_drr_view[g_drr.epos++] = c;
 
-    if (!m_drr || str.empty() || str.length() >= DEBUG_RING_SIZE) {
-        return;
+    if (g_drr.epos == DEBUG_RING_SIZE) {
+        g_drr.epos = 0;
     }
 
-    // The length that we were given is equivalent to strlen, which does not
-    // include the '\0', so we add one to the length to account for that.
-    auto len = str.length() + 1;
-
-    auto epos = m_drr->epos & (DEBUG_RING_SIZE - 1);
-    auto cpos = m_drr->spos & (DEBUG_RING_SIZE - 1);
-    auto space = DEBUG_RING_SIZE - (m_drr->epos - m_drr->spos);
-
-    if (space < len) {
-
-        // Make room for the write. Normally, with a circular buffer, you
-        // would just move the start position when a read occurs, but in
-        // this case, the vmm needs to be able to write as it wishes to the
-        // buffer. If we just move the start position based on the amount
-        // of space we need, you would end up with the first string being
-        // cropped once the ring wraps. The following code makes sure that
-        // we are making room by removing complete strings.
-        //
-        // Note: There is still a race condition with this code. If the
-        //       reader reads at the same time we are writing, you could
-        //       end up with a cropped string for the first string, but
-        //       that's fine, as this is just debug text, and if we add
-        //       locks, we would greatly increase the complexity of this
-        //       code, while serializing the code, which is not a good idea.
-        //
-
-        while (space <= DEBUG_RING_SIZE) {
-            if (cpos >= DEBUG_RING_SIZE) {
-                cpos = 0;
-            }
-
-            space++;
-            m_drr->spos++;
-
-            if (gsl::at(m_drr->buf, gsl::index_cast(cpos)) == '\0' && space >= len) {
-                break;
-            }
-
-            gsl::at(m_drr->buf, gsl::index_cast(cpos++)) = '\0';
-        }
+    if (g_drr.epos == g_drr.spos) {
+        g_drr.spos++;
     }
 
-    for (auto i = 0U; i < len; i++) {
-        if (epos >= DEBUG_RING_SIZE) {
-            epos = 0;
-        }
-
-        gsl::at(m_drr->buf, gsl::index_cast(epos)) = str[i];
-
-        epos++;
-        m_drr->epos++;
+    if (g_drr.spos == DEBUG_RING_SIZE) {
+        g_drr.spos = 0;
     }
 }
 

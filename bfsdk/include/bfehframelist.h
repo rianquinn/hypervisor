@@ -29,10 +29,6 @@
 
 #include <bftypes.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * @struct eh_frame_t
  *
@@ -52,9 +48,5 @@ struct eh_frame_t {
  * EH Framework Table
  */
 extern eh_frame_t __g_eh_frame;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

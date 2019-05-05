@@ -19,63 +19,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <bfgsl.h>
+#ifndef IMPLEMENTATION_VCPU_DUMMY_H
+#define IMPLEMENTATION_VCPU_DUMMY_H
 
-#include <implementation/serial.h>
-#include <implementation/debug_ring.h>
+#include "../uapis/vcpu.h"
+#include "../implementation/vcpu.h"
 
-using namespace bfvmm::implementation;
-
-#include <mutex>
-std::mutex g_write_mutex;
-
-extern "C" void
-unlock_write(void) noexcept
-{ g_write_mutex.unlock(); }
-
-extern "C" int
-write_str(const std::string &str) noexcept
+namespace bfvmm::implementation
 {
-    try {
-        std::lock_guard<std::mutex> guard(g_write_mutex);
 
-        for (const auto &c : str) {
-            g_debug_ring.write(c);
-            serial::instance()->write(c);
-        }
-    }
-    catch (...) {
-        return 0;
-    }
-
-    return gsl::narrow_cast<int>(str.length());
-}
-
-extern "C" void
-unsafe_write_cstr(const char *cstr, size_t len) noexcept
+class vcpu_dummy :
+    public uapis::vcpu<implementation::vcpu>
 {
-    try {
-        auto str = gsl::span(cstr, gsl::index_cast(len));
+public:
 
-        for (const auto &c : str) {
-            g_debug_ring.write(c);
-            serial::instance()->write(c);
-        }
-    }
-    catch (...)
+    using id_t = uapis::vcpu<implementation::vcpu>::id_t;
+
+    explicit vcpu_dummy(id_t id) noexcept :
+        uapis::vcpu<implementation::vcpu>{id}
     { }
+
+    static void global_init()
+    { bfdebug_info(0, "global init"); }
+
+    void demote()
+    { bfdebug_info(0, "host os is" bfcolor_green " now " bfcolor_end "in a vm"); }
+
+    void promote()
+    { bfdebug_info(0, "host os is" bfcolor_red " not " bfcolor_end "in a vm"); }
+
+    static inline auto make(id_t id)
+    { return std::make_unique<vcpu_dummy>(id); }
+};
+
 }
 
-extern "C" int
-write(int __fd, const void *__buf, size_t __nbyte)
-{
-    if (__buf == nullptr || __nbyte == 0) {
-        return 0;
-    }
-
-    if (__fd != 1 && __fd != 2) {
-        return 0;
-    }
-
-    return write_str({static_cast<const char *>(__buf), __nbyte});
-}
+#endif

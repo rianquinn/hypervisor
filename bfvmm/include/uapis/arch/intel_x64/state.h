@@ -42,6 +42,12 @@ namespace bfvmm::intel_x64::uapis
 template<typename IMPL>
 class state
 {
+    /// @cond
+
+    using reg_t = uint64_t;
+
+    /// @endcond
+
 public:
 
     /// Constructor
@@ -54,8 +60,6 @@ public:
     explicit state(gsl::not_null<vcpu *> vcpu) :
         m_impl{vcpu}
     { }
-
-public:
 
     /// Get RAX
     ///

@@ -73,6 +73,9 @@ ioctl_unload_vmm(void)
         return BFFAILURE;
     }
 
+    mutex_unlock(&g_status_mutex);
+    g_status = STATUS_STOPPED;
+
     return BFSUCCESS;
 }
 
@@ -103,13 +106,13 @@ ioctl_load_vmm(const struct ioctl_load_args_t *args)
         goto failure;
     }
 
-    platform_free_rw(file, _args.file_size);
-    return BFSUCCESS;
-
 failure:
 
+    mutex_unlock(&g_status_mutex);
+    g_status = STATUS_STOPPED;
+
     platform_free_rw(file, _args.file_size);
-    return BFFAILURE;
+    return ret;
 }
 
 static long
@@ -125,13 +128,10 @@ ioctl_stop_vmm(void)
 
     g_status = STATUS_STOPPED;
 
-    mutex_unlock(&g_status_mutex);
-    return BFSUCCESS;
-
 failure:
 
     mutex_unlock(&g_status_mutex);
-    return BFFAILURE;
+    return ret;
 }
 
 static long
@@ -147,15 +147,10 @@ ioctl_start_vmm(void)
 
     g_status = STATUS_RUNNING;
 
-    mutex_unlock(&g_status_mutex);
-    return BFSUCCESS;
-
 failure:
 
-    common_stop_vmm();
-
     mutex_unlock(&g_status_mutex);
-    return BFFAILURE;
+    return ret;
 }
 
 static long

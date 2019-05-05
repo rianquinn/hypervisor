@@ -39,8 +39,8 @@
 
 namespace gsl
 {
-    inline std::ptrdiff_t
-    index_cast(const std::size_t i)
+    constexpr std::ptrdiff_t
+    index_cast(const std::size_t i) noexcept
     { return gsl::narrow_cast<std::ptrdiff_t>(i); }
 }
 

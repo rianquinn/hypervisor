@@ -136,8 +136,10 @@ if(UNIX AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
 
     add_custom_target(
         quick
-        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --load ${VMM_PREFIX_PATH}/bin/${VMM}
         COMMAND sync
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --stop
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --unload
+        COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --load ${VMM_PREFIX_PATH}/bin/${VMM}
         COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --start
         USES_TERMINAL
     )
@@ -149,6 +151,7 @@ if(UNIX AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
 
     add_custom_target(
         cycle
+        COMMAND sync
         COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --load ${VMM_PREFIX_PATH}/bin/${VMM}
         COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --start
         COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --stop
@@ -162,6 +165,7 @@ if(UNIX AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
 
     add_custom_target(
         load
+        COMMAND sync
         COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --load ${VMM_PREFIX_PATH}/bin/${VMM}
         USES_TERMINAL
     )
@@ -184,6 +188,7 @@ if(UNIX AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
 
     add_custom_target(
         stop
+        COMMAND sync
         COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --stop
         USES_TERMINAL
     )
@@ -194,6 +199,7 @@ if(UNIX AND ENABLE_BUILD_VMM AND ENABLE_BUILD_USERSPACE)
 
     add_custom_target(
         unload
+        COMMAND sync
         COMMAND ${SUDO} ${USERSPACE_PREFIX_PATH}/bin/bfm --unload
         USES_TERMINAL
     )

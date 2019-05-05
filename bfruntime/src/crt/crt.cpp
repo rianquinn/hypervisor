@@ -47,13 +47,13 @@ __bareflank_init(
     }
 }
 
-// static inline void
-// __bareflank_register_eh_frame(
-//     uint64_t eh_frame_addr, uint64_t eh_frame_size) noexcept
-// {
-//     __g_eh_frame.addr = reinterpret_cast<void *>(eh_frame_addr);
-//     __g_eh_frame.size = eh_frame_size;
-// }
+static inline void
+__bareflank_register_eh_frame(
+    uint64_t eh_frame_addr, uint64_t eh_frame_size) noexcept
+{
+    __g_eh_frame.addr = reinterpret_cast<void *>(eh_frame_addr);
+    __g_eh_frame.size = eh_frame_size;
+}
 
 extern "C" status_t
 _start_c(const _start_args_t *info) noexcept
@@ -63,10 +63,10 @@ _start_c(const _start_args_t *info) noexcept
         return BFSUCCESS;
     }
 
-    // if (info->request == BF_REQUEST_EH_FRAME) {
-    //     __bareflank_register_eh_frame(info->arg1, info->arg2);
-    //     return BFSUCCESS;
-    // }
+    if (info->request == BF_REQUEST_EH_FRAME) {
+        __bareflank_register_eh_frame(info->arg1, info->arg2);
+        return BFSUCCESS;
+    }
 
     return bfmain(info->request, info->arg1, info->arg2);
 }

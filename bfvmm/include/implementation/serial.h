@@ -19,8 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef SERIAL_NS16550A_H
-#define SERIAL_NS16550A_H
+#ifndef IMPLEMENTATION_SERIAL_H
+#define IMPLEMENTATION_SERIAL_H
 
 #include <intrinsics.h>
 #include <bfconstants.h>
@@ -205,7 +205,7 @@ public:
     ///
     /// @param c character to write
     ///
-    void write(char c) const noexcept;
+    void write(const char c) const noexcept;
 
 private:
 

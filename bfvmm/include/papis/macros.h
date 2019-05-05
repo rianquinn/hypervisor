@@ -19,23 +19,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef UAPIS_PRIVATE_INTEL_X64_H
-#define UAPIS_PRIVATE_INTEL_X64_H
-
-// Note:
-//
-// This file defines private portions of the interfaces. The interfaces
-// defined in this file are subject to change and should not be used by
-// extensions. You have been warned.
-//
+#ifndef IMPLEMENTATION_PRIVATE_H
+#define IMPLEMENTATION_PRIVATE_H
 
 #include <bfgsl.h>
+#include <bftypes.h>
 #include <bfdebug.h>
 #include <bfexception.h>
+#include <bfupperlower.h>
 
 #include <intrinsics.h>
 
-#include "uapis/types.h"
+#include <any>
+#include <mutex>
+#include <memory>
+#include <unordered_map>
 
 #define COPY_MOVE_SEMANTICS(name)                                               \
     public:                                                                     \
@@ -47,13 +45,14 @@
 #ifdef ENABLE_BUILD_TEST
 #include <hippomocks.h>
 #define PRIVATE_INTERFACES(name)                                                \
+    public:                                                                     \
     COPY_MOVE_SEMANTICS(name)                                                   \
     public:                                                                     \
     static void name ## _mock(MockRepository &mocks, vcpu *vcpu)                \
     { IMPL::mock(mocks, vcpu); }                                                \
     gsl::not_null<IMPL *> name ## _impl()                                       \
     { return &m_impl; }                                                         \
-    private:                                                                    \
+    protected:                                                                  \
     IMPL m_impl;
 #define MOCK_PROTOTYPE(unused)                                                  \
     static void mock(MockRepository &mocks, vcpu *vcpu)
@@ -61,8 +60,9 @@
     static void name::mock(MockRepository &mocks, vcpu *vcpu) func
 #else
 #define PRIVATE_INTERFACES(name)                                                \
+    public:                                                                     \
     COPY_MOVE_SEMANTICS(name)                                                   \
-    private:                                                                    \
+    protected:                                                                  \
     IMPL m_impl;
 #define MOCK_PROTOTYPE(unused)
 #define MOCK_FUNCTION(unused1, unused2)

@@ -28,6 +28,7 @@
 
 #include <bftypes.h>
 #include <array>
+#include <functional>
 
 // Note:
 //
@@ -60,21 +61,21 @@ constexpr F &get_state(const state_t &state)
 { return reinterpret_cast<F &>(const_cast<state_t &>(state)); }
 
 template<typename F>
-inline void copy_state(state_t &state, const F &fn)
+constexpr void copy_state(state_t &state, const F &fn)
 {
     static_assert(can_emplace<F>());
     new (&get_state<F>(state)) F(fn);
 }
 
 template<typename F>
-inline void move_state(state_t &state, F &&fn)
+constexpr void move_state(state_t &state, F &&fn)
 {
     static_assert(can_emplace<F>());
     new (&get_state<F>(state)) F(fn);
 }
 
 template<typename F, typename Ret, typename... Args>
-inline Ret call(const state_t &state, Args &&... args)
+constexpr Ret call(const state_t &state, Args &&... args)
 {
     static_assert(std::is_invocable_r_v<Ret, F, Args...>);
     return get_state<F>(state)(std::forward<Args>(args)...);
@@ -103,21 +104,21 @@ private:
         typename F,
         typename std::enable_if_t<std::is_copy_constructible_v<F>> * = nullptr
         >
-    static void s_copy(state_t &lhs, const state_t &rhs) noexcept
+    static constexpr void s_copy(state_t &lhs, const state_t &rhs) noexcept
     { copy_state<F>(lhs, get_state<F>(rhs)); }
 
     template <
         typename F,
         typename std::enable_if_t<std::is_move_constructible_v<F>> * = nullptr
         >
-    static void s_move(state_t &lhs, state_t &&rhs) noexcept
+    static constexpr void s_move(state_t &lhs, state_t &&rhs) noexcept
     { move_state<F>(lhs, std::move(get_state<F>(rhs))); }
 
     template <
         typename F,
         typename std::enable_if_t<std::is_destructible_v<F>> * = nullptr
         >
-    static void s_destroy(state_t &state) noexcept
+    static constexpr void s_destroy(state_t &state) noexcept
     { get_state<F>(state).~F(); }
 };
 
@@ -411,7 +412,7 @@ public:
 /// @cond
 
 template<typename Ret, typename... Args>
-inline std::ostream &operator<<(std::ostream &os, const delegate<Ret(Args...)> &)
+constexpr std::ostream &operator<<(std::ostream &os, const delegate<Ret(Args...)> &)
 { return os; }
 
 template<typename R, typename... A>

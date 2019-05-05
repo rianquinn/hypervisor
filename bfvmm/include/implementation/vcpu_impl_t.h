@@ -19,21 +19,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef UAPIS_VCPU_MANAGER_H
-#define UAPIS_VCPU_MANAGER_H
+#ifndef IMPLEMENTATION_VCPU_IMPL_T_H
+#define IMPLEMENTATION_VCPU_IMPL_T_H
 
-#include <bfmanager.h>
+#ifdef DUMMY_VCPU
 
-#ifndef VCPU_IMPL_T_HEADER
-#include "../implementation/vcpu_impl_t.h"
+#include "vcpu_dummy.h"
+using vcpu_t = bfvmm::implementation::vcpu_dummy;
+
+#else
+
+#include "arch/intel_x64/vcpu.h"
+#include "../uapis/arch/intel_x64/vcpu.h"
+using vcpu_t = bfvmm::uapis::intel_x64::vcpu<bfvmm::implementation::intel_x64::vcpu>;
+
 #endif
-
-/// vCPU Manager
-///
-/// The vCPU manager is the entity that creates and destroys vCPUs. Unless
-/// you are adding guest support, you should not need to call this manually
-/// as it is being done for all of the host vCPUs.
-///
-#define g_vcm bfmanager<vcpu_t>::instance()
 
 #endif

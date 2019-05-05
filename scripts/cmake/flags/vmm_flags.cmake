@@ -34,8 +34,8 @@ list(APPEND BFFLAGS_VMM
     --sysroot=${VMM_PREFIX_PATH}
     -fpic
     -fpie
-    # -fdata-sections
-    # -ffunction-sections
+    -fdata-sections
+    -ffunction-sections
     -fstack-protector-strong
     -mno-red-zone
     -march=core2
@@ -73,11 +73,11 @@ list(APPEND BFFLAGS_VMM_CXX
 string(CONCAT BFFLAGS_VMM_LINK
     "--sysroot=${CMAKE_INSTALL_PREFIX} "
     "--no-dynamic-linker "
-    # "--gc-sections "
-    # "--strip-all "
+    "--gc-sections "
+    "--strip-all "
     "-nostdlib "
     "-pie "
     "-static "
-    # "-z noexecstack "
+    "-z noexecstack "
     "-z defs "
 )

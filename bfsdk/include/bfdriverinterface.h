@@ -26,10 +26,6 @@
 #include <bftypes.h>
 #include <bfdebugringinterface.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* -------------------------------------------------------------------------- */
 /* Common                                                                     */
 /* -------------------------------------------------------------------------- */
@@ -144,10 +140,6 @@ DEFINE_GUID(
 #define IOCTL_VMM_STATUS CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_VMM_STATUS_CMD, METHOD_BUFFERED, FILE_READ_DATA)
 #define IOCTL_VMCALL CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_VMCALL_CMD, METHOD_IN_DIRECT, FILE_READ_WRITE_DATA)
 
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #endif

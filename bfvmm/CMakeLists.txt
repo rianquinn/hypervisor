@@ -27,12 +27,13 @@ project(bfvmm CXX)
 # ------------------------------------------------------------------------------
 
 add_library(bfvmm
-    # $<${INTEL_X64}:src/eh_frame.cpp>
     src/debug_ring.cpp
     src/entry.cpp
     src/memory_manager.cpp
     src/serial.cpp
     src/unistd.cpp
+    src/vcpu.cpp
+    # $<${INTEL_X64}:src/arch/intel_x64/vmx.cpp>
 )
 
 # -----------------------------------------------------------------------------

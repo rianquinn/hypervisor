@@ -47,6 +47,21 @@ extern "C" void vmcs_resume(
 // Implementation
 // -----------------------------------------------------------------------------
 
+// void
+// vcpu::demote()
+// {
+//     // this->run();
+//     // ::x64::cpuid::get(0x4BF00010, 0, 0, 0);
+//     // ::x64::cpuid::get(0x4BF00011, 0, 0, 0);
+// }
+
+// void
+// vcpu::promote()
+// {
+//     // ::x64::cpuid::get(0x4BF00020, 0, 0, 0);
+//     // ::x64::cpuid::get(0x4BF00021, 0, 0, 0);
+// }
+
 namespace bfvmm::intel_x64
 {
 

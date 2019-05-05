@@ -313,8 +313,7 @@ namespace bfvmm::intel_x64::cpuid
 ///
 template<typename IMPL, typename... Args>
 inline void add_handler(
-    gsl::not_null<uapis::cpuid<IMPL> *> vcpu,
-    Args &&...args)
+    gsl::not_null<uapis::cpuid<IMPL> *> vcpu, Args &&...args)
 { vcpu->cpuid_add_handler(std::forward<Args>(args)...); }
 
 /// Add Emulator (Wrapper)
@@ -339,8 +338,7 @@ inline void add_handler(
 ///
 template<typename IMPL, typename... Args>
 inline void add_emulator(
-    gsl::not_null<uapis::cpuid<IMPL> *> vcpu,
-    Args &&...args)
+    gsl::not_null<uapis::cpuid<IMPL> *> vcpu, Args &&...args)
 { vcpu->cpuid_add_emulator(std::forward<Args>(args)...); }
 
 /// Execute (Wrapper)
@@ -389,8 +387,7 @@ inline void execute(
 ///
 template<typename IMPL, typename... Args>
 inline void emulate(
-    gsl::not_null<uapis::cpuid<IMPL> *> vcpu,
-    Args &&...args) noexcept
+    gsl::not_null<uapis::cpuid<IMPL> *> vcpu, Args &&...args) noexcept
 { vcpu->cpuid_emulate(std::forward<Args>(args)...); }
 
 /// Leaf (Wrapper)

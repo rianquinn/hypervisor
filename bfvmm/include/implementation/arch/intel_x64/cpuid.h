@@ -25,12 +25,6 @@
 #include "../uapis/cpuid.h"
 #include "../vmexit/cpuid.h"
 
-// -----------------------------------------------------------------------------
-// Defintion
-// -----------------------------------------------------------------------------
-
-///@cond
-
 namespace bfvmm::intel_x64::implementation
 {
 
@@ -51,7 +45,5 @@ public:
 };
 
 }
-
-///@endcond
 
 #endif

@@ -53,10 +53,8 @@ platform_init(void)
 void *
 platform_alloc_rw(uint64_t len)
 {
-    void *addr = nullptr;
-
     if (len == 0) {
-        return addr;
+        return nullptr;
     }
 
     return vmalloc(len);
@@ -65,10 +63,8 @@ platform_alloc_rw(uint64_t len)
 void *
 platform_alloc_rwe(uint64_t len)
 {
-    void *addr = nullptr;
-
     if (len == 0) {
-        return addr;
+        return nullptr;
     }
 
     return __vmalloc(len, GFP_KERNEL, PAGE_KERNEL_EXEC);
@@ -117,22 +113,6 @@ platform_memset(void *ptr, char value, uint64_t num)
     }
 
     return memset(ptr, value, num);
-}
-
-status_t
-platform_memcpy(
-    void *dst, uint64_t dst_size, const void *src, uint64_t src_size, uint64_t num)
-{
-    if (dst == 0 || src == 0) {
-        return BFFAILURE;
-    }
-
-    if (num > dst_size || num > src_size) {
-        return BFFAILURE;
-    }
-
-    memcpy(dst, src, num);
-    return BFSUCCESS;
 }
 
 uint64_t

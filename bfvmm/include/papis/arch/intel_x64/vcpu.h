@@ -19,63 +19,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <bfgsl.h>
+#ifndef PAPIS_VCPU_INTEL_X64_H
+#define PAPIS_VCPU_INTEL_X64_H
 
-#include <implementation/serial.h>
-#include <implementation/debug_ring.h>
+#include "../../macros.h"
+#include "../../../uapis/vcpu.h"
 
-using namespace bfvmm::implementation;
-
-#include <mutex>
-std::mutex g_write_mutex;
-
-extern "C" void
-unlock_write(void) noexcept
-{ g_write_mutex.unlock(); }
-
-extern "C" int
-write_str(const std::string &str) noexcept
+namespace bfvmm::papis::intel_x64
 {
-    try {
-        std::lock_guard<std::mutex> guard(g_write_mutex);
 
-        for (const auto &c : str) {
-            g_debug_ring.write(c);
-            serial::instance()->write(c);
-        }
-    }
-    catch (...) {
-        return 0;
-    }
-
-    return gsl::narrow_cast<int>(str.length());
-}
-
-extern "C" void
-unsafe_write_cstr(const char *cstr, size_t len) noexcept
+template<typename IMPL>
+class vcpu :
+    public uapis::vcpu<IMPL>
 {
-    try {
-        auto str = gsl::span(cstr, gsl::index_cast(len));
+    PRIVATE_INTERFACES(vcpu)
 
-        for (const auto &c : str) {
-            g_debug_ring.write(c);
-            serial::instance()->write(c);
-        }
-    }
-    catch (...)
+public:
+
+    using id_t = typename IMPL::id_t;
+
+    explicit vcpu(id_t id) :
+        uapis::vcpu<IMPL>{id},
+        m_impl{id}
     { }
+
+    static constexpr void global_init()
+    { return IMPL::global_init(); }
+
+    constexpr void demote()
+    { }
+
+    constexpr void promote()
+    { }
+};
+
 }
 
-extern "C" int
-write(int __fd, const void *__buf, size_t __nbyte)
-{
-    if (__buf == nullptr || __nbyte == 0) {
-        return 0;
-    }
-
-    if (__fd != 1 && __fd != 2) {
-        return 0;
-    }
-
-    return write_str({static_cast<const char *>(__buf), __nbyte});
-}
+#endif

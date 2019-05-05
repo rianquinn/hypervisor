@@ -41,7 +41,7 @@ extern "C" {
  *
  * @return SUCCESS on success, negative error code on failure
  */
-status_t platform_init(void);
+status_t platform_init(void) NOEXCEPT;
 
 /**
  * Allocate Memory
@@ -56,7 +56,7 @@ status_t platform_init(void);
  * @param len the size of memory to allocate in bytes.
  * @return returns the address of the newly allocated memory
  */
-void *platform_alloc_rw(uint64_t len);
+void *platform_alloc_rw(uint64_t len) NOEXCEPT;
 
 /**
  * Allocate Executable Memory
@@ -72,7 +72,7 @@ void *platform_alloc_rw(uint64_t len);
  * @param len the size of memory to allocate in bytes.
  * @return returns the address of the newly allocated, executable memory
  */
-void *platform_alloc_rwe(uint64_t len);
+void *platform_alloc_rwe(uint64_t len) NOEXCEPT;
 
 /**
  * Free Memory
@@ -83,7 +83,7 @@ void *platform_alloc_rwe(uint64_t len);
  * @param addr the address of memory allocated using platform_alloc_rw
  * @param len the size of the memory allocated using platform_alloc_rw
  */
-void platform_free_rw(void *addr, uint64_t len);
+void platform_free_rw(void *addr, uint64_t len) NOEXCEPT;
 
 /**
  * Free Executable Memory
@@ -94,7 +94,7 @@ void platform_free_rw(void *addr, uint64_t len);
  * @param addr the address of memory allocated using platform_alloc_rwe
  * @param len the size of the memory allocated using platform_alloc_rwe
  */
-void platform_free_rwe(void *addr, uint64_t len);
+void platform_free_rwe(void *addr, uint64_t len) NOEXCEPT;
 
 /**
  * Convert Virtual Address to Physical Address
@@ -105,7 +105,7 @@ void platform_free_rwe(void *addr, uint64_t len);
  * @param virt the virtual address to convert
  * @return the physical address associated with the provided virtual address
  */
-void *platform_virt_to_phys(void *virt);
+void *platform_virt_to_phys(void *virt) NOEXCEPT;
 
 /**
  * Memset
@@ -118,23 +118,7 @@ void *platform_virt_to_phys(void *virt);
  * @param num the number of bytes to set
  * @return ptr
  */
-void *platform_memset(void *ptr, char value, uint64_t num);
-
-/**
- * Memcpy
- *
- * @expects none
- * @ensures none
- *
- * @param dst a pointer to the memory to copy to
- * @param dst_size the max size of the destination
- * @param src a pointer to the memory to copy from
- * @param src_size the max size of the source
- * @param num the number of bytes to copy
- * @return SUCCESS on success, negative error code on failure
- */
-status_t platform_memcpy(
-    void *dst, uint64_t dst_size, const void *src, uint64_t src_size, uint64_t num);
+void *platform_memset(void *ptr, char value, uint64_t num) NOEXCEPT;
 
 /**
  * Get Number of CPUs
@@ -144,7 +128,7 @@ status_t platform_memcpy(
  *
  * @return returns the total number of CPUs available.
  */
-uint64_t platform_num_cpus(void);
+uint64_t platform_num_cpus(void) NOEXCEPT;
 
 /**
  * Call VMM on Core
@@ -162,7 +146,10 @@ uint64_t platform_num_cpus(void);
  * @return SUCCESS on success, negative error code on failure
  */
 status_t platform_call_vmm_on_core(
-    uint64_t cpuid, uint64_t request, uint64_t arg1, uint64_t arg2);
+    uint64_t cpuid,
+    uint64_t request,
+    uint64_t arg1,
+    uint64_t arg2) NOEXCEPT;
 
 /**
  * Acquire Mutex
@@ -170,7 +157,7 @@ status_t platform_call_vmm_on_core(
  * Locks a global mutex that is managed by the platform logic. This can be
  * used to protect critical regions.
  */
-void platform_acquire_mutex(void);
+void platform_acquire_mutex(void) NOEXCEPT;
 
 /**
  * Release Mutex
@@ -178,8 +165,7 @@ void platform_acquire_mutex(void);
  * Unlocks a global mutex that is managed by the platform logic. This can be
  * used to protect critical regions.
  */
-void platform_release_mutex(void);
-
+void platform_release_mutex(void) NOEXCEPT;
 
 #ifdef __cplusplus
 }

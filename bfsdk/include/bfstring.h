@@ -48,7 +48,7 @@ namespace bfn
 /// @return the total number of digits in val given base
 ///
 inline std::size_t
-digits(std::size_t val, const int base = 10)
+digits(std::size_t val, const int base = 10) noexcept
 {
     std::array<char, 32> buf;
 
@@ -81,7 +81,7 @@ digits(std::size_t val, const int base = 10)
 ///
 inline std::size_t
 to_string(
-    std::string &str, const std::size_t val, const int base = 10, bool pad = true)
+    std::string &str, const std::size_t val, const int base = 10, bool pad = true) noexcept
 {
     std::array<char, 32> buf;
     std::size_t len, digits = 0;
@@ -133,7 +133,7 @@ template <
     typename = std::enable_if<std::is_integral<T>::value>
     >
 inline std::string
-to_string(const T val, const int base = 10, bool pad = false)
+to_string(const T val, const int base = 10, bool pad = false) noexcept
 {
     std::string str;
     to_string(str, static_cast<std::size_t>(val), base, pad);

@@ -136,6 +136,14 @@ namespace bfvmm::intel_x64::uapis
 template<typename IMPL>
 class exit_handler
 {
+    /// Handler Delegate Type
+    ///
+    /// This defines the delegate type used for exit handlers. This type will be
+    /// used when creating exit handler delegates both in the base and in a user
+    /// extension.
+    ///
+    using handler_delegate_t = delegate<bool(vcpu_t *)>;
+
 public:
 
     /// Constructor
@@ -148,8 +156,6 @@ public:
     explicit exit_handler(gsl::not_null<vcpu *> vcpu) :
         m_impl{vcpu}
     { }
-
-public:
 
     /// Exit Handler Add
     ///

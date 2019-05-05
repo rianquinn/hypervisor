@@ -71,9 +71,9 @@ using cstr_t = const char *;
 #define __BFFUNC__ static_cast<cstr_t>(__FUNCTION__)
 #endif
 
-#ifdef VMM
-extern "C" uint64_t thread_context_cpuid(void);
-extern "C" uint64_t write_str(const std::string &str);
+#ifdef ENABLE_BUILD_VMM
+#include <bfthreadcontext.h>
+extern "C" int write_str(const std::string &str) noexcept;
 #else
 #include <iostream>
 #endif
@@ -98,8 +98,8 @@ view_as_pointer(const T val)
 #pragma warning(pop)
 #endif
 
-extern "C" uint64_t
-unsafe_write_cstr(const char *cstr, size_t len);
+extern "C" void
+unsafe_write_cstr(const char *cstr, size_t len) noexcept;
 
 #include <typeinfo>
 
@@ -281,7 +281,7 @@ __bfdebug_core(gsl::not_null<std::string *> msg)
     *msg += bfcolor_cyan;
     *msg += "[";
     *msg += bfcolor_yellow;
-#ifdef VMM
+#ifdef ENABLE_BUILD_VMM
     digits = bfn::to_string(*msg, thread_context_cpuid(), 16, false);
 #else
     *msg += '0';
@@ -333,7 +333,7 @@ void __bfdebug_transaction(F func)
     msg.reserve(0x1000);
     func(&msg);
 
-#ifdef VMM
+#ifdef ENABLE_BUILD_VMM
     write_str(msg);
 #else
     std::cout << msg;

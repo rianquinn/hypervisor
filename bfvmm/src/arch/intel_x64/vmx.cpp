@@ -19,26 +19,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <hve/arch/intel_x64/vcpu.h>
-#include <hve/arch/intel_x64/implementation/vmx.h>
+#include <implementation/arch/intel_x64/vmx.h>
 
 // -----------------------------------------------------------------------------
 // Implementation
 // -----------------------------------------------------------------------------
 
-namespace bfvmm::intel_x64::implementation
+namespace bfvmm::implementation::intel_x64
 {
 
-vmx::vmx() :
-    m_vmx_region{make_page<uint32_t>()}
+vmx::vmx()
 {
-    this->check_cpuid_vmx_supported();
-    this->check_vmx_capabilities_msr();
-    this->check_ia32_vmx_cr0_fixed_msr();
-    this->check_ia32_vmx_cr4_fixed_msr();
-
     this->enable_vmx();
     this->execute_vmxon();
+
+    bfline
 }
 
 vmx::~vmx()
@@ -102,17 +97,23 @@ vmx::check_ia32_vmx_cr4_fixed_msr()
 void
 vmx::enable_vmx()
 {
+    this->check_cpuid_vmx_supported();
+    this->check_vmx_capabilities_msr();
+
     if (::intel_x64::msrs::ia32_feature_control::lock_bit::is_disabled()) {
         ::intel_x64::msrs::ia32_feature_control::enable_vmx_outside_smx::enable();
         ::intel_x64::msrs::ia32_feature_control::lock_bit::enable();
     }
 
     if (::intel_x64::cr4::vmx_enable_bit::is_enabled()) {
-        bfalert_warning(0, "VMX was not properly disabled");
+        bfalert_info(0, "VMX was not properly disabled");
         this->execute_vmxoff();
     }
 
     ::intel_x64::cr4::vmx_enable_bit::enable();
+
+    this->check_ia32_vmx_cr0_fixed_msr();
+    this->check_ia32_vmx_cr4_fixed_msr();
 }
 
 void
@@ -127,9 +128,7 @@ vmx::execute_vmxon()
     gsl::span<uint32_t> id{m_vmx_region.get(), 1024};
     id[0] = gsl::narrow<uint32_t>(revision_id::get());
 
-    ::intel_x64::vmx::on(
-        &g_mm->virtptr_to_physint(m_vmx_region.get())
-    );
+    ::intel_x64::vmx::on(m_vmx_region.hpa());
 }
 
 void

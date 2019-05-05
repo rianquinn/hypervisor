@@ -47,8 +47,8 @@
  *
  * Note: defined in bytes
  */
-#ifndef BAREFLANK_PAGE_SIZE
-#define BAREFLANK_PAGE_SIZE (0x1000ULL)
+#ifndef BFPAGE_SIZE
+#define BFPAGE_SIZE (0x1000ULL)
 #endif
 
 /*
@@ -112,7 +112,7 @@
  *
  * Note: defined in bytes
  */
-#define STACK_SIZE (1ULL << 15ULL)
+#define BFSTACK_SIZE (1ULL << 15ULL)
 
 /*
  * Thread Local Storage (TLS) Size
@@ -126,7 +126,7 @@
  *
  * Note: Defined in bytes
  */
-#define THREAD_LOCAL_STORAGE_SIZE (0x1000ULL)
+#define BFTLS_SIZE (0x1000ULL)
 
 /*
  * Default Serial COM Port

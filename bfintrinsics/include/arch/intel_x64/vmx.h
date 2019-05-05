@@ -56,9 +56,9 @@ namespace vmx
     using eptp_type = uint64_t;
     using integer_pointer = uintptr_t;
 
-    inline void on(gsl::not_null<void *> ptr)
+    inline void on(uint64_t ptr)
     {
-        if (!_vmxon(ptr)) {
+        if (!_vmxon(&ptr)) {
             throw std::runtime_error("vmx::on failed");
         }
     }
@@ -126,23 +126,23 @@ namespace vm
     using name_type = const char *;
     using integer_pointer = uintptr_t;
 
-    inline void clear(gsl::not_null<void *> ptr)
+    inline void clear(uint64_t ptr)
     {
-        if (!_vmclear(ptr)) {
+        if (!_vmclear(&ptr)) {
             throw std::runtime_error("vm::clear failed");
         }
     }
 
-    inline void load(gsl::not_null<void *> ptr)
+    inline void load(uint64_t ptr)
     {
-        if (!_vmptrld(ptr)) {
+        if (!_vmptrld(&ptr)) {
             throw std::runtime_error("vm::load failed");
         }
     }
 
-    inline void reset(gsl::not_null<void *> ptr)
+    inline void reset(uint64_t ptr)
     {
-        if (!_vmptrst(ptr)) {
+        if (!_vmptrst(&ptr)) {
             throw std::runtime_error("vm::reset failed");
         }
     }

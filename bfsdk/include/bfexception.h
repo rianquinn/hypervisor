@@ -38,10 +38,10 @@
 /// @expects
 /// @ensures
 ///
-/// @param error_code an error code to return if an exception occurs
 /// @param func the function to run that is guarded
 /// @param error_func the function to run when an exception occurs
-/// @return error_code on failure, SUCCESS on success
+/// @return BFSUCCESS on success, BFFAILURE on failure and BFFAILURE_BAD_ALLOC
+///     when a bad_alloc exception is thrown.
 ///
 template <
     typename FUNC,
@@ -49,8 +49,8 @@ template <
     typename = std::enable_if<std::is_pointer<FUNC>::value>,
     typename = std::enable_if<std::is_pointer<ERROR_FUNC>::value>
     >
-int64_t
-guard_exceptions(int64_t error_code, FUNC func, ERROR_FUNC error_func)
+inline status_t
+guard_exceptions(FUNC func, ERROR_FUNC error_func) noexcept
 {
     try {
         func();
@@ -68,6 +68,9 @@ guard_exceptions(int64_t error_code, FUNC func, ERROR_FUNC error_func)
             bferror_brk1(0, msg);
             bferror_info(0, e.what(), msg);
         });
+
+        error_func();
+        return BFFAILURE;
     }
     catch (...) {
         bfdebug_transaction(0, [&](std::string * msg) {
@@ -76,10 +79,10 @@ guard_exceptions(int64_t error_code, FUNC func, ERROR_FUNC error_func)
             bferror_info(0, "unknown exception", msg);
             bferror_brk1(0, msg);
         });
-    }
 
-    error_func();
-    return error_code;
+        error_func();
+        return BFFAILURE;
+    }
 }
 
 /// Guard Exceptions
@@ -90,55 +93,14 @@ guard_exceptions(int64_t error_code, FUNC func, ERROR_FUNC error_func)
 /// @expects
 /// @ensures
 ///
-/// @param error_code an error code to return if an exception occurs
-/// @param func the function to run that is guarded
-/// @return error_code on failure, SUCCESS on success
-///
-template <
-    typename FUNC,
-    typename = std::enable_if<std::is_pointer<FUNC>::value>
-    >
-int64_t
-guard_exceptions(int64_t error_code, FUNC && func)
-{ return guard_exceptions(error_code, std::forward<FUNC>(func), [] {}); }
-
-/// Guard Exceptions
-///
-/// Catches all exceptions and prints the exception that occurred. The point of
-/// this function is to prevent any exception from bubbling beyond this point.
-///
-/// @expects
-/// @ensures
-///
 /// @param func the function to run that is guarded
 ///
 template <
     typename FUNC,
     typename = std::enable_if<std::is_pointer<FUNC>::value>
     >
-void
-guard_exceptions(FUNC && func)
-{ guard_exceptions(0L, std::forward<FUNC>(func), [] {}); }
-
-/// Guard Exceptions
-///
-/// Catches all exceptions and prints the exception that occurred. The point of
-/// this function is to prevent any exception from bubbling beyond this point.
-///
-/// @expects
-/// @ensures
-///
-/// @param func the function to run that is guarded
-/// @param error_func the function to run when an exception occurs
-///
-template <
-    typename FUNC,
-    typename ERROR_FUNC,
-    typename = std::enable_if<std::is_pointer<FUNC>::value>,
-    typename = std::enable_if<std::is_pointer<ERROR_FUNC>::value>
-    >
-void
-guard_exceptions(FUNC && func, ERROR_FUNC && error_func)
-{ guard_exceptions(0L, std::forward<FUNC>(func), std::forward<ERROR_FUNC>(error_func)); }
+constexpr status_t
+guard_exceptions(FUNC &&func) noexcept
+{ return guard_exceptions(std::forward<FUNC>(func), []{}); }
 
 #endif

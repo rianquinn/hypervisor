@@ -19,15 +19,50 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <bfexports.h>
-#include <vcpu/vcpu_factory.h>
-#include <hve/arch/intel_x64/vcpu.h>
+#ifndef IMPLEMENTATION_VCPU_H
+#define IMPLEMENTATION_VCPU_H
 
-namespace bfvmm
+#include "../papis/macros.h"
+
+namespace bfvmm::implementation
 {
 
-WEAK_SYM std::unique_ptr<vcpu>
-vcpu_factory::make(vcpuid::type vcpuid)
-{ return std::make_unique<intel_x64::vcpu>(vcpuid); }
+class vcpu
+{
+public:
+
+    using id_t = uint64_t;
+
+public:
+
+    explicit vcpu(id_t id);
+    VIRTUAL ~vcpu() = default;
+
+    VIRTUAL id_t id() const noexcept;
+    VIRTUAL static id_t generate_guest_id() noexcept;
+
+    VIRTUAL bool is_bootstrap_vcpu() const noexcept;
+    VIRTUAL bool is_host_vcpu() const noexcept;
+    VIRTUAL bool is_guest_vcpu() const noexcept;
+
+    template<typename T>
+    T data()
+    { return std::any_cast<T>(m_data); }
+
+    template<typename T>
+    void set_data(T &&t)
+    { m_data = std::any(t); }
+
+private:
+
+    id_t m_id;
+    std::any m_data{};
+
+public:
+    MOCK_PROTOTYPE(vcpu)
+    COPY_MOVE_SEMANTICS(vcpu)
+};
 
 }
+
+#endif

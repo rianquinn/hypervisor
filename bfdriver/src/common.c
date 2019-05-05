@@ -37,10 +37,10 @@
 
 uint8_t *g_vmm = nullptr;
 uint64_t g_vmm_size = 0;
-uint8_t *g_vmm_mem = nullptr;
-uint64_t g_vmm_mem_size = 0;
-uint8_t *g_vmm_mem_node_tree = nullptr;
-uint64_t g_vmm_mem_node_tree_size = 0;
+uint8_t *g_mem_leafs = nullptr;
+uint64_t g_mem_leafs_size = 0;
+uint8_t *g_mem_nodes = nullptr;
+uint64_t g_mem_nodes_size = 0;
 _start_t g_vmm_start = nullptr;
 status_t g_vmm_status = VMM_UNLOADED;
 
@@ -57,124 +57,87 @@ uint64_t g_num_cpus_started = 0;
 /* -------------------------------------------------------------------------- */
 
 static inline status_t
-private_is_power_of_2(uint64_t val)
+private_setup_vmm_memory(uint64_t vmm_size, uint64_t vmm_mem_size)
 {
-    if (val == 0) {
+    uint32_t k = log2n(vmm_mem_size) - log2n(BFPAGE_SIZE);
+
+    g_vmm_size = vmm_size;
+    g_mem_leafs_size = num_leafs(k) * BFPAGE_SIZE;
+    g_mem_nodes_size = num_nodes(k) * BFNODE_SIZE;
+    g_stack_size = BFSTACK_SIZE * 2;
+    g_tls_size = BFTLS_SIZE * platform_num_cpus();
+
+    g_vmm = (uint8_t *)platform_alloc_rwe(g_vmm_size);
+    if (g_vmm == 0) {
         return BFFAILURE;
     }
 
-    while (val > 1) {
-        if (val % 2 != 0) {
-            return BFFAILURE;
-        }
-
-        val >>= 1;
+    g_mem_leafs = (uint8_t *)platform_alloc_rw(g_mem_leafs_size);
+    if (g_mem_leafs == 0) {
+        return BFFAILURE;
     }
 
-    return BFSUCCESS;
-}
-
-static inline status_t
-private_setup_stack(void)
-{
-    g_stack_size = STACK_SIZE * 2;
+    g_mem_nodes = (uint8_t *)platform_alloc_rw(g_mem_nodes_size);
+    if (g_mem_nodes == 0) {
+        return BFFAILURE;
+    }
 
     g_stack = (uint8_t *)platform_alloc_rw(g_stack_size);
     if (g_stack == 0) {
         return BFFAILURE;
     }
 
-    platform_memset(g_stack, 0, g_stack_size);
-    return BFSUCCESS;
-}
-
-static inline status_t
-private_setup_tls(void)
-{
-    g_tls_size = THREAD_LOCAL_STORAGE_SIZE * platform_num_cpus();
-
     g_tls = (uint8_t *)platform_alloc_rw(g_tls_size);
     if (g_tls == 0) {
         return BFFAILURE;
     }
 
+    /**
+     * Notes:
+     *
+     * We need to memset the VMM memory because of the BSS section and any
+     * other portions of the VMM that are not initialized by the ELF loader.
+     * We also need to zero out the nodes memory because this will be used
+     * for bookkeeping and we want to make sure that nothing in there will
+     * affect that. We do not want to memset the VMM's leaf memory which is
+     * the memory that is actually given out for malloc/free. This will be
+     * cleared as needed by the VMM itself. We also don't want to zero out
+     * the stack memory as this is a waste of time. We do want to zero out
+     * the TLS memory as this is expected.
+     */
+
+    platform_memset(g_vmm, 0, g_vmm_size);
+    platform_memset(g_mem_nodes, 0, g_mem_nodes_size);
     platform_memset(g_tls, 0, g_tls_size);
+
+    BFDEBUG("vmm addr: %llx\n", (uint64_t)g_vmm);
+    BFDEBUG("vmm size: %llx\n", (uint64_t)g_vmm_size);
+    BFDEBUG("mem addr: %llx\n", (uint64_t)g_mem_leafs);
+    BFDEBUG("mem size: %llx\n", (uint64_t)g_mem_leafs_size);
+
     return BFSUCCESS;
 }
 
-// static inline status_t
-// private_add_md(uint64_t virt, uint64_t type)
-// {
-//     status_t ret = 0;
-//     struct memory_descriptor md = {0, 0, 0};
+static inline status_t
+private_add_mds(uint8_t *addr, uint64_t size, uint64_t type)
+{
+    uint64_t i;
+    status_t ret;
+    struct memory_descriptor md;
 
-//     md.virt = virt;
-//     md.phys = (uint64_t)platform_virt_to_phys((void *)md.virt);
-//     md.type = type;
+    for (i = 0; i < size; i += BFPAGE_SIZE) {
+        md.virt = (uint64_t)addr + i;
+        md.phys = (uint64_t)platform_virt_to_phys(addr + i);
+        md.type = type;
 
-//     ret = platform_call_vmm_on_core(0, BF_REQUEST_ADD_MD, (uint64_t)&md, 0);
-//     if (ret != BFSUCCESS) {
-//         return ret;
-//     }
+        ret = platform_call_vmm_on_core(0, BF_REQUEST_ADD_MD, (uint64_t)&md, 0);
+        if (ret != BFSUCCESS) {
+            return ret;
+        }
+    }
 
-//     return BFSUCCESS;
-// }
-
-// static inline status_t
-// private_add_md_to_memory_manager(struct bfelf_binary_t *module)
-// {
-//     // bfelf64_word s = 0;
-
-//     // for (s = 0; s < bfelf_file_get_num_load_instrs(&module->ef); s++) {
-
-//     //     int64_t ret = 0;
-
-//     //     uint64_t exec_s = 0;
-//     //     uint64_t exec_e = 0;
-//     //     const struct bfelf_load_instr *instr = 0;
-
-//     //     ret = bfelf_file_get_load_instr(&module->ef, s, &instr);
-//     //     bfignored(ret);
-
-//     //     exec_s = (uint64_t)module->exec + instr->mem_offset;
-//     //     exec_e = (uint64_t)module->exec + instr->mem_offset + instr->memsz;
-//     //     exec_s &= ~(BAREFLANK_PAGE_SIZE - 1);
-//     //     exec_e &= ~(BAREFLANK_PAGE_SIZE - 1);
-
-//     //     for (; exec_s <= exec_e; exec_s += BAREFLANK_PAGE_SIZE) {
-//     //         if ((instr->perm & bfpf_x) != 0) {
-//     //             ret = private_add_md(
-//     //                       exec_s, MEMORY_TYPE_R | MEMORY_TYPE_E);
-//     //         }
-//     //         else {
-//     //             ret = private_add_md(
-//     //                       exec_s, MEMORY_TYPE_R | MEMORY_TYPE_W);
-//     //         }
-
-//     //         if (ret != BFSUCCESS) {
-//     //             return ret;
-//     //         }
-//     //     }
-//     // }
-
-//     return BFSUCCESS;
-// }
-
-// static inline status_t
-// private_add_tss_mds(void)
-// {
-//     uint64_t i = 0;
-//     status_t ret = 0;
-
-//     for (i = 0; i < g_tls_size; i += BAREFLANK_PAGE_SIZE) {
-//         ret = private_add_md(g_tls + i, MEMORY_TYPE_R | MEMORY_TYPE_W);
-//         if (ret != BFSUCCESS) {
-//             return ret;
-//         }
-//     }
-
-//     return ret;
-// }
+    return BFSUCCESS;
+}
 
 /* -------------------------------------------------------------------------- */
 /* Implementation                                                             */
@@ -188,17 +151,17 @@ void
 common_reset(void)
 {
     platform_free_rwe(g_vmm, g_vmm_size);
-    platform_free_rw(g_vmm_mem, g_vmm_mem_size);
-    platform_free_rw(g_vmm_mem_node_tree, g_vmm_mem_node_tree_size);
+    platform_free_rw(g_mem_leafs, g_mem_leafs_size);
+    platform_free_rw(g_mem_nodes, g_mem_nodes_size);
     platform_free_rw(g_tls, g_tls_size);
     platform_free_rw(g_stack, g_stack_size);
 
     g_vmm = nullptr;
     g_vmm_size = 0;
-    g_vmm_mem = nullptr;
-    g_vmm_mem_size = 0;
-    g_vmm_mem_node_tree = nullptr;
-    g_vmm_mem_node_tree_size = 0;
+    g_mem_leafs = nullptr;
+    g_mem_leafs_size = 0;
+    g_mem_nodes = nullptr;
+    g_mem_nodes_size = 0;
     g_vmm_start = nullptr;
     g_vmm_status = VMM_UNLOADED;
 
@@ -259,17 +222,7 @@ common_load_vmm(const void *file, uint64_t size, uint64_t mem)
             return BFFAILURE;
     };
 
-    ret = private_is_power_of_2(mem);
-    if (ret != BFSUCCESS) {
-        goto failure;
-    }
-
-    ret = private_setup_stack();
-    if (ret != BFSUCCESS) {
-        goto failure;
-    }
-
-    ret = private_setup_tls();
+    ret = is_power_of_2(mem);
     if (ret != BFSUCCESS) {
         goto failure;
     }
@@ -279,16 +232,10 @@ common_load_vmm(const void *file, uint64_t size, uint64_t mem)
         goto failure;
     }
 
-    g_vmm_size = ef.size;
-    g_vmm_mem_size = mem;
-
-    g_vmm = (uint8_t *)platform_alloc_rwe(g_vmm_size);
-    if (g_vmm == nullptr) {
+    ret = private_setup_vmm_memory(ef.size, mem);
+    if (ret != BFSUCCESS) {
         goto failure;
     }
-BFALERT("line: %d\n", __LINE__);
-
-    platform_memset(g_vmm, 0, g_vmm_size);
 
     ret = bfelf_file_load(g_vmm, nullptr, &ef);
     if (ret != BFSUCCESS) {
@@ -297,61 +244,60 @@ BFALERT("line: %d\n", __LINE__);
 
     g_vmm_start = (_start_t)ef.entry;
 
-BFALERT("line: %d\n", __LINE__);
-    g_vmm_mem = (uint8_t *)platform_alloc_rw(g_vmm_mem_size);
-    if (g_vmm == nullptr) {
-        goto failure;
-    }
-
-    platform_memset(g_vmm_mem, 0, g_vmm_mem_size);
-
-BFALERT("g_vmm: %llx\n", (uint64_t)g_vmm);
-BFALERT("g_vmm_mem: %llx\n", (uint64_t)g_vmm_mem);
-BFALERT("g_vmm_mem: %llx\n", (uint64_t)g_stack);
-    g_vmm_mem_node_tree_size = platform_call_vmm_on_core(
-        0, BF_REQUEST_SET_MEM, (uint64_t)g_vmm_mem, g_vmm_mem_size);
-    if (g_vmm_mem_node_tree_size == 0) {
-        goto failure;
-    }
-
-BFALERT("line: %d\n", __LINE__);
-    g_vmm_mem_node_tree = (uint8_t *)platform_alloc_rw(g_vmm_mem_node_tree_size);
-    if (g_vmm_mem_node_tree == nullptr) {
-        goto failure;
-    }
-BFALERT("line: %d\n", __LINE__);
-    platform_memset(g_vmm_mem_node_tree, 0, g_vmm_mem_node_tree_size);
-
-BFALERT("line: %d\n", __LINE__);
     ret = platform_call_vmm_on_core(
-        0, BF_REQUEST_SET_MEM_NODE_TREE, (uint64_t)g_vmm_mem_node_tree, 0);
+        0, BF_REQUEST_SET_MEM_LEAFS, (uint64_t)g_mem_leafs, g_mem_leafs_size);
     if (ret != BFSUCCESS) {
         goto failure;
     }
 
-BFALERT("line: %d\n", __LINE__);
+    ret = platform_call_vmm_on_core(
+        0, BF_REQUEST_SET_MEM_NODES, (uint64_t)g_mem_nodes, g_mem_nodes_size);
+    if (ret != BFSUCCESS) {
+        goto failure;
+    }
+
     ret = platform_call_vmm_on_core(
         0, BF_REQUEST_INIT, ef.init_array_addr, ef.init_array_size);
-BFALERT("ret: %llx\n", (uint64_t)ret);
     if (ret != BFSUCCESS) {
         goto failure;
     }
 
-    // ret = platform_call_vmm_on_core(
-    //     0, BF_REQUEST_EH_FRAME, ef.eh_frame_addr, ef.eh_frame_size);
-    // if (ret != BFSUCCESS) {
-    //     goto failure;
-    // }
+    ret = platform_call_vmm_on_core(
+        0, BF_REQUEST_EH_FRAME, ef.eh_frame_addr, ef.eh_frame_size);
+    if (ret != BFSUCCESS) {
+        goto failure;
+    }
 
-    // ret = private_add_mds();
-    // if (ret != BFSUCCESS) {
-    //     goto failure;
-    // }
+    ret = private_add_mds(ef.rx_addr, ef.rx_size, MEMORY_TYPE_RX);
+    if (ret != BFSUCCESS) {
+        goto failure;
+    }
 
-    // ret = private_add_tss_mds();
-    // if (ret != BFSUCCESS) {
-    //     goto failure;
-    // }
+    ret = private_add_mds(ef.rw_addr, ef.rw_size, MEMORY_TYPE_RW);
+    if (ret != BFSUCCESS) {
+        goto failure;
+    }
+
+    ret = private_add_mds(g_mem_leafs, g_mem_leafs_size, MEMORY_TYPE_RW);
+    if (ret != BFSUCCESS) {
+        goto failure;
+    }
+
+    ret = private_add_mds(g_mem_nodes, g_mem_nodes_size, MEMORY_TYPE_RW);
+    if (ret != BFSUCCESS) {
+        goto failure;
+    }
+
+    ret = private_add_mds(g_tls, g_tls_size, MEMORY_TYPE_RW);
+    if (ret != BFSUCCESS) {
+        goto failure;
+    }
+
+    ret = platform_call_vmm_on_core(
+        0, BF_REQUEST_GLOBAL_INIT, 0, 0);
+    if (ret != BFSUCCESS) {
+        goto failure;
+    }
 
     g_vmm_status = VMM_LOADED;
     return BFSUCCESS;
@@ -423,7 +369,7 @@ common_stop_vmm(void)
             return BFFAILURE;
     };
 
-    for (cpuid = g_num_cpus_started - 1; cpuid >= 0 ; cpuid--) {
+    for (cpuid = g_num_cpus_started - 1; g_num_cpus_started > 0 ; cpuid--) {
         ret = platform_call_vmm_on_core(cpuid, BF_REQUEST_VMM_FINI, cpuid, 0);
         if (ret != BFSUCCESS) {
             goto corrupted;
@@ -465,7 +411,7 @@ status_t
 common_call_vmm(
     uint64_t cpuid, uint64_t request, uint64_t arg1, uint64_t arg2)
 {
-    uint64_t stack = setup_stack(g_stack, cpuid, g_tls + (THREAD_LOCAL_STORAGE_SIZE * cpuid));
+    uint64_t stack = setup_stack(g_stack, cpuid, g_tls + (BFTLS_SIZE * cpuid));
     struct _start_args_t args = {request, arg1, arg2};
 
     return g_vmm_start(stack, &args);

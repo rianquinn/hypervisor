@@ -19,11 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef DEBUG_RING_H
-#define DEBUG_RING_H
-
-#include <string>
-#include <memory>
+#ifndef IMPLEMENTATION_DEBUG_RING_H
+#define IMPLEMENTATION_DEBUG_RING_H
 
 #include <bftypes.h>
 #include <bfdebugringinterface.h>
@@ -55,7 +52,7 @@ public:
 
     /// Write to Debug Ring
     ///
-    /// Writes a string to the debug ring. If the string is larger than
+    /// Writes a char to the debug ring. If the string is larger than
     /// the debug ring's internal buffer, the write will fail. If the debug
     /// ring is full, the write will keep removing existing strings in the
     /// buffer until enough space is made, to add the string.
@@ -65,11 +62,7 @@ public:
     ///
     /// @param str the string to write to the debug ring
     ///
-    VIRTUAL void write(const std::string &str) noexcept;
-
-private:
-
-    std::unique_ptr<debug_ring_resources_t> m_drr;
+    void write(const char) noexcept;
 
 public:
 
@@ -94,7 +87,16 @@ public:
 /// @param drr the resulting debug ring
 /// @return the debug_ring_resources_t for the provided vcpuid
 ///
-extern "C" int64_t get_drr(
+extern "C" status_t get_drr(
     struct debug_ring_resources_t **drr) noexcept;
+
+/// Global Debug Ring
+///
+/// This provides the global debug ring that is used by the VMM.
+/// This can be used to add debug information to the debug ring.
+/// Note that this does not include any other debug devices, so
+/// you probably should use the APIs in bfdebug.h instead.
+///
+extern bfvmm::implementation::debug_ring g_debug_ring;
 
 #endif

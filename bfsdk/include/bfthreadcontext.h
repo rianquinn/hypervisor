@@ -32,7 +32,11 @@
 extern "C" {
 #endif
 
-uint64_t _thread_context_get_sp(void);
+uint64_t _thread_context_get_sp(void) NOEXCEPT;
+
+#ifdef __cplusplus
+}
+#endif
 
 /**
  * @struct thread_context_t
@@ -65,80 +69,80 @@ struct thread_context_t {
     uint64_t unused;
 };
 
-static inline uint64_t 
-thread_context_cpuid(void)
+static inline uint64_t
+thread_context_cpuid(void) NOEXCEPT
 {
     struct thread_context_t *tc;
     uint64_t stack = _thread_context_get_sp();
 
     /**
      * Notes:
-     * 
+     *
      * We use the same math to get the top of the stack that we used
-     * to align the stack. This makes sure that no matter where the 
-     * stack is (unless something really bad happens), we can always 
-     * find the top of the stack. 
+     * to align the stack. This makes sure that no matter where the
+     * stack is (unless something really bad happens), we can always
+     * find the top of the stack.
      */
-    stack = (stack & ~(STACK_SIZE - 1)) + STACK_SIZE;
+    stack = (stack & ~(BFSTACK_SIZE - 1)) + BFSTACK_SIZE;
 
     /**
      * Notes
-     * 
-     * Finally we just need to get the field that we care about and 
-     * return it. 
-     */ 
+     *
+     * Finally we just need to get the field that we care about and
+     * return it.
+     */
     tc = bfrcast(struct thread_context_t *, stack - sizeof(struct thread_context_t));
     return tc->cpuid;
 }
 
 static inline uint64_t *
-thread_context_tlsptr(void)
+thread_context_tlsptr(void) NOEXCEPT
 {
     struct thread_context_t *tc;
     uint64_t stack = _thread_context_get_sp();
 
     /**
      * Notes:
-     * 
+     *
      * We use the same math to get the top of the stack that we used
-     * to align the stack. This makes sure that no matter where the 
-     * stack is (unless something really bad happens), we can always 
-     * find the top of the stack. 
+     * to align the stack. This makes sure that no matter where the
+     * stack is (unless something really bad happens), we can always
+     * find the top of the stack.
      */
-    stack = (stack & ~(STACK_SIZE - 1)) + STACK_SIZE;
+    stack = (stack & ~(BFSTACK_SIZE - 1)) + BFSTACK_SIZE;
 
     /**
      * Notes
-     * 
-     * Finally we just need to get the field that we care about and 
-     * return it. 
-     */ 
+     *
+     * Finally we just need to get the field that we care about and
+     * return it.
+     */
     tc = bfrcast(struct thread_context_t *, stack - sizeof(struct thread_context_t));
     return bfrcast(uint64_t *, tc->tlsptr);
 }
 
-static inline uint64_t 
-thread_context_canary(void)
+static inline uint64_t
+thread_context_canary(void) NOEXCEPT
 {
     struct thread_context_t *tc;
     uint64_t stack = _thread_context_get_sp();
 
     /**
      * Notes:
-     * 
+     *
      * We use the same math to get the top of the stack that we used
-     * to align the stack. This makes sure that no matter where the 
-     * stack is (unless something really bad happens), we can always 
-     * find the top of the stack. 
+     * to align the stack. This makes sure that no matter where the
+     * stack is (unless something really bad happens), we can always
+     * find the top of the stack.
      */
-    stack = (stack & ~(STACK_SIZE - 1)) + STACK_SIZE;
+    stack = (stack & ~(BFSTACK_SIZE - 1)) + BFSTACK_SIZE;
 
     /**
      * Notes
-     * 
-     * Finally we just need to get the field that we care about and 
-     * return it. 
-     */ 
+     *
+     * Finally we just need to get the field that we care about and
+     * return it.
+     */
     tc = bfrcast(struct thread_context_t *, stack - sizeof(struct thread_context_t));
     return tc->canary;
 }
@@ -151,69 +155,65 @@ thread_context_canary(void)
  *
  * https://github.com/Bareflank/hypervisor/issues/213
  *
- * ------------ 0x9050 <-- top of stack (0x1050 + STACK_SIZE * 2)
+ * ------------ 0x9050 <-- top of stack (0x1050 + BFSTACK_SIZE * 2)
  * |          |
- * |   ---    | 0x8000 <-- actual top stack = top of stack & ~(STACK_SIZE - 1)
+ * |   ---    | 0x8000 <-- actual top stack = top of stack & ~(BFSTACK_SIZE - 1)
  * |   ---    | 0x7FF8 <-- unused
  * |   ---    | 0x7FF0 <-- cpuid
  * |   ---    | 0x7FE8 <-- TLS pointer
  * |   ---    | 0x7FE0 <-- canary
  * |   ---    | 0x7FDF <-- RSP = actual top stack - 0x20 - 1
- * |          |            
+ * |          |
  * |          |
  * |          |
  * |   ---    | 0x4000 <-- bottom of stack
  * |          |
  * |          | Extra space can be used on overrun
  * |          |
- * ------------ 0x1050 <-- returned by platform_alloc_rw(STACK_SIZE * 2)
- * 
+ * ------------ 0x1050 <-- returned by platform_alloc_rw(BFSTACK_SIZE * 2)
+ *
  * @param stack the stack pointer
  * @param cpuid the cpu ID for this thread
  * @param tlsptr the pointer to the TLS block for this thread
  * @return the stack pointer (in interger form)
  */
 static inline uint64_t
-setup_stack(uint8_t *stack, uint64_t cpuid, uint8_t *tlsptr)
+setup_stack(uint8_t *stack, uint64_t cpuid, uint8_t *tlsptr) NOEXCEPT
 {
     struct thread_context_t *tc;
 
     uint64_t btm = bfrcast(uint64_t, stack);
-    uint64_t top = btm + (STACK_SIZE * 2);
+    uint64_t top = btm + (BFSTACK_SIZE * 2);
 
     /**
      * Notes:
-     * 
+     *
      * We need to align the actual stack pointer which is why we always
-     * allocate x2 the memory that we actually need. This is a common 
-     * trick when aligning memory that we do not have control of. 
+     * allocate x2 the memory that we actually need. This is a common
+     * trick when aligning memory that we do not have control of.
      */
-    top &= ~(STACK_SIZE - 1);
+    top &= ~(BFSTACK_SIZE - 1);
 
     /**
      * Notes
-     * 
-     * Now that we have the top of the stack, we can fill in our thread 
-     * context structure. This way we can always use this same math to 
-     * get back to this structure without the possibility of 
-     * overrunning memory. 
-     */ 
+     *
+     * Now that we have the top of the stack, we can fill in our thread
+     * context structure. This way we can always use this same math to
+     * get back to this structure without the possibility of
+     * overrunning memory.
+     */
     tc = bfrcast(struct thread_context_t *, top - sizeof(struct thread_context_t));
     tc->cpuid = cpuid;
     tc->tlsptr = tlsptr;
-    tc->canary = 0xBF42BF42BF42BF42; 
+    tc->canary = 0xBF42BF42BF42BF42;
 
     /**
-     * Finally we will return the location of the stack without the 
-     * thread context added so that the code knows where the actual stack 
+     * Finally we will return the location of the stack without the
+     * thread context added so that the code knows where the actual stack
      * is
      */
     return top - sizeof(struct thread_context_t) - 1;
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #pragma pack(pop)
 

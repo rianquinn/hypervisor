@@ -19,89 +19,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef REQUEST_INIT_FAILS
-#define REQUEST_INIT_RETURN ENTRY_SUCCESS
-#else
-#define REQUEST_INIT_RETURN ENTRY_ERROR_UNKNOWN
-#endif
-
-#ifndef REQUEST_FINI_FAILS
-#define REQUEST_FINI_RETURN ENTRY_SUCCESS
-#else
-#define REQUEST_FINI_RETURN ENTRY_ERROR_UNKNOWN
-#endif
-
-#ifndef REQUEST_ADD_MDL_FAILS
-#define REQUEST_ADD_MDL_RETURN ENTRY_SUCCESS
-#else
-#define REQUEST_ADD_MDL_RETURN ENTRY_ERROR_UNKNOWN
-#endif
-
-#ifndef REQUEST_GET_DRR_FAILS
-#define REQUEST_GET_DRR_RETURN ENTRY_SUCCESS
-#else
-#define REQUEST_GET_DRR_RETURN ENTRY_ERROR_UNKNOWN
-#endif
-
-#ifndef REQUEST_SET_RSDP_FAILS
-#define REQUEST_SET_RSDP_RETURN ENTRY_SUCCESS
-#else
-#define REQUEST_SET_RSDP_RETURN ENTRY_ERROR_UNKNOWN
-#endif
-
-#ifndef REQUEST_VMM_INIT_FAILS
-#define REQUEST_VMM_INIT_RETURN ENTRY_SUCCESS
-#else
-#define REQUEST_VMM_INIT_RETURN ENTRY_ERROR_UNKNOWN
-#endif
-
-#ifndef REQUEST_VMM_FINI_FAILS
-#define REQUEST_VMM_FINI_RETURN ENTRY_SUCCESS
-#else
-#define REQUEST_VMM_FINI_RETURN ENTRY_ERROR_UNKNOWN
-#endif
-
 #include <bfgsl.h>
 #include <bftypes.h>
 #include <bfsupport.h>
 
-int g_errno;
-int *__errno() { return &g_errno; }
-
-extern "C" int64_t
-bfmain(uintptr_t request, uintptr_t arg1, uintptr_t arg2, uintptr_t arg3)
+extern "C" status_t
+bfmain(uint64_t request, uint64_t arg1, uint64_t arg2) noexcept
 {
+    bfignored(request);
     bfignored(arg1);
     bfignored(arg2);
-    bfignored(arg3);
 
-    switch (request) {
-        case BF_REQUEST_INIT:
-            return REQUEST_INIT_RETURN;
-
-        case BF_REQUEST_FINI:
-            return REQUEST_FINI_RETURN;
-
-        case BF_REQUEST_ADD_MDL:
-            return REQUEST_ADD_MDL_RETURN;
-
-        case BF_REQUEST_GET_DRR:
-            return REQUEST_GET_DRR_RETURN;
-
-        case BF_REQUEST_VMM_INIT:
-            return REQUEST_VMM_INIT_RETURN;
-
-        case BF_REQUEST_VMM_FINI:
-            return REQUEST_VMM_FINI_RETURN;
-
-        case BF_REQUEST_SET_RSDP:
-            return REQUEST_SET_RSDP_RETURN;
-
-        default:
-            break;
-    }
-
-    return ENTRY_ERROR_UNKNOWN;
+    __errno();
+    return BFSUCCESS;
 }
 
 // -----------------------------------------------------------------------------
@@ -168,17 +98,4 @@ _realloc_r(struct _reent *ent, void *ptr, size_t size)
     bfignored(size);
 
     return nullptr;
-}
-
-extern "C" uint64_t *
-thread_context_tlsptr(void)
-{
-    static uint64_t s_tls[0x1000] = {};
-    return s_tls;
-}
-
-extern "C" uint64_t
-thread_context_cpuid(void)
-{
-    return 0;
 }

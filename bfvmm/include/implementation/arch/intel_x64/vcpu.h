@@ -19,67 +19,43 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VCPU_FACTORY_H
-#define VCPU_FACTORY_H
+#ifndef IMPLMENETATION_VCPU_INTEL_X64_H
+#define IMPLMENETATION_VCPU_INTEL_X64_H
 
-#include <memory>
-#include "vcpu.h"
+#include "../../vcpu.h"
+
+// #include "uapis/cpuid.h"
+// #include "uapis/exit_handler.h"
+// #include "uapis/state.h"
+// #include "uapis/vmcs.h"
+
+// #include "cpuid.h"
+// #include "exit_handler.h"
+// #include "state.h"
+// #include "vmcs.h"
+// #include "vmx.h"
 
 // -----------------------------------------------------------------------------
-// Definitions
+// Defintion
 // -----------------------------------------------------------------------------
 
-namespace bfvmm
+namespace bfvmm::implementation::intel_x64
 {
 
-/// vCPU Factory
-///
-/// This class is used by the vcpu_manager to create vCPUs. Specifically,
-/// this class provides a seem that allows users of Bareflank to replace the
-/// default vCPU with their own, custom vCPUs that extend the functionality
-/// of Bareflank above and beyond what is already provided. This seem also
-/// provides a means to unit test the vcpu_manager.
-///
-class vcpu_factory
+class vcpu :
+    public implementation::vcpu
 {
-public:
-
-    /// Default Constructor
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    vcpu_factory() noexcept = default;
-
-    /// Destructor
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    virtual ~vcpu_factory() = default;
-
-    /// Make vCPU
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param vcpuid the vcpuid for the vcpu to create
-    /// @return returns a pointer to a newly created vCPU.
-    ///
-    virtual std::unique_ptr<vcpu> make(vcpuid::type vcpuid);
 
 public:
 
-    /// @cond
+    explicit vcpu(id_t id) :
+        implementation::vcpu{id}
+    { }
 
-    vcpu_factory(vcpu_factory &&) noexcept = default;
-    vcpu_factory &operator=(vcpu_factory &&) noexcept = default;
-
-    vcpu_factory(const vcpu_factory &) = delete;
-    vcpu_factory &operator=(const vcpu_factory &) = delete;
-
-    /// @endcond
+    constexpr static void global_init()
+    { }
 };
+
 }
 
 #endif

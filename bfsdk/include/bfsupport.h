@@ -29,9 +29,7 @@
 
 #include <bftypes.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#pragma pack(push, 1)
 
 /**
  * @struct _start_args_t
@@ -60,14 +58,15 @@ struct _start_args_t {
  * @cond
  */
 
-#define BF_REQUEST_SET_MEM 10
-#define BF_REQUEST_SET_MEM_NODE_TREE 11
+#define BF_REQUEST_SET_MEM_LEAFS 10
+#define BF_REQUEST_SET_MEM_NODES 11
 #define BF_REQUEST_INIT 20
 #define BF_REQUEST_EH_FRAME 21
-#define BF_REQUEST_ADD_MD 30
+#define BF_REQUEST_ADD_MD 22
+#define BF_REQUEST_GLOBAL_INIT 30
 #define BF_REQUEST_VMM_INIT 31
 #define BF_REQUEST_VMM_FINI 32
-#define BF_REQUEST_GET_DRR 33
+#define BF_REQUEST_GET_DRR 40
 
 /* @endcond */
 
@@ -83,7 +82,7 @@ using _start_t = status_t (*)(uintptr_t stack, const struct _start_args_t *args)
 /**
  * Main Function. This is called by the runtime code and is the main entry
  * point for any program that uses this environment.
- * 
+ *
  * @param request the request being made
  * @param arg1 optional arg #1
  * @param arg2 optional arg #2
@@ -103,8 +102,6 @@ typedef status_t (*_start_t)(uintptr_t stack, const struct _start_args_t *args);
 
 #endif
 
-#ifdef __cplusplus
-}
-#endif
+#pragma pack(pop)
 
 #endif

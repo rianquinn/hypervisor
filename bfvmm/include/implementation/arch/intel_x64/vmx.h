@@ -22,8 +22,8 @@
 #ifndef IMPLEMENTATION_VMX_INTEL_X64_H
 #define IMPLEMENTATION_VMX_INTEL_X64_H
 
-#include "../private.h"
-#include "../../../memory_manager/memory_manager.h"
+#include "../../../papis/macros.h"
+#include "../../../uapis/unique_page.h"
 
 // -----------------------------------------------------------------------------
 // Defintion
@@ -31,15 +31,17 @@
 
 ///@cond
 
-namespace bfvmm::intel_x64::implementation
+namespace bfvmm::implementation::intel_x64
 {
+
+class vcpu;
 
 class vmx
 {
 public:
 
-    explicit vmx(gsl::not_null<vcpu *> vcpu);
-    ~vmx() = default;
+    explicit vmx();
+    ~vmx();
 
 private:
 
@@ -56,10 +58,7 @@ private:
 
 private:
 
-    page_ptr<uint32_t> m_vmx_region;
-
-public:
-    COPY_MOVE_SEMANTICS(vmx);
+    unique_page<uint32_t> m_vmx_region;
 };
 
 }

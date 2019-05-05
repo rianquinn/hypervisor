@@ -34,14 +34,11 @@
 //     impractical.
 //
 
-#include <bfupperlower.h>
 #include <uapis/memory_manager.h>
 
 // -----------------------------------------------------------------------------
 // Mutexes
 // -----------------------------------------------------------------------------
-
-#include <mutex>
 
 static inline auto &md_mutex()
 {
@@ -72,22 +69,25 @@ static inline auto &alloc_huge_mutex()
 // -----------------------------------------------------------------------------
 
 static uint32_t g_huge_pool_k = 0;
-static uint8_t *g_huge_pool_buffer = nullptr;
-static uint8_t *g_huge_pool_node_tree = nullptr;
+static uint8_t *g_huge_pool_leafs = nullptr;
+static uint8_t *g_huge_pool_nodes = nullptr;
 
-extern "C" int64_t
-set_huge_pool(uint64_t addr, uint64_t size) noexcept
+extern "C" status_t
+set_huge_pool_leafs(uint64_t addr, uint64_t size) noexcept
 {
-    g_huge_pool_buffer = reinterpret_cast<uint8_t *>(addr);
-    g_huge_pool_k = static_cast<uint32_t>(log2(size)) - 10;
-
-    return static_cast<int64_t>(buddy_allocator::node_tree_size(g_huge_pool_k));
+    g_huge_pool_k = log2n(size) - log2n(BFPAGE_SIZE);
+    g_huge_pool_leafs = reinterpret_cast<uint8_t *>(addr);
+    return BFSUCCESS;
 }
 
 extern "C" status_t
-set_huge_pool_node_tree(uint64_t addr) noexcept
+set_huge_pool_nodes(uint64_t addr, uint64_t size) noexcept
 {
-    g_huge_pool_node_tree = reinterpret_cast<uint8_t *>(addr);
+    if (size != num_nodes(g_huge_pool_k) * BFNODE_SIZE) {
+        return BFFAILURE;
+    }
+
+    g_huge_pool_nodes = reinterpret_cast<uint8_t *>(addr);
     return BFSUCCESS;
 }
 
@@ -95,7 +95,7 @@ set_huge_pool_node_tree(uint64_t addr) noexcept
 // Map Pool
 // -----------------------------------------------------------------------------
 
-static uint8_t g_map_pool_node_tree[buddy_allocator::node_tree_size(MAP_POOL_K)] = {};
+static uint8_t g_map_pool_nodes[num_nodes(MAP_POOL_K) * BFNODE_SIZE] = {};
 
 // -----------------------------------------------------------------------------
 // Implementation
@@ -105,8 +105,8 @@ namespace bfvmm::implementation
 {
 
 memory_manager::memory_manager() noexcept :
-    g_map_pool(MAP_POOL_START, MAP_POOL_K, g_map_pool_node_tree),
-    g_huge_pool(g_huge_pool_buffer, g_huge_pool_k, g_huge_pool_node_tree),
+    g_map_pool(MAP_POOL_START, MAP_POOL_K, g_map_pool_nodes),
+    g_huge_pool(g_huge_pool_leafs, g_huge_pool_k, g_huge_pool_nodes),
     slab008(0x008),
     slab010(0x010),
     slab018(0x018),
@@ -120,8 +120,8 @@ memory_manager::memory_manager() noexcept :
     slab800(0x800)
 { }
 
-memory_manager_n::pointer
-memory_manager::alloc(memory_manager_n::size_type size) noexcept
+memory_manager::pointer
+memory_manager::alloc(size_type size) noexcept
 {
     std::lock_guard lock(alloc_mutex());
 
@@ -186,8 +186,8 @@ memory_manager::alloc(memory_manager_n::size_type size) noexcept
     return nullptr;
 }
 
-memory_manager_n::pointer
-memory_manager::alloc_map(memory_manager_n::size_type size) noexcept
+memory_manager::pointer
+memory_manager::alloc_map(size_type size) noexcept
 {
     std::lock_guard lock(alloc_map_mutex());
 
@@ -199,8 +199,8 @@ memory_manager::alloc_map(memory_manager_n::size_type size) noexcept
         gsl::narrow_cast<buddy_allocator::size_type>(size));
 }
 
-memory_manager_n::pointer
-memory_manager::alloc_huge(memory_manager_n::size_type size) noexcept
+memory_manager::pointer
+memory_manager::alloc_huge(size_type size) noexcept
 {
     std::lock_guard lock(alloc_huge_mutex());
 
@@ -211,15 +211,15 @@ memory_manager::alloc_huge(memory_manager_n::size_type size) noexcept
     auto ptr = g_huge_pool.allocate(
         gsl::narrow_cast<buddy_allocator::size_type>(size));
 
-    if (size == BAREFLANK_PAGE_SIZE) {
-        return memset(ptr, 0, BAREFLANK_PAGE_SIZE);
+    if (size == BFPAGE_SIZE) {
+        return memset(ptr, 0, BFPAGE_SIZE);
     }
 
     return ptr;
 }
 
 void
-memory_manager::free(memory_manager_n::pointer ptr) noexcept
+memory_manager::free(pointer ptr) noexcept
 {
     std::lock_guard lock(alloc_mutex());
 
@@ -275,21 +275,21 @@ memory_manager::free(memory_manager_n::pointer ptr) noexcept
 }
 
 void
-memory_manager::free_map(memory_manager_n::pointer ptr) noexcept
+memory_manager::free_map(pointer ptr) noexcept
 {
     std::lock_guard lock(alloc_map_mutex());
     return g_map_pool.deallocate(ptr);
 }
 
 void
-memory_manager::free_huge(memory_manager_n::pointer ptr) noexcept
+memory_manager::free_huge(pointer ptr) noexcept
 {
     std::lock_guard lock(alloc_huge_mutex());
     return g_huge_pool.deallocate(ptr);
 }
 
-memory_manager_n::size_type
-memory_manager::size(memory_manager_n::pointer ptr) const noexcept
+memory_manager::size_type
+memory_manager::size(pointer ptr) const noexcept
 {
     std::lock_guard lock(alloc_mutex());
 
@@ -340,22 +340,22 @@ memory_manager::size(memory_manager_n::pointer ptr) const noexcept
     return this->size_huge(ptr);
 }
 
-memory_manager_n::size_type
-memory_manager::size_map(memory_manager_n::pointer ptr) const noexcept
+memory_manager::size_type
+memory_manager::size_map(pointer ptr) const noexcept
 {
     std::lock_guard lock(alloc_map_mutex());
     return g_map_pool.size(ptr);
 }
 
-memory_manager_n::size_type
-memory_manager::size_huge(memory_manager_n::pointer ptr) const noexcept
+memory_manager::size_type
+memory_manager::size_huge(pointer ptr) const noexcept
 {
     std::lock_guard lock(alloc_huge_mutex());
     return g_huge_pool.size(ptr);
 }
 
-memory_manager_n::integer_pointer
-memory_manager::hva_to_hpa(memory_manager_n::integer_pointer hva) const
+memory_manager::integer_pointer
+memory_manager::hva_to_hpa(integer_pointer hva) const
 {
     auto lower = bfn::lower(hva);
     auto upper = bfn::upper(hva);
@@ -371,8 +371,8 @@ memory_manager::hva_to_hpa(memory_manager_n::integer_pointer hva) const
     );
 }
 
-memory_manager_n::integer_pointer
-memory_manager::hpa_to_hva(memory_manager_n::integer_pointer hpa) const
+memory_manager::integer_pointer
+memory_manager::hpa_to_hva(integer_pointer hpa) const
 {
     auto lower = bfn::lower(hpa);
     auto upper = bfn::upper(hpa);
@@ -390,15 +390,13 @@ memory_manager::hpa_to_hva(memory_manager_n::integer_pointer hpa) const
 
 void
 memory_manager::add_md(
-    memory_manager_n::integer_pointer hva,
-    memory_manager_n::integer_pointer hpa,
-    memory_manager_n::attr_type attr)
+    integer_pointer hva, integer_pointer hpa, attr_type attr)
 {
     std::lock_guard guard(md_mutex());
 
     try {
-        m_hva_lookup[bfn::lower(hva)] = {bfn::lower(hpa), attr};
-        m_hpa_lookup[bfn::lower(hpa)] = {bfn::lower(hva), attr};
+        m_hva_lookup[bfn::upper(hva)] = {bfn::upper(hpa), attr};
+        m_hpa_lookup[bfn::upper(hpa)] = {bfn::upper(hva), attr};
     }
     catch (...) {
         m_hva_lookup.erase(hva);
@@ -407,26 +405,24 @@ memory_manager::add_md(
     }
 }
 
-void
-memory_manager::dump_stats() const noexcept
-{ bfalert_info(0, "currently not supported"); }
-
 }
 
 #ifdef ENABLE_BUILD_VMM
+
+using namespace bfvmm;
 
 extern "C" void *
 _malloc_r(struct _reent *ent, size_t size)
 {
     bfignored(ent);
-    return memory_manager_n::instance()->alloc(size);
+    return g_mm->alloc(size);
 }
 
 extern "C" void
 _free_r(struct _reent *ent, void *ptr)
 {
     bfignored(ent);
-    memory_manager_n::instance()->free(ptr);
+    g_mm->free(ptr);
 }
 
 extern "C" void *
@@ -434,7 +430,7 @@ _calloc_r(struct _reent *ent, size_t nmemb, size_t size)
 {
     bfignored(ent);
 
-    if (auto ptr = memory_manager_n::instance()->alloc(nmemb * size)) {
+    if (auto ptr = g_mm->alloc(nmemb * size)) {
         return memset(ptr, 0, nmemb * size);
     }
 
@@ -446,8 +442,8 @@ _realloc_r(struct _reent *ent, void *ptr, size_t size)
 {
     bfignored(ent);
 
-    auto old_sze = memory_manager_n::instance()->size(ptr);
-    auto new_ptr = memory_manager_n::instance()->alloc(size);
+    auto old_sze = g_mm->size(ptr);
+    auto new_ptr = g_mm->alloc(size);
 
     if (new_ptr == nullptr || old_sze == 0) {
         return nullptr;
@@ -455,18 +451,16 @@ _realloc_r(struct _reent *ent, void *ptr, size_t size)
 
     if (ptr != nullptr) {
         memcpy(new_ptr, ptr, size > old_sze ? old_sze : size);
-        memory_manager_n::instance()->free(ptr);
+        g_mm->free(ptr);
     }
 
     return new_ptr;
 }
 
-extern "C" void *
-alloc_page()
-{ return memory_manager_n::instance()->alloc_huge(BAREFLANK_PAGE_SIZE); }
+void *alloc_page() noexcept
+{ return g_mm->alloc_huge(BFPAGE_SIZE); }
 
-extern "C" void
-free_page(void *ptr)
-{ memory_manager_n::instance()->free_huge(ptr); }
+void free_page(void *ptr) noexcept
+{ g_mm->free_huge(ptr); }
 
 #endif

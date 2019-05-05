@@ -24,7 +24,6 @@
 
 #include <fstream>
 #include <sstream>
-#include <iostream>
 
 #include <argparse/argparse.hpp>
 
@@ -172,9 +171,6 @@ ioctl_driver::stop_vmm()
 void
 ioctl_driver::dump_vmm()
 {
-    debug_ring_resources_t args;
-    auto buffer = std::make_unique<char[]>(DEBUG_RING_SIZE);
-
     switch (this->get_status()) {
         case VMM_RUNNING: break;
         case VMM_LOADED: break;
@@ -183,13 +179,10 @@ ioctl_driver::dump_vmm()
         default: throw std::runtime_error("unknown status");
     }
 
+    debug_ring_resources_t args;
     m_ioctl.call_ioctl_dump_vmm(&args);
 
-    if (debug_ring_read(&args, buffer.get(), DEBUG_RING_SIZE) > 0) {
-        std::cout << buffer.get();
-    }
-
-    std::cout << '\n';
+    dump_debug_ring(&args);
 }
 
 status_t

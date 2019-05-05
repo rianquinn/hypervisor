@@ -222,7 +222,7 @@ serial::is_transmit_empty() const noexcept
 }
 
 void
-serial::write(char c) const noexcept
+serial::write(const char c) const noexcept
 {
     while (!is_transmit_empty())
     { }

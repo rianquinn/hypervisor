@@ -22,7 +22,7 @@
 #ifndef IMPLEMENTATION_MEMORY_MANAGER_H
 #define IMPLEMENTATION_MEMORY_MANAGER_H
 
-#include <unordered_map>
+#include "../papis/macros.h"
 
 #include "buddy_allocator.h"
 #include "object_allocator.h"
@@ -31,11 +31,14 @@
 // Helpers
 // -----------------------------------------------------------------------------
 
-extern "C" void *alloc_page();
-extern "C" void free_page(void *ptr);
+void *alloc_page() noexcept;
+void free_page(void *ptr) noexcept;
 
-extern "C" int64_t set_huge_pool(uint64_t addr, uint64_t size) noexcept;
-extern "C" status_t set_huge_pool_node_tree(uint64_t addr) noexcept;
+template<typename T> T *alloc_page()
+{ return static_cast<T *>(alloc_page()); }
+
+extern "C" status_t set_huge_pool_leafs(uint64_t addr, uint64_t size) noexcept;
+extern "C" status_t set_huge_pool_nodes(uint64_t addr, uint64_t size) noexcept;
 
 // -----------------------------------------------------------------------------
 // Defintion
@@ -48,54 +51,44 @@ class memory_manager
 {
 public:
 
+    using pointer = void *;
+    using integer_pointer = uintptr_t;
+    using size_type = std::size_t;
+    using attr_type = decltype(memory_descriptor::type);
+
     memory_manager() noexcept;
-    ~memory_manager() = default;
 
-    memory_manager_n::pointer alloc(
-        memory_manager_n::size_type size) noexcept;
-    memory_manager_n::pointer alloc_map(
-        memory_manager_n::size_type size) noexcept;
-    memory_manager_n::pointer alloc_huge(
-        memory_manager_n::size_type size) noexcept;
+    pointer alloc(size_type size) noexcept;
+    pointer alloc_map(size_type size) noexcept;
+    pointer alloc_huge(size_type size) noexcept;
 
-    void free(memory_manager_n::pointer ptr) noexcept;
-    void free_map(memory_manager_n::pointer ptr) noexcept;
-    void free_huge(memory_manager_n::pointer ptr) noexcept;
+    void free(pointer ptr) noexcept;
+    void free_map(pointer ptr) noexcept;
+    void free_huge(pointer ptr) noexcept;
 
-    memory_manager_n::size_type size(
-        memory_manager_n::pointer ptr) const noexcept;
-    memory_manager_n::size_type size_map(
-        memory_manager_n::pointer ptr) const noexcept;
-    memory_manager_n::size_type size_huge(
-        memory_manager_n::pointer ptr) const noexcept;
+    size_type size(pointer ptr) const noexcept;
+    size_type size_map(pointer ptr) const noexcept;
+    size_type size_huge(pointer ptr) const noexcept;
 
-    memory_manager_n::integer_pointer hva_to_hpa(
-        memory_manager_n::integer_pointer hva) const;
+    integer_pointer hva_to_hpa(integer_pointer hva) const;
+    integer_pointer hpa_to_hva(integer_pointer hpa) const;
 
-    memory_manager_n::integer_pointer hpa_to_hva(
-        memory_manager_n::integer_pointer hpa) const;
-
-    void add_md(
-        memory_manager_n::integer_pointer hva,
-        memory_manager_n::integer_pointer hpa,
-        memory_manager_n::attr_type attr);
-
-    void dump_stats() const noexcept;
+    void add_md(integer_pointer hva,integer_pointer hpa,attr_type attr);
 
 private:
 
     struct hva_t {
-        memory_manager_n::integer_pointer hpa;
-        memory_manager_n::integer_pointer attr;
+        integer_pointer hpa;
+        integer_pointer attr;
     };
 
     struct hpa_t {
-        memory_manager_n::integer_pointer hva;
-        memory_manager_n::integer_pointer attr;
+        integer_pointer hva;
+        integer_pointer attr;
     };
 
-    std::unordered_map<memory_manager_n::integer_pointer, hva_t> m_hva_lookup;
-    std::unordered_map<memory_manager_n::integer_pointer, hpa_t> m_hpa_lookup;
+    std::unordered_map<integer_pointer, hva_t> m_hva_lookup;
+    std::unordered_map<integer_pointer, hpa_t> m_hpa_lookup;
 
     buddy_allocator g_map_pool;
     buddy_allocator g_huge_pool;

@@ -30,11 +30,11 @@
 
 /// Manager
 ///
-/// A generic class for creating, destroying, running and stopping T given a
-/// T_factory to actually instantiate T, and a tid to identify which T to
-/// interact with.
+/// A generic class for creating and  destroying a type T. Note that this
+/// is only meant for singleton style managers, so in general this class is
+/// not needed for more users of Bareflank.
 ///
-template<typename T, typename T_factory, typename tid>
+template<typename T>
 class bfmanager
 {
 public:
@@ -69,17 +69,19 @@ public:
     ///
     /// @param id the T to initialize
     ///
-    void create(tid id)
+    gsl::not_null<T *>
+    create(typename T::id_t id)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
 
-        if (auto iter = m_ts.find(id); iter != m_ts.end()) {
+        if (auto iter = m_store.find(id); iter != m_store.end()) {
             throw std::runtime_error("bfmanager: id already exists");
         }
 
-        if (auto t = m_T_factory->make(id)) {
-            m_ts[id] = std::move(t);
-            return;
+        if (auto t = T::make(id)) {
+            auto ptr = t.get();
+            m_store[id] = std::move(t);
+            return ptr;
         }
 
         throw std::runtime_error("bfmanager: factory returned a nullptr");
@@ -92,10 +94,17 @@ public:
     ///
     /// @param id the T to destroy
     ///
-    void destroy(tid id)
+    std::unique_ptr<T>
+    destroy(typename T::id_t id)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        m_ts.erase(id);
+
+        if (auto t = std::move(m_store[id])) {
+            m_store.erase(id);
+            return t;
+        }
+
+        throw std::runtime_error("bfmanager: invalid id");
     }
 
     /// For Each
@@ -108,9 +117,10 @@ public:
     ///
     /// @param func the callback to call for each T
     ///
-    void foreach(void(*func)(T *))
+    constexpr void
+    foreach(void(*func)(T *))
     {
-        for (auto &t : m_ts) {
+        for (auto &t : m_store) {
             func(&t);
         }
     }
@@ -122,13 +132,14 @@ public:
     ///
     /// @param id the T to get
     /// @param err the error to display
-    /// @return returns a pointer to the T associated with tid
+    /// @return returns a pointer to the T associated with T::id_t
     ///
-    gsl::not_null<T *> get(tid id, const char *err = nullptr)
+    gsl::not_null<T *>
+    get(typename T::id_t id, const char *err = nullptr)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
 
-        if (auto iter = m_ts.find(id); iter != m_ts.end()) {
+        if (auto iter = m_store.find(id); iter != m_store.end()) {
             return iter->second.get();
         }
 
@@ -147,33 +158,20 @@ public:
     ///
     /// @param id the T to get
     /// @param err the error to display
-    /// @return returns a pointer to the T associated with tid
+    /// @return returns a pointer to the T associated with T::id_t
     ///
-    template<typename U>
-    gsl::not_null<U> get(tid id, const char *err = nullptr)
+    template<typename U> constexpr gsl::not_null<U>
+    get(typename T::id_t id, const char *err = nullptr)
     { return dynamic_cast<U>(get(id, err).get()); }
 
 private:
 
-    bfmanager() noexcept :
-        m_T_factory(std::make_unique<T_factory>())
-    { }
+    bfmanager() noexcept = default;
 
 private:
 
-    std::unique_ptr<T_factory> m_T_factory;
-    std::unordered_map<tid, std::unique_ptr<T>> m_ts;
-
     mutable std::mutex m_mutex;
-
-public:
-
-    /// @cond
-
-    void set_factory(std::unique_ptr<T_factory> factory)
-    { m_T_factory = std::move(factory); }
-
-    /// @endcond
+    std::unordered_map<typename T::id_t, std::unique_ptr<T>> m_store;
 
 public:
 

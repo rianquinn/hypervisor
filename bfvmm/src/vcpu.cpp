@@ -19,49 +19,44 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef BFVCPUID_H
-#define BFVCPUID_H
+#include <implementation/vcpu.h>
 
-#include <bftypes.h>
-
-namespace vcpuid
+namespace bfvmm::implementation
 {
 
-using type = uint64_t;
+vcpu::vcpu(id_t id) :
+    m_id{id}
+{ }
 
-/// Is Bootstrap vCPU
-///
-/// @expects none
-/// @ensures none
-///
-/// @param id the id to check
-/// @return true if this vCPU is the bootstrap vCPU, false otherwise
-///
-constexpr bool is_bootstrap_vcpu(type id)
-{ return id == 0; }
+vcpu::id_t
+vcpu::id() const noexcept
+{ return m_id; }
 
-/// Is Host VM vCPU
-///
-/// @expects none
-/// @ensures none
-///
-/// @param id the id to check
-/// @return true if this vCPU belongs to the host VM, false otherwise
-///
-constexpr bool is_host_vcpu(type id)
-{ return (id & 0xFFFFFFFFFFFF0000UL) == 0; }
-
-/// Is Guest VM vCPU
-///
-/// @expects none
-/// @ensures none
-///
-/// @param id the id to check
-/// @return true if this vCPU belongs to a guest VM, false otherwise
-///
-constexpr bool is_guest_vcpu(type id)
-{ return !is_host_vcpu(id); }
-
+vcpu::id_t
+vcpu::generate_guest_id() noexcept
+{
+    static id_t s_id = 10000;
+    return s_id++;
 }
 
-#endif
+bool
+vcpu::is_bootstrap_vcpu() const noexcept
+{ return m_id == 0; }
+
+bool
+vcpu::is_host_vcpu() const noexcept
+{ return (m_id & 0xFFFFFFFFFFFF0000UL) == 0; }
+
+bool
+vcpu::is_guest_vcpu() const noexcept
+{ return !this->is_host_vcpu(); }
+
+MOCK_FUNCTION(vcpu, {
+    mocks.OnCall(vcpu->vcpu_impl().get(), vcpu::id);
+    // mocks.OnCall(vcpu->vcpu_impl().get(), vcpu::generate_guest_id);
+    mocks.OnCall(vcpu->vcpu_impl().get(), vcpu::is_bootstrap_vcpu);
+    mocks.OnCall(vcpu->vcpu_impl().get(), vcpu::is_host_vcpu);
+    mocks.OnCall(vcpu->vcpu_impl().get(), vcpu::is_guest_vcpu);
+})
+
+}

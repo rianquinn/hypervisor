@@ -19,8 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef OBJECT_ALLOCATOR_H
-#define OBJECT_ALLOCATOR_H
+#ifndef IMPLEMENTATION_OBJECT_ALLOCATOR_H
+#define IMPLEMENTATION_OBJECT_ALLOCATOR_H
 
 #include <bfgsl.h>
 #include <bfdebug.h>
@@ -37,8 +37,8 @@ constexpr const auto objtpool_size = 255;
 // Helpers
 // -----------------------------------------------------------------------------
 
-extern "C" void *alloc_page();
-extern "C" void free_page(void *ptr);
+void *alloc_page() noexcept;
+void free_page(void *ptr) noexcept;
 
 /// @struct __oa_page
 ///
@@ -51,7 +51,7 @@ extern "C" void free_page(void *ptr);
 ///     the size of the page
 ///
 struct __oa_page {
-    gsl::byte data[BAREFLANK_PAGE_SIZE];
+    gsl::byte data[BFPAGE_SIZE];
 };
 
 /// Object Allocator Alloc
@@ -71,7 +71,7 @@ S *__oa_alloc()
     bferror_info(0, "alloc_page returned nullptr");
     std::terminate();
 
-    static_assert(sizeof(S) == BAREFLANK_PAGE_SIZE);
+    static_assert(sizeof(S) == BFPAGE_SIZE);
 }
 
 /// Object Allocator Free
@@ -83,7 +83,7 @@ template <typename S>
 void __oa_free(S *ptr)
 {
     free_page(ptr);
-    static_assert(sizeof(S) == BAREFLANK_PAGE_SIZE);
+    static_assert(sizeof(S) == BFPAGE_SIZE);
 }
 
 /// Object Allocator
@@ -191,7 +191,7 @@ public:
 
             for (auto i = 0LL; i < next->index; i++) {
                 auto s = next->pool[i].addr;
-                auto e = next->pool[i].addr + BAREFLANK_PAGE_SIZE;
+                auto e = next->pool[i].addr + BFPAGE_SIZE;
 
                 if (p >= s && p < e) {
                     return true;
@@ -332,11 +332,11 @@ private:
     {
         auto page = get_next_page();
 
-        for (auto i = 0ULL; i + m_size <= BAREFLANK_PAGE_SIZE; i += m_size) {
+        for (auto i = 0ULL; i + m_size <= BFPAGE_SIZE; i += m_size) {
             auto object = get_next_object();
             free_stack_push(object);
 
-            auto view = gsl::make_span(page->addr, BAREFLANK_PAGE_SIZE);
+            auto view = gsl::make_span(page->addr, BFPAGE_SIZE);
             object->addr = &view[gsl::index_cast(i)];
         }
     }

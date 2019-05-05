@@ -72,11 +72,16 @@
 #define __bfstringify(a) #a
 
 /* -------------------------------------------------------------------------- */
-/* NULL                                                                       */
+/* nullptr and noexcept                                                       */
 /* -------------------------------------------------------------------------- */
 
-#if !defined(__cplusplus) && !defined(nullptr)
+#ifndef __cplusplus
+#ifndef nullptr
 #define nullptr 0
+#endif
+#define NOEXCEPT
+#else
+#define NOEXCEPT noexcept
 #endif
 
 /* -------------------------------------------------------------------------- */

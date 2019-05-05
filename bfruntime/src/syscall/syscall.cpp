@@ -259,7 +259,17 @@ _exit(int __status)
 {
     bfignored(__status);
 
-    int *i = 0;
+    /// Notes:
+    ///
+    /// We purposely generate and exception here. If this executes in the
+    /// kernel context, this will generate a seg fault which the Linux
+    /// kernel can handle (Windows will BSOD so don't debug in Windows). If
+    /// this happens in the VMM's context, this will cause the VMM's exception
+    /// handler to execute which will either halt() the vCPU, or it will kill
+    /// the vCPU resulting in a guest vCPU going down which is what we want.
+    ///
+
+    int *i = nullptr;
     *i = 42;
 
     while (true)
@@ -458,7 +468,3 @@ calloc(size_t __nmemb, size_t __size)
 extern "C" void *
 realloc(void *__r, size_t __size)
 { return _realloc_r(nullptr, __r, __size); }
-
-
-
-volatile int n = 30;

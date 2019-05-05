@@ -27,7 +27,7 @@
 #include <windows.h>
 
 static inline status_t
-set_affinity(uint64_t core)
+set_affinity(uint64_t core) NOEXCEPT
 {
     if (SetProcessAffinityMask(GetCurrentProcess(), 1ULL << core) == 0) {
         return BFFAILURE;
@@ -45,7 +45,7 @@ set_affinity(uint64_t core)
 #include <sched.h>
 
 static inline status_t
-set_affinity(uint64_t core)
+set_affinity(uint64_t core) NOEXCEPT
 {
     cpu_set_t  mask;
 

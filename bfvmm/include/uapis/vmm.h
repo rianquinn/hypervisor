@@ -23,10 +23,7 @@
 #define VMM_H
 
 #include <bfgsl.h>
-#include <bfarch.h>
 #include <bfdebug.h>
-#include <bfexports.h>
-#include <bfcallonce.h>
 #include <bfexception.h>
 
 #ifdef BF_X64

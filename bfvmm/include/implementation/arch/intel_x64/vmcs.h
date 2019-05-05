@@ -31,8 +31,6 @@
 namespace bfvmm::intel_x64
 {
 
-class vcpu;
-
 /// Intel x86_64 VMCS
 ///
 /// The following provides the basic VMCS implementation as defined by the
@@ -52,6 +50,14 @@ class vcpu;
 ///
 class vmcs
 {
+    /// VMCS Delegate Type
+    ///
+    /// This defines the function prototype for vmcs operations. This provides an
+    /// extension with the ability to extend most the VMCS operations that take
+    /// place within the vCPU
+    ///
+    using vmcs_delegate_t = delegate<void(vcpu_t *)>;
+
 public:
 
     /// Default Constructor

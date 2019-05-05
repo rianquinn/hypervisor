@@ -71,10 +71,7 @@ if(ENABLE_BUILD_VMM)
     add_subproject(bfruntime vmm DEPENDS bfsdk PRIVATE)
     add_subproject(bfunwind vmm DEPENDS bfsdk PRIVATE)
     add_subproject(bfvmm vmm DEPENDS bfruntime bfunwind bfintrinsics PRIVATE)
-
-    if(ENABLE_BUILD_TEST)
-        add_subproject(bfdummy vmm DEPENDS bfruntime bfunwind bfintrinsics PRIVATE)
-    endif()
+    add_subproject(bfdummy vmm DEPENDS bfruntime bfunwind bfintrinsics PRIVATE)
 endif()
 
 # ------------------------------------------------------------------------------

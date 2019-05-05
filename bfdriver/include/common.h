@@ -26,10 +26,6 @@
 #include <bftypes.h>
 #include <bfdriverinterface.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * VMM Status
  *
@@ -147,9 +143,5 @@ common_dump_vmm(struct debug_ring_resources_t **drr);
 status_t
 common_call_vmm(
     uint64_t cpuid, uint64_t request, uint64_t arg1, uint64_t arg2);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

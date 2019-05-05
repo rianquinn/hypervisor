@@ -22,63 +22,7 @@
 #ifndef UAPIS_MEMORY_MANAGER_H
 #define UAPIS_MEMORY_MANAGER_H
 
-#include <bfmemory.h>
-#include <bfconstants.h>
-
-#include "../private.h"
-
-// -----------------------------------------------------------------------------
-// Types/Namespaces
-// -----------------------------------------------------------------------------
-
-// *INDENT-OFF*
-
-namespace bfvmm::memory_manager
-{
-    /// Pointer Type
-    ///
-    /// This defines the mm's pointer type that is used in this interface
-    ///
-    using pointer = void *;
-
-    /// Integer Pointer Type
-    ///
-    /// This defines the mm's int pointer type that is used in this interface
-    ///
-    using integer_pointer = uintptr_t;
-
-    /// Size Type
-    ///
-    /// This defines the mm's size type that is used in this interface
-    ///
-    using size_type = std::size_t;
-
-    /// Attribute Type
-    ///
-    /// This defines the mm's attribute type that is used in this interface
-    ///
-    using attr_type = decltype(memory_descriptor::type);
-}
-
-/// Exit Handler Namespace
-///
-namespace memory_manager_n = bfvmm::memory_manager;
-
-// *INDENT-ON*
-
-// -----------------------------------------------------------------------------
-// Memory Manager Implementation
-// -----------------------------------------------------------------------------
-
-/// The following is the private implementation of this class. The APIs in
-/// the header below are not public and should not be used as they are
-/// subject to change. You have been warned.
-
-#ifndef ENABLE_BUILD_TEST
-#include "../implementation/memory_manager.h"
-#else
-#include "../../tests/memory_manager.h"
-#endif
+#include "../papis/memory_manager.h"
 
 // -----------------------------------------------------------------------------
 // Memory Manager Interface Defintion
@@ -150,19 +94,28 @@ namespace bfvmm::uapis
 /// This can be done using the driver's IOCTL interface.
 ///
 template<typename IMPL>
-class memory_manager
+class memory_manager :
+    public papis::memory_manager<IMPL>
 {
 public:
 
-    /// Constructor
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    explicit memory_manager()
-    { }
+    /// @cond
+
+    using pointer = typename papis::memory_manager<IMPL>::pointer;
+    using integer_pointer = typename papis::memory_manager<IMPL>::integer_pointer;
+    using size_type = typename papis::memory_manager<IMPL>::size_type;
+    using attr_type = typename papis::memory_manager<IMPL>::attr_type;
+
+    /// @endcond
 
 public:
+
+    /// Default Constructor
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    explicit memory_manager() noexcept = default;
 
     /// Host Virtual Address (HVA) to Host Physical Address (HPA)
     ///
@@ -191,9 +144,8 @@ public:
     /// @param hva the host virtual address to convert
     /// @return host physical address
     ///
-    inline memory_manager_n::integer_pointer hva_to_hpa(
-        memory_manager_n::integer_pointer hva) const
-    { return m_impl.hva_to_hpa(hva); }
+    constexpr integer_pointer hva_to_hpa(integer_pointer hva) const
+    { return this->m_impl.hva_to_hpa(hva); }
 
     /// Host Physical Address (HPA) to Host Virtual Address (HVA)
     ///
@@ -227,9 +179,8 @@ public:
     /// @param hpa the host physical address to convert
     /// @return host virtual address
     ///
-    inline memory_manager_n::integer_pointer hpa_to_hva(
-        memory_manager_n::integer_pointer hpa) const
-    { return m_impl.hpa_to_hva(hpa); }
+    constexpr integer_pointer hpa_to_hva(integer_pointer hpa) const
+    { return this->m_impl.hpa_to_hva(hpa); }
 
     /// Adds Memory Descriptor
     ///
@@ -269,75 +220,9 @@ public:
     /// @param hpa the host physical address that is mapped to the hpa
     /// @param attr how the hva was mapped
     ///
-    inline void add_md(
-        memory_manager_n::integer_pointer hva,
-        memory_manager_n::integer_pointer hpa,
-        memory_manager_n::attr_type attr)
-    { m_impl.add_md(hva, hpa, attr); }
-
-    /// Dump Stats
-    ///
-    /// Outputs the memory manager's stats to all debug devices. This function
-    /// can be used to see how much memory is being used by the host, and how
-    /// much memory is left. This is helpful if you are optimizing the host,
-    /// or if you run into allocation issues because you are running out of
-    /// memory.
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    inline void dump_stats() const noexcept
-    { m_impl.dump_stats(); }
-
-private:
-
-    /// Private
-    ///
-    /// The following APIs are private and should not be used by an end user.
-    /// These are made public for internal use only, and these APIs are subject
-    /// to change. You have been warned.
-    ///
-    /// @cond
-    ///
-
-    inline memory_manager_n::pointer alloc(
-        memory_manager_n::size_type size) noexcept
-    { return m_impl.alloc(size); }
-    inline memory_manager_n::pointer alloc_map(
-        memory_manager_n::size_type size) noexcept
-    { return m_impl.alloc_map(size); }
-    inline memory_manager_n::pointer alloc_huge(
-        memory_manager_n::size_type size) noexcept
-    { return m_impl.alloc_huge(size); }
-
-    inline void free(memory_manager_n::pointer ptr) noexcept
-    { m_impl.free(ptr); }
-    inline void free_map(memory_manager_n::pointer ptr) noexcept
-    { m_impl.free_map(ptr); }
-    inline void free_huge(memory_manager_n::pointer ptr) noexcept
-    { m_impl.free_huge(ptr); }
-
-    inline memory_manager_n::size_type size(
-        memory_manager_n::pointer ptr) const noexcept
-    { return m_impl.size(ptr); }
-    inline memory_manager_n::size_type size_map(
-        memory_manager_n::pointer ptr) const noexcept
-    { return m_impl.size_map(ptr); }
-    inline memory_manager_n::size_type size_huge(
-        memory_manager_n::pointer ptr) const noexcept
-    { return m_impl.size_huge(ptr); }
-
-    friend void *::_malloc_r(struct _reent *ent, size_t size);
-    friend void ::_free_r(struct _reent *ent, void *ptr);
-    friend void *::_calloc_r(struct _reent *ent, size_t nmemb, size_t size);
-    friend void *::_realloc_r(struct _reent *ent, void *ptr, size_t size);
-    friend void *::alloc_page();
-    friend void ::free_page(void *ptr);
-
-    /// @endcond
-
-private:
-    PRIVATE_INTERFACES(memory_manager)
+    constexpr void add_md(
+        integer_pointer hva, integer_pointer hpa, attr_type attr)
+    { this->m_impl.add_md(hva, hpa, attr); }
 };
 
 }
@@ -348,6 +233,10 @@ private:
 
 namespace bfvmm::memory_manager
 {
+    /// Memory Manager Type
+    ///
+    using memory_manager_t = uapis::memory_manager<implementation::memory_manager>;
+
     /// Memory Manager Instance
     ///
     /// The host has only one memory manager. We don't make this a global
@@ -363,76 +252,17 @@ namespace bfvmm::memory_manager
     ///
     inline auto instance() noexcept
     {
-        static uapis::memory_manager<implementation::memory_manager> s_mm;
+        static memory_manager_t s_mm;
         return &s_mm;
     }
 }
 
-// -----------------------------------------------------------------------------
-// Make Unique Functions
-// -----------------------------------------------------------------------------
-
-/// Make Unique Map
+/// Memory Manager Macro
 ///
-/// This function creates a unique_map that can be used within the host. A
-/// unique_map is like a std::unique_ptr except that get() is replaced with
-/// hva() (as get() would normally be returning a host virtual address) and
-/// a unique_map also provides an hpa() function which returns the page's host
-/// physical address.
+/// Since this might be used a lot, this macro provides a simple shortcut
+/// for the memory manager to reduce verbosity.
 ///
-/// A unique_map can be used to access a host physical address from the VMM.
-/// It accomplishes this by mapping the provided hpa to a host virtual address
-/// (by adding page tables to the host). Note that this does not provide access
-/// to guest memory. DO NOT use this API for accessing guest memory. If you
-/// need to access guest memory, use the EPT APIs are they will properly
-/// convert a GVA->GPA->HPA and then they will use this function for you to
-/// convert the HPA to an HVA that you can use.
-///
-/// Also note that we do not support the array type as this should not be used
-/// in practice as a std::unique_ptr should instead return a gsl::span for
-/// Core Guideline compliant array access. If you need array access, a
-/// unique_map provides this functionality by instead returning a gsl::span.
-///
-/// @expects
-/// @ensures
-///
-/// @param hpa the hpa to map
-/// @param size the total number of bytes to map
-/// @return a unique_map
-///
-// template<typename T>
-// inline unique_map<T> make_map(
-//     memory_manager_n::integer_pointer hpa
-//     memory_manager_n::size_type size)
-// { return unique_map<T>(hpa, size); }
-
-/// Make Unique Page
-///
-/// This function creates a unique_page that can be used within the host. A
-/// unique_page is like a std::unique_ptr except that get() is replaced with
-/// hva() (as get() would normally be returning a host virtual address) and
-/// a unique_page also provides an hpa() function which returns the page's host
-/// physical address. It should also be noted that a unique_page allocates a
-/// single page regardless of the size of T, which of course means that a
-/// unique_page can only allocate up to a page. If you do not need the hpa
-/// for an allocation, you are likely better off using a std::unique_ptr and
-/// using the alignas feature in C++ instead a unique_page is more expensive
-/// and has fewer features.
-///
-/// Also note that we do not support the array type as this should not be used
-/// in practice as a std::unique_ptr should instead return a gsl::span for
-/// Core Guideline compliant array access. If you need array access, a
-/// unique_page provides this functionality by instead returning a gsl::span.
-///
-/// @expects
-/// @ensures
-///
-/// @param args the arguments to construct T
-/// @return a unique_page
-///
-// template<typename T %%% sinfine, typename... Args>
-// inline unique_page<T> make_page(Args&&... args)
-// { return unique_page<T, Args>(std::forward<Args>(args)...); }
+#define g_mm bfvmm::memory_manager::instance()
 
 // -----------------------------------------------------------------------------
 // Wrappers
@@ -440,6 +270,15 @@ namespace bfvmm::memory_manager
 
 namespace bfvmm::memory_manager
 {
+    /// @cond
+
+    using pointer = typename memory_manager_t::pointer;
+    using integer_pointer = typename memory_manager_t::integer_pointer;
+    using size_type = typename memory_manager_t::size_type;
+    using attr_type = typename memory_manager_t::attr_type;
+
+    /// @endcond
+
     /// HVA to HPA (Wrapper)
     ///
     /// Wraps the hva_to_hpa() function.
@@ -460,7 +299,7 @@ namespace bfvmm::memory_manager
     /// @param args hva_to_hpa() arguments
     ///
     template<typename... Args>
-    inline auto hva_to_hpa(Args &&...args)
+    constexpr auto hva_to_hpa(Args &&...args)
     { return instance()->hva_to_hpa(std::forward<Args>(args)...); }
 
     /// HPA to HVA (Wrapper)
@@ -483,7 +322,7 @@ namespace bfvmm::memory_manager
     /// @param args hpa_to_hva() arguments
     ///
     template<typename... Args>
-    inline auto hpa_to_hva(Args &&...args)
+    constexpr auto hpa_to_hva(Args &&...args)
     { return instance()->hpa_to_hva(std::forward<Args>(args)...); }
 
     /// Add Memory Descriptor (Wrapper)
@@ -506,7 +345,7 @@ namespace bfvmm::memory_manager
     /// @param args add_md() arguments
     ///
     template<typename... Args>
-    inline void add_md(Args &&...args)
+    constexpr void add_md(Args &&...args)
     { instance()->add_md(std::forward<Args>(args)...); }
 }
 
