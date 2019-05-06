@@ -33,7 +33,7 @@
 // #include "exit_handler.h"
 // #include "state.h"
 // #include "vmcs.h"
-// #include "vmx.h"
+#include "vmx.h"
 
 // -----------------------------------------------------------------------------
 // Defintion
@@ -43,7 +43,8 @@ namespace bfvmm::implementation::intel_x64
 {
 
 class vcpu :
-    public implementation::vcpu
+    public implementation::vcpu,
+    public implementation::intel_x64::vmx
 {
 
 public:
@@ -52,8 +53,19 @@ public:
         implementation::vcpu{id}
     { }
 
-    constexpr static void global_init()
+    // constexpr static void global_init()
+    // { }
+
+    static inline auto make(id_t id)
+    { return std::make_unique<vcpu>(id); }
+
+    void demote()
     { }
+
+    void promote()
+    { }
+
+
 };
 
 }

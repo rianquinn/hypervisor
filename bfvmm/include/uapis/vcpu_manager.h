@@ -22,11 +22,8 @@
 #ifndef UAPIS_VCPU_MANAGER_H
 #define UAPIS_VCPU_MANAGER_H
 
+#include "vcpu_t.h"
 #include <bfmanager.h>
-
-#ifndef VCPU_IMPL_T_HEADER
-#include "../implementation/vcpu_impl_t.h"
-#endif
 
 /// vCPU Manager
 ///

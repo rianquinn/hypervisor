@@ -80,15 +80,12 @@ public:
 /// Returns a pointer to a debug_ring_resources_t for a given CPU.
 ///
 /// @expects drr != nullptr
-/// @expects vcpuid == vcpu that exists
 /// @ensures none
 ///
-/// @param vcpuid defines which debug ring to return
-/// @param drr the resulting debug ring
-/// @return the debug_ring_resources_t for the provided vcpuid
+/// @param arg a pointer to the drr
+/// @return BFSUCCESS on success, BFFAILURE otherwise
 ///
-extern "C" status_t get_drr(
-    struct debug_ring_resources_t **drr) noexcept;
+extern "C" status_t get_drr(uint64_t arg) noexcept;
 
 /// Global Debug Ring
 ///

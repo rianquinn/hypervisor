@@ -22,19 +22,15 @@
 #ifndef IMPLEMENTATION_VMX_INTEL_X64_H
 #define IMPLEMENTATION_VMX_INTEL_X64_H
 
-#include "../../../papis/macros.h"
+#include "../../macros.h"
 #include "../../../uapis/unique_page.h"
 
 // -----------------------------------------------------------------------------
 // Defintion
 // -----------------------------------------------------------------------------
 
-///@cond
-
 namespace bfvmm::implementation::intel_x64
 {
-
-class vcpu;
 
 class vmx
 {
@@ -62,7 +58,5 @@ private:
 };
 
 }
-
-///@endcond
 
 #endif

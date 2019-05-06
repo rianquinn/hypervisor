@@ -30,18 +30,18 @@ namespace bfvmm::implementation::intel_x64
 
 vmx::vmx()
 {
-    this->enable_vmx();
-    this->execute_vmxon();
+    // this->enable_vmx();
+    // this->execute_vmxon();
 
     bfline
 }
 
 vmx::~vmx()
 {
-    guard_exceptions([&]() {
-        this->execute_vmxoff();
-        this->disable_vmx();
-    });
+    // guard_exceptions([&]() {
+    //     this->execute_vmxoff();
+    //     this->disable_vmx();
+    // });
 }
 
 void
@@ -125,8 +125,8 @@ vmx::execute_vmxon()
 {
     using namespace ::intel_x64::msrs::ia32_vmx_basic;
 
-    gsl::span<uint32_t> id{m_vmx_region.get(), 1024};
-    id[0] = gsl::narrow<uint32_t>(revision_id::get());
+    auto view = m_vmx_region.view();
+    view[0] = gsl::narrow<uint32_t>(revision_id::get());
 
     ::intel_x64::vmx::on(m_vmx_region.hpa());
 }

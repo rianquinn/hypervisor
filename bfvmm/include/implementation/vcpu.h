@@ -22,7 +22,7 @@
 #ifndef IMPLEMENTATION_VCPU_H
 #define IMPLEMENTATION_VCPU_H
 
-#include "../papis/macros.h"
+#include "macros.h"
 
 namespace bfvmm::implementation
 {

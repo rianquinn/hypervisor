@@ -23,7 +23,7 @@
 #define IMPLEMENTATION_BUDDY_ALLOCATOR_H
 
 #include <bfgsl.h>
-#include <bfdebug.h>
+#include <bfmemory.h>
 #include <bfconstants.h>
 
 // -----------------------------------------------------------------------------
@@ -112,42 +112,6 @@ public:
     ///
     ~buddy_allocator() = default;
 
-    /// Move Constructor
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param other the allocator being moved
-    ///
-    buddy_allocator(buddy_allocator &&other) noexcept
-    { *this = std::move(other);}
-
-    /// Move Operator
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param other the allocator being moved
-    ///
-    buddy_allocator &operator=(buddy_allocator &&other) noexcept
-    {
-        m_leafs = other.m_leafs;
-        m_leafs_size = other.m_leafs_size;
-        m_nodes = other.m_nodes;
-        m_nodes_view = other.m_nodes_view;
-        m_root = other.m_root;
-        m_node_index = other.m_node_index;
-
-        other.m_leafs = {};
-        other.m_leafs_size = {};
-        other.m_nodes = {};
-        other.m_nodes_view = {};
-        other.m_root = {};
-        other.m_node_index = {};
-
-        return *this;
-    }
-
     /// Allocate
     ///
     /// @expects none
@@ -156,7 +120,7 @@ public:
     /// @param size the size of the allocation
     /// @return an allocated object. Throws otherwise
     ///
-    inline pointer allocate(size_type size) noexcept
+    inline pointer allocate(size_type size)
     {
         if (size > m_leafs_size || size == 0) {
             return nullptr;
@@ -166,7 +130,11 @@ public:
             size = BFPAGE_SIZE;
         }
 
-        return this->private_allocate(next_power_2(size), m_root);
+        if (auto ptr = this->private_allocate(next_power_2(size), m_root)) {
+            return ptr;
+        }
+
+        throw std::bad_alloc();
     }
 
     /// Deallocate
@@ -443,6 +411,9 @@ private:
     }
 
 public:
+
+    buddy_allocator(buddy_allocator &&) noexcept = delete;
+    buddy_allocator &operator=(buddy_allocator &&) noexcept = delete;
 
     buddy_allocator(const buddy_allocator &) = delete;
     buddy_allocator &operator=(const buddy_allocator &) = delete;

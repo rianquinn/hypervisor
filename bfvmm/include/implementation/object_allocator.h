@@ -23,7 +23,6 @@
 #define IMPLEMENTATION_OBJECT_ALLOCATOR_H
 
 #include <bfgsl.h>
-#include <bfdebug.h>
 #include <bfconstants.h>
 
 // -----------------------------------------------------------------------------
@@ -64,14 +63,12 @@ struct __oa_page {
 template <typename S>
 S *__oa_alloc()
 {
+    static_assert(sizeof(S) == BFPAGE_SIZE);
     if (auto addr = alloc_page(); GSL_LIKELY(addr != nullptr)) {
         return static_cast<S *>(addr);
     }
 
-    bferror_info(0, "alloc_page returned nullptr");
-    std::terminate();
-
-    static_assert(sizeof(S) == BFPAGE_SIZE);
+    throw std::bad_alloc();
 }
 
 /// Object Allocator Free
@@ -82,8 +79,8 @@ S *__oa_alloc()
 template <typename S>
 void __oa_free(S *ptr)
 {
-    free_page(ptr);
     static_assert(sizeof(S) == BFPAGE_SIZE);
+    free_page(ptr);
 }
 
 /// Object Allocator
@@ -152,7 +149,7 @@ public:
     ///
     /// @return an allocated object. Throws otherwise
     ///
-    inline pointer allocate() noexcept
+    inline pointer allocate()
     {
         auto objt = free_stack_pop();
         used_stack_push(objt);
@@ -249,7 +246,7 @@ private:
 
 private:
 
-    inline page_t *get_next_page() noexcept
+    inline page_t *get_next_page()
     {
         if (m_page_stack_top == nullptr || m_page_stack_top->index == pagepool_size) {
             expand_page_stack();
@@ -263,7 +260,7 @@ private:
         return page;
     }
 
-    inline object_t *get_next_object() noexcept
+    inline object_t *get_next_object()
     {
         if (m_objt_stack_top == nullptr || m_objt_stack_top->index == objtpool_size) {
             expand_object_stack();
@@ -278,7 +275,7 @@ private:
         m_free_stack_top = next;
     }
 
-    inline object_t *free_stack_pop() noexcept
+    inline object_t *free_stack_pop()
     {
         if (m_free_stack_top == nullptr) {
             add_to_free_stack();
@@ -298,7 +295,7 @@ private:
         m_used_stack_top = next;
     }
 
-    inline object_t *used_stack_pop() noexcept
+    inline object_t *used_stack_pop()
     {
         if (GSL_UNLIKELY(m_used_stack_top == nullptr)) {
             used_stack_push(get_next_object());
@@ -312,7 +309,7 @@ private:
         return top;
     }
 
-    inline void expand_page_stack() noexcept
+    inline void expand_page_stack()
     {
         auto next = __oa_alloc<page_stack_t>();
 
@@ -320,7 +317,7 @@ private:
         m_page_stack_top = next;
     }
 
-    inline void expand_object_stack() noexcept
+    inline void expand_object_stack()
     {
         auto next = __oa_alloc<object_stack_t>();
 
@@ -328,7 +325,7 @@ private:
         m_objt_stack_top = next;
     }
 
-    inline void add_to_free_stack() noexcept
+    inline void add_to_free_stack()
     {
         auto page = get_next_page();
 

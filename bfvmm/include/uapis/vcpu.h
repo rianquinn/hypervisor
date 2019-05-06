@@ -22,14 +22,11 @@
 #ifndef UAPIS_VCPU_H
 #define UAPIS_VCPU_H
 
-#include "../papis/vcpu.h"
+#include "vcpu_t.h"
 
 // -----------------------------------------------------------------------------
-// vCPU Definition
+// vCPU Notes
 // -----------------------------------------------------------------------------
-
-namespace bfvmm::uapis
-{
 
 /// Virtual CPU
 ///
@@ -90,130 +87,125 @@ namespace bfvmm::uapis
 ///   For example, any code running in an OS kernel, or userspace is in
 ///   nonroot.
 ///
-template<typename IMPL>
-class vcpu :
-    public papis::vcpu<IMPL>
+
+// -----------------------------------------------------------------------------
+// Wrappers
+// -----------------------------------------------------------------------------
+
+namespace bfvmm::vcpu
 {
-public:
 
-    /// @cond
+/// ID type
+using id_t = bfvmm::implementation::vcpu::id_t;
 
-    using id_t = typename papis::vcpu<IMPL>::id_t;
+/// vCPU Id
+///
+/// @expects vcpu != nullptr
+/// @ensures none
+///
+/// @param vcpu a pointer to the vCPU
+/// @return the vCPU's id
+///
+constexpr id_t id(
+    gsl::not_null<const vcpu_t *> vcpu) noexcept
+{ return vcpu->id(); }
 
-    /// @endcond
+/// Generate Guest vCPU Id
+///
+/// @expects
+/// @ensures
+///
+/// @param vcpu a pointer to the vCPU
+/// @return returns a new, unique guest vcpu id
+///
+constexpr id_t generate_guest_id() noexcept
+{ return vcpu_t::generate_guest_id(); }
 
-public:
+/// Is Bootstrap vCPU
+///
+/// The bootstrap vCPU is the vCPU that has a vCPU id of 0. This is the
+/// first vCPU created and it is the last vCPU destroyed when the host is
+/// being promoted. It is possible for the bootstrap vCPU not to be the
+/// last vCPU destroyed if you are managing guest vCPUs.
+///
+/// @expects none
+/// @ensures none
+///
+/// @param vcpu a pointer to the vCPU
+/// @return true if this vCPU is the bootstrap vCPU, false otherwise
+///
+constexpr bool is_bootstrap_vcpu(
+    gsl::not_null<const vcpu_t *> vcpu) noexcept
+{ return vcpu->is_bootstrap_vcpu(); }
 
-    /// Constructor
-    ///
-    /// Creates a vCPU with the provided id.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param id the id of the vcpu
-    ///
-    explicit vcpu(id_t id) :
-        papis::vcpu<IMPL>{id}
-    { }
+/// Is Host vCPU
+///
+/// As a reminder, the "host" refers to the VMM, while the "host OS"
+/// refers to the OS that is managing the system. A host vCPU is a
+/// vCPU that controls a physical CPU being used by the host OS. Host
+/// vCPUs cannot be migrated.
+///
+/// @expects none
+/// @ensures none
+///
+/// @param vcpu a pointer to the vCPU
+/// @return true if the vCPU is a host vCPU
+///
+constexpr bool is_host_vcpu(
+    gsl::not_null<const vcpu_t *> vcpu) noexcept
+{ return vcpu->is_host_vcpu(); }
 
-    /// vCPU Id
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return the vCPU's id
-    ///
-    constexpr id_t id() const noexcept
-    { return this->m_impl.id(); }
+/// Is Guest VM vCPU
+///
+/// A guest vCPU is any vCPU that is not controlling a physical CPU
+/// used by the host OS. Guest vCPUs are not given state information from
+/// the host or host OS. Guest vCPUs also have special ids which should
+/// be created using generate_guest_id().
+///
+/// @expects none
+/// @ensures none
+///
+/// @param vcpu a pointer to the vCPU
+/// @return true if the vCPU is a host vCPU
+///
+constexpr bool is_guest_vcpu(
+    gsl::not_null<const vcpu_t *> vcpu) noexcept
+{ return vcpu->is_guest_vcpu(); }
 
-    /// Generate Guest vCPU Id
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return returns a new, unique guest vcpu id
-    ///
-    constexpr static id_t generate_guest_id() noexcept
-    { return IMPL::generate_guest_id(); }
+/// Get User Data
+///
+/// Note, you must be explicit about whether you wish to get an l-value,
+/// r-value or reference.
+///
+/// @expects none
+/// @ensures none
+///
+/// @param vcpu a pointer to the vCPU
+/// @return returns user data that is stored in the vCPU
+///
+template<typename T>
+constexpr T data(gsl::not_null<vcpu_t *> vcpu)
+{ return vcpu->template data<T>(); }
 
-    /// Is Bootstrap vCPU
-    ///
-    /// The bootstrap vCPU is the vCPU that has a vCPU id of 0. This is the
-    /// first vCPU created and it is the last vCPU destroyed when the host is
-    /// being promoted. It is possible for the bootstrap vCPU not to be the
-    /// last vCPU destroyed if you are managing guest vCPUs.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return true if this vCPU is the bootstrap vCPU, false otherwise
-    ///
-    constexpr bool is_bootstrap_vcpu() const noexcept
-    { return this->m_impl.is_bootstrap_vcpu(); }
-
-    /// Is Host vCPU
-    ///
-    /// As a reminder, the "host" refers to the VMM, while the "host OS"
-    /// refers to the OS that is managing the system. A host vCPU is a
-    /// vCPU that controls a physical CPU being used by the host OS. Host
-    /// vCPUs cannot be migrated.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return true if the vCPU is a host vCPU
-    ///
-    constexpr bool is_host_vcpu() const noexcept
-    { return this->m_impl.is_host_vcpu(); }
-
-    /// Is Guest VM vCPU
-    ///
-    /// A guest vCPU is any vCPU that is not controlling a physical CPU
-    /// used by the host OS. Guest vCPUs are not given state information from
-    /// the host or host OS. Guest vCPUs also have special ids which should
-    /// be created using generate_guest_id().
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return true if the vCPU is a host vCPU
-    ///
-    constexpr bool is_guest_vcpu() const noexcept
-    { return this->m_impl.is_guest_vcpu(); }
-
-    /// Get User Data
-    ///
-    /// Note, you must be explicit about whether you wish to get an l-value,
-    /// r-value or reference.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return returns user data that is stored in the vCPU
-    ///
-    template<typename T>
-    constexpr T data()
-    { return this->m_impl.template data<T>(); }
-
-    /// Set User Data
-    ///
-    /// Provides the ability for an extension to store data in the vCPU without
-    /// having to subclass the vCPU if that is not desired in a type-safe way.
-    /// It should be noted that this uses std::any which does perform a malloc.
-    /// We also use the same API structure as std::any, so you need to be
-    /// explicit about whether you wish to have an l-value, r-value or
-    /// reference when using the get function.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param t the value to store
-    ///
-    template<typename T>
-    constexpr void set_data(T &&t)
-    { return this->m_impl.template set_data<T>(t); }
-};
+/// Set User Data
+///
+/// Provides the ability for an extension to store data in the vCPU without
+/// having to subclass the vCPU if that is not desired in a type-safe way.
+/// It should be noted that this uses std::any which does perform a malloc.
+/// We also use the same API structure as std::any, so you need to be
+/// explicit about whether you wish to have an l-value, r-value or
+/// reference when using the get function.
+///
+/// @expects none
+/// @ensures none
+///
+/// @param vcpu a pointer to the vCPU
+/// @param t the value to store
+///
+template<typename T, typename... Args>
+constexpr void set_data(
+    gsl::not_null<vcpu_t *> vcpu, Args &&...args)
+{ return vcpu->template set_data<T>(std::forward<Args>(args)...); }
 
 }
 

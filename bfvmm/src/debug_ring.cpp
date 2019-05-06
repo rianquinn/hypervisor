@@ -34,13 +34,12 @@ static auto g_drr = debug_ring_resources_t{};
 static auto g_drr_view = gsl::span(g_drr.buf);
 
 extern "C" status_t
-get_drr(struct debug_ring_resources_t **drr) noexcept
+get_drr(uint64_t arg) noexcept
 {
-    if (drr == nullptr) {
-        return BFFAILURE;
+    if (auto drr = reinterpret_cast<debug_ring_resources_t **>(arg)) {
+        *drr = &g_drr;
     }
 
-    *drr = &g_drr;
     return BFSUCCESS;
 }
 

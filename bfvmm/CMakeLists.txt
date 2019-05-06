@@ -33,7 +33,7 @@ add_library(bfvmm
     src/serial.cpp
     src/unistd.cpp
     src/vcpu.cpp
-    # $<${INTEL_X64}:src/arch/intel_x64/vmx.cpp>
+    $<${INTEL_X64}:src/arch/intel_x64/vmx.cpp>
 )
 
 # -----------------------------------------------------------------------------

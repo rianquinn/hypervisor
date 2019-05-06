@@ -19,13 +19,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// TIDY_EXCLUSION=-cert-err58-cpp
-//
-// Reason:
-//     This triggers a false positive WRT the allocators, which are marked
-//     as noexcept, yet this check still thinks an exception could occur.
-//
-
 // TIDY_EXCLUSION=-cppcoreguidelines-pro-type-reinterpret-cast
 //
 // Reason:
@@ -119,6 +112,40 @@ memory_manager::memory_manager() noexcept :
     slab400(0x400),
     slab800(0x800)
 { }
+
+memory_manager::integer_pointer
+memory_manager::hva_to_hpa(integer_pointer hva) const
+{
+    auto lower = bfn::lower(hva);
+    auto upper = bfn::upper(hva);
+
+    std::lock_guard guard(md_mutex());
+
+    if (auto iter = m_hva_lookup.find(upper); iter != m_hva_lookup.end()) {
+        return iter->second.hpa | lower;
+    }
+
+    throw std::runtime_error(
+        "memory_manager::hva_to_hpa failed: " + bfn::to_string(hva, 16)
+    );
+}
+
+memory_manager::integer_pointer
+memory_manager::hpa_to_hva(integer_pointer hpa) const
+{
+    auto lower = bfn::lower(hpa);
+    auto upper = bfn::upper(hpa);
+
+    std::lock_guard guard(md_mutex());
+
+    if (auto iter = m_hpa_lookup.find(upper); iter != m_hpa_lookup.end()) {
+        return iter->second.hva | lower;
+    }
+
+    throw std::runtime_error(
+        "memory_manager::hpa_to_hva failed: " + bfn::to_string(hpa, 16)
+    );
+}
 
 memory_manager::pointer
 memory_manager::alloc(size_type size) noexcept
@@ -354,40 +381,6 @@ memory_manager::size_huge(pointer ptr) const noexcept
     return g_huge_pool.size(ptr);
 }
 
-memory_manager::integer_pointer
-memory_manager::hva_to_hpa(integer_pointer hva) const
-{
-    auto lower = bfn::lower(hva);
-    auto upper = bfn::upper(hva);
-
-    std::lock_guard guard(md_mutex());
-
-    if (auto iter = m_hva_lookup.find(upper); iter != m_hva_lookup.end()) {
-        return iter->second.hpa | lower;
-    }
-
-    throw std::runtime_error(
-        "memory_manager::hva_to_hpa failed: " + bfn::to_string(hva, 16)
-    );
-}
-
-memory_manager::integer_pointer
-memory_manager::hpa_to_hva(integer_pointer hpa) const
-{
-    auto lower = bfn::lower(hpa);
-    auto upper = bfn::upper(hpa);
-
-    std::lock_guard guard(md_mutex());
-
-    if (auto iter = m_hpa_lookup.find(upper); iter != m_hpa_lookup.end()) {
-        return iter->second.hva | lower;
-    }
-
-    throw std::runtime_error(
-        "memory_manager::hpa_to_hva failed: " + bfn::to_string(hpa, 16)
-    );
-}
-
 void
 memory_manager::add_md(
     integer_pointer hva, integer_pointer hpa, attr_type attr)
@@ -409,58 +402,100 @@ memory_manager::add_md(
 
 #ifdef ENABLE_BUILD_VMM
 
-using namespace bfvmm;
-
-extern "C" void *
-_malloc_r(struct _reent *ent, size_t size)
+namespace bfvmm::implementation
 {
-    bfignored(ent);
-    return g_mm->alloc(size);
-}
 
-extern "C" void
-_free_r(struct _reent *ent, void *ptr)
+class private_memory_manager
 {
-    bfignored(ent);
-    g_mm->free(ptr);
-}
+public:
 
-extern "C" void *
-_calloc_r(struct _reent *ent, size_t nmemb, size_t size)
-{
-    bfignored(ent);
+    static inline void *
+    malloc(size_t size) noexcept
+    { return g_mm->alloc(size); }
 
-    if (auto ptr = g_mm->alloc(nmemb * size)) {
-        return memset(ptr, 0, nmemb * size);
-    }
+    static inline void
+    free(void *ptr) noexcept
+    { g_mm->free(ptr); }
 
-    return nullptr;
-}
+    static inline void *
+    calloc(size_t nmemb, size_t size) noexcept
+    {
+        if (auto ptr = g_mm->alloc(nmemb * size)) {
+            return memset(ptr, 0, nmemb * size);
+        }
 
-extern "C" void *
-_realloc_r(struct _reent *ent, void *ptr, size_t size)
-{
-    bfignored(ent);
-
-    auto old_sze = g_mm->size(ptr);
-    auto new_ptr = g_mm->alloc(size);
-
-    if (new_ptr == nullptr || old_sze == 0) {
         return nullptr;
     }
 
-    if (ptr != nullptr) {
-        memcpy(new_ptr, ptr, size > old_sze ? old_sze : size);
-        g_mm->free(ptr);
+    static inline void *
+    realloc(void *ptr, size_t size) noexcept
+    {
+        auto old_sze = g_mm->size(ptr);
+        auto new_ptr = g_mm->alloc(size);
+
+        if (new_ptr == nullptr || old_sze == 0) {
+            return nullptr;
+        }
+
+        if (ptr != nullptr) {
+            memcpy(new_ptr, ptr, size > old_sze ? old_sze : size);
+            g_mm->free(ptr);
+        }
+
+        return new_ptr;
     }
 
-    return new_ptr;
+    static inline void *
+    alloc_page() noexcept
+    { return g_mm->alloc_huge(BFPAGE_SIZE); }
+
+    static inline void
+    free_page(void *ptr) noexcept
+    { g_mm->free_huge(ptr); }
+};
+
 }
 
-void *alloc_page() noexcept
-{ return g_mm->alloc_huge(BFPAGE_SIZE); }
+extern "C" void *
+_malloc_r(struct _reent *, size_t size)
+{
+    using namespace bfvmm::implementation;
+    return private_memory_manager::malloc(size);
+}
 
-void free_page(void *ptr) noexcept
-{ g_mm->free_huge(ptr); }
+extern "C" void
+_free_r(struct _reent *, void *ptr)
+{
+    using namespace bfvmm::implementation;
+    private_memory_manager::free(ptr);
+}
+
+extern "C" void *
+_calloc_r(struct _reent *, size_t nmemb, size_t size)
+{
+    using namespace bfvmm::implementation;
+    return private_memory_manager::calloc(nmemb, size);
+}
+
+extern "C" void *
+_realloc_r(struct _reent *, void *ptr, size_t size)
+{
+    using namespace bfvmm::implementation;
+    return private_memory_manager::realloc(ptr, size);
+}
+
+void *
+alloc_page() noexcept
+{
+    using namespace bfvmm::implementation;
+    return private_memory_manager::alloc_page();
+}
+
+void
+free_page(void *ptr) noexcept
+{
+    using namespace bfvmm::implementation;
+    private_memory_manager::free_page(ptr);
+}
 
 #endif

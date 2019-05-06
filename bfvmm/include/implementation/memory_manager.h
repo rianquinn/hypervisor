@@ -22,7 +22,7 @@
 #ifndef IMPLEMENTATION_MEMORY_MANAGER_H
 #define IMPLEMENTATION_MEMORY_MANAGER_H
 
-#include "../papis/macros.h"
+#include "macros.h"
 
 #include "buddy_allocator.h"
 #include "object_allocator.h"
@@ -56,7 +56,14 @@ public:
     using size_type = std::size_t;
     using attr_type = decltype(memory_descriptor::type);
 
+public:
+
     memory_manager() noexcept;
+
+    integer_pointer hva_to_hpa(integer_pointer hva) const;
+    integer_pointer hpa_to_hva(integer_pointer hpa) const;
+
+private:
 
     pointer alloc(size_type size) noexcept;
     pointer alloc_map(size_type size) noexcept;
@@ -69,9 +76,6 @@ public:
     size_type size(pointer ptr) const noexcept;
     size_type size_map(pointer ptr) const noexcept;
     size_type size_huge(pointer ptr) const noexcept;
-
-    integer_pointer hva_to_hpa(integer_pointer hva) const;
-    integer_pointer hpa_to_hva(integer_pointer hpa) const;
 
     void add_md(integer_pointer hva,integer_pointer hpa,attr_type attr);
 
@@ -105,9 +109,14 @@ private:
     object_allocator slab400;
     object_allocator slab800;
 
-public:
+private:
     MOCK_PROTOTYPE(memory_manager)
     COPY_MOVE_SEMANTICS(memory_manager)
+
+private:
+
+    friend class private_entry;
+    friend class private_memory_manager;
 };
 
 }

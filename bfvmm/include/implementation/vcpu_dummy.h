@@ -22,25 +22,25 @@
 #ifndef IMPLEMENTATION_VCPU_DUMMY_H
 #define IMPLEMENTATION_VCPU_DUMMY_H
 
-#include "../uapis/vcpu.h"
 #include "../implementation/vcpu.h"
 
 namespace bfvmm::implementation
 {
 
 class vcpu_dummy :
-    public uapis::vcpu<implementation::vcpu>
+    public implementation::vcpu
 {
 public:
 
-    using id_t = uapis::vcpu<implementation::vcpu>::id_t;
+    using id_t = implementation::vcpu::id_t;
 
     explicit vcpu_dummy(id_t id) noexcept :
-        uapis::vcpu<implementation::vcpu>{id}
+        implementation::vcpu{id}
     { }
 
     static void global_init()
-    { bfdebug_info(0, "global init"); }
+    { }
+    // { bfdebug_info(0, "global init"); }
 
     void demote()
     { bfdebug_info(0, "host os is" bfcolor_green " now " bfcolor_end "in a vm"); }
@@ -53,5 +53,7 @@ public:
 };
 
 }
+
+using vcpu_t = bfvmm::implementation::vcpu_dummy;
 
 #endif
