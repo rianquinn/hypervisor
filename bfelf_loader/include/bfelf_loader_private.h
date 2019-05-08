@@ -787,13 +787,18 @@ bfelf_file_init(const uint8_t *file, uint64_t filesz, struct bfelf_file_t *ef)
     ef->file = file;
     ef->ehdr = bfrcast(const struct bfelf_ehdr *, file);
 
+    ret = private_check_support(ef);
+    if (ret != BFSUCCESS) {
+        return ret;
+    }
+
     if (ef->ehdr->e_phoff + (ef->ehdr->e_phnum * sizeof(struct bfelf_phdr)) > filesz) {
-        BFALERT("filesz invalid ggg\n");
+        BFALERT("filesz invalid\n");
         return BFFAILURE;
     }
 
     if (ef->ehdr->e_shoff + (ef->ehdr->e_shnum * sizeof(struct bfelf_shdr)) > filesz) {
-        BFALERT("filesz invalid ttt\n");
+        BFALERT("filesz invalid\n");
         return BFFAILURE;
     }
 
@@ -803,11 +808,6 @@ bfelf_file_init(const uint8_t *file, uint64_t filesz, struct bfelf_file_t *ef)
         bfrcast(const struct bfelf_shdr *, file + ef->ehdr->e_shoff);
     ef->shstrtab =
         bfrcast(const char *, file + ef->shdrtab[ef->ehdr->e_shstrndx].sh_offset);
-
-    ret = private_check_support(ef);
-    if (ret != BFSUCCESS) {
-        return ret;
-    }
 
     ret = private_process_segments(ef);
     if (ret != BFSUCCESS) {

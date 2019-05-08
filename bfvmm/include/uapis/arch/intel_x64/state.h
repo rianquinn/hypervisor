@@ -22,13 +22,16 @@
 #ifndef UAPIS_STATE_INTEL_X64_H
 #define UAPIS_STATE_INTEL_X64_H
 
-#include "../private.h"
+#include <bfgsl.h>
+#include <bftypes.h>
+
+#include "impl.h"
 
 // -----------------------------------------------------------------------------
 // Interface Defintion
 // -----------------------------------------------------------------------------
 
-namespace bfvmm::intel_x64::uapis
+namespace bfvmm::uapis::intel_x64
 {
 
 /// State
@@ -40,26 +43,9 @@ namespace bfvmm::intel_x64::uapis
 /// entries, exits, etc...
 ///
 template<typename IMPL>
-class state
+struct state
 {
-    /// @cond
-
-    using reg_t = uint64_t;
-
-    /// @endcond
-
-public:
-
-    /// Constructor
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param vcpu the vCPU that is associated with this interface
-    ///
-    explicit state(gsl::not_null<vcpu *> vcpu) :
-        m_impl{vcpu}
-    { }
+    using reg_t = uint64_t;     ///< pCPU register type
 
     /// Get RAX
     ///
@@ -68,8 +54,8 @@ public:
     ///
     /// @return returns the guest's rax register
     ///
-    inline reg_t rax() const noexcept
-    { return m_impl.rax(); }
+    CONSTEXPR reg_t rax() const noexcept
+    { return impl<const IMPL>(this)->__rax(); }
 
     /// Set RAX
     ///
@@ -78,8 +64,8 @@ public:
     ///
     /// @param val the value to set the guest's rax register to
     ///
-    inline void set_rax(reg_t val) noexcept
-    { m_impl.set_rax(val); }
+    CONSTEXPR void set_rax(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_rax(val); }
 
     /// Get RBX
     ///
@@ -88,8 +74,8 @@ public:
     ///
     /// @return returns the guest's rbx register
     ///
-    inline reg_t rbx() const noexcept
-    { return m_impl.rbx(); }
+    CONSTEXPR reg_t rbx() const noexcept
+    { return impl<const IMPL>(this)->__rbx(); }
 
     /// Set RBX
     ///
@@ -98,8 +84,8 @@ public:
     ///
     /// @param val the value to set the guest's rbx register to
     ///
-    inline void set_rbx(reg_t val) noexcept
-    { m_impl.set_rbx(val); }
+    CONSTEXPR void set_rbx(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_rbx(val); }
 
     /// Get RCX
     ///
@@ -108,8 +94,8 @@ public:
     ///
     /// @return returns the guest's rcx register
     ///
-    inline reg_t rcx() const noexcept
-    { return m_impl.rcx(); }
+    CONSTEXPR reg_t rcx() const noexcept
+    { return impl<const IMPL>(this)->__rcx(); }
 
     /// Set RCX
     ///
@@ -118,8 +104,8 @@ public:
     ///
     /// @param val the value to set the guest's rcx register to
     ///
-    inline void set_rcx(reg_t val) noexcept
-    { m_impl.set_rcx(val); }
+    CONSTEXPR void set_rcx(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_rcx(val); }
 
     /// Get RDX
     ///
@@ -128,8 +114,8 @@ public:
     ///
     /// @return returns the guest's rdx register
     ///
-    inline reg_t rdx() const noexcept
-    { return m_impl.rdx(); }
+    CONSTEXPR reg_t rdx() const noexcept
+    { return impl<const IMPL>(this)->__rdx(); }
 
     /// Set RDX
     ///
@@ -138,8 +124,8 @@ public:
     ///
     /// @param val the value to set the guest's rdx register to
     ///
-    inline void set_rdx(reg_t val) noexcept
-    { m_impl.set_rdx(val); }
+    CONSTEXPR void set_rdx(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_rdx(val); }
 
     /// Get RBP
     ///
@@ -148,8 +134,8 @@ public:
     ///
     /// @return returns the guest's rbp register
     ///
-    inline reg_t rbp() const noexcept
-    { return m_impl.rbp(); }
+    CONSTEXPR reg_t rbp() const noexcept
+    { return impl<const IMPL>(this)->__rbp(); }
 
     /// Set RBP
     ///
@@ -158,8 +144,8 @@ public:
     ///
     /// @param val the value to set the guest's rbp register to
     ///
-    inline void set_rbp(reg_t val) noexcept
-    { m_impl.set_rbp(val); }
+    CONSTEXPR void set_rbp(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_rbp(val); }
 
     /// Get RSI
     ///
@@ -168,8 +154,8 @@ public:
     ///
     /// @return returns the guest's rsi register
     ///
-    inline reg_t rsi() const noexcept
-    { return m_impl.rsi(); }
+    CONSTEXPR reg_t rsi() const noexcept
+    { return impl<const IMPL>(this)->__rsi(); }
 
     /// Set RSI
     ///
@@ -178,8 +164,8 @@ public:
     ///
     /// @param val the value to set the guest's rsi register to
     ///
-    inline void set_rsi(reg_t val) noexcept
-    { m_impl.set_rsi(val); }
+    CONSTEXPR void set_rsi(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_rsi(val); }
 
     /// Get RDI
     ///
@@ -188,8 +174,8 @@ public:
     ///
     /// @return returns the guest's rdi register
     ///
-    inline reg_t rdi() const noexcept
-    { return m_impl.rdi(); }
+    CONSTEXPR reg_t rdi() const noexcept
+    { return impl<const IMPL>(this)->__rdi(); }
 
     /// Set RDI
     ///
@@ -198,8 +184,8 @@ public:
     ///
     /// @param val the value to set the guest's rdi register to
     ///
-    inline void set_rdi(reg_t val) noexcept
-    { m_impl.set_rdi(val); }
+    CONSTEXPR void set_rdi(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_rdi(val); }
 
     /// Get R08
     ///
@@ -208,8 +194,8 @@ public:
     ///
     /// @return returns the guest's r08 register
     ///
-    inline reg_t r08() const noexcept
-    { return m_impl.r08(); }
+    CONSTEXPR reg_t r08() const noexcept
+    { return impl<const IMPL>(this)->__r08(); }
 
     /// Set R08
     ///
@@ -218,8 +204,8 @@ public:
     ///
     /// @param val the value to set the guest's r08 register to
     ///
-    inline void set_r08(reg_t val) noexcept
-    { m_impl.set_r08(val); }
+    CONSTEXPR void set_r08(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_r08(val); }
 
     /// Get R09
     ///
@@ -228,8 +214,8 @@ public:
     ///
     /// @return returns the guest's r09 register
     ///
-    inline reg_t r09() const noexcept
-    { return m_impl.r09(); }
+    CONSTEXPR reg_t r09() const noexcept
+    { return impl<const IMPL>(this)->__r09(); }
 
     /// Set R09
     ///
@@ -238,8 +224,8 @@ public:
     ///
     /// @param val the value to set the guest's r09 register to
     ///
-    inline void set_r09(reg_t val) noexcept
-    { m_impl.set_r09(val); }
+    CONSTEXPR void set_r09(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_r09(val); }
 
     /// Get R10
     ///
@@ -248,8 +234,8 @@ public:
     ///
     /// @return returns the guest's r10 register
     ///
-    inline reg_t r10() const noexcept
-    { return m_impl.r10(); }
+    CONSTEXPR reg_t r10() const noexcept
+    { return impl<const IMPL>(this)->__r10(); }
 
     /// Set R10
     ///
@@ -258,8 +244,8 @@ public:
     ///
     /// @param val the value to set the guest's r10 register to
     ///
-    inline void set_r10(reg_t val) noexcept
-    { m_impl.set_r10(val); }
+    CONSTEXPR void set_r10(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_r10(val); }
 
     /// Get R11
     ///
@@ -268,8 +254,8 @@ public:
     ///
     /// @return returns the guest's r11 register
     ///
-    inline reg_t r11() const noexcept
-    { return m_impl.r11(); }
+    CONSTEXPR reg_t r11() const noexcept
+    { return impl<const IMPL>(this)->__r11(); }
 
     /// Set R11
     ///
@@ -278,8 +264,8 @@ public:
     ///
     /// @param val the value to set the guest's r11 register to
     ///
-    inline void set_r11(reg_t val) noexcept
-    { m_impl.set_r11(val); }
+    CONSTEXPR void set_r11(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_r11(val); }
 
     /// Get R12
     ///
@@ -288,8 +274,8 @@ public:
     ///
     /// @return returns the guest's r12 register
     ///
-    inline reg_t r12() const noexcept
-    { return m_impl.r12(); }
+    CONSTEXPR reg_t r12() const noexcept
+    { return impl<const IMPL>(this)->__r12(); }
 
     /// Set R12
     ///
@@ -298,8 +284,8 @@ public:
     ///
     /// @param val the value to set the guest's r12 register to
     ///
-    inline void set_r12(reg_t val) noexcept
-    { m_impl.set_r12(val); }
+    CONSTEXPR void set_r12(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_r12(val); }
 
     /// Get R13
     ///
@@ -308,8 +294,8 @@ public:
     ///
     /// @return returns the guest's r13 register
     ///
-    inline reg_t r13() const noexcept
-    { return m_impl.r13(); }
+    CONSTEXPR reg_t r13() const noexcept
+    { return impl<const IMPL>(this)->__r13(); }
 
     /// Set R13
     ///
@@ -318,8 +304,8 @@ public:
     ///
     /// @param val the value to set the guest's r13 register to
     ///
-    inline void set_r13(reg_t val) noexcept
-    { m_impl.set_r13(val); }
+    CONSTEXPR void set_r13(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_r13(val); }
 
     /// Get R14
     ///
@@ -328,8 +314,8 @@ public:
     ///
     /// @return returns the guest's r14 register
     ///
-    inline reg_t r14() const noexcept
-    { return m_impl.r14(); }
+    CONSTEXPR reg_t r14() const noexcept
+    { return impl<const IMPL>(this)->__r14(); }
 
     /// Set R14
     ///
@@ -338,8 +324,8 @@ public:
     ///
     /// @param val the value to set the guest's r14 register to
     ///
-    inline void set_r14(reg_t val) noexcept
-    { m_impl.set_r14(val); }
+    CONSTEXPR void set_r14(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_r14(val); }
 
     /// Get R15
     ///
@@ -348,8 +334,8 @@ public:
     ///
     /// @return returns the guest's r15 register
     ///
-    inline reg_t r15() const noexcept
-    { return m_impl.r15(); }
+    CONSTEXPR reg_t r15() const noexcept
+    { return impl<const IMPL>(this)->__r15(); }
 
     /// Set R15
     ///
@@ -358,8 +344,8 @@ public:
     ///
     /// @param val the value to set the guest's r15 register to
     ///
-    inline void set_r15(reg_t val) noexcept
-    { m_impl.set_r15(val); }
+    CONSTEXPR void set_r15(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_r15(val); }
 
     /// Get RIP
     ///
@@ -368,8 +354,8 @@ public:
     ///
     /// @return returns the guest's rip register
     ///
-    inline reg_t rip() const noexcept
-    { return m_impl.rip(); }
+    CONSTEXPR reg_t rip() const noexcept
+    { return impl<const IMPL>(this)->__rip(); }
 
     /// Set RIP
     ///
@@ -378,8 +364,8 @@ public:
     ///
     /// @param val the value to set the guest's rip register to
     ///
-    inline void set_rip(reg_t val) noexcept
-    { m_impl.set_rip(val); }
+    CONSTEXPR void set_rip(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_rip(val); }
 
     /// Get RSP
     ///
@@ -388,8 +374,8 @@ public:
     ///
     /// @return returns the guest's rsp register
     ///
-    inline reg_t rsp() const noexcept
-    { return m_impl.rsp(); }
+    CONSTEXPR reg_t rsp() const noexcept
+    { return impl<const IMPL>(this)->__rsp(); }
 
     /// Set RSP
     ///
@@ -398,8 +384,8 @@ public:
     ///
     /// @param val the value to set the guest's rsp register to
     ///
-    inline void set_rsp(reg_t val) noexcept
-    { m_impl.set_rsp(val); }
+    CONSTEXPR void set_rsp(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_rsp(val); }
 
     /// Exit Reason
     ///
@@ -408,8 +394,8 @@ public:
     ///
     /// @return returns the exit reason for the current VMExit
     ///
-    inline reg_t exit_reason() const noexcept
-    { return m_impl.exit_reason(); }
+    CONSTEXPR reg_t exit_reason() const noexcept
+    { return impl<const IMPL>(this)->__exit_reason(); }
 
     /// Get CR0 Fixed 0 (MSR)
     ///
@@ -418,8 +404,8 @@ public:
     ///
     /// @return returns the guest's ia32_vmx_cr0_fixed0 MSR
     ///
-    inline reg_t ia32_vmx_cr0_fixed0() const noexcept
-    { return m_impl.ia32_vmx_cr0_fixed0(); }
+    CONSTEXPR reg_t ia32_vmx_cr0_fixed0() const noexcept
+    { return impl<const IMPL>(this)->__ia32_vmx_cr0_fixed0(); }
 
     /// Set CR4 Fixed 0 (MSR)
     ///
@@ -428,8 +414,8 @@ public:
     ///
     /// @param val the value to set the guest's ia32_vmx_cr4_fixed0 MSR to
     ///
-    inline void set_ia32_vmx_cr0_fixed0(reg_t val) noexcept
-    { m_impl.set_ia32_vmx_cr0_fixed0(val); }
+    CONSTEXPR void set_ia32_vmx_cr0_fixed0(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_ia32_vmx_cr0_fixed0(val); }
 
     /// Get CR4 Fixed 0 (MSR)
     ///
@@ -438,8 +424,8 @@ public:
     ///
     /// @return returns the guest's ia32_vmx_cr4_fixed0 MSR
     ///
-    inline reg_t ia32_vmx_cr4_fixed0() const noexcept
-    { return m_impl.ia32_vmx_cr4_fixed0(); }
+    CONSTEXPR reg_t ia32_vmx_cr4_fixed0() const noexcept
+    { return impl<const IMPL>(this)->__ia32_vmx_cr4_fixed0(); }
 
     /// Set CR4 Fixed 0 (MSR)
     ///
@@ -448,11 +434,8 @@ public:
     ///
     /// @param val the value to set the guest's ia32_vmx_cr4_fixed0 MSR to
     ///
-    inline void set_ia32_vmx_cr4_fixed0(reg_t val) noexcept
-    { m_impl.set_ia32_vmx_cr4_fixed0(val); }
-
-private:
-    PRIVATE_INTERFACES(state);
+    CONSTEXPR void set_ia32_vmx_cr4_fixed0(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_ia32_vmx_cr4_fixed0(val); }
 };
 
 }
@@ -461,19 +444,170 @@ private:
 // Wrappers
 // -----------------------------------------------------------------------------
 
-namespace bfvmm::intel_x64::state
-{
-
-}
-
-// -----------------------------------------------------------------------------
-// Wrapper Overloads
-// -----------------------------------------------------------------------------
-
 /// @cond
 
 namespace bfvmm::intel_x64::state
 {
+
+template<typename IMPL>
+constexpr auto rax(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->rax(); }
+
+template<typename IMPL>
+constexpr void set_rax(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_rax(val); }
+
+template<typename IMPL>
+constexpr auto rbx(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->rbx(); }
+
+template<typename IMPL>
+constexpr void set_rbx(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_rbx(val); }
+
+template<typename IMPL>
+constexpr auto rcx(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->rcx(); }
+
+template<typename IMPL>
+constexpr void set_rcx(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_rcx(val); }
+
+template<typename IMPL>
+constexpr auto rdx(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->rdx(); }
+
+template<typename IMPL>
+constexpr void set_rdx(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_rdx(val); }
+
+template<typename IMPL>
+constexpr auto rbp(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->rbp(); }
+
+template<typename IMPL>
+constexpr void set_rbp(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_rbp(val); }
+
+template<typename IMPL>
+constexpr auto rsi(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->rsi(); }
+
+template<typename IMPL>
+constexpr void set_rsi(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_rsi(val); }
+
+template<typename IMPL>
+constexpr auto rdi(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->rdi(); }
+
+template<typename IMPL>
+constexpr void set_rdi(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_rdi(val); }
+
+template<typename IMPL>
+constexpr auto r08(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->r08(); }
+
+template<typename IMPL>
+constexpr void set_r08(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_r08(val); }
+
+template<typename IMPL>
+constexpr auto r09(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->r09(); }
+
+template<typename IMPL>
+constexpr void set_r09(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_r09(val); }
+
+template<typename IMPL>
+constexpr auto r10(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->r10(); }
+
+template<typename IMPL>
+constexpr void set_r10(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_r10(val); }
+
+template<typename IMPL>
+constexpr auto r11(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->r11(); }
+
+template<typename IMPL>
+constexpr void set_r11(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_r11(val); }
+
+template<typename IMPL>
+constexpr auto r12(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->r12(); }
+
+template<typename IMPL>
+constexpr void set_r12(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_r12(val); }
+
+template<typename IMPL>
+constexpr auto r13(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->r13(); }
+
+template<typename IMPL>
+constexpr void set_r13(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_r13(val); }
+
+template<typename IMPL>
+constexpr auto r14(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->r14(); }
+
+template<typename IMPL>
+constexpr void set_r14(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_r14(val); }
+
+template<typename IMPL>
+constexpr auto r15(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->r15(); }
+
+template<typename IMPL>
+constexpr void set_r15(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_r15(val); }
+
+template<typename IMPL>
+constexpr auto rip(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->rip(); }
+
+template<typename IMPL>
+constexpr void set_rip(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_rip(val); }
+
+template<typename IMPL>
+constexpr auto rsp(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->rsp(); }
+
+template<typename IMPL>
+constexpr void set_rsp(gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_rsp(val); }
+
+template<typename IMPL>
+constexpr auto exit_reason(gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->exit_reason(); }
+
+template<typename IMPL>
+constexpr auto ia32_vmx_cr0_fixed0(
+    gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->ia32_vmx_cr0_fixed0(); }
+
+template<typename IMPL>
+constexpr void set_ia32_vmx_cr0_fixed0(
+    gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_ia32_vmx_cr0_fixed0(val); }
+
+template<typename IMPL>
+constexpr auto ia32_vmx_cr4_fixed0(
+    gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->ia32_vmx_cr4_fixed0(); }
+
+template<typename IMPL>
+constexpr void set_ia32_vmx_cr4_fixed0(
+    gsl::not_null<IMPL *> vcpu, reg_t val) noexcept
+{ vcpu->set_ia32_vmx_cr4_fixed0(val); }
 
 }
 

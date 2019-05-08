@@ -70,6 +70,12 @@ list(APPEND BFFLAGS_VMM_CXX
     -std=c++17
 )
 
+if(VCPU_T_HEADER)
+    list(APPEND BFFLAGS_VMM_CXX
+        -DVCPU_T_HEADER=${VCPU_T_HEADER}
+    )
+endif()
+
 string(CONCAT BFFLAGS_VMM_LINK
     "--sysroot=${CMAKE_INSTALL_PREFIX} "
     "--no-dynamic-linker "

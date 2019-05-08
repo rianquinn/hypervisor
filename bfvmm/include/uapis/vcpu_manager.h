@@ -22,14 +22,14 @@
 #ifndef UAPIS_VCPU_MANAGER_H
 #define UAPIS_VCPU_MANAGER_H
 
-#include "vcpu_t.h"
 #include <bfmanager.h>
+#include "../implementation/vcpu_t.h"
 
 /// vCPU Manager
 ///
 /// The vCPU manager is the entity that creates and destroys vCPUs. Unless
 /// you are adding guest support, you should not need to call this manually
-/// as it is being done for all of the host vCPUs.
+/// as it is being done automatically for all of the host vCPUs.
 ///
 #define g_vcm bfmanager<vcpu_t>::instance()
 

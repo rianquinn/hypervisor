@@ -23,6 +23,7 @@
 #define IMPLEMENTATION_MEMORY_MANAGER_H
 
 #include "macros.h"
+#include "../uapis/memory_manager.h"
 
 #include "buddy_allocator.h"
 #include "object_allocator.h"
@@ -30,12 +31,6 @@
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
-
-void *alloc_page() noexcept;
-void free_page(void *ptr) noexcept;
-
-template<typename T> T *alloc_page()
-{ return static_cast<T *>(alloc_page()); }
 
 extern "C" status_t set_huge_pool_leafs(uint64_t addr, uint64_t size) noexcept;
 extern "C" status_t set_huge_pool_nodes(uint64_t addr, uint64_t size) noexcept;
@@ -47,23 +42,23 @@ extern "C" status_t set_huge_pool_nodes(uint64_t addr, uint64_t size) noexcept;
 namespace bfvmm::implementation
 {
 
-class memory_manager
+class memory_manager :
+    public uapis::memory_manager<memory_manager>
 {
-public:
+PUBLIC:
+    using pointer = uapis::memory_manager<memory_manager>::pointer;
+    using integer_pointer = uapis::memory_manager<memory_manager>::integer_pointer;
+    using size_type = uapis::memory_manager<memory_manager>::size_type;
+    using attr_type = uapis::memory_manager<memory_manager>::attr_type;
 
-    using pointer = void *;
-    using integer_pointer = uintptr_t;
-    using size_type = std::size_t;
-    using attr_type = decltype(memory_descriptor::type);
+PRIVATE:
+    integer_pointer __hva_to_hpa(integer_pointer hva) const;
+    integer_pointer __hpa_to_hva(integer_pointer hpa) const;
 
-public:
+    static gsl::not_null<memory_manager *> __instance() noexcept;
 
+PRIVATE:
     memory_manager() noexcept;
-
-    integer_pointer hva_to_hpa(integer_pointer hva) const;
-    integer_pointer hpa_to_hva(integer_pointer hpa) const;
-
-private:
 
     pointer alloc(size_type size) noexcept;
     pointer alloc_map(size_type size) noexcept;
@@ -79,8 +74,7 @@ private:
 
     void add_md(integer_pointer hva,integer_pointer hpa,attr_type attr);
 
-private:
-
+PRIVATE:
     struct hva_t {
         integer_pointer hpa;
         integer_pointer attr;
@@ -109,14 +103,16 @@ private:
     object_allocator slab400;
     object_allocator slab800;
 
-private:
+PRIVATE:
     MOCK_PROTOTYPE(memory_manager)
     COPY_MOVE_SEMANTICS(memory_manager)
 
-private:
+PRIVATE:
+    template<typename T>
+    friend struct uapis::memory_manager;
 
-    friend class private_entry;
-    friend class private_memory_manager;
+    friend class ::private_entry;
+    friend class ::private_memory_manager;
 };
 
 }

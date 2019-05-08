@@ -23,44 +23,45 @@
 #define IMPLEMENTATION_VCPU_H
 
 #include "macros.h"
+#include "../uapis/vcpu.h"
 
 namespace bfvmm::implementation
 {
 
-class vcpu
+class vcpu :
+    public uapis::vcpu<vcpu>
 {
-public:
-
-    using id_t = uint64_t;
-
-public:
-
+PUBLIC:
     explicit vcpu(id_t id);
     VIRTUAL ~vcpu() = default;
 
-    VIRTUAL id_t id() const noexcept;
-    VIRTUAL static id_t generate_guest_id() noexcept;
+PRIVATE:
+    id_t __id() const noexcept;
+    static id_t __generate_guest_id() noexcept;
 
-    VIRTUAL bool is_bootstrap_vcpu() const noexcept;
-    VIRTUAL bool is_host_vcpu() const noexcept;
-    VIRTUAL bool is_guest_vcpu() const noexcept;
+    bool __is_bootstrap_vcpu() const noexcept;
+    bool __is_host_vcpu() const noexcept;
+    bool __is_guest_vcpu() const noexcept;
 
     template<typename T>
-    T data()
+    T __data()
     { return std::any_cast<T>(m_data); }
 
     template<typename T>
-    void set_data(T &&t)
+    void __set_data(T &&t)
     { m_data = std::any(t); }
 
-private:
-
+PRIVATE:
     id_t m_id;
     std::any m_data{};
 
-public:
+PRIVATE:
     MOCK_PROTOTYPE(vcpu)
     COPY_MOVE_SEMANTICS(vcpu)
+
+PRIVATE:
+    template<typename T>
+    friend struct uapis::vcpu;
 };
 
 }

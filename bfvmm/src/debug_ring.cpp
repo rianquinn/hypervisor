@@ -19,27 +19,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <bfgsl.h>
-#include <bftypes.h>
-
 #include <implementation/debug_ring.h>
 
 // -----------------------------------------------------------------------------
 // Global
 // -----------------------------------------------------------------------------
 
-bfvmm::implementation::debug_ring g_debug_ring;
-
-static auto g_drr = debug_ring_resources_t{};
-static auto g_drr_view = gsl::span(g_drr.buf);
+static debug_ring_resources_t g_drr = {};
 
 extern "C" status_t
-get_drr(uint64_t arg) noexcept
+get_drr(gsl::not_null<debug_ring_resources_t **> drr) noexcept
 {
-    if (auto drr = reinterpret_cast<debug_ring_resources_t **>(arg)) {
-        *drr = &g_drr;
-    }
-
+    *drr = &g_drr;
     return BFSUCCESS;
 }
 
@@ -58,9 +49,17 @@ debug_ring::debug_ring() noexcept
     g_drr.tag2 = 0x06BD06BD06BD06BD;
 }
 
-void
-debug_ring::write(const char c) noexcept
+gsl::not_null<debug_ring *>
+debug_ring::instance() noexcept
 {
+    static debug_ring s_debug_ring;
+    return &s_debug_ring;
+}
+
+void
+debug_ring::write(const char c) const noexcept
+{
+    static auto g_drr_view = gsl::span(g_drr.buf);
     g_drr_view[g_drr.epos++] = c;
 
     if (g_drr.epos == DEBUG_RING_SIZE) {

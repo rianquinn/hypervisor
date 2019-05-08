@@ -22,6 +22,10 @@
 #ifndef IMPLEMENTATION_MACROS_H
 #define IMPLEMENTATION_MACROS_H
 
+// -----------------------------------------------------------------------------
+// Includes
+// -----------------------------------------------------------------------------
+
 #include <bfgsl.h>
 #include <bftypes.h>
 #include <bfdebug.h>
@@ -35,6 +39,19 @@
 #include <memory>
 #include <unordered_map>
 
+// -----------------------------------------------------------------------------
+// Friends
+// -----------------------------------------------------------------------------
+
+template<typename T>
+class bfmanager;
+class private_entry;
+class private_memory_manager;
+
+// -----------------------------------------------------------------------------
+// Macros
+// -----------------------------------------------------------------------------
+
 #define COPY_MOVE_SEMANTICS(name)                                               \
     public:                                                                     \
     name(name &&) = default;                                                    \
@@ -44,28 +61,15 @@
 
 #ifdef ENABLE_BUILD_TEST
 #include <hippomocks.h>
-#define PRIVATE_INTERFACES(name)                                                \
-    public:                                                                     \
-    COPY_MOVE_SEMANTICS(name)                                                   \
-    public:                                                                     \
-    static void name ## _mock(MockRepository &mocks, vcpu *vcpu)                \
-    { IMPL::mock(mocks, vcpu); }                                                \
-    gsl::not_null<IMPL *> name ## _impl()                                       \
-    { return &m_impl; }                                                         \
-    protected:                                                                  \
-    IMPL m_impl;
-#define MOCK_PROTOTYPE(unused)                                                  \
-    static void mock(MockRepository &mocks, vcpu *vcpu)
 #define MOCK_FUNCTION(name, func)                                               \
     static void name::mock(MockRepository &mocks, vcpu *vcpu) func
 #else
-#define PRIVATE_INTERFACES(name)                                                \
-    public:                                                                     \
-    COPY_MOVE_SEMANTICS(name)                                                   \
-    protected:                                                                  \
-    IMPL m_impl;
-#define MOCK_PROTOTYPE(unused)
 #define MOCK_FUNCTION(unused1, unused2)
 #endif
+
+#define FRIEND_DEFINITIONS(unused)                                              \
+    template<typename T>                                                        \
+    friend class ::bfmanager;                                                   \
+    friend class ::private_entry;
 
 #endif

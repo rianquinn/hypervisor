@@ -19,8 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <hve/arch/intel_x64/vcpu.h>
-#include <hve/arch/intel_x64/implementation/state.h>
+#include <implementation/arch/intel_x64/state.h>
 
 namespace bfvmm::intel_x64::implementation
 {
@@ -28,17 +27,13 @@ namespace bfvmm::intel_x64::implementation
 state::state(
     gsl::not_null<vcpu *> vcpu
 ) :
-    m_state{make_page<state_t>()}
+    m_ia32_vmx_cr0_fixed0{::intel_x64::msrs::ia32_vmx_cr0_fixed0::get()},
+    m_ia32_vmx_cr4_fixed0{::intel_x64::msrs::ia32_vmx_cr4_fixed0::get()}
 {
-    using namespace ::intel_x64::msrs;
-
     m_state->vcpu_ptr = vcpu.get();
-    m_state->ia32_vmx_cr0_fixed0 = ia32_vmx_cr0_fixed0::get();
-    m_state->ia32_vmx_cr4_fixed0 = ia32_vmx_cr4_fixed0::get();
+    m_state->fxsave_region = m_fxsave_region.hva();
 
-    // vcpu->set_host_gs_base(
-    //     reinterpret_cast<uintptr_t>(m_state.get())
-    // );
+    vcpu->set_host_gs_base(m_state.hva()));
 }
 
 reg_t

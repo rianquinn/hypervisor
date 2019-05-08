@@ -46,28 +46,27 @@ class vcpu :
     public implementation::vcpu,
     public implementation::intel_x64::vmx
 {
-
 public:
+    explicit vcpu(id_t id);
 
-    explicit vcpu(id_t id) :
-        implementation::vcpu{id}
-    { }
+private:
+    static void global_init();
 
-    // constexpr static void global_init()
-    // { }
+    inline void demote()
+    { bfdebug_info(0, "host os is" bfcolor_green " now " bfcolor_end "in a vm"); }
+
+    inline void promote()
+    { bfdebug_info(0, "host os is" bfcolor_red " not " bfcolor_end "in a vm"); }
 
     static inline auto make(id_t id)
     { return std::make_unique<vcpu>(id); }
 
-    void demote()
-    { }
-
-    void promote()
-    { }
-
-
+private:
+    FRIEND_DEFINITIONS(vcpu)
 };
 
 }
+
+using vcpu_t = bfvmm::implementation::intel_x64::vcpu;
 
 #endif

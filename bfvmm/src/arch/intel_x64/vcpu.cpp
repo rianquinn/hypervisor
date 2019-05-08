@@ -19,27 +19,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <catch/catch.hpp>
-#include <hippomocks.h>
+#include <implementation/arch/intel_x64/vcpu.h>
 
-#include <bfdriverinterface.h>
-
-#include <common.h>
-#include <test_support.h>
-
-#ifdef _HIPPOMOCKS__ENABLE_CFUNC_MOCKING_SUPPORT
-
-TEST_CASE("run init")
+namespace bfvmm::implementation::intel_x64
 {
-    CHECK(common_init() == BF_SUCCESS);
+
+vcpu::vcpu(id_t id) :
+    implementation::vcpu{id}
+{ }
+
+void
+vcpu::global_init()
+{ bfdebug_info(0, "global init"); }
+
+MOCK_FUNCTION(vcpu, {
+})
+
 }
-
-TEST_CASE("failure")
-{
-    MockRepository mocks;
-    mocks.OnCallFunc(platform_init).Return(BF_ERROR_UNKNOWN);
-
-    CHECK(common_init() == BF_ERROR_UNKNOWN);
-}
-
-#endif

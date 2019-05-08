@@ -22,11 +22,19 @@
 #ifndef UAPIS_MEMORY_MANAGER_H
 #define UAPIS_MEMORY_MANAGER_H
 
-#include "../implementation/memory_manager.h"
+#include <bfgsl.h>
+#include <bftypes.h>
+#include <bfmemory.h>
+#include <bfconstants.h>
+
+#include "impl.h"
 
 // -----------------------------------------------------------------------------
-// Memory Manager Notes
+// Memory Manager Definition
 // -----------------------------------------------------------------------------
+
+namespace bfvmm::uapis
+{
 
 /// Memory Manager
 ///
@@ -80,115 +88,180 @@
 /// you might need to tell the bfdriver to provide more memory to the host.
 /// This can be done using the driver's IOCTL interface, or simply telling
 /// BFM to use more memory.
-
-// -----------------------------------------------------------------------------
-// Instance
-// -----------------------------------------------------------------------------
-
-namespace bfvmm::memory_manager
-{
-
-/// Memory Manager Instance
 ///
-/// The host has only one memory manager. We don't make this a global
-/// instance because global construction could be performed in any order
-/// and as a result, we could end up with memory allocation before the
-/// memory manager is constructed, so instead, you must access the
-/// memory manager through this function which ensures static construction.
+template<typename IMPL>
+struct memory_manager
+{
+    using pointer = void *;                                 ///< Pointer type
+    using integer_pointer = uintptr_t;                      ///< Interger pointer type
+    using size_type = std::size_t;                          ///< Size type
+    using attr_type = decltype(memory_descriptor::type);    ///< Attribute type
+
+    /// Host Virtual Address (HVA) to Host Physical Address (HPA)
+    ///
+    /// Given a host virtual address, this function will provide the host
+    /// physical address for any address that was added using add_md().
+    ///
+    /// NOTE:
+    ///
+    /// add_md() is not called when you map in memory into the host page tables
+    /// (for example when using a unique_map) and instead is called when memory
+    /// is added to the host by bfdriver.
+    ///
+    /// NOTE:
+    ///
+    /// This does not convert a guest virtual address (GVA) to an HPA. The
+    /// host (i.e. the VMM) has its own set of page tables which are different
+    /// from the guest (unlike other hypervisors like SimpleVisor) so if you
+    /// are used to this type of API set, you need to use the EPT APIs as EPT
+    /// provides all of the functions needed to convert a GVA to an HPA as
+    /// well as mapping GVAs to an HVA so that the host can access guest memory.
+    ///
+    /// @expects hva != 0
+    /// @ensures ret != 0
+    ///
+    /// @param hva the host virtual address to convert
+    /// @return host physical address
+    ///
+    constexpr integer_pointer hva_to_hpa(integer_pointer hva) const
+    { return impl<const IMPL>(this)->__hva_to_hpa(hva); }
+
+    /// Host Physical Address (HPA) to Host Virtual Address (HVA)
+    ///
+    /// Given a host physical address, this function will provide the host
+    /// virtual address for any address that was added using add_md().
+    ///
+    /// NOTE:
+    ///
+    /// add_md() is not called when you map in memory into the host page tables
+    /// (for example when using a unique_map) and instead is called when memory
+    /// is added to the host by bfdriver. There is no way to perform this
+    /// type of conversion as there is no logical way to traverse the host
+    /// page tables to convert a physical address to a virtual address. This
+    /// function is only used for a small subset of functions that must ensure
+    /// the host memory was allocated and not mapped.
+    ///
+    /// NOTE:
+    ///
+    /// This does not convert a guest physical address (GPA) to an HVA. The
+    /// host (i.e. the VMM) has its own set of page tables which are different
+    /// from the guest (unlike other hypervisors like SimpleVisor). Just like
+    /// above, we do not provide APIs for performing this type of conversion
+    /// as there is no logical way to convert a physical address to a virtual
+    /// address. You are welcome to write your own APIs using the EPT APIs
+    /// that we do provide, just be warned that it is possible to map the same
+    /// physical address to multiple virtual addresses.
+    ///
+    /// @expects hpa != 0
+    /// @ensures ret != 0
+    ///
+    /// @param hpa the host physical address to convert
+    /// @return host virtual address
+    ///
+    constexpr integer_pointer hpa_to_hva(integer_pointer hpa) const
+    { return impl<const IMPL>(this)->__hpa_to_hva(hpa); }
+
+    /// Instance
+    ///
+    /// @expects
+    /// @ensures ret != nullptr
+    ///
+    /// @return returns a singleton instance of the memory manager.
+    ///
+    constexpr static gsl::not_null<IMPL *>
+    instance() noexcept
+    { return IMPL::__instance(); }
+};
+
+}
+
+// -----------------------------------------------------------------------------
+// Singleton Reference
+// -----------------------------------------------------------------------------
+
+/// Single Shortcut
+///
+/// This macro provides a shortcut to the memory manager (to reduce verbosity).
+/// Like the instance function, this will not return a nullptr.
+///
+
+#ifndef g_mm
+#define g_mm bfvmm::implementation::memory_manager::instance()
+#endif
+
+// -----------------------------------------------------------------------------
+// Alloc/Free Pages
+// -----------------------------------------------------------------------------
+
+/// Allocate Page
+///
+/// Allocates a page of memory. This is a lot fast than using malloc() as it
+/// bypasses some logic to get a page directly from the buddy allocator. Note
+/// that this should only be used when a unique_page cannot be as that interface
+/// is a lot easier to use and is Core Guideline compliant.
 ///
 /// @expects
-/// @ensures ret != nullptr
+/// @ensures
 ///
-/// @return a pointer to the memory manager
+/// @return a pointer to a page of memory
 ///
-inline auto instance() noexcept
+void *alloc_page() noexcept;
+
+/// Free Page
+///
+/// Frees a page of memory. This is a lot fast than using free() as it
+/// bypasses some logic to free a page directly from the buddy allocator. Note
+/// that this should only be used when a unique_page cannot be as that interface
+/// is a lot easier to use and is Core Guideline compliant.
+///
+/// @expects
+/// @ensures
+///
+/// @param ptr a pointer to a page of memory
+///
+void free_page(void *ptr) noexcept;
+
+/// Alloc Page (Template)
+///
+/// Allocates a page of memory. This is a lot fast than using malloc() as it
+/// bypasses some logic to get a page directly from the buddy allocator. Note
+/// that this should only be used when a unique_page cannot be as that interface
+/// is a lot easier to use and is Core Guideline compliant.
+///
+/// @expects
+/// @ensures
+///
+/// @return a pointer to a page of memory
+///
+template<typename T> T
+constexpr *alloc_page() noexcept
 {
-    static implementation::memory_manager s_mm;
-    return &s_mm;
+    static_assert(sizeof(T) <= BFPAGE_SIZE);
+    return static_cast<T *>(alloc_page());
 }
-
-}
-
-/// Memory Manager Macro
-///
-/// Since this might be used a lot, this macro provides a simple shortcut
-/// for the memory manager to reduce verbosity.
-///
-#define g_mm bfvmm::memory_manager::instance()
 
 // -----------------------------------------------------------------------------
 // Wrappers
 // -----------------------------------------------------------------------------
 
+/// @cond
+
 namespace bfvmm::memory_manager
 {
 
-/// Integer pointer type
-using integer_pointer = typename implementation::memory_manager::integer_pointer;
+template<typename IMPL, typename... Args>
+constexpr auto hva_to_hpa(
+    gsl::not_null<IMPL *> mm, Args &&...args)
+{ return mm->hva_to_hpa(std::forward<Args>(args)...); }
 
-/// Host Virtual Address (HVA) to Host Physical Address (HPA)
-///
-/// Given a host virtual address, this function will provide the host
-/// physical address for any address that was added using add_md().
-///
-/// NOTE:
-///
-/// add_md() is not called when you map in memory into the host page tables
-/// (for example when using a unique_map) and instead is called when memory
-/// is added to the host by bfdriver.
-///
-/// NOTE:
-///
-/// This does not convert a guest virtual address (GVA) to an HPA. The
-/// host (i.e. the VMM) has its own set of page tables which are different
-/// from the guest (unlike other hypervisors like SimpleVisor) so if you
-/// are used to this type of API set, you need to use the EPT APIs as EPT
-/// provides all of the functions needed to convert a GVA to an HPA as
-/// well as mapping GVAs to an HVA so that the host can access guest memory.
-///
-/// @expects hva != 0
-/// @ensures return != 0
-///
-/// @param hva the host virtual address to convert
-/// @return host physical address
-inline integer_pointer hva_to_hpa(integer_pointer hva)
-{ return g_mm->hva_to_hpa(hva); }
 
-/// Host Physical Address (HPA) to Host Virtual Address (HVA)
-///
-/// Given a host physical address, this function will provide the host
-/// virtual address for any address that was added using add_md().
-///
-/// NOTE:
-///
-/// add_md() is not called when you map in memory into the host page tables
-/// (for example when using a unique_map) and instead is called when memory
-/// is added to the host by bfdriver. There is no way to perform this
-/// type of conversion as there is no logical way to traverse the host
-/// page tables to convert a physical address to a virtual address. This
-/// function is only used for a small subset of functions that must ensure
-/// the host memory was allocated and not mapped.
-///
-/// NOTE:
-///
-/// This does not convert a guest physical address (GPA) to an HVA. The
-/// host (i.e. the VMM) has its own set of page tables which are different
-/// from the guest (unlike other hypervisors like SimpleVisor). Just like
-/// above, we do not provide APIs for performing this type of conversion
-/// as there is no logical way to convert a physical address to a virtual
-/// address. You are welcome to write your own APIs using the EPT APIs
-/// that we do provide, just be warned that it is possible to map the same
-/// physical address to multiple virtual addresses.
-///
-/// @expects hpa != 0
-/// @ensures return != 0
-///
-/// @param hpa the host physical address to convert
-/// @return host virtual address
-///
-inline integer_pointer hpa_to_hva(integer_pointer hpa)
-{ return g_mm->hpa_to_hva(hpa); }
+template<typename IMPL, typename... Args>
+constexpr auto hpa_to_hva(
+    gsl::not_null<IMPL *> mm, Args &&...args)
+{ return mm->hpa_to_hva(std::forward<Args>(args)...); }
 
 }
+
+/// @endcond
 
 #endif

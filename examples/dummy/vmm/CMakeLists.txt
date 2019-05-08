@@ -20,11 +20,11 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(bfdummy CXX)
+project(dummy CXX)
 
 find_package(bareflank_vmm)
 
-add_executable(dummy_main src/main.cpp)
-target_link_libraries(dummy_main PRIVATE bareflank_internal)
+add_executable(vmm_dummy main.cpp)
+target_link_libraries(vmm_dummy PRIVATE bareflank_internal)
 
-install(TARGETS dummy_main DESTINATION bin)
+install(TARGETS vmm_dummy DESTINATION bin)

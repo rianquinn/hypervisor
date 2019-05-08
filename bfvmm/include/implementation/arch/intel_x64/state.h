@@ -22,8 +22,8 @@
 #ifndef IMPLEMENTATION_STATE_INTEL_X64_H
 #define IMPLEMENTATION_STATE_INTEL_X64_H
 
-#include "../uapis/state.h"
-#include "../../../../memory_manager/memory_manager.h"
+#include "macros.h"
+#include "../../../uapis/arch/intel_x64/state.h"
 
 // -----------------------------------------------------------------------------
 // Defintion
@@ -31,60 +31,58 @@
 
 ///@cond
 
-namespace bfvmm::intel_x64::implementation
+namespace bfvmm::implementation::intel_x64
 {
 
-class state
+class state :
+    public uapis::intel_x64::state<state>
 {
-public:
-
+PUBLIC:
     explicit state(gsl::not_null<vcpu *> vcpu);
     VIRTUAL ~state() = default;
 
-    VIRTUAL reg_t rax() const noexcept;
-    VIRTUAL void set_rax(reg_t val) noexcept;
-    VIRTUAL reg_t rbx() const noexcept;
-    VIRTUAL void set_rbx(reg_t val) noexcept;
-    VIRTUAL reg_t rcx() const noexcept;
-    VIRTUAL void set_rcx(reg_t val) noexcept;
-    VIRTUAL reg_t rdx() const noexcept;
-    VIRTUAL void set_rdx(reg_t val) noexcept;
-    VIRTUAL reg_t rbp() const noexcept;
-    VIRTUAL void set_rbp(reg_t val) noexcept;
-    VIRTUAL reg_t rsi() const noexcept;
-    VIRTUAL void set_rsi(reg_t val) noexcept;
-    VIRTUAL reg_t rdi() const noexcept;
-    VIRTUAL void set_rdi(reg_t val) noexcept;
-    VIRTUAL reg_t r08() const noexcept;
-    VIRTUAL void set_r08(reg_t val) noexcept;
-    VIRTUAL reg_t r09() const noexcept;
-    VIRTUAL void set_r09(reg_t val) noexcept;
-    VIRTUAL reg_t r10() const noexcept;
-    VIRTUAL void set_r10(reg_t val) noexcept;
-    VIRTUAL reg_t r11() const noexcept;
-    VIRTUAL void set_r11(reg_t val) noexcept;
-    VIRTUAL reg_t r12() const noexcept;
-    VIRTUAL void set_r12(reg_t val) noexcept;
-    VIRTUAL reg_t r13() const noexcept;
-    VIRTUAL void set_r13(reg_t val) noexcept;
-    VIRTUAL reg_t r14() const noexcept;
-    VIRTUAL void set_r14(reg_t val) noexcept;
-    VIRTUAL reg_t r15() const noexcept;
-    VIRTUAL void set_r15(reg_t val) noexcept;
-    VIRTUAL reg_t rip() const noexcept;
-    VIRTUAL void set_rip(reg_t val) noexcept;
-    VIRTUAL reg_t rsp() const noexcept;
-    VIRTUAL void set_rsp(reg_t val) noexcept;
+PRIVATE:
+    reg_t __rax() const noexcept;
+    void __set_rax(reg_t val) noexcept;
+    reg_t __rbx() const noexcept;
+    void __set_rbx(reg_t val) noexcept;
+    reg_t __rcx() const noexcept;
+    void __set_rcx(reg_t val) noexcept;
+    reg_t __rdx() const noexcept;
+    void __set_rdx(reg_t val) noexcept;
+    reg_t __rbp() const noexcept;
+    void __set_rbp(reg_t val) noexcept;
+    reg_t __rsi() const noexcept;
+    void __set_rsi(reg_t val) noexcept;
+    reg_t __rdi() const noexcept;
+    void __set_rdi(reg_t val) noexcept;
+    reg_t __r08() const noexcept;
+    void __set_r08(reg_t val) noexcept;
+    reg_t __r09() const noexcept;
+    void __set_r09(reg_t val) noexcept;
+    reg_t __r10() const noexcept;
+    void __set_r10(reg_t val) noexcept;
+    reg_t __r11() const noexcept;
+    void __set_r11(reg_t val) noexcept;
+    reg_t __r12() const noexcept;
+    void __set_r12(reg_t val) noexcept;
+    reg_t __r13() const noexcept;
+    void __set_r13(reg_t val) noexcept;
+    reg_t __r14() const noexcept;
+    void __set_r14(reg_t val) noexcept;
+    reg_t __r15() const noexcept;
+    void __set_r15(reg_t val) noexcept;
+    reg_t __rip() const noexcept;
+    void __set_rip(reg_t val) noexcept;
+    reg_t __rsp() const noexcept;
+    void __set_rsp(reg_t val) noexcept;
+    reg_t __exit_reason() const noexcept;
+    reg_t __ia32_vmx_cr0_fixed0() const noexcept;
+    void __set_ia32_vmx_cr0_fixed0(reg_t val) noexcept;
+    reg_t __ia32_vmx_cr4_fixed0() const noexcept;
+    void __set_ia32_vmx_cr4_fixed0(reg_t val) noexcept;
 
-    VIRTUAL reg_t exit_reason() const noexcept;
-
-    VIRTUAL reg_t ia32_vmx_cr0_fixed0() const noexcept;
-    VIRTUAL void set_ia32_vmx_cr0_fixed0(reg_t val) noexcept;
-    VIRTUAL reg_t ia32_vmx_cr4_fixed0() const noexcept;
-    VIRTUAL void set_ia32_vmx_cr4_fixed0(reg_t val) noexcept;
-
-private:
-
+PRIVATE:
     struct state_t {
         reg_t rax;                      // 0x000
         reg_t rbx;                      // 0x008
@@ -106,15 +104,22 @@ private:
 
         reg_t exit_reason;              // 0x088
         void *vcpu_ptr;                 // 0x090
-        reg_t ia32_vmx_cr0_fixed0;      // 0x098
-        reg_t ia32_vmx_cr4_fixed0;      // 0x0A0
+        void *fxsave_region;            // 0x098
     };
 
-    page_ptr<state_t> m_state;
+    reg_t m_ia32_vmx_cr0_fixed0{};
+    reg_t m_ia32_vmx_cr4_fixed0{};
 
-public:
-    MOCK_PROTOTYPE(state);
-    COPY_MOVE_SEMANTICS(state);
+    unique_page<state_t> m_state;
+    unique_page<uint8_t> m_fxsave_region;
+
+PRIVATE:
+    MOCK_PROTOTYPE(state)
+    COPY_MOVE_SEMANTICS(state)
+
+PRIVATE:
+    template<typename T>
+    friend struct uapis::state;
 };
 
 }

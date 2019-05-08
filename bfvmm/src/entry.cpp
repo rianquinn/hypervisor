@@ -34,11 +34,10 @@
 
 #include <uapis/entry.h>
 #include <uapis/vcpu_manager.h>
-#include <uapis/memory_manager.h>
 #include <implementation/debug_ring.h>
+#include <implementation/memory_manager.h>
 
 using namespace bfvmm;
-#include <uapis/unique_page.h>
 
 // -----------------------------------------------------------------------------
 // C-Style Entry Points
@@ -68,15 +67,12 @@ WEAK_SYM vcpu_fini_nonroot_running(vcpu_t *vcpu)
 // Entry Functions
 // -----------------------------------------------------------------------------
 
-namespace bfvmm::implementation
-{
-
 class private_entry
 {
 public:
 
     static constexpr status_t
-    add_md(uint64_t arg) noexcept
+    request_add_md(uint64_t arg) noexcept
     {
         return guard_exceptions([arg] {
             auto md = reinterpret_cast<memory_descriptor *>(arg);
@@ -85,7 +81,7 @@ public:
     }
 
     static constexpr status_t
-    global_init() noexcept
+    request_global_init() noexcept
     {
         return guard_exceptions([] {
             vcpu_t::global_init();
@@ -94,7 +90,7 @@ public:
     }
 
     static constexpr status_t
-    init_vmm(uint64_t arg) noexcept
+    request_init_vmm(uint64_t arg) noexcept
     {
         return guard_exceptions([arg]() {
             auto vcpu = g_vcm->create(arg);
@@ -105,7 +101,7 @@ public:
     }
 
     static constexpr status_t
-    fini_vmm(uint64_t arg) noexcept
+    request_fini_vmm(uint64_t arg) noexcept
     {
         return guard_exceptions([arg]() {
             auto vcpu = g_vcm->destroy(arg);
@@ -114,9 +110,16 @@ public:
             vcpu_fini_nonroot(vcpu.get());
         });
     }
-};
 
-}
+    static constexpr status_t
+    request_get_drr(uint64_t arg) noexcept
+    {
+        return guard_exceptions([arg]() {
+            auto drr = reinterpret_cast<debug_ring_resources_t **>(arg);
+            return get_drr(drr);
+        });
+    }
+};
 
 // -----------------------------------------------------------------------------
 // BFMain
@@ -136,19 +139,19 @@ bfmain(uint64_t request, uint64_t arg1, uint64_t arg2) noexcept
             return set_huge_pool_nodes(arg1, arg2);
 
         case BF_REQUEST_ADD_MD:
-            return private_entry::add_md(arg1);
+            return private_entry::request_add_md(arg1);
 
         case BF_REQUEST_GLOBAL_INIT:
-            return private_entry::global_init();
+            return private_entry::request_global_init();
 
         case BF_REQUEST_VMM_INIT:
-            return private_entry::init_vmm(arg1);
+            return private_entry::request_init_vmm(arg1);
 
         case BF_REQUEST_VMM_FINI:
-            return private_entry::fini_vmm(arg1);
+            return private_entry::request_fini_vmm(arg1);
 
         case BF_REQUEST_GET_DRR:
-            return get_drr(arg1);
+            return private_entry::request_get_drr(arg1);
 
         default:
             break;

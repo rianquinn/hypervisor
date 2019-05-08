@@ -120,7 +120,7 @@ public:
     /// @param size the size of the allocation
     /// @return an allocated object. Throws otherwise
     ///
-    inline pointer allocate(size_type size)
+    inline pointer allocate(size_type size) noexcept
     {
         if (size > m_leafs_size || size == 0) {
             return nullptr;
@@ -134,7 +134,7 @@ public:
             return ptr;
         }
 
-        throw std::bad_alloc();
+        return nullptr;
     }
 
     /// Deallocate

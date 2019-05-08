@@ -40,8 +40,8 @@ write_str(const std::string &str) noexcept
         std::lock_guard<std::mutex> guard(g_write_mutex);
 
         for (const auto &c : str) {
-            g_debug_ring.write(c);
             serial::instance()->write(c);
+            debug_ring::instance()->write(c);
         }
     }
     catch (...) {
@@ -58,8 +58,8 @@ unsafe_write_cstr(const char *cstr, size_t len) noexcept
         auto str = gsl::span(cstr, gsl::index_cast(len));
 
         for (const auto &c : str) {
-            g_debug_ring.write(c);
             serial::instance()->write(c);
+            debug_ring::instance()->write(c);
         }
     }
     catch (...)

@@ -145,6 +145,9 @@ class delegate<Ret(Args...)>
 
 public:
 
+    /// Return type
+    using result_type = Ret;
+
     /// Null delegate
     ///
     delegate() = default;

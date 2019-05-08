@@ -27,7 +27,7 @@
 //     impractical.
 //
 
-#include <uapis/memory_manager.h>
+#include <implementation/memory_manager.h>
 
 // -----------------------------------------------------------------------------
 // Mutexes
@@ -97,24 +97,8 @@ static uint8_t g_map_pool_nodes[num_nodes(MAP_POOL_K) * BFNODE_SIZE] = {};
 namespace bfvmm::implementation
 {
 
-memory_manager::memory_manager() noexcept :
-    g_map_pool(MAP_POOL_START, MAP_POOL_K, g_map_pool_nodes),
-    g_huge_pool(g_huge_pool_leafs, g_huge_pool_k, g_huge_pool_nodes),
-    slab008(0x008),
-    slab010(0x010),
-    slab018(0x018),
-    slab020(0x020),
-    slab030(0x030),
-    slab040(0x040),
-    slab080(0x080),
-    slab100(0x100),
-    slab200(0x200),
-    slab400(0x400),
-    slab800(0x800)
-{ }
-
 memory_manager::integer_pointer
-memory_manager::hva_to_hpa(integer_pointer hva) const
+memory_manager::__hva_to_hpa(integer_pointer hva) const
 {
     auto lower = bfn::lower(hva);
     auto upper = bfn::upper(hva);
@@ -131,7 +115,7 @@ memory_manager::hva_to_hpa(integer_pointer hva) const
 }
 
 memory_manager::integer_pointer
-memory_manager::hpa_to_hva(integer_pointer hpa) const
+memory_manager::__hpa_to_hva(integer_pointer hpa) const
 {
     auto lower = bfn::lower(hpa);
     auto upper = bfn::upper(hpa);
@@ -146,6 +130,29 @@ memory_manager::hpa_to_hva(integer_pointer hpa) const
         "memory_manager::hpa_to_hva failed: " + bfn::to_string(hpa, 16)
     );
 }
+
+gsl::not_null<memory_manager *>
+memory_manager::__instance() noexcept
+{
+    static memory_manager s_mm;
+    return &s_mm;
+}
+
+memory_manager::memory_manager() noexcept :
+    g_map_pool(MAP_POOL_START, MAP_POOL_K, g_map_pool_nodes),
+    g_huge_pool(g_huge_pool_leafs, g_huge_pool_k, g_huge_pool_nodes),
+    slab008(0x008),
+    slab010(0x010),
+    slab018(0x018),
+    slab020(0x020),
+    slab030(0x030),
+    slab040(0x040),
+    slab080(0x080),
+    slab100(0x100),
+    slab200(0x200),
+    slab400(0x400),
+    slab800(0x800)
+{ }
 
 memory_manager::pointer
 memory_manager::alloc(size_type size) noexcept
@@ -402,100 +409,74 @@ memory_manager::add_md(
 
 #ifdef ENABLE_BUILD_VMM
 
-namespace bfvmm::implementation
-{
-
 class private_memory_manager
 {
 public:
+    template<typename... Args>
+    constexpr static auto alloc(Args &&...args) noexcept
+    { return g_mm->alloc(std::forward<Args>(args)...); }
 
-    static inline void *
-    malloc(size_t size) noexcept
-    { return g_mm->alloc(size); }
+    template<typename... Args>
+    constexpr static auto alloc_huge(Args &&...args) noexcept
+    { return g_mm->alloc_huge(std::forward<Args>(args)...); }
 
-    static inline void
-    free(void *ptr) noexcept
-    { g_mm->free(ptr); }
+    template<typename... Args>
+    constexpr static void free(Args &&...args) noexcept
+    { g_mm->free(std::forward<Args>(args)...); }
 
-    static inline void *
-    calloc(size_t nmemb, size_t size) noexcept
-    {
-        if (auto ptr = g_mm->alloc(nmemb * size)) {
-            return memset(ptr, 0, nmemb * size);
-        }
+    template<typename... Args>
+    constexpr static void free_huge(Args &&...args) noexcept
+    { g_mm->free_huge(std::forward<Args>(args)...); }
 
-        return nullptr;
-    }
-
-    static inline void *
-    realloc(void *ptr, size_t size) noexcept
-    {
-        auto old_sze = g_mm->size(ptr);
-        auto new_ptr = g_mm->alloc(size);
-
-        if (new_ptr == nullptr || old_sze == 0) {
-            return nullptr;
-        }
-
-        if (ptr != nullptr) {
-            memcpy(new_ptr, ptr, size > old_sze ? old_sze : size);
-            g_mm->free(ptr);
-        }
-
-        return new_ptr;
-    }
-
-    static inline void *
-    alloc_page() noexcept
-    { return g_mm->alloc_huge(BFPAGE_SIZE); }
-
-    static inline void
-    free_page(void *ptr) noexcept
-    { g_mm->free_huge(ptr); }
+    template<typename... Args>
+    constexpr static auto size(Args &&...args) noexcept
+    { return g_mm->size(std::forward<Args>(args)...); }
 };
 
-}
+using namespace bfvmm::implementation;
 
 extern "C" void *
 _malloc_r(struct _reent *, size_t size)
-{
-    using namespace bfvmm::implementation;
-    return private_memory_manager::malloc(size);
-}
+{ return private_memory_manager::alloc(size); }
 
 extern "C" void
 _free_r(struct _reent *, void *ptr)
-{
-    using namespace bfvmm::implementation;
-    private_memory_manager::free(ptr);
-}
+{ private_memory_manager::free(ptr); }
 
 extern "C" void *
 _calloc_r(struct _reent *, size_t nmemb, size_t size)
 {
-    using namespace bfvmm::implementation;
-    return private_memory_manager::calloc(nmemb, size);
+    if (auto ptr = private_memory_manager::alloc(nmemb * size)) {
+        return memset(ptr, 0, nmemb * size);
+    }
+
+    return nullptr;
 }
 
 extern "C" void *
 _realloc_r(struct _reent *, void *ptr, size_t size)
 {
-    using namespace bfvmm::implementation;
-    return private_memory_manager::realloc(ptr, size);
+    auto old_sze = private_memory_manager::size(ptr);
+    auto new_ptr = private_memory_manager::alloc(size);
+
+    if (new_ptr == nullptr || old_sze == 0) {
+        return nullptr;
+    }
+
+    if (ptr != nullptr) {
+        memcpy(new_ptr, ptr, size > old_sze ? old_sze : size);
+        private_memory_manager::free(ptr);
+    }
+
+    return new_ptr;
 }
 
 void *
 alloc_page() noexcept
-{
-    using namespace bfvmm::implementation;
-    return private_memory_manager::alloc_page();
-}
+{ return private_memory_manager::alloc_huge(BFPAGE_SIZE); }
 
 void
 free_page(void *ptr) noexcept
-{
-    using namespace bfvmm::implementation;
-    private_memory_manager::free_page(ptr);
-}
+{ private_memory_manager::free_huge(ptr); }
 
 #endif

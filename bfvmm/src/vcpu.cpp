@@ -29,34 +29,34 @@ vcpu::vcpu(id_t id) :
 { }
 
 vcpu::id_t
-vcpu::id() const noexcept
+vcpu::__id() const noexcept
 { return m_id; }
 
 vcpu::id_t
-vcpu::generate_guest_id() noexcept
+vcpu::__generate_guest_id() noexcept
 {
     static id_t s_id = 10000;
     return s_id++;
 }
 
 bool
-vcpu::is_bootstrap_vcpu() const noexcept
+vcpu::__is_bootstrap_vcpu() const noexcept
 { return m_id == 0; }
 
 bool
-vcpu::is_host_vcpu() const noexcept
+vcpu::__is_host_vcpu() const noexcept
 { return (m_id & 0xFFFFFFFFFFFF0000UL) == 0; }
 
 bool
-vcpu::is_guest_vcpu() const noexcept
-{ return !this->is_host_vcpu(); }
+vcpu::__is_guest_vcpu() const noexcept
+{ return !this->__is_host_vcpu(); }
 
 MOCK_FUNCTION(vcpu, {
-    mocks.OnCall(vcpu->vcpu_impl().get(), vcpu::id);
-    // mocks.OnCall(vcpu->vcpu_impl().get(), vcpu::generate_guest_id);
-    mocks.OnCall(vcpu->vcpu_impl().get(), vcpu::is_bootstrap_vcpu);
-    mocks.OnCall(vcpu->vcpu_impl().get(), vcpu::is_host_vcpu);
-    mocks.OnCall(vcpu->vcpu_impl().get(), vcpu::is_guest_vcpu);
+    mocks.OnCall(vcpu, vcpu::id).Return(0);
+    mocks.OnCallFunc(vcpu::generate_guest_id).Return(10000);
+    mocks.OnCall(vcpu, vcpu::is_bootstrap_vcpu).Return(true);
+    mocks.OnCall(vcpu, vcpu::is_host_vcpu).Return(true);
+    mocks.OnCall(vcpu, vcpu::is_guest_vcpu).Return(false);
 })
 
 }

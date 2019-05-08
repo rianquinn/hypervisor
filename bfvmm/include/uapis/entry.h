@@ -22,7 +22,7 @@
 #ifndef UAPIS_ENTRY_H
 #define UAPIS_ENTRY_H
 
-#include <uapis/vcpu_manager.h>
+#include "../implementation/vcpu_t.h"
 
 /// Global Init
 ///

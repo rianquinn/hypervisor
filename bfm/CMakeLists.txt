@@ -40,8 +40,6 @@ target_include_directories(bfm PRIVATE
     $<${WINDOWS}:${CMAKE_CURRENT_LIST_DIR}/src/platform/windows>
 )
 
-# do_test(tests/test_ioctl_driver.cpp DEPENDS bfm)
-
 # -----------------------------------------------------------------------------
 # installs
 # -----------------------------------------------------------------------------

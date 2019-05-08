@@ -65,49 +65,40 @@ setup_interfaces()
 # VMM Components
 # ------------------------------------------------------------------------------
 
-if(ENABLE_BUILD_VMM)
-    add_subproject(bfsdk vmm DEPENDS gsl json libcxx PRIVATE NOINSTALL)
-    add_subproject(bfintrinsics vmm DEPENDS bfsdk PRIVATE)
-    add_subproject(bfruntime vmm DEPENDS bfsdk PRIVATE)
-    add_subproject(bfunwind vmm DEPENDS bfsdk PRIVATE)
-    add_subproject(bfvmm vmm DEPENDS bfruntime bfunwind bfintrinsics PRIVATE)
-    add_subproject(bfdummy vmm DEPENDS bfruntime bfunwind bfintrinsics PRIVATE)
-endif()
+add_subproject(bfsdk vmm DEPENDS gsl json libcxx PRIVATE NOINSTALL)
+add_subproject(bfintrinsics vmm DEPENDS bfsdk PRIVATE)
+add_subproject(bfruntime vmm DEPENDS bfsdk PRIVATE)
+add_subproject(bfunwind vmm DEPENDS bfsdk PRIVATE)
+add_subproject(bfvmm vmm DEPENDS bfruntime bfunwind bfintrinsics PRIVATE)
 
 # ------------------------------------------------------------------------------
 # Userspace Components
 # ------------------------------------------------------------------------------
 
-if(ENABLE_BUILD_USERSPACE)
-    add_subproject(bfsdk userspace DEPENDS gsl json argparse PRIVATE NOINSTALL)
-    add_subproject(bfintrinsics userspace DEPENDS bfsdk PRIVATE)
-    add_subproject(bfm userspace DEPENDS bfintrinsics PRIVATE)
-    add_subproject(bfack userspace DEPENDS bfintrinsics PRIVATE)
-endif()
+add_subproject(bfsdk userspace DEPENDS gsl json argparse PRIVATE NOINSTALL)
+add_subproject(bfintrinsics userspace DEPENDS bfsdk PRIVATE)
+add_subproject(bfm userspace DEPENDS bfintrinsics PRIVATE)
+add_subproject(bfack userspace DEPENDS bfintrinsics PRIVATE)
 
 # ------------------------------------------------------------------------------
 # Unit Tests
 # ------------------------------------------------------------------------------
 
-if(ENABLE_BUILD_TEST)
-    add_subproject(bfsdk test DEPENDS gsl json catch hippomocks PRIVATE NOINSTALL)
-    add_subproject(bfm test DEPENDS bfsdk PRIVATE NOINSTALL)
-endif()
+add_subproject(bfsdk test DEPENDS gsl json catch hippomocks PRIVATE NOINSTALL)
+add_subproject(bfm test DEPENDS bfsdk PRIVATE NOINSTALL)
 
 # ------------------------------------------------------------------------------
 # Integration Tests
 # ------------------------------------------------------------------------------
 
-if(ENABLE_BUILD_TEST)
-endif()
-
 # ------------------------------------------------------------------------------
 # Examples
 # ------------------------------------------------------------------------------
 
-# if(NOT EXTENSION)
+if(NOT EXTENSION)
+    list(APPEND EXTENSION ${CMAKE_CURRENT_LIST_DIR}/examples/dummy)
     list(APPEND EXTENSION ${CMAKE_CURRENT_LIST_DIR}/examples/default)
-# endif()
+endif()
 
 if(ENABLE_BUILD_EXAMPLES)
     list(APPEND EXTENSION ${SOURCE_EXAMPLES_DIR}/cpuidcount)
@@ -131,24 +122,17 @@ if(ENABLE_BUILD_EFI)
 endif()
 
 # ------------------------------------------------------------------------------
-# Force Rebuild
-# ------------------------------------------------------------------------------
-
-get_property(FORCE_REBUILD GLOBAL PROPERTY "FORCE_REBUILD")
-
-if(FORCE_REBUILD STREQUAL "ON")
-    set_property(GLOBAL PROPERTY "FORCE_REBUILD" "OFF")
-    file(REMOVE_RECURSE ${DEPENDS_DIR})
-    file(REMOVE_RECURSE ${PREFIXES_DIR})
-    message(FATAL_ERROR "${Yellow}dependencies updated, rebuild is required. Rerun cmake${ColorReset}")
-endif()
-
-# ------------------------------------------------------------------------------
 # Validate Build
 # ------------------------------------------------------------------------------
 
 include(scripts/cmake/validate.cmake)
 validate_build()
+
+# ------------------------------------------------------------------------------
+# Force Rebuild
+# ------------------------------------------------------------------------------
+
+force_rebuild_if_needed()
 
 # ------------------------------------------------------------------------------
 # Banners

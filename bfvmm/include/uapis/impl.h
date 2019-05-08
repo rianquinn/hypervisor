@@ -19,38 +19,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IMPLEMENTATION_DEBUG_RING_H
-#define IMPLEMENTATION_DEBUG_RING_H
+#ifndef UAPIS_IMPL_H
+#define UAPIS_IMPL_H
 
-#include "macros.h"
-#include <bfdebugringinterface.h>
+/// @cond
 
-// -----------------------------------------------------------------------------
-// Definitions
-// -----------------------------------------------------------------------------
+template<typename IMPL, typename T>
+constexpr IMPL *impl(T &&t) noexcept
+{ return static_cast<IMPL *>(std::forward<T>(t)); }
 
-namespace bfvmm::implementation
-{
-
-class debug_ring
-{
-    debug_ring() noexcept;
-
-PUBLIC:
-    static gsl::not_null<debug_ring *> instance() noexcept;
-    void write(const char) const noexcept;
-
-PRIVATE:
-    COPY_MOVE_SEMANTICS(debug_ring)
-};
-
-}
-
-// -----------------------------------------------------------------------------
-// Entry Functions
-// -----------------------------------------------------------------------------
-
-extern "C" status_t
-get_drr(gsl::not_null<debug_ring_resources_t **> drr) noexcept;
+/// @endcond
 
 #endif

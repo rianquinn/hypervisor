@@ -19,26 +19,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.13)
-project(bfvmm CXX)
-
-# ------------------------------------------------------------------------------
-# bfvmm
-# ------------------------------------------------------------------------------
-
-add_library(bfvmm
-    src/debug_ring.cpp
-    src/entry.cpp
-    src/memory_manager.cpp
-    src/serial.cpp
-    src/unistd.cpp
-    src/vcpu.cpp
-    $<${INTEL_X64}:src/arch/intel_x64/vcpu.cpp>
-    $<${INTEL_X64}:src/arch/intel_x64/vmx.cpp>
+add_subproject(dummy vmm
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/vmm
 )
-
-# -----------------------------------------------------------------------------
-# installs
-# -----------------------------------------------------------------------------
-
-install(TARGETS bfvmm DESTINATION lib)

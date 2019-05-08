@@ -100,8 +100,18 @@
 
 #ifdef ENABLE_BUILD_TEST
 #define VIRTUAL virtual
+#define CONSTEXPR virtual
+#define INLINE virtual
+#define PUBLIC public
+#define PROTECTED public
+#define PRIVATE public
 #else
 #define VIRTUAL
+#define CONSTEXPR constexpr
+#define INLINE inline
+#define PUBLIC public
+#define PROTECTED protected
+#define PRIVATE private
 #endif
 
 /* -------------------------------------------------------------------------- */

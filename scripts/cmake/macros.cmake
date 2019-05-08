@@ -988,6 +988,21 @@ function(add_custom_target_info)
 endfunction(add_custom_target_info)
 
 # ------------------------------------------------------------------------------
+# force_rebuild_if_needed
+# ------------------------------------------------------------------------------
+
+function(force_rebuild_if_needed)
+    get_property(FORCE_REBUILD GLOBAL PROPERTY "FORCE_REBUILD")
+
+    if(FORCE_REBUILD STREQUAL "ON")
+        set_property(GLOBAL PROPERTY "FORCE_REBUILD" "OFF")
+        file(REMOVE_RECURSE ${DEPENDS_DIR})
+        file(REMOVE_RECURSE ${PREFIXES_DIR})
+        message(FATAL_ERROR "${Yellow}dependencies updated, rebuild is required. Rerun cmake${ColorReset}")
+    endif()
+endfunction()
+
+# ------------------------------------------------------------------------------
 # print_xxx
 # ------------------------------------------------------------------------------
 

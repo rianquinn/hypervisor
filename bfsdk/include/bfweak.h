@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef BFEXPORTS_H
-#define BFEXPORTS_H
+#ifndef BFWEAK_H
+#define BFWEAK_H
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define WEAK_SYM

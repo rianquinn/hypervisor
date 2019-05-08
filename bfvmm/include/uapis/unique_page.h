@@ -25,7 +25,7 @@
 #include <memory>
 
 #include <bfgsl.h>
-#include "memory_manager.h"
+#include "../implementation/memory_manager.h"
 
 // -----------------------------------------------------------------------------
 // Definition
@@ -61,7 +61,6 @@ public:
 
     using pointer = typename std::unique_ptr<T>::pointer;
     using element_type = typename std::unique_ptr<T>::element_type;
-    using deleter_type = typename std::unique_ptr<T>::deleter_type;
     using integer_pointer = uint64_t;
     using span_type = gsl::span<T, count()>;
 

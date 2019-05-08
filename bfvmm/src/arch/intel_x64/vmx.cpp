@@ -30,18 +30,16 @@ namespace bfvmm::implementation::intel_x64
 
 vmx::vmx()
 {
-    // this->enable_vmx();
-    // this->execute_vmxon();
-
-    bfline
+    this->enable_vmx();
+    this->execute_vmxon();
 }
 
 vmx::~vmx()
 {
-    // guard_exceptions([&]() {
-    //     this->execute_vmxoff();
-    //     this->disable_vmx();
-    // });
+    guard_exceptions([&]() {
+        this->execute_vmxoff();
+        this->disable_vmx();
+    });
 }
 
 void

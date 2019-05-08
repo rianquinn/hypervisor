@@ -19,17 +19,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef TEST_SUPPORT_H
-#define TEST_SUPPORT_H
+#ifndef IMPLEMENTATION_VCPU_T_H
+#define IMPLEMENTATION_VCPU_T_H
 
-extern file g_file;
-extern std::vector<std::string> g_filenames_success;
-extern std::vector<std::string> g_filenames_init_fails;
-extern std::vector<std::string> g_filenames_fini_fails;
-extern std::vector<std::string> g_filenames_add_mdl_fails;
-extern std::vector<std::string> g_filenames_get_drr_fails;
-extern std::vector<std::string> g_filenames_set_rsdp_fails;
-extern std::vector<std::string> g_filenames_vmm_init_fails;
-extern std::vector<std::string> g_filenames_vmm_fini_fails;
+#ifndef VCPU_T_HEADER
+#ifdef __x86_64__
+#define VCPU_T_HEADER "../implementation/arch/intel_x64/vcpu.h"
+#endif
+#endif
+
+#include VCPU_T_HEADER
 
 #endif

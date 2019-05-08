@@ -19,14 +19,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <bfgsl.h>
 #include <implementation/serial.h>
+
+// -----------------------------------------------------------------------------
+// Serial Implementation
+// -----------------------------------------------------------------------------
 
 namespace bfvmm::implementation
 {
 
-serial::serial(uint16_t port) noexcept :
-    m_port{port}
+serial::serial() noexcept :
+    m_port{DEFAULT_COM_PORT}
 {
     constexpr uint16_t interrupt_en_reg = 1U;
     constexpr uint16_t fifo_control_reg = 2U;
@@ -51,11 +54,20 @@ serial::serial(uint16_t port) noexcept :
     this->set_parity_bits(DEFAULT_PARITY_BITS);
 }
 
-serial *
+gsl::not_null<serial *>
 serial::instance() noexcept
 {
-    static serial serial{};
-    return &serial;
+    static serial s_serial;
+    return &s_serial;
+}
+
+void
+serial::write(const char c) const noexcept
+{
+    while (!is_transmit_empty())
+    { }
+
+    outb(0, static_cast<uint8_t>(c));
 }
 
 constexpr uint16_t baud_rate_lo_reg = 0U;
@@ -75,56 +87,6 @@ serial::set_baud_rate(baud_rate_t rate) noexcept
     this->disable_dlab();
 }
 
-serial::baud_rate_t
-serial::baud_rate() const noexcept
-{
-    this->enable_dlab();
-
-    auto lsb = inb(baud_rate_lo_reg);
-    auto msb = inb(baud_rate_hi_reg);
-
-    this->disable_dlab();
-
-    switch ((msb << 8) | lsb) {
-        case baud_rate_50:
-            return baud_rate_50;
-        case baud_rate_75:
-            return baud_rate_75;
-        case baud_rate_110:
-            return baud_rate_110;
-        case baud_rate_150:
-            return baud_rate_150;
-        case baud_rate_300:
-            return baud_rate_300;
-        case baud_rate_600:
-            return baud_rate_600;
-        case baud_rate_1200:
-            return baud_rate_1200;
-        case baud_rate_1800:
-            return baud_rate_1800;
-        case baud_rate_2000:
-            return baud_rate_2000;
-        case baud_rate_2400:
-            return baud_rate_2400;
-        case baud_rate_3600:
-            return baud_rate_3600;
-        case baud_rate_4800:
-            return baud_rate_4800;
-        case baud_rate_7200:
-            return baud_rate_7200;
-        case baud_rate_9600:
-            return baud_rate_9600;
-        case baud_rate_19200:
-            return baud_rate_19200;
-        case baud_rate_38400:
-            return baud_rate_38400;
-        case baud_rate_57600:
-            return baud_rate_57600;
-        default:
-            return baud_rate_115200;
-    }
-}
-
 constexpr uint16_t line_control_reg = 3U;
 constexpr const uint8_t line_control_data_mask = 0x03;
 constexpr const uint8_t line_control_stop_mask = 0x04;
@@ -141,23 +103,6 @@ serial::set_data_bits(data_bits_t bits) noexcept
     outb(line_control_reg, reg);
 }
 
-serial::data_bits_t
-serial::data_bits() const noexcept
-{
-    auto reg = inb(line_control_reg);
-
-    switch (reg & line_control_data_mask) {
-        case char_length_5:
-            return char_length_5;
-        case char_length_6:
-            return char_length_6;
-        case char_length_7:
-            return char_length_7;
-        default:
-            return char_length_8;
-    }
-}
-
 void
 serial::set_stop_bits(stop_bits_t bits) noexcept
 {
@@ -167,19 +112,6 @@ serial::set_stop_bits(stop_bits_t bits) noexcept
     reg = reg | static_cast<decltype(reg)>(bits & line_control_stop_mask);
 
     outb(line_control_reg, reg);
-}
-
-serial::stop_bits_t
-serial::stop_bits() const noexcept
-{
-    auto reg = inb(line_control_reg);
-
-    switch (reg & line_control_stop_mask) {
-        case stop_bits_1:
-            return stop_bits_1;
-        default:
-            return stop_bits_2;
-    }
 }
 
 void
@@ -193,25 +125,6 @@ serial::set_parity_bits(parity_bits_t bits) noexcept
     outb(line_control_reg, reg);
 }
 
-serial::parity_bits_t
-serial::parity_bits() const noexcept
-{
-    auto reg = inb(line_control_reg);
-
-    switch (reg & line_control_parity_mask) {
-        case parity_odd:
-            return parity_odd;
-        case parity_even:
-            return parity_even;
-        case parity_mark:
-            return parity_mark;
-        case parity_space:
-            return parity_space;
-        default:
-            return parity_none;
-    }
-}
-
 bool
 serial::is_transmit_empty() const noexcept
 {
@@ -219,15 +132,6 @@ serial::is_transmit_empty() const noexcept
     constexpr uint8_t line_status_empty_transmitter = 1U << 5;
 
     return (inb(line_status_reg) & line_status_empty_transmitter) != 0;
-}
-
-void
-serial::write(const char c) const noexcept
-{
-    while (!is_transmit_empty())
-    { }
-
-    outb(0, static_cast<uint8_t>(c));
 }
 
 constexpr const uint8_t dlab = 1U << 7;

@@ -25,6 +25,8 @@
 #include <bfgsl.h>
 #include <bfconstants.h>
 
+#include "../uapis/memory_manager.h"
+
 // -----------------------------------------------------------------------------
 // Constants
 // -----------------------------------------------------------------------------
@@ -35,53 +37,6 @@ constexpr const auto objtpool_size = 255;
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
-
-void *alloc_page() noexcept;
-void free_page(void *ptr) noexcept;
-
-/// @struct __oa_page
-///
-/// Object Allocator Page
-///
-/// This struct defines a page size, and can be used to validate pages,
-/// as well as allocate them.
-///
-/// @var __oa_page::data
-///     the size of the page
-///
-struct __oa_page {
-    gsl::byte data[BFPAGE_SIZE];
-};
-
-/// Object Allocator Alloc
-///
-/// Allocates a page size, and uses the template function to verify at compile
-/// time that allocations are the size of a page
-///
-/// @return the allocated memory
-///
-template <typename S>
-S *__oa_alloc()
-{
-    static_assert(sizeof(S) == BFPAGE_SIZE);
-    if (auto addr = alloc_page(); GSL_LIKELY(addr != nullptr)) {
-        return static_cast<S *>(addr);
-    }
-
-    throw std::bad_alloc();
-}
-
-/// Object Allocator Free
-///
-/// Frees previous allocated memory, and uses the template argument to ensure
-/// freed memory is a page in size.
-///
-template <typename S>
-void __oa_free(S *ptr)
-{
-    static_assert(sizeof(S) == BFPAGE_SIZE);
-    free_page(ptr);
-}
 
 /// Object Allocator
 ///
@@ -149,7 +104,7 @@ public:
     ///
     /// @return an allocated object. Throws otherwise
     ///
-    inline pointer allocate()
+    inline pointer allocate() noexcept
     {
         auto objt = free_stack_pop();
         used_stack_push(objt);
@@ -246,21 +201,21 @@ private:
 
 private:
 
-    inline page_t *get_next_page()
+    inline page_t *get_next_page() noexcept
     {
         if (m_page_stack_top == nullptr || m_page_stack_top->index == pagepool_size) {
             expand_page_stack();
         }
 
         auto page = &gsl::at(m_page_stack_top->pool, m_page_stack_top->index);
-        page->addr = static_cast<gsl::byte *>(alloc_page());
+        page->addr = alloc_page<gsl::byte>();
         page->index = 0;
 
         ++m_page_stack_top->index;
         return page;
     }
 
-    inline object_t *get_next_object()
+    inline object_t *get_next_object() noexcept
     {
         if (m_objt_stack_top == nullptr || m_objt_stack_top->index == objtpool_size) {
             expand_object_stack();
@@ -275,7 +230,7 @@ private:
         m_free_stack_top = next;
     }
 
-    inline object_t *free_stack_pop()
+    inline object_t *free_stack_pop() noexcept
     {
         if (m_free_stack_top == nullptr) {
             add_to_free_stack();
@@ -295,7 +250,7 @@ private:
         m_used_stack_top = next;
     }
 
-    inline object_t *used_stack_pop()
+    inline object_t *used_stack_pop() noexcept
     {
         if (GSL_UNLIKELY(m_used_stack_top == nullptr)) {
             used_stack_push(get_next_object());
@@ -309,23 +264,23 @@ private:
         return top;
     }
 
-    inline void expand_page_stack()
+    inline void expand_page_stack() noexcept
     {
-        auto next = __oa_alloc<page_stack_t>();
+        auto next = alloc_page<page_stack_t>();
 
         next->next = m_page_stack_top;
         m_page_stack_top = next;
     }
 
-    inline void expand_object_stack()
+    inline void expand_object_stack() noexcept
     {
-        auto next = __oa_alloc<object_stack_t>();
+        auto next = alloc_page<object_stack_t>();
 
         next->next = m_objt_stack_top;
         m_objt_stack_top = next;
     }
 
-    inline void add_to_free_stack()
+    inline void add_to_free_stack() noexcept
     {
         auto page = get_next_page();
 

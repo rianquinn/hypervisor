@@ -30,26 +30,26 @@ namespace bfvmm::implementation
 class vcpu_dummy :
     public implementation::vcpu
 {
-public:
-
-    using id_t = implementation::vcpu::id_t;
-
+PUBLIC:
     explicit vcpu_dummy(id_t id) noexcept :
         implementation::vcpu{id}
     { }
 
-    static void global_init()
-    { }
-    // { bfdebug_info(0, "global init"); }
+PRIVATE:
+    static inline void global_init()
+    { bfdebug_info(0, "global init"); }
 
-    void demote()
+    inline void demote()
     { bfdebug_info(0, "host os is" bfcolor_green " now " bfcolor_end "in a vm"); }
 
-    void promote()
+    inline void promote()
     { bfdebug_info(0, "host os is" bfcolor_red " not " bfcolor_end "in a vm"); }
 
     static inline auto make(id_t id)
     { return std::make_unique<vcpu_dummy>(id); }
+
+PRIVATE:
+    FRIEND_DEFINITIONS(vcpu)
 };
 
 }
