@@ -19,44 +19,44 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <implementation/vcpu.h>
+#include <implementation/vcpu_base.h>
 
 namespace bfvmm::implementation
 {
 
-vcpu::vcpu(id_t id) :
+vcpu_base::vcpu_base(id_t id) :
     m_id{id}
 { }
 
-vcpu::id_t
-vcpu::__id() const noexcept
+vcpu_base::id_t
+vcpu_base::__id() const noexcept
 { return m_id; }
 
-vcpu::id_t
-vcpu::__generate_guest_id() noexcept
+vcpu_base::id_t
+vcpu_base::__generate_guest_id() noexcept
 {
     static id_t s_id = 10000;
     return s_id++;
 }
 
 bool
-vcpu::__is_bootstrap_vcpu() const noexcept
+vcpu_base::__is_bootstrap_vcpu() const noexcept
 { return m_id == 0; }
 
 bool
-vcpu::__is_host_vcpu() const noexcept
+vcpu_base::__is_host_vcpu() const noexcept
 { return (m_id & 0xFFFFFFFFFFFF0000UL) == 0; }
 
 bool
-vcpu::__is_guest_vcpu() const noexcept
+vcpu_base::__is_guest_vcpu() const noexcept
 { return !this->__is_host_vcpu(); }
 
 MOCK_FUNCTION(vcpu, {
-    mocks.OnCall(vcpu, vcpu::id).Return(0);
-    mocks.OnCallFunc(vcpu::generate_guest_id).Return(10000);
-    mocks.OnCall(vcpu, vcpu::is_bootstrap_vcpu).Return(true);
-    mocks.OnCall(vcpu, vcpu::is_host_vcpu).Return(true);
-    mocks.OnCall(vcpu, vcpu::is_guest_vcpu).Return(false);
+    mocks.OnCall(vcpu, vcpu_base::id).Return(0);
+    mocks.OnCallFunc(vcpu_base::generate_guest_id).Return(10000);
+    mocks.OnCall(vcpu, vcpu_base::is_bootstrap_vcpu).Return(true);
+    mocks.OnCall(vcpu, vcpu_base::is_host_vcpu).Return(true);
+    mocks.OnCall(vcpu, vcpu_base::is_guest_vcpu).Return(false);
 })
 
 }

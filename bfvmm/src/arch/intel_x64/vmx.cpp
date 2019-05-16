@@ -19,6 +19,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <arch/x64/misc.h>
+#include <arch/intel_x64/vmx.h>
+#include <arch/intel_x64/crs.h>
+#include <arch/intel_x64/msrs.h>
+#include <arch/intel_x64/cpuid.h>
+
+#include <bfexception.h>
 #include <implementation/arch/intel_x64/vmx.h>
 
 // -----------------------------------------------------------------------------

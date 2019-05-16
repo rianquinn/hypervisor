@@ -34,13 +34,11 @@ namespace bfvmm::implementation::intel_x64
 
 class vmx
 {
-public:
-
+PUBLIC:
     explicit vmx();
     ~vmx();
 
-private:
-
+PRIVATE:
     void check_cpuid_vmx_supported();
     void check_vmx_capabilities_msr();
     void check_ia32_vmx_cr0_fixed_msr();
@@ -52,8 +50,7 @@ private:
     void execute_vmxon();
     void execute_vmxoff();
 
-private:
-
+PRIVATE:
     unique_page<uint32_t> m_vmx_region;
 };
 

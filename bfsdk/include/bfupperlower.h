@@ -38,7 +38,7 @@ namespace bfn
 ///
 template <
     typename T,
-    typename = std::enable_if<std::is_integral<T>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0
     >
 constexpr auto
 lower(T val) noexcept
@@ -51,7 +51,7 @@ lower(T val) noexcept
 /// @param val the pointer to mask
 /// @return the lower 12 bits of val
 ///
-template<class T>
+template<typename T>
 constexpr auto
 lower(T *val) noexcept
 {
@@ -66,7 +66,7 @@ lower(T *val) noexcept
 ///
 template <
     typename T,
-    typename = std::enable_if<std::is_integral<T>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0
     >
 constexpr auto
 lower(T val, uintptr_t from) noexcept
@@ -80,7 +80,7 @@ lower(T val, uintptr_t from) noexcept
 /// @param from the number of bits to mask
 /// @return the lower "from" bits of val
 ///
-template<class T>
+template<typename T>
 constexpr auto
 lower(T *val, uintptr_t from) noexcept
 {
@@ -94,7 +94,7 @@ lower(T *val, uintptr_t from) noexcept
 ///
 template <
     typename T,
-    typename = std::enable_if<std::is_integral<T>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0
     >
 constexpr auto
 upper(T val) noexcept
@@ -107,7 +107,7 @@ upper(T val) noexcept
 /// @param val the pointer to mask
 /// @return the upper 12 bits of val
 ///
-template<class T>
+template<typename T>
 constexpr auto
 upper(T *val) noexcept
 {
@@ -122,7 +122,7 @@ upper(T *val) noexcept
 ///
 template <
     typename T,
-    typename = std::enable_if<std::is_integral<T>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0
     >
 constexpr auto
 upper(T val, uintptr_t from) noexcept
@@ -136,7 +136,7 @@ upper(T val, uintptr_t from) noexcept
 /// @param from the number of bits to mask
 /// @return the upper "from" bits of val
 ///
-template<class T>
+template<typename T>
 constexpr auto
 upper(T *val, uintptr_t from) noexcept
 {

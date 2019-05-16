@@ -102,21 +102,21 @@ private:
 
     template <
         typename F,
-        typename std::enable_if_t<std::is_copy_constructible_v<F>> * = nullptr
+        std::enable_if_t<std::is_copy_constructible_v<F>, int> = 0
         >
     static constexpr void s_copy(state_t &lhs, const state_t &rhs) noexcept
     { copy_state<F>(lhs, get_state<F>(rhs)); }
 
     template <
         typename F,
-        typename std::enable_if_t<std::is_move_constructible_v<F>> * = nullptr
+        std::enable_if_t<std::is_move_constructible_v<F>, int> = 0
         >
     static constexpr void s_move(state_t &lhs, state_t &&rhs) noexcept
     { move_state<F>(lhs, std::move(get_state<F>(rhs))); }
 
     template <
         typename F,
-        typename std::enable_if_t<std::is_destructible_v<F>> * = nullptr
+        std::enable_if_t<std::is_destructible_v<F>, int> = 0
         >
     static constexpr void s_destroy(state_t &state) noexcept
     { get_state<F>(state).~F(); }

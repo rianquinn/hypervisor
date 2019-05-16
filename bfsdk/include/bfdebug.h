@@ -85,10 +85,7 @@ extern "C" int write_str(const std::string &str) noexcept;
 
 template <
     typename T,
-    typename = std::enable_if_t <
-        std::is_pointer<T>::value ||
-        std::is_integral<T>::value
-        >
+    std::enable_if_t<std::is_pointer_v<T> || std::is_integral_v<T>, int> = 0
     >
 const void *
 view_as_pointer(const T val)

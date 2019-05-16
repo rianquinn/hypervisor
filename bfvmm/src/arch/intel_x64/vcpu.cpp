@@ -25,7 +25,8 @@ namespace bfvmm::implementation::intel_x64
 {
 
 vcpu::vcpu(id_t id) :
-    implementation::vcpu{id}
+    implementation::vcpu_base{id},
+    implementation::intel_x64::state{this}
 { }
 
 void

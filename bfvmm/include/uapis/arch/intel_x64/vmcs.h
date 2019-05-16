@@ -19,73 +19,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef UAPIS_VMCS_INTEL_X64_H
-#define UAPIS_VMCS_INTEL_X64_H
+#ifndef VMCS_INTEL_X64_H
+#define VMCS_INTEL_X64_H
 
-#include "../private.h"
+#include <bfgsl.h>
+#include <bftypes.h>
 
-// -----------------------------------------------------------------------------
-// Types/Namespaces
-// -----------------------------------------------------------------------------
-
-// *INDENT-OFF*
-
-namespace bfvmm::intel_x64::vmcs
-{
-    /// VMCS Field Type (16bit)
-    ///
-    /// This defines the vmcs field type that is used in this interface
-    ///
-    using vmcs_field16_t = uint16_t;
-
-    /// VMCS Field Type (32bit)
-    ///
-    /// This defines the vmcs field type that is used in this interface
-    ///
-    using vmcs_field32_t = uint32_t;
-
-    /// VMCS Field Type (64bit)
-    ///
-    /// This defines the vmcs field type that is used in this interface
-    ///
-    using vmcs_field64_t = uint64_t;
-}
-
-/// VMCS Namespace
-///
-namespace vmcs_n = bfvmm::intel_x64::vmcs;
-
-// *INDENT-ON*
+#include "../../impl.h"
 
 // -----------------------------------------------------------------------------
-// Interface Defintion
+// Definitions
 // -----------------------------------------------------------------------------
 
-namespace bfvmm::intel_x64::uapis
+namespace bfvmm::uapis::intel_x64
 {
 
-/// VMCS
+/// Intel x86_64 VMCS
 ///
-/// Defines the VMCS interfaces provided by the vCPU.
+/// The following provides the VMCS implementation as defined by the
+/// Intel Software Developer's Manual (chapters 24-33). To best understand
+/// this code, the manual should first be read.
+///
+/// This class provides all of the VMCS operations that are defined in the
+/// manual including access to most of the fields in the VMCS. These functions
+/// should be used instead of directly accessing the VMCS as this class will
+/// not only ensure the proper VMCS is loaded when debugging is enabled, but
+/// it will also handle vCPU specific logic that might be needed. Also note
+/// that this class provides the ability to add delegates for the VMCS
+/// operations if an extension needs to execute logic prior to a VMCS function
+/// being executed. These delegates should be added with care as some might
+/// impose large performance hits.
 ///
 template<typename IMPL>
-class vmcs
+struct vmcs
 {
-public:
-
-    /// Constructor
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param vcpu the vCPU that is associated with this interface
-    ///
-    explicit vmcs(gsl::not_null<vcpu *> vcpu) :
-        m_impl{vcpu}
-    { }
-
-public:
-
     /// Run
     ///
     /// Executes the vCPU. On Intel, this will either execute a VMLaunch or a
@@ -1154,32 +1121,11 @@ private:
     std::list<vmcs_delegate_t> m_vmload_delegates{};
     std::list<vmcs_delegate_t> m_vmclear_delegates{};
 
-private:
-    PRIVATE_INTERFACES(vmcs);
+public:
+    MOCK_PROTOTYPE(vmcs);
+    COPY_MOVE_SEMANTICS(vmcs);
 };
 
 }
-
-// -----------------------------------------------------------------------------
-// Wrappers
-// -----------------------------------------------------------------------------
-
-namespace bfvmm::intel_x64::vmcs
-{
-
-}
-
-// -----------------------------------------------------------------------------
-// Wrapper Overloads
-// -----------------------------------------------------------------------------
-
-/// @cond
-
-namespace bfvmm::intel_x64::vmcs
-{
-
-}
-
-/// @endcond
 
 #endif

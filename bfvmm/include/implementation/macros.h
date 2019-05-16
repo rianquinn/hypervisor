@@ -28,16 +28,6 @@
 
 #include <bfgsl.h>
 #include <bftypes.h>
-#include <bfdebug.h>
-#include <bfexception.h>
-#include <bfupperlower.h>
-
-#include <intrinsics.h>
-
-#include <any>
-#include <mutex>
-#include <memory>
-#include <unordered_map>
 
 // -----------------------------------------------------------------------------
 // Friends
@@ -61,9 +51,11 @@ class private_memory_manager;
 
 #ifdef ENABLE_BUILD_TEST
 #include <hippomocks.h>
+#define MOCK_PROTOTYPE(name)
 #define MOCK_FUNCTION(name, func)                                               \
     static void name::mock(MockRepository &mocks, vcpu *vcpu) func
 #else
+#define MOCK_PROTOTYPE(name)
 #define MOCK_FUNCTION(unused1, unused2)
 #endif
 

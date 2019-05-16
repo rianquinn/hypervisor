@@ -48,21 +48,11 @@
 class buddy_allocator
 {
 public:
-
     using pointer = void *;
     using integer_pointer = uintptr_t;
     using size_type = uint32_t;
 
 private:
-
-    /// @struct node
-    ///
-    /// This node is used to define the binary tree. child0 and child1 define
-    /// the child nodes (left or right) in the binary tree. ptr stores the
-    /// location in the provided leafs that this node refers to, and size
-    /// defines the size of the allocation. The status tells us if the node
-    /// is allocated or not.
-    ///
     struct node_t {
         node_t *child0;
         node_t *child1;
@@ -74,20 +64,6 @@ private:
     static_assert(sizeof(node_t) == BFNODE_SIZE);
 
 public:
-
-    /// Pointer Constructor
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param leafs the buffer that the buddy allocator will manage. Note
-    ///     that the buddy allocator will never dereference the address
-    ///     provided here, allowing it to be used for virtual memory allocation
-    /// @param The height of the binary tree.
-    /// @param nodes the buffer that will be used to store the buddy
-    ///     allocators binary tree. This buffer is assumed to be
-    ///     num_nodes(k) * BFNODE_SIZE
-    ///
     buddy_allocator(pointer leafs, size_type k, pointer nodes) noexcept
     {
         m_leafs = reinterpret_cast<integer_pointer>(leafs);
@@ -101,25 +77,8 @@ public:
         m_root->size = m_leafs_size;
     }
 
-    /// Destructor
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @note The destructor has to be a default as the buddy allocator could
-    ///     be used as a global resource, and global destructors are not
-    ///     fully supported.
-    ///
     ~buddy_allocator() = default;
 
-    /// Allocate
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param size the size of the allocation
-    /// @return an allocated object. Throws otherwise
-    ///
     inline pointer allocate(size_type size) noexcept
     {
         if (size > m_leafs_size || size == 0) {
@@ -137,13 +96,6 @@ public:
         return nullptr;
     }
 
-    /// Deallocate
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param ptr a pointer to a previously allocated object to be deallocated
-    ///
     inline void deallocate(pointer ptr) noexcept
     {
         if (ptr == nullptr) {
@@ -154,14 +106,6 @@ public:
             reinterpret_cast<integer_pointer>(ptr), m_root);
     }
 
-    /// Size
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param ptr a pointer to a previously allocated object
-    /// @return the size of ptr
-    ///
     inline size_type size(pointer ptr) const noexcept
     {
         if (ptr == nullptr) {
@@ -174,17 +118,6 @@ public:
             );
     }
 
-    /// Contains Address
-    ///
-    /// Returns true if this buddy allocator contains this address, returns
-    /// false otherwise.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param ptr to lookup
-    /// @return true if the buddy allocator contains ptr, false otherwise
-    ///
     inline bool
     contains(pointer ptr) const noexcept
     {
@@ -193,7 +126,6 @@ public:
     }
 
 private:
-
     void get_nodes(node_t *parent) noexcept
     {
         auto child0 = &m_nodes_view[m_node_index++];
@@ -289,7 +221,6 @@ private:
     }
 
 private:
-
     bool private_deallocate(
         integer_pointer ptr, node_t *node) noexcept
     {
@@ -330,7 +261,6 @@ private:
     }
 
 private:
-
     size_type private_size(
         integer_pointer ptr, node_t *node) const noexcept
     {
@@ -354,7 +284,6 @@ private:
     }
 
 private:
-
     integer_pointer m_leafs{0};
     size_type m_leafs_size{0};
 
@@ -365,7 +294,6 @@ private:
     size_type m_node_index{0};
 
 private:
-
     inline bool
     is_unused(const node_t *node) const noexcept
     { return node->status == 0; }
@@ -411,10 +339,8 @@ private:
     }
 
 public:
-
     buddy_allocator(buddy_allocator &&) noexcept = delete;
     buddy_allocator &operator=(buddy_allocator &&) noexcept = delete;
-
     buddy_allocator(const buddy_allocator &) = delete;
     buddy_allocator &operator=(const buddy_allocator &) = delete;
 };

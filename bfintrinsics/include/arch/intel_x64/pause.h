@@ -22,8 +22,6 @@
 #ifndef PAUSE_INTEL_X64_H
 #define PAUSE_INTEL_X64_H
 
-#include <atomic>
-
 // -----------------------------------------------------------------------------
 // Definitions
 // -----------------------------------------------------------------------------
@@ -37,10 +35,10 @@ namespace intel_x64
     inline auto pause() noexcept
     { _pause(); }
 
-    inline void spin_until_true(std::atomic<bool> &flag) noexcept
+    inline void spin_until_true(bool flag) noexcept
     { while (!flag) { pause(); } }
 
-    inline void spin_until_false(std::atomic<bool> &flag) noexcept
+    inline void spin_until_false(bool flag) noexcept
     { while (flag) { pause(); } }
 }
 

@@ -115,20 +115,6 @@
 #define BFSTACK_SIZE (1ULL << 15ULL)
 
 /*
- * Thread Local Storage (TLS) Size
- *
- * Bareflank don't support threads, but it does support Multi-Core, and
- * we need a way to store CPU specific information. Certain libc++
- * operations (for example, std::uncaught_exceptions) need to use this CPU
- * specific storage so that the cores are not interfering with each other.
- * So as far as the code is concerned, TLS is being used, even if a "thread"
- * in the traditional sense isn't.
- *
- * Note: Defined in bytes
- */
-#define BFTLS_SIZE (0x1000ULL)
-
-/*
  * Default Serial COM Port
  *
  * On x64, possible values include (but not limited to):
@@ -143,42 +129,6 @@
  */
 #ifndef DEFAULT_COM_PORT
 #define DEFAULT_COM_PORT (0x03F8U)
-#endif
-
-/*
- * Default Serial Baud Rate
- *
- * Note: See bfvmm/serial/serial_ns16550a.h
- */
-#ifndef DEFAULT_BAUD_RATE
-#define DEFAULT_BAUD_RATE baud_rate_115200
-#endif
-
-/*
- * Default Serial Data Bits
- *
- * Note: See bfvmm/serial/serial_ns16550a.h
- */
-#ifndef DEFAULT_DATA_BITS
-#define DEFAULT_DATA_BITS char_length_8
-#endif
-
-/*
- * Default Serial Stop Bits
- *
- * Note: See bfvmm/serial/serial_ns16550a.h
- */
-#ifndef DEFAULT_STOP_BITS
-#define DEFAULT_STOP_BITS stop_bits_1
-#endif
-
-/*
- * Default Serial Parity Bits
- *
- * Note: See bfvmm/serial/serial_ns16550a.h
- */
-#ifndef DEFAULT_PARITY_BITS
-#define DEFAULT_PARITY_BITS parity_none
 #endif
 
 /*

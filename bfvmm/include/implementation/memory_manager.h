@@ -22,6 +22,8 @@
 #ifndef IMPLEMENTATION_MEMORY_MANAGER_H
 #define IMPLEMENTATION_MEMORY_MANAGER_H
 
+#include <unordered_map>
+
 #include "macros.h"
 #include "../uapis/memory_manager.h"
 
@@ -45,12 +47,6 @@ namespace bfvmm::implementation
 class memory_manager :
     public uapis::memory_manager<memory_manager>
 {
-PUBLIC:
-    using pointer = uapis::memory_manager<memory_manager>::pointer;
-    using integer_pointer = uapis::memory_manager<memory_manager>::integer_pointer;
-    using size_type = uapis::memory_manager<memory_manager>::size_type;
-    using attr_type = uapis::memory_manager<memory_manager>::attr_type;
-
 PRIVATE:
     integer_pointer __hva_to_hpa(integer_pointer hva) const;
     integer_pointer __hpa_to_hva(integer_pointer hpa) const;
@@ -104,8 +100,10 @@ PRIVATE:
     object_allocator slab800;
 
 PRIVATE:
-    MOCK_PROTOTYPE(memory_manager)
-    COPY_MOVE_SEMANTICS(memory_manager)
+    memory_manager(memory_manager &&) = delete;
+    memory_manager &operator=(memory_manager &&) = delete;
+    memory_manager(const memory_manager &) = delete;
+    memory_manager &operator=(const memory_manager &) = delete;
 
 PRIVATE:
     template<typename T>

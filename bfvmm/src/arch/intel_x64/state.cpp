@@ -19,9 +19,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <arch/intel_x64/msrs.h>
+
+#include <implementation/arch/intel_x64/vcpu.h>
 #include <implementation/arch/intel_x64/state.h>
 
-namespace bfvmm::intel_x64::implementation
+namespace bfvmm::implementation::intel_x64
 {
 
 state::state(
@@ -31,165 +34,165 @@ state::state(
     m_ia32_vmx_cr4_fixed0{::intel_x64::msrs::ia32_vmx_cr4_fixed0::get()}
 {
     m_state->vcpu_ptr = vcpu.get();
-    m_state->fxsave_region = m_fxsave_region.hva();
+    m_state->fxsave_region = m_fxsave_region.get();
 
-    vcpu->set_host_gs_base(m_state.hva()));
+    // vcpu->set_host_gs_base(m_state.hva()));
 }
 
-reg_t
-state::rax() const noexcept
+state::reg_t
+state::__rax() const noexcept
 { return m_state->rax; }
 
 void
-state::set_rax(reg_t val) noexcept
+state::__set_rax(reg_t val) noexcept
 { m_state->rax = val; }
 
-reg_t
-state::rbx() const noexcept
+state::reg_t
+state::__rbx() const noexcept
 { return m_state->rbx; }
 
 void
-state::set_rbx(reg_t val) noexcept
+state::__set_rbx(reg_t val) noexcept
 { m_state->rbx = val; }
 
-reg_t
-state::rcx() const noexcept
+state::reg_t
+state::__rcx() const noexcept
 { return m_state->rcx; }
 
 void
-state::set_rcx(reg_t val) noexcept
+state::__set_rcx(reg_t val) noexcept
 { m_state->rcx = val; }
 
-reg_t
-state::rdx() const noexcept
+state::reg_t
+state::__rdx() const noexcept
 { return m_state->rdx; }
 
 void
-state::set_rdx(reg_t val) noexcept
+state::__set_rdx(reg_t val) noexcept
 { m_state->rdx = val; }
 
-reg_t
-state::rbp() const noexcept
+state::reg_t
+state::__rbp() const noexcept
 { return m_state->rbp; }
 
 void
-state::set_rbp(reg_t val) noexcept
+state::__set_rbp(reg_t val) noexcept
 { m_state->rbp = val; }
 
-reg_t
-state::rsi() const noexcept
+state::reg_t
+state::__rsi() const noexcept
 { return m_state->rsi; }
 
 void
-state::set_rsi(reg_t val) noexcept
+state::__set_rsi(reg_t val) noexcept
 { m_state->rsi = val; }
 
-reg_t
-state::rdi() const noexcept
+state::reg_t
+state::__rdi() const noexcept
 { return m_state->rdi; }
 
 void
-state::set_rdi(reg_t val) noexcept
+state::__set_rdi(reg_t val) noexcept
 { m_state->rdi = val; }
 
-reg_t
-state::r08() const noexcept
+state::reg_t
+state::__r08() const noexcept
 { return m_state->r08; }
 
 void
-state::set_r08(reg_t val) noexcept
+state::__set_r08(reg_t val) noexcept
 { m_state->r08 = val; }
 
-reg_t
-state::r09() const noexcept
+state::reg_t
+state::__r09() const noexcept
 { return m_state->r09; }
 
 void
-state::set_r09(reg_t val) noexcept
+state::__set_r09(reg_t val) noexcept
 { m_state->r09 = val; }
 
-reg_t
-state::r10() const noexcept
+state::reg_t
+state::__r10() const noexcept
 { return m_state->r10; }
 
 void
-state::set_r10(reg_t val) noexcept
+state::__set_r10(reg_t val) noexcept
 { m_state->r10 = val; }
 
-reg_t
-state::r11() const noexcept
+state::reg_t
+state::__r11() const noexcept
 { return m_state->r11; }
 
 void
-state::set_r11(reg_t val) noexcept
+state::__set_r11(reg_t val) noexcept
 { m_state->r11 = val; }
 
-reg_t
-state::r12() const noexcept
+state::reg_t
+state::__r12() const noexcept
 { return m_state->r12; }
 
 void
-state::set_r12(reg_t val) noexcept
+state::__set_r12(reg_t val) noexcept
 { m_state->r12 = val; }
 
-reg_t
-state::r13() const noexcept
+state::reg_t
+state::__r13() const noexcept
 { return m_state->r13; }
 
 void
-state::set_r13(reg_t val) noexcept
+state::__set_r13(reg_t val) noexcept
 { m_state->r13 = val; }
 
-reg_t
-state::r14() const noexcept
+state::reg_t
+state::__r14() const noexcept
 { return m_state->r14; }
 
 void
-state::set_r14(reg_t val) noexcept
+state::__set_r14(reg_t val) noexcept
 { m_state->r14 = val; }
 
-reg_t
-state::r15() const noexcept
+state::reg_t
+state::__r15() const noexcept
 { return m_state->r15; }
 
 void
-state::set_r15(reg_t val) noexcept
+state::__set_r15(reg_t val) noexcept
 { m_state->r15 = val; }
 
-reg_t
-state::rip() const noexcept
+state::reg_t
+state::__rip() const noexcept
 { return m_state->rip; }
 
 void
-state::set_rip(reg_t val) noexcept
+state::__set_rip(reg_t val) noexcept
 { m_state->rip = val; }
 
-reg_t
-state::rsp() const noexcept
+state::reg_t
+state::__rsp() const noexcept
 { return m_state->rsp; }
 
 void
-state::set_rsp(reg_t val) noexcept
+state::__set_rsp(reg_t val) noexcept
 { m_state->rsp = val; }
 
-reg_t
-state::exit_reason() const noexcept
+state::reg_t
+state::__exit_reason() const noexcept
 { return m_state->exit_reason; }
 
-reg_t
-state::ia32_vmx_cr0_fixed0() const noexcept
-{ return m_state->ia32_vmx_cr0_fixed0; }
+state::reg_t
+state::__ia32_vmx_cr0_fixed0() const noexcept
+{ return m_ia32_vmx_cr0_fixed0; }
 
 void
-state::set_ia32_vmx_cr0_fixed0(reg_t val) noexcept
-{ m_state->ia32_vmx_cr0_fixed0 = val; }
+state::__set_ia32_vmx_cr0_fixed0(reg_t val) noexcept
+{ m_ia32_vmx_cr0_fixed0 = val; }
 
-reg_t
-state::ia32_vmx_cr4_fixed0() const noexcept
-{ return m_state->ia32_vmx_cr4_fixed0; }
+state::reg_t
+state::__ia32_vmx_cr4_fixed0() const noexcept
+{ return m_ia32_vmx_cr4_fixed0; }
 
 void
-state::set_ia32_vmx_cr4_fixed0(reg_t val) noexcept
-{ m_state->ia32_vmx_cr4_fixed0 = val; }
+state::__set_ia32_vmx_cr4_fixed0(reg_t val) noexcept
+{ m_ia32_vmx_cr4_fixed0 = val; }
 
 }

@@ -22,7 +22,23 @@
 #ifndef IMPLMENETATION_VCPU_INTEL_X64_H
 #define IMPLMENETATION_VCPU_INTEL_X64_H
 
-#include "../../vcpu.h"
+// -----------------------------------------------------------------------------
+// vCPU Type
+// -----------------------------------------------------------------------------
+
+namespace bfvmm::implementation::intel_x64
+{ class vcpu; }
+
+#ifndef VCPU_T
+#define VCPU_T
+using vcpu_t = bfvmm::implementation::intel_x64::vcpu;
+#endif
+
+// -----------------------------------------------------------------------------
+// Includes
+// -----------------------------------------------------------------------------
+
+#include "../../vcpu_base.h"
 
 // #include "uapis/cpuid.h"
 // #include "uapis/exit_handler.h"
@@ -31,9 +47,11 @@
 
 // #include "cpuid.h"
 // #include "exit_handler.h"
-// #include "state.h"
+#include "state.h"
 // #include "vmcs.h"
 #include "vmx.h"
+
+#include <bfdebug.h>
 
 // -----------------------------------------------------------------------------
 // Defintion
@@ -43,8 +61,9 @@ namespace bfvmm::implementation::intel_x64
 {
 
 class vcpu :
-    public implementation::vcpu,
-    public implementation::intel_x64::vmx
+    public implementation::vcpu_base,
+    public implementation::intel_x64::vmx,
+    public implementation::intel_x64::state
 {
 public:
     explicit vcpu(id_t id);
@@ -66,7 +85,5 @@ private:
 };
 
 }
-
-using vcpu_t = bfvmm::implementation::intel_x64::vcpu;
 
 #endif

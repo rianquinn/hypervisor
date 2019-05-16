@@ -43,12 +43,7 @@
 /// @return BFSUCCESS on success, BFFAILURE on failure and BFFAILURE_BAD_ALLOC
 ///     when a bad_alloc exception is thrown.
 ///
-template <
-    typename FUNC,
-    typename ERROR_FUNC,
-    typename = std::enable_if<std::is_pointer<FUNC>::value>,
-    typename = std::enable_if<std::is_pointer<ERROR_FUNC>::value>
-    >
+template<typename FUNC, typename ERROR_FUNC>
 inline status_t
 guard_exceptions(FUNC func, ERROR_FUNC error_func) noexcept
 {
@@ -95,10 +90,7 @@ guard_exceptions(FUNC func, ERROR_FUNC error_func) noexcept
 ///
 /// @param func the function to run that is guarded
 ///
-template <
-    typename FUNC,
-    typename = std::enable_if<std::is_pointer<FUNC>::value>
-    >
+template<typename FUNC>
 constexpr status_t
 guard_exceptions(FUNC &&func) noexcept
 { return guard_exceptions(std::forward<FUNC>(func), []{}); }

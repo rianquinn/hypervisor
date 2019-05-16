@@ -130,7 +130,7 @@ to_string(
 ///
 template <
     typename T,
-    typename = std::enable_if<std::is_integral<T>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0
     >
 inline std::string
 to_string(const T val, const int base = 10, bool pad = false) noexcept

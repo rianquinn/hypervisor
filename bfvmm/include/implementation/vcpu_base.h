@@ -22,18 +22,40 @@
 #ifndef IMPLEMENTATION_VCPU_H
 #define IMPLEMENTATION_VCPU_H
 
+// -----------------------------------------------------------------------------
+// vCPU Type
+// -----------------------------------------------------------------------------
+
+namespace bfvmm::implementation
+{ class vcpu; }
+
+#ifndef VCPU_T
+#define VCPU_T
+using vcpu_t = bfvmm::implementation::vcpu;
+#endif
+
+// -----------------------------------------------------------------------------
+// Includes
+// -----------------------------------------------------------------------------
+
+#include <any>
+
 #include "macros.h"
-#include "../uapis/vcpu.h"
+#include "../uapis/vcpu_base.h"
+
+// -----------------------------------------------------------------------------
+// Defintion
+// -----------------------------------------------------------------------------
 
 namespace bfvmm::implementation
 {
 
-class vcpu :
-    public uapis::vcpu<vcpu>
+class vcpu_base :
+    public uapis::vcpu_base<vcpu_base>
 {
 PUBLIC:
-    explicit vcpu(id_t id);
-    VIRTUAL ~vcpu() = default;
+    explicit vcpu_base(id_t id);
+    VIRTUAL ~vcpu_base() = default;
 
 PRIVATE:
     id_t __id() const noexcept;
@@ -56,12 +78,12 @@ PRIVATE:
     std::any m_data{};
 
 PRIVATE:
-    MOCK_PROTOTYPE(vcpu)
-    COPY_MOVE_SEMANTICS(vcpu)
+    MOCK_PROTOTYPE(vcpu_base)
+    COPY_MOVE_SEMANTICS(vcpu_base)
 
 PRIVATE:
     template<typename T>
-    friend struct uapis::vcpu;
+    friend struct uapis::vcpu_base;
 };
 
 }

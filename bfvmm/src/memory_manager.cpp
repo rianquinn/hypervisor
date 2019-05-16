@@ -27,6 +27,10 @@
 //     impractical.
 //
 
+#include <bfstring.h>
+#include <bfupperlower.h>
+
+#include <mutex>
 #include <implementation/memory_manager.h>
 
 // -----------------------------------------------------------------------------

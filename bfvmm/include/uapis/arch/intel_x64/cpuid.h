@@ -264,25 +264,6 @@ private:
 // Root Init/Fini Functions
 // -----------------------------------------------------------------------------
 
-/// vCPU Init (Root)
-///
-/// This function is called whenever a vCPU is being initialized in root mode
-/// (i.e. the vCPU is executing from an exit handler in ring -1). Extensions
-/// can override this function to provide their own custom initialization code.
-///
-/// @param vcpu the vcpu being initialized
-///
-void vcpu_init_root(vcpu_t *vcpu);
-
-/// vCPU Fini (Root)
-///
-/// This function is called whenever a vCPU is being finalized in root mode
-/// (i.e. the vCPU is executing from an exit handler in ring -1). Extensions
-/// can override this function to provide their own custom finalization code.
-///
-/// @param vcpu the vcpu being finalized
-///
-void vcpu_fini_root(vcpu_t *vcpu);
 
 // -----------------------------------------------------------------------------
 // Wrappers

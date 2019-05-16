@@ -73,25 +73,29 @@ struct debug_ring_resources_t {
 static inline void
 dump_debug_ring(const struct debug_ring_resources_t *drr) noexcept
 {
-    expects(drr != nullptr);
-    auto view = gsl::span(drr->buf);
+    try {
+        expects(drr != nullptr);
+        auto view = gsl::span(drr->buf);
 
-    if (drr->spos == drr->epos) {
-        return;
-    }
-
-    auto spos = drr->spos;
-    auto epos = drr->epos;
-
-    while (spos != epos) {
-        std::cout << view[spos++];
-
-        if (spos == DEBUG_RING_SIZE) {
-            spos = 0;
+        if (drr->spos == drr->epos) {
+            return;
         }
-    }
 
-    std::cout << '\n';
+        auto spos = drr->spos;
+        auto epos = drr->epos;
+
+        while (spos != epos) {
+            std::cout << view[spos++];
+
+            if (spos == DEBUG_RING_SIZE) {
+                spos = 0;
+            }
+        }
+
+        std::cout << '\n';
+    }
+    catch (...)
+    { }
 }
 
 #endif

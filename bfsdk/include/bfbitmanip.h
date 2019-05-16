@@ -45,8 +45,8 @@
 template <
     typename T,
     typename B,
-    typename = std::enable_if<std::is_integral<T>::value>,
-    typename = std::enable_if<std::is_integral<B>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0,
+    std::enable_if_t<std::is_integral_v<B>, int> = 0
     >
 constexpr auto
 set_bit(T t, B b) noexcept
@@ -68,8 +68,8 @@ set_bit(T t, B b) noexcept
 template <
     typename T,
     typename B,
-    typename = std::enable_if<std::is_pointer<T>::value>,
-    typename = std::enable_if<std::is_integral<B>::value>
+    std::enable_if_t<std::is_pointer_v<T>, int> = 0,
+    std::enable_if_t<std::is_integral_v<B>, int> = 0
     >
 constexpr auto
 set_bit(gsl::span<T> &view, B b)
@@ -92,8 +92,8 @@ set_bit(gsl::span<T> &view, B b)
 template <
     typename T,
     typename B,
-    typename = std::enable_if<std::is_integral<T>::value>,
-    typename = std::enable_if<std::is_integral<B>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0,
+    std::enable_if_t<std::is_integral_v<B>, int> = 0
     >
 constexpr auto
 clear_bit(T t, B b) noexcept
@@ -115,8 +115,8 @@ clear_bit(T t, B b) noexcept
 template <
     typename T,
     typename B,
-    typename = std::enable_if<std::is_pointer<T>::value>,
-    typename = std::enable_if<std::is_integral<B>::value>
+    std::enable_if_t<std::is_pointer_v<T>, int> = 0,
+    std::enable_if_t<std::is_integral_v<B>, int> = 0
     >
 constexpr auto
 clear_bit(gsl::span<T> &view, B b)
@@ -137,8 +137,8 @@ clear_bit(gsl::span<T> &view, B b)
 template <
     typename T,
     typename B,
-    typename = std::enable_if<std::is_integral<T>::value>,
-    typename = std::enable_if<std::is_integral<B>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0,
+    std::enable_if_t<std::is_integral_v<B>, int> = 0
     >
 constexpr auto
 get_bit(T t, B b) noexcept
@@ -158,8 +158,8 @@ get_bit(T t, B b) noexcept
 template <
     typename T,
     typename B,
-    typename = std::enable_if<std::is_pointer<T>::value>,
-    typename = std::enable_if<std::is_integral<B>::value>
+    std::enable_if_t<std::is_pointer_v<T>, int> = 0,
+    std::enable_if_t<std::is_integral_v<B>, int> = 0
     >
 constexpr auto
 get_bit(const gsl::span<T> &view, B b)
@@ -180,8 +180,8 @@ get_bit(const gsl::span<T> &view, B b)
 template <
     typename T,
     typename B,
-    typename = std::enable_if<std::is_integral<T>::value>,
-    typename = std::enable_if<std::is_integral<B>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0,
+    std::enable_if_t<std::is_integral_v<B>, int> = 0
     >
 constexpr auto
 is_bit_set(T t, B b) noexcept
@@ -201,8 +201,8 @@ is_bit_set(T t, B b) noexcept
 template <
     typename T,
     typename B,
-    typename = std::enable_if<std::is_integral<T>::value>,
-    typename = std::enable_if<std::is_integral<B>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0,
+    std::enable_if_t<std::is_integral_v<B>, int> = 0
     >
 constexpr auto
 is_bit_cleared(T t, B b) noexcept
@@ -222,8 +222,8 @@ is_bit_cleared(T t, B b) noexcept
 template <
     typename T,
     typename M,
-    typename = std::enable_if<std::is_integral<T>::value>,
-    typename = std::enable_if<std::is_integral<M>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0,
+    std::enable_if_t<std::is_integral<M>::value, int> = 0
     >
 constexpr auto
 get_bits(T t, M m) noexcept
@@ -245,9 +245,9 @@ template <
     typename T,
     typename M,
     typename V,
-    typename = std::enable_if<std::is_integral<T>::value>,
-    typename = std::enable_if<std::is_integral<M>::value>,
-    typename = std::enable_if<std::is_integral<V>::value>
+    std::enable_if_t<std::is_integral_v<T>, int> = 0,
+    std::enable_if_t<std::is_integral_v<M>, int> = 0,
+    std::enable_if_t<std::is_integral_v<V>, int> = 0
     >
 constexpr auto
 set_bits(T t, M m, V v) noexcept

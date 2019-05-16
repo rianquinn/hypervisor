@@ -22,14 +22,21 @@
 #ifndef IMPLEMENTATION_STATE_INTEL_X64_H
 #define IMPLEMENTATION_STATE_INTEL_X64_H
 
-#include "macros.h"
+#include "../../macros.h"
+
+#include "../../../uapis/unique_page.h"
 #include "../../../uapis/arch/intel_x64/state.h"
+
+// -----------------------------------------------------------------------------
+// Ptototypes
+// -----------------------------------------------------------------------------
+
+namespace bfvmm::implementation::intel_x64
+{ class vcpu; }
 
 // -----------------------------------------------------------------------------
 // Defintion
 // -----------------------------------------------------------------------------
-
-///@cond
 
 namespace bfvmm::implementation::intel_x64
 {
@@ -119,11 +126,9 @@ PRIVATE:
 
 PRIVATE:
     template<typename T>
-    friend struct uapis::state;
+    friend struct uapis::intel_x64::state;
 };
 
 }
-
-///@endcond
 
 #endif

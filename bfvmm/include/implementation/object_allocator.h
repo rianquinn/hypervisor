@@ -73,37 +73,16 @@ constexpr const auto objtpool_size = 255;
 class object_allocator
 {
 public:
-
     using pointer = void *;
     using size_type = std::size_t;
 
 public:
-
-    /// Constructor
-    ///
-    /// @expects size != 0
-    /// @ensures none
-    ///
-    /// @param size the size of the object to allocate
-    ///
     object_allocator(size_type size) noexcept :
         m_size(size == 0 ? 1 : size)
     { }
 
-    /// Destructor
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
     ~object_allocator() = default;
 
-    /// Allocate Object
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return an allocated object. Throws otherwise
-    ///
     inline pointer allocate() noexcept
     {
         auto objt = free_stack_pop();
@@ -112,13 +91,6 @@ public:
         return objt->addr;
     }
 
-    /// Deallocate Object
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param p a pointer to a previously allocated object to be deallocated
-    ///
     inline void deallocate(pointer p) noexcept
     {
         auto objt = used_stack_pop();
@@ -127,14 +99,6 @@ public:
         objt->addr = p;
     }
 
-    /// Contains
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param p to lookup
-    /// @return true if the buddy allocator contains p, false otherwise
-    ///
     inline bool contains(pointer p) const noexcept
     {
         auto next = m_page_stack_top;
@@ -156,19 +120,10 @@ public:
         return false;
     }
 
-    /// Size
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param ptr a pointer to a previously allocated object
-    /// @return the size of ptr
-    ///
     inline size_type size(pointer ptr) const noexcept
     { bfignored(ptr); return m_size; }
 
 private:
-
     struct object_t {
         pointer addr;
         object_t *next;
@@ -200,7 +155,6 @@ private:
     object_stack_t *m_objt_stack_top{nullptr};
 
 private:
-
     inline page_t *get_next_page() noexcept
     {
         if (m_page_stack_top == nullptr || m_page_stack_top->index == pagepool_size) {
@@ -294,14 +248,11 @@ private:
     }
 
 private:
-
     size_type m_size{};
 
 public:
-
     object_allocator(object_allocator &&) noexcept = delete;
     object_allocator &operator=(object_allocator &&) noexcept = delete;
-
     object_allocator(const object_allocator &) = delete;
     object_allocator &operator=(const object_allocator &) = delete;
 };

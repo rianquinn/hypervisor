@@ -32,7 +32,8 @@ add_library(bfvmm
     src/memory_manager.cpp
     src/serial.cpp
     src/unistd.cpp
-    src/vcpu.cpp
+    src/vcpu_base.cpp
+    $<${INTEL_X64}:src/arch/intel_x64/state.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/vcpu.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/vmx.cpp>
 )
