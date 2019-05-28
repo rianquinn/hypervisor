@@ -19,13 +19,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VMCS_INTEL_X64_H
-#define VMCS_INTEL_X64_H
+#ifndef UAPIS_VMCS_INTEL_X64_H
+#define UAPIS_VMCS_INTEL_X64_H
 
 #include <bfgsl.h>
 #include <bftypes.h>
 
 #include "../../impl.h"
+#include "../../../implementation/vcpu_t.h"
 
 // -----------------------------------------------------------------------------
 // Definitions
@@ -53,116 +54,10 @@ namespace bfvmm::uapis::intel_x64
 template<typename IMPL>
 struct vmcs
 {
-    /// Run
-    ///
-    /// Executes the vCPU. On Intel, this will either execute a VMLaunch or a
-    /// VMResume, depending on the state of the VMCS. The first time this is
-    /// executed, a VMLaunch will be executed, all times after that, a VMResume
-    /// will be executed. If you need a VMLaunch to execute again, for example
-    /// when coming out of S3 or migrating the vCPU to a different pCPU, you
-    /// can run the clear() function which will execute a VMClear on the VMCS
-    /// ultimately resulting in a VMLaunch executing again the next time this
-    /// function is executed.
-    ///
-    /// Also note that you can register delegates with the different VMCS
-    /// instructions that could be executed by this interface including on a
-    /// VMLaunch, VMResume, VMCLear, VMLoad and a promotion. Simply ensure that
-    /// you register with the proper instruction, and you ensure the code
-    /// executes as quickly as possible as some of these instructions like a
-    /// VMResume and VMLoad execute a lot.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    ///
-    ///
-    inline void run()
-    { m_impl.run(); }
-
-    /// Advance vCPU
-    ///
-    /// This function will advance the vCPU's instruction pointer to the next
-    /// instruction. Note that this function only makes sense for VMExits that
-    /// handle instruction execution. VMExits that handle things like interrupts
-    /// should not use this function.
-    ///
-    /// Also note that this function always returns true. Most extensions will
-    /// not need to execute this function manually, and instead the base will
-    /// execute this for you. If you do need to execute this manually, it
-    /// should be paired, in most cases, with a "return" indicating that the
-    /// handler is done, and no other handlers should execute. In most cases,
-    /// extensions will return false in a VMExit handler indicating that the
-    /// base should complete the exit.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return always returns true
-    ///
-    inline bool advance()
-    { return m_impl.advance(); }
-
-    /// Load
-    ///
-    /// This function performs a VMLoad. A VMLoad is am expensive operation, so
-    /// this should be used only when needed. When debugging is enabled, the
-    /// setters/getters will perform a VMRead to ensure the VMCS has been loaded
-    /// and will output a warning if this is not the case. In release mode, this
-    /// code is removed to ensure the hypervisor executes as fast as possible.
-    ///
-    /// To put it another way, we do not execute a VMLoad every time a VMCS
-    /// operation is executed. Instead, we only run a VMLoad when as know that
-    /// a different vCPU is currently loaded. This ensures that we do not add
-    /// additional overhead to the system. The downside of this is the user has
-    /// to track when a vCPU is loaded or not, which can either be done in
-    /// design, or it can be done by maintaining your own internal state as an
-    /// extension, either way, it is up to the author of the extension to pick
-    /// how much overhead they want to introduce so that they can manage the
-    /// stability/performance tradoffs. This is why the setters/getters double
-    /// check in debug mode. While debugging, the system will help to sort out
-    /// any issues with your design if you choose to side with performance.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    inline void load()
-    { return m_impl.load(); }
-
-public:
-
-    /// VMCS Clear
-    ///
-    /// This function executes a VMClear. This does _not_ 0 out the VMCS or any
-    /// of the vCPU's state. All this does is mark the VMCS so that the next
-    /// time a vcpu->run() is executed, a VMLaunch is executed instead of a
-    /// VMResume.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    inline void vmcs_clear()
-    { return m_impl.vmcs_clear(); }
-
-    /// VMCS Check
-    ///
-    /// This function checks to see if the VMCS is configured improperly. The
-    /// Intel SDM has a whole chapter (v3, chatper 26) that describes all of the
-    /// conditions in which a VMEntry might fail. This function can be used to
-    /// check the state of the VMCS to see if/why a VMEntry will/did fail.
-    /// Also note that if a VMEntry fails, an exception is thrown so this
-    /// function must be labled as noexcept to ensure that the checks do not
-    /// throw in additional the to VMEntry exception.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return returns true if the VMCS is configured properly, false
-    ///     otherwise
-    ///
-    inline bool vmcs_check() const noexcept
-    { return m_impl.vmcs_check(); }
-
-public:
+    using vmcs_field16_t = uint16_t;                    ///< VMCS 16bit Type
+    using vmcs_field32_t = uint32_t;                    ///< VMCS 32bit Type
+    using vmcs_field64_t = uint64_t;                    ///< VMCS 64bit Type
+    using vmcs_delegate_t = delegate<void(vcpu_t *)>;   ///< VMCS Delegate Type
 
     /// Add VMLaunch Delegate
     ///
@@ -176,8 +71,8 @@ public:
     ///
     /// @param d the delegate to add to the vcpu
     ///
-    inline void vmcs_add_vmlaunch_delegate(const vmcs_delegate_t &d)
-    { m_impl.vmcs_add_vmlaunch_delegate(d); }
+    CONSTEXPR void vmcs_add_vmlaunch_delegate(const vmcs_delegate_t &d)
+    { impl<const IMPL>(this)->__vmcs_add_vmlaunch_delegate(d); }
 
     /// Add VMResume Delegate
     ///
@@ -198,8 +93,8 @@ public:
     ///
     /// @param d the delegate to add to the vcpu
     ///
-    inline void vmcs_add_vmresume_delegate(const vmcs_delegate_t &d)
-    { m_impl.vmcs_add_vmresume_delegate(d); }
+    CONSTEXPR void vmcs_add_vmresume_delegate(const vmcs_delegate_t &d)
+    { impl<const IMPL>(this)->__vmcs_add_vmresume_delegate(d); }
 
     /// Add VMLoad Delegate
     ///
@@ -220,8 +115,8 @@ public:
     ///
     /// @param d the delegate to add to the vcpu
     ///
-    inline void vmcs_add_vmload_delegate(const vmcs_delegate_t &d)
-    { m_impl.vmcs_add_vmload_delegate(d); }
+    CONSTEXPR void vmcs_add_vmload_delegate(const vmcs_delegate_t &d)
+    { impl<const IMPL>(this)->__vmcs_add_vmload_delegate(d); }
 
     /// Add VMClear Delegate
     ///
@@ -235,84 +130,95 @@ public:
     ///
     /// @param d the delegate to add to the vcpu
     ///
-    inline void vmcs_add_vmclear_delegate(const vmcs_delegate_t &d)
-    { m_impl.vmcs_add_vmclear_delegate(d); }
+    CONSTEXPR void vmcs_add_vmclear_delegate(const vmcs_delegate_t &d)
+    { impl<const IMPL>(this)->__vmcs_add_vmclear_delegate(d); }
 
-public:
+    /// @cond
+    ///
+    /// VMCS Fields
+    ///
+    /// The remaining functions are all setters and getters for the VMCS
+    /// fields that are defined in the Intel SDM. These setters and getters
+    /// should be used instead of directly calling the VMCS intrinsics as
+    /// these functions provide additional facilities when debugging is
+    /// enabled, and they are handle special functionality based on how the
+    /// fields are supposed to be populated (and internal state).
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
 
-    inline vmcs_field16_t vpid() const;
-    { return m_impl.vpid(); }
+    CONSTEXPR vmcs_field16_t vpid() const
+    { return impl<const IMPL>(this)->__vpid(); }
 
-    inline void set_vpid(vmcs_field16_t val);
-    { m_impl.set_vpid(val); }
+    CONSTEXPR void set_vpid(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_vpid(val); }
 
-    inline vmcs_field16_t posted_interrupt_notification_vector() const;
-    { return m_impl.posted_interrupt_notification_vector(); }
+    CONSTEXPR vmcs_field16_t posted_interrupt_notification_vector() const
+    { return impl<const IMPL>(this)->__posted_interrupt_notification_vector(); }
 
-    inline void set_posted_interrupt_notification_vector(vmcs_field16_t val);
-    { m_impl.set_posted_interrupt_notification_vector(val); }
+    CONSTEXPR void set_posted_interrupt_notification_vector(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_posted_interrupt_notification_vector(val); }
 
-    inline vmcs_field16_t es_selector() const;
-    { return m_impl.es_selector(); }
+    CONSTEXPR vmcs_field16_t es_selector() const
+    { return impl<const IMPL>(this)->__es_selector(); }
 
-    inline void set_es_selector(vmcs_field16_t val);
-    { m_impl.set_es_selector(val); }
+    CONSTEXPR void set_es_selector(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_es_selector(val); }
 
-    inline vmcs_field16_t cs_selector() const;
-    { return m_impl.cs_selector(); }
+    CONSTEXPR vmcs_field16_t cs_selector() const
+    { return impl<const IMPL>(this)->__cs_selector(); }
 
-    inline void set_cs_selector(vmcs_field16_t val);
-    { m_impl.set_cs_selector(val); }
+    CONSTEXPR void set_cs_selector(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_cs_selector(val); }
 
-    inline vmcs_field16_t ss_selector() const;
-    { return m_impl.ss_selector(); }
+    CONSTEXPR vmcs_field16_t ss_selector() const
+    { return impl<const IMPL>(this)->__ss_selector(); }
 
-    inline void set_ss_selector(vmcs_field16_t val);
-    { m_impl.set_ss_selector(val); }
+    CONSTEXPR void set_ss_selector(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_ss_selector(val); }
 
-    inline vmcs_field16_t ds_selector() const;
-    { return m_impl.ds_selector(); }
+    CONSTEXPR vmcs_field16_t ds_selector() const
+    { return impl<const IMPL>(this)->__ds_selector(); }
 
-    inline void set_ds_selector(vmcs_field16_t val);
-    { m_impl.set_ds_selector(val); }
+    CONSTEXPR void set_ds_selector(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_ds_selector(val); }
 
-    inline vmcs_field16_t fs_selector() const;
-    { return m_impl.fs_selector(); }
+    CONSTEXPR vmcs_field16_t fs_selector() const
+    { return impl<const IMPL>(this)->__fs_selector(); }
 
-    inline void set_fs_selector(vmcs_field16_t val);
-    { m_impl.set_fs_selector(val); }
+    CONSTEXPR void set_fs_selector(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_fs_selector(val); }
 
-    inline vmcs_field16_t gs_selector() const;
-    { return m_impl.gs_selector(); }
+    CONSTEXPR vmcs_field16_t gs_selector() const
+    { return impl<const IMPL>(this)->__gs_selector(); }
 
-    inline void set_gs_selector(vmcs_field16_t val);
-    { m_impl.set_gs_selector(val); }
+    CONSTEXPR void set_gs_selector(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_gs_selector(val); }
 
-    inline vmcs_field16_t ldtr_selector() const;
-    { return m_impl.ldtr_selector(); }
+    CONSTEXPR vmcs_field16_t ldtr_selector() const
+    { return impl<const IMPL>(this)->__ldtr_selector(); }
 
-    inline void set_ldtr_selector(vmcs_field16_t val);
-    { m_impl.set_ldtr_selector(val); }
+    CONSTEXPR void set_ldtr_selector(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_ldtr_selector(val); }
 
-    inline vmcs_field16_t tr_selector() const;
-    { return m_impl.tr_selector(); }
+    CONSTEXPR vmcs_field16_t tr_selector() const
+    { return impl<const IMPL>(this)->__tr_selector(); }
 
-    inline void set_tr_selector(vmcs_field16_t val);
-    { m_impl.set_tr_selector(val); }
+    CONSTEXPR void set_tr_selector(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_tr_selector(val); }
 
-    inline vmcs_field16_t interrupt_status() const;
-    { return m_impl.interrupt_status(); }
+    CONSTEXPR vmcs_field16_t interrupt_status() const
+    { return impl<const IMPL>(this)->__interrupt_status(); }
 
-    inline void set_interrupt_status(vmcs_field16_t val);
-    { m_impl.set_interrupt_status(val); }
+    CONSTEXPR void set_interrupt_status(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_interrupt_status(val); }
 
-    inline vmcs_field16_t pml_index() const;
-    { return m_impl.pml_index(); }
+    CONSTEXPR vmcs_field16_t pml_index() const
+    { return impl<const IMPL>(this)->__pml_index(); }
 
-    inline void set_pml_index(vmcs_field16_t val);
-    { m_impl.set_pml_index(val); }
-
-public:
+    CONSTEXPR void set_pml_index(vmcs_field16_t val)
+    { impl<IMPL>(this)->__set_pml_index(val); }
 
     // Missing Fields
     //
@@ -322,132 +228,128 @@ public:
     // - ENCLS-exiting bitmap: Needed for SGX Emulation
     //
 
-    inline vmcs_field64_t io_bitmap_a_addr() const;
-    { return m_impl.io_bitmap_a_addr(); }
+    CONSTEXPR vmcs_field64_t io_bitmap_a_addr() const
+    { return impl<const IMPL>(this)->__io_bitmap_a_addr(); }
 
-    inline void set_io_bitmap_a_addr(vmcs_field64_t val);
-    { m_impl.set_io_bitmap_a_addr(val); }
+    CONSTEXPR void set_io_bitmap_a_addr(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_io_bitmap_a_addr(val); }
 
-    inline vmcs_field64_t io_bitmap_b_addr() const;
-    { return m_impl.io_bitmap_b_addr(); }
+    CONSTEXPR vmcs_field64_t io_bitmap_b_addr() const
+    { return impl<const IMPL>(this)->__io_bitmap_b_addr(); }
 
-    inline void set_io_bitmap_b_addr(vmcs_field64_t val);
-    { m_impl.set_io_bitmap_b_addr(val); }
+    CONSTEXPR void set_io_bitmap_b_addr(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_io_bitmap_b_addr(val); }
 
-    inline vmcs_field64_t msr_bitmaps_addr() const;
-    { return m_impl.msr_bitmaps_addr(); }
+    CONSTEXPR vmcs_field64_t msr_bitmaps_addr() const
+    { return impl<const IMPL>(this)->__msr_bitmaps_addr(); }
 
-    inline void set_msr_bitmaps_addr(vmcs_field64_t val);
-    { m_impl.set_msr_bitmaps_addr(val); }
+    CONSTEXPR void set_msr_bitmaps_addr(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_msr_bitmaps_addr(val); }
 
-    inline vmcs_field64_t vmexit_msr_store_addr() const;
-    { return m_impl.vmexit_msr_store_addr(); }
+    CONSTEXPR vmcs_field64_t vmexit_msr_store_addr() const
+    { return impl<const IMPL>(this)->__vmexit_msr_store_addr(); }
 
-    inline void set_vmexit_msr_store_addr(vmcs_field64_t val);
-    { m_impl.set_vmexit_msr_store_addr(val); }
+    CONSTEXPR void set_vmexit_msr_store_addr(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_vmexit_msr_store_addr(val); }
 
-    inline vmcs_field64_t vmexit_msr_load_addr() const;
-    { return m_impl.vmexit_msr_load_addr(); }
+    CONSTEXPR vmcs_field64_t vmexit_msr_load_addr() const
+    { return impl<const IMPL>(this)->__vmexit_msr_load_addr(); }
 
-    inline void set_vmexit_msr_load_addr(vmcs_field64_t val);
-    { m_impl.set_vmexit_msr_load_addr(val); }
+    CONSTEXPR void set_vmexit_msr_load_addr(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_vmexit_msr_load_addr(val); }
 
-    inline vmcs_field64_t pml_addr() const;
-    { return m_impl.pml_addr(); }
+    CONSTEXPR vmcs_field64_t pml_addr() const
+    { return impl<const IMPL>(this)->__pml_addr(); }
 
-    inline void set_pml_addr(vmcs_field64_t val);
-    { m_impl.set_pml_addr(val); }
+    CONSTEXPR void set_pml_addr(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_pml_addr(val); }
 
-    inline vmcs_field64_t tsc_offset() const;
-    { return m_impl.tsc_offset(); }
+    CONSTEXPR vmcs_field64_t tsc_offset() const
+    { return impl<const IMPL>(this)->__tsc_offset(); }
 
-    inline void set_tsc_offset(vmcs_field64_t val);
-    { m_impl.set_tsc_offset(val); }
+    CONSTEXPR void set_tsc_offset(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_tsc_offset(val); }
 
-    inline vmcs_field64_t vapic_addr() const;
-    { return m_impl.vapic_addr(); }
+    CONSTEXPR vmcs_field64_t vapic_addr() const
+    { return impl<const IMPL>(this)->__vapic_addr(); }
 
-    inline void set_vapic_addr(vmcs_field64_t val);
-    { m_impl.set_vapic_addr(val); }
+    CONSTEXPR void set_vapic_addr(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_vapic_addr(val); }
 
-    inline vmcs_field64_t apic_access_addr() const;
-    { return m_impl.apic_access_addr(); }
+    CONSTEXPR vmcs_field64_t apic_access_addr() const
+    { return impl<const IMPL>(this)->__apic_access_addr(); }
 
-    inline void set_apic_access_addr(vmcs_field64_t val);
-    { m_impl.set_apic_access_addr(val); }
+    CONSTEXPR void set_apic_access_addr(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_apic_access_addr(val); }
 
-    inline vmcs_field64_t posted_interrupt_descriptor_addr() const;
-    { return m_impl.posted_interrupt_descriptor_addr(); }
+    CONSTEXPR vmcs_field64_t posted_interrupt_descriptor_addr() const
+    { return impl<const IMPL>(this)->__posted_interrupt_descriptor_addr(); }
 
-    inline void set_posted_interrupt_descriptor_addr(vmcs_field64_t val);
-    { m_impl.set_posted_interrupt_descriptor_addr(val); }
+    CONSTEXPR void set_posted_interrupt_descriptor_addr(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_posted_interrupt_descriptor_addr(val); }
 
-    inline vmcs_field64_t vm_function_ctls() const;
-    { return m_impl.vm_function_ctls(); }
+    CONSTEXPR vmcs_field64_t vm_function_ctls() const
+    { return impl<const IMPL>(this)->__vm_function_ctls(); }
 
-    inline void set_vm_function_ctls(vmcs_field64_t val);
-    { m_impl.set_vm_function_ctls(val); }
+    CONSTEXPR void set_vm_function_ctls(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_vm_function_ctls(val); }
 
-    inline vmcs_field64_t eptp() const;
-    { return m_impl.eptp(); }
+    CONSTEXPR vmcs_field64_t eptp() const
+    { return impl<const IMPL>(this)->__eptp(); }
 
-    inline void set_eptp(vmcs_field64_t val);
-    { m_impl.set_eptp(val); }
+    CONSTEXPR void set_eptp(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_eptp(val); }
 
-    inline vmcs_field64_t eoi_exit_bitmap_0() const;
-    { return m_impl.eoi_exit_bitmap_0(); }
+    CONSTEXPR vmcs_field64_t eoi_exit_bitmap_0() const
+    { return impl<const IMPL>(this)->__eoi_exit_bitmap_0(); }
 
-    inline void set_eoi_exit_bitmap_0(vmcs_field64_t val);
-    { m_impl.set_eoi_exit_bitmap_0(val); }
+    CONSTEXPR void set_eoi_exit_bitmap_0(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_eoi_exit_bitmap_0(val); }
 
-    inline vmcs_field64_t eoi_exit_bitmap_1() const;
-    { return m_impl.eoi_exit_bitmap_1(); }
+    CONSTEXPR vmcs_field64_t eoi_exit_bitmap_1() const
+    { return impl<const IMPL>(this)->__eoi_exit_bitmap_1(); }
 
-    inline void set_eoi_exit_bitmap_1(vmcs_field64_t val);
-    { m_impl.set_eoi_exit_bitmap_1(val); }
+    CONSTEXPR void set_eoi_exit_bitmap_1(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_eoi_exit_bitmap_1(val); }
 
-    inline vmcs_field64_t eoi_exit_bitmap_2() const;
-    { return m_impl.eoi_exit_bitmap_2(); }
+    CONSTEXPR vmcs_field64_t eoi_exit_bitmap_2() const
+    { return impl<const IMPL>(this)->__eoi_exit_bitmap_2(); }
 
-    inline void set_eoi_exit_bitmap_2(vmcs_field64_t val);
-    { m_impl.set_eoi_exit_bitmap_2(val); }
+    CONSTEXPR void set_eoi_exit_bitmap_2(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_eoi_exit_bitmap_2(val); }
 
-    inline vmcs_field64_t eoi_exit_bitmap_3() const;
-    { return m_impl.eoi_exit_bitmap_3(); }
+    CONSTEXPR vmcs_field64_t eoi_exit_bitmap_3() const
+    { return impl<const IMPL>(this)->__eoi_exit_bitmap_3(); }
 
-    inline void set_eoi_exit_bitmap_3(vmcs_field64_t val);
-    { m_impl.set_eoi_exit_bitmap_3(val); }
+    CONSTEXPR void set_eoi_exit_bitmap_3(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_eoi_exit_bitmap_3(val); }
 
-    inline vmcs_field64_t eptp_list_addr() const;
-    { return m_impl.eptp_list_addr(); }
+    CONSTEXPR vmcs_field64_t eptp_list_addr() const
+    { return impl<const IMPL>(this)->__eptp_list_addr(); }
 
-    inline void set_eptp_list_addr(vmcs_field64_t val);
-    { m_impl.set_eptp_list_addr(val); }
+    CONSTEXPR void set_eptp_list_addr(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_eptp_list_addr(val); }
 
-    inline vmcs_field64_t vexception_info_addr() const;
-    { return m_impl.vexception_info_addr(); }
+    CONSTEXPR vmcs_field64_t vexception_info_addr() const
+    { return impl<const IMPL>(this)->__vexception_info_addr(); }
 
-    inline void set_vexception_info_addr(vmcs_field64_t val);
-    { m_impl.set_vexception_info_addr(val); }
+    CONSTEXPR void set_vexception_info_addr(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_vexception_info_addr(val); }
 
-    inline vmcs_field64_t xss_exiting_bitmap() const;
-    { return m_impl.xss_exiting_bitmap(); }
+    CONSTEXPR vmcs_field64_t xss_exiting_bitmap() const
+    { return impl<const IMPL>(this)->__xss_exiting_bitmap(); }
 
-    inline void set_xss_exiting_bitmap(vmcs_field64_t val);
-    { m_impl.set_xss_exiting_bitmap(val); }
+    CONSTEXPR void set_xss_exiting_bitmap(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_xss_exiting_bitmap(val); }
 
-    inline vmcs_field64_t tsc_multiplier() const;
-    { return m_impl.tsc_multiplier(); }
+    CONSTEXPR vmcs_field64_t tsc_multiplier() const
+    { return impl<const IMPL>(this)->__tsc_multiplier(); }
 
-    inline void set_tsc_multiplier(vmcs_field64_t val);
-    { m_impl.set_tsc_multiplier(val); }
+    CONSTEXPR void set_tsc_multiplier(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_tsc_multiplier(val); }
 
-public:
-
-    inline vmcs_field64_t gpa() const;
-    { return m_impl.(); gpa}
-
-public:
+    CONSTEXPR vmcs_field64_t gpa() const
+    { return impl<const IMPL>(this)->__(); gpa}
 
     // Missing Fields
     //
@@ -455,677 +357,1685 @@ public:
     // - Guest IA32_BNDCFGS: Needed for MPX Emulation
     //
 
-    inline vmcs_field64_t ia32_debugctl() const;
-    { return m_impl.ia32_debugctl(); }
+    CONSTEXPR vmcs_field64_t ia32_debugctl() const
+    { return impl<const IMPL>(this)->__ia32_debugctl(); }
 
-    inline void set_ia32_debugctl(vmcs_field64_t val);
-    { m_impl.set_ia32_debugctl(val); }
+    CONSTEXPR void set_ia32_debugctl(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_ia32_debugctl(val); }
 
-    inline vmcs_field64_t ia32_pat() const;
-    { return m_impl.ia32_pat(); }
+    CONSTEXPR vmcs_field64_t ia32_pat() const
+    { return impl<const IMPL>(this)->__ia32_pat(); }
 
-    inline void set_ia32_pat(vmcs_field64_t val);
-    { m_impl.set_ia32_pat(val); }
+    CONSTEXPR void set_ia32_pat(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_ia32_pat(val); }
 
-    inline vmcs_field64_t ia32_efer() const;
-    { return m_impl.ia32_efer(); }
+    CONSTEXPR vmcs_field64_t ia32_efer() const
+    { return impl<const IMPL>(this)->__ia32_efer(); }
 
-    inline void set_ia32_efer(vmcs_field64_t val);
-    { m_impl.set_ia32_efer(val); }
+    CONSTEXPR void set_ia32_efer(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_ia32_efer(val); }
 
-    inline vmcs_field64_t ia32_perf_global_ctrl() const;
-    { return m_impl.ia32_perf_global_ctrl(); }
+    CONSTEXPR vmcs_field64_t ia32_perf_global_ctrl() const
+    { return impl<const IMPL>(this)->__ia32_perf_global_ctrl(); }
 
-    inline void set_ia32_perf_global_ctrl(vmcs_field64_t val);
-    { m_impl.set_ia32_perf_global_ctrl(val); }
+    CONSTEXPR void set_ia32_perf_global_ctrl(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_ia32_perf_global_ctrl(val); }
 
-    inline vmcs_field64_t pdpte0() const;
-    { return m_impl.pdpte0(); }
+    CONSTEXPR vmcs_field64_t pdpte0() const
+    { return impl<const IMPL>(this)->__pdpte0(); }
 
-    inline void set_pdpte0(vmcs_field64_t val);
-    { m_impl.set_pdpte0(val); }
+    CONSTEXPR void set_pdpte0(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_pdpte0(val); }
 
-    inline vmcs_field64_t pdpte1() const;
-    { return m_impl.pdpte1(); }
+    CONSTEXPR vmcs_field64_t pdpte1() const
+    { return impl<const IMPL>(this)->__pdpte1(); }
 
-    inline void set_pdpte1(vmcs_field64_t val);
-    { m_impl.set_pdpte1(val); }
+    CONSTEXPR void set_pdpte1(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_pdpte1(val); }
 
-    inline vmcs_field64_t pdpte2() const;
-    { return m_impl.pdpte2(); }
+    CONSTEXPR vmcs_field64_t pdpte2() const
+    { return impl<const IMPL>(this)->__pdpte2(); }
 
-    inline void set_pdpte2(vmcs_field64_t val);
-    { m_impl.set_pdpte2(val); }
+    CONSTEXPR void set_pdpte2(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_pdpte2(val); }
 
-    inline vmcs_field64_t pdpte3() const;
-    { return m_impl.pdpte3(); }
+    CONSTEXPR vmcs_field64_t pdpte3() const
+    { return impl<const IMPL>(this)->__pdpte3(); }
 
-    inline void set_pdpte3(vmcs_field64_t val);
-    { m_impl.set_pdpte3(val); }
+    CONSTEXPR void set_pdpte3(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_pdpte3(val); }
 
-public:
+    CONSTEXPR vmcs_field32_t pin_based_ctls() const
+    { return impl<const IMPL>(this)->__pin_based_ctls(); }
 
-    inline vmcs_field32_t pin_based_ctls() const;
-    { return m_impl.pin_based_ctls(); }
+    CONSTEXPR void set_pin_based_ctls(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_pin_based_ctls(val); }
 
-    inline void set_pin_based_ctls(vmcs_field32_t val);
-    { m_impl.set_pin_based_ctls(val); }
+    CONSTEXPR vmcs_field32_t proc_based_ctls() const
+    { return impl<const IMPL>(this)->__proc_based_ctls(); }
 
-    inline vmcs_field32_t proc_based_ctls() const;
-    { return m_impl.proc_based_ctls(); }
+    CONSTEXPR void set_proc_based_ctls(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_proc_based_ctls(val); }
 
-    inline void set_proc_based_ctls(vmcs_field32_t val);
-    { m_impl.set_proc_based_ctls(val); }
+    CONSTEXPR vmcs_field32_t exception_bitmap() const
+    { return impl<const IMPL>(this)->__exception_bitmap(); }
 
-    inline vmcs_field32_t exception_bitmap() const;
-    { return m_impl.exception_bitmap(); }
+    CONSTEXPR void set_exception_bitmap(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_exception_bitmap(val); }
 
-    inline void set_exception_bitmap(vmcs_field32_t val);
-    { m_impl.set_exception_bitmap(val); }
+    CONSTEXPR vmcs_field32_t pf_error_code_mask() const
+    { return impl<const IMPL>(this)->__pf_error_code_mask(); }
 
-    inline vmcs_field32_t pf_error_code_mask() const;
-    { return m_impl.pf_error_code_mask(); }
+    CONSTEXPR void set_pf_error_code_mask(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_pf_error_code_mask(val); }
 
-    inline void set_pf_error_code_mask(vmcs_field32_t val);
-    { m_impl.set_pf_error_code_mask(val); }
+    CONSTEXPR vmcs_field32_t pf_error_code_match() const
+    { return impl<const IMPL>(this)->__pf_error_code_match(); }
 
-    inline vmcs_field32_t pf_error_code_match() const;
-    { return m_impl.pf_error_code_match(); }
+    CONSTEXPR void set_pf_error_code_match(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_pf_error_code_match(val); }
 
-    inline void set_pf_error_code_match(vmcs_field32_t val);
-    { m_impl.set_pf_error_code_match(val); }
+    CONSTEXPR vmcs_field32_t cr3_target_count() const
+    { return impl<const IMPL>(this)->__cr3_target_count(); }
 
-    inline vmcs_field32_t cr3_target_count() const;
-    { return m_impl.cr3_target_count(); }
+    CONSTEXPR void set_cr3_target_count(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_cr3_target_count(val); }
 
-    inline void set_cr3_target_count(vmcs_field32_t val);
-    { m_impl.set_cr3_target_count(val); }
+    CONSTEXPR vmcs_field32_t vmexit_ctls() const
+    { return impl<const IMPL>(this)->__vmexit_ctls(); }
 
-    inline vmcs_field32_t vmexit_ctls() const;
-    { return m_impl.vmexit_ctls(); }
+    CONSTEXPR void set_vmexit_ctls(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_vmexit_ctls(val); }
 
-    inline void set_vmexit_ctls(vmcs_field32_t val);
-    { m_impl.set_vmexit_ctls(val); }
+    CONSTEXPR vmcs_field32_t vmexit_msr_store_count() const
+    { return impl<const IMPL>(this)->__vmexit_msr_store_count(); }
 
-    inline vmcs_field32_t vmexit_msr_store_count() const;
-    { return m_impl.vmexit_msr_store_count(); }
+    CONSTEXPR void set_vmexit_msr_store_count(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_vmexit_msr_store_count(val); }
 
-    inline void set_vmexit_msr_store_count(vmcs_field32_t val);
-    { m_impl.set_vmexit_msr_store_count(val); }
+    CONSTEXPR vmcs_field32_t vmexit_load_count() const
+    { return impl<const IMPL>(this)->__vmexit_load_count(); }
 
-    inline vmcs_field32_t vmexit_load_count() const;
-    { return m_impl.vmexit_load_count(); }
+    CONSTEXPR void set_vmexit_load_count(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_vmexit_load_count(val); }
 
-    inline void set_vmexit_load_count(vmcs_field32_t val);
-    { m_impl.set_vmexit_load_count(val); }
+    CONSTEXPR vmcs_field32_t vmentry_ctls() const
+    { return impl<const IMPL>(this)->__vmentry_ctls(); }
 
-    inline vmcs_field32_t vmentry_ctls() const;
-    { return m_impl.vmentry_ctls(); }
+    CONSTEXPR void set_vmentry_ctls(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_vmentry_ctls(val); }
 
-    inline void set_vmentry_ctls(vmcs_field32_t val);
-    { m_impl.set_vmentry_ctls(val); }
+    CONSTEXPR vmcs_field32_t vmentry_msr_load_count() const
+    { return impl<const IMPL>(this)->__vmentry_msr_load_count(); }
 
-    inline vmcs_field32_t vmentry_msr_load_count() const;
-    { return m_impl.vmentry_msr_load_count(); }
+    CONSTEXPR void set_vmentry_msr_load_count(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_vmentry_msr_load_count(val); }
 
-    inline void set_vmentry_msr_load_count(vmcs_field32_t val);
-    { m_impl.set_vmentry_msr_load_count(val); }
+    CONSTEXPR vmcs_field32_t vmentry_int_info() const
+    { return impl<const IMPL>(this)->__vmentry_int_info(); }
 
-    inline vmcs_field32_t vmentry_int_info() const;
-    { return m_impl.vmentry_int_info(); }
+    CONSTEXPR void set_vmentry_int_info(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_vmentry_int_info(val); }
 
-    inline void set_vmentry_int_info(vmcs_field32_t val);
-    { m_impl.set_vmentry_int_info(val); }
+    CONSTEXPR vmcs_field32_t vmentry_exception_error_code() const
+    { return impl<const IMPL>(this)->__vmentry_exception_error_code(); }
 
-    inline vmcs_field32_t vmentry_exception_error_code() const;
-    { return m_impl.vmentry_exception_error_code(); }
+    CONSTEXPR void set_vmentry_exception_error_code(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_vmentry_exception_error_code(val); }
 
-    inline void set_vmentry_exception_error_code(vmcs_field32_t val);
-    { m_impl.set_vmentry_exception_error_code(val); }
+    CONSTEXPR vmcs_field32_t vmentry_instr_len() const
+    { return impl<const IMPL>(this)->__vmentry_instr_len(); }
 
-    inline vmcs_field32_t vmentry_instr_len() const;
-    { return m_impl.vmentry_instr_len(); }
+    CONSTEXPR void set_vmentry_instr_len(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_vmentry_instr_len(val); }
 
-    inline void set_vmentry_instr_len(vmcs_field32_t val);
-    { m_impl.set_vmentry_instr_len(val); }
+    CONSTEXPR vmcs_field32_t tpr_threshold() const
+    { return impl<const IMPL>(this)->__tpr_threshold(); }
 
-    inline vmcs_field32_t tpr_threshold() const;
-    { return m_impl.tpr_threshold(); }
+    CONSTEXPR void set_tpr_threshold(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_tpr_threshold(val); }
 
-    inline void set_tpr_threshold(vmcs_field32_t val);
-    { m_impl.set_tpr_threshold(val); }
+    CONSTEXPR vmcs_field32_t proc_based_ctls2() const
+    { return impl<const IMPL>(this)->__proc_based_ctls2(); }
 
-    inline vmcs_field32_t proc_based_ctls2() const;
-    { return m_impl.proc_based_ctls2(); }
+    CONSTEXPR void set_proc_based_ctls2(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_proc_based_ctls2(val); }
 
-    inline void set_proc_based_ctls2(vmcs_field32_t val);
-    { m_impl.set_proc_based_ctls2(val); }
+    CONSTEXPR vmcs_field32_t ple_gap() const
+    { return impl<const IMPL>(this)->__ple_gap(); }
 
-    inline vmcs_field32_t ple_gap() const;
-    { return m_impl.ple_gap(); }
+    CONSTEXPR void set_ple_gap(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_ple_gap(val); }
 
-    inline void set_ple_gap(vmcs_field32_t val);
-    { m_impl.set_ple_gap(val); }
+    CONSTEXPR vmcs_field32_t ple_window() const
+    { return impl<const IMPL>(this)->__ple_window(); }
 
-    inline vmcs_field32_t ple_window() const;
-    { return m_impl.ple_window(); }
+    CONSTEXPR void set_ple_window(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_ple_window(val); }
 
-    inline void set_ple_window(vmcs_field32_t val);
-    { m_impl.set_ple_window(val); }
+    CONSTEXPR vmcs_field32_t vm_instr_error() const
+    { return impl<const IMPL>(this)->__vm_instr_error(); }
 
-public:
+    CONSTEXPR vmcs_field32_t vmexit_int_info() const
+    { return impl<const IMPL>(this)->__vmexit_int_info(); }
 
-    inline vmcs_field32_t vm_instr_error() const;
-    { return m_impl.vm_instr_error(); }
+    CONSTEXPR vmcs_field32_t vmexit_int_error_code() const
+    { return impl<const IMPL>(this)->__vmexit_int_error_code(); }
 
-    inline vmcs_field32_t vmexit_int_info() const;
-    { return m_impl.vmexit_int_info(); }
+    CONSTEXPR vmcs_field32_t idt_vectoring_info() const
+    { return impl<const IMPL>(this)->__idt_vectoring_info(); }
 
-    inline vmcs_field32_t vmexit_int_error_code() const;
-    { return m_impl.vmexit_int_error_code(); }
+    CONSTEXPR vmcs_field32_t idt_vectoring_error_code() const
+    { return impl<const IMPL>(this)->__idt_vectoring_error_code(); }
 
-    inline vmcs_field32_t idt_vectoring_info() const;
-    { return m_impl.idt_vectoring_info(); }
+    CONSTEXPR vmcs_field32_t vmexit_instr_len() const
+    { return impl<const IMPL>(this)->__vmexit_instr_len(); }
 
-    inline vmcs_field32_t idt_vectoring_error_code() const;
-    { return m_impl.idt_vectoring_error_code(); }
-
-    inline vmcs_field32_t vmexit_instr_len() const;
-    { return m_impl.vmexit_instr_len(); }
-
-    inline vmcs_field32_t vmexit_instr_info() const;
-    { return m_impl.(); vmexit_instr_info}
-
-public:
+    CONSTEXPR vmcs_field32_t vmexit_instr_info() const
+    { return impl<const IMPL>(this)->__(); vmexit_instr_info}
 
     // Missing Fields
     //
     // - Guest SMBASE: Needed for STM
     //
 
-    inline vmcs_field32_t es_limit() const;
-    { return m_impl.es_limit(); }
+    CONSTEXPR vmcs_field32_t es_limit() const
+    { return impl<const IMPL>(this)->__es_limit(); }
 
-    inline void set_es_limit(vmcs_field32_t val);
-    { m_impl.set_es_limit(val); }
+    CONSTEXPR void set_es_limit(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_es_limit(val); }
 
-    inline vmcs_field32_t cs_limit() const;
-    { return m_impl.cs_limit(); }
+    CONSTEXPR vmcs_field32_t cs_limit() const
+    { return impl<const IMPL>(this)->__cs_limit(); }
 
-    inline void set_cs_limit(vmcs_field32_t val);
-    { m_impl.set_cs_limit(val); }
+    CONSTEXPR void set_cs_limit(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_cs_limit(val); }
 
-    inline vmcs_field32_t ss_limit() const;
-    { return m_impl.ss_limit(); }
+    CONSTEXPR vmcs_field32_t ss_limit() const
+    { return impl<const IMPL>(this)->__ss_limit(); }
 
-    inline void set_ss_limit(vmcs_field32_t val);
-    { m_impl.set_ss_limit(val); }
+    CONSTEXPR void set_ss_limit(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_ss_limit(val); }
 
-    inline vmcs_field32_t ds_limit() const;
-    { return m_impl.ds_limit(); }
+    CONSTEXPR vmcs_field32_t ds_limit() const
+    { return impl<const IMPL>(this)->__ds_limit(); }
 
-    inline void set_ds_limit(vmcs_field32_t val);
-    { m_impl.set_ds_limit(val); }
+    CONSTEXPR void set_ds_limit(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_ds_limit(val); }
 
-    inline vmcs_field32_t fs_limit() const;
-    { return m_impl.fs_limit(); }
+    CONSTEXPR vmcs_field32_t fs_limit() const
+    { return impl<const IMPL>(this)->__fs_limit(); }
 
-    inline void set_fs_limit(vmcs_field32_t val);
-    { m_impl.set_fs_limit(val); }
+    CONSTEXPR void set_fs_limit(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_fs_limit(val); }
 
-    inline vmcs_field32_t gs_limit() const;
-    { return m_impl.gs_limit(); }
+    CONSTEXPR vmcs_field32_t gs_limit() const
+    { return impl<const IMPL>(this)->__gs_limit(); }
 
-    inline void set_gs_limit(vmcs_field32_t val);
-    { m_impl.set_gs_limit(val); }
+    CONSTEXPR void set_gs_limit(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_gs_limit(val); }
 
-    inline vmcs_field32_t ldtr_limit() const;
-    { return m_impl.ldtr_limit(); }
+    CONSTEXPR vmcs_field32_t ldtr_limit() const
+    { return impl<const IMPL>(this)->__ldtr_limit(); }
 
-    inline void set_ldtr_limit(vmcs_field32_t val);
-    { m_impl.set_ldtr_limit(val); }
+    CONSTEXPR void set_ldtr_limit(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_ldtr_limit(val); }
 
-    inline vmcs_field32_t tr_limit() const;
-    { return m_impl.tr_limit(); }
+    CONSTEXPR vmcs_field32_t tr_limit() const
+    { return impl<const IMPL>(this)->__tr_limit(); }
 
-    inline void set_tr_limit(vmcs_field32_t val);
-    { m_impl.set_tr_limit(val); }
+    CONSTEXPR void set_tr_limit(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_tr_limit(val); }
 
-    inline vmcs_field32_t gdtr_limit() const;
-    { return m_impl.gdtr_limit(); }
+    CONSTEXPR vmcs_field32_t gdtr_limit() const
+    { return impl<const IMPL>(this)->__gdtr_limit(); }
 
-    inline void set_gdtr_limit(vmcs_field32_t val);
-    { m_impl.set_gdtr_limit(val); }
+    CONSTEXPR void set_gdtr_limit(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_gdtr_limit(val); }
 
-    inline vmcs_field32_t idtr_limit() const;
-    { return m_impl.idtr_limit(); }
+    CONSTEXPR vmcs_field32_t idtr_limit() const
+    { return impl<const IMPL>(this)->__idtr_limit(); }
 
-    inline void set_idtr_limit(vmcs_field32_t val);
-    { m_impl.set_idtr_limit(val); }
+    CONSTEXPR void set_idtr_limit(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_idtr_limit(val); }
 
-    inline vmcs_field32_t es_access_rights() const;
-    { return m_impl.es_access_rights(); }
+    CONSTEXPR vmcs_field32_t es_access_rights() const
+    { return impl<const IMPL>(this)->__es_access_rights(); }
 
-    inline void set_es_access_rights(vmcs_field32_t val);
-    { m_impl.set_es_access_rights(val); }
+    CONSTEXPR void set_es_access_rights(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_es_access_rights(val); }
 
-    inline vmcs_field32_t cs_access_rights() const;
-    { return m_impl.cs_access_rights(); }
+    CONSTEXPR vmcs_field32_t cs_access_rights() const
+    { return impl<const IMPL>(this)->__cs_access_rights(); }
 
-    inline void set_cs_access_rights(vmcs_field32_t val);
-    { m_impl.set_cs_access_rights(val); }
+    CONSTEXPR void set_cs_access_rights(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_cs_access_rights(val); }
 
-    inline vmcs_field32_t ss_access_rights() const;
-    { return m_impl.ss_access_rights(); }
+    CONSTEXPR vmcs_field32_t ss_access_rights() const
+    { return impl<const IMPL>(this)->__ss_access_rights(); }
 
-    inline void set_ss_access_rights(vmcs_field32_t val);
-    { m_impl.set_ss_access_rights(val); }
+    CONSTEXPR void set_ss_access_rights(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_ss_access_rights(val); }
 
-    inline vmcs_field32_t ds_access_rights() const;
-    { return m_impl.ds_access_rights(); }
+    CONSTEXPR vmcs_field32_t ds_access_rights() const
+    { return impl<const IMPL>(this)->__ds_access_rights(); }
 
-    inline void set_ds_access_rights(vmcs_field32_t val);
-    { m_impl.set_ds_access_rights(val); }
+    CONSTEXPR void set_ds_access_rights(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_ds_access_rights(val); }
 
-    inline vmcs_field32_t fs_access_rights() const;
-    { return m_impl.fs_access_rights(); }
+    CONSTEXPR vmcs_field32_t fs_access_rights() const
+    { return impl<const IMPL>(this)->__fs_access_rights(); }
 
-    inline void set_fs_access_rights(vmcs_field32_t val);
-    { m_impl.set_fs_access_rights(val); }
+    CONSTEXPR void set_fs_access_rights(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_fs_access_rights(val); }
 
-    inline vmcs_field32_t gs_access_rights() const;
-    { return m_impl.gs_access_rights(); }
+    CONSTEXPR vmcs_field32_t gs_access_rights() const
+    { return impl<const IMPL>(this)->__gs_access_rights(); }
 
-    inline void set_gs_access_rights(vmcs_field32_t val);
-    { m_impl.set_gs_access_rights(val); }
+    CONSTEXPR void set_gs_access_rights(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_gs_access_rights(val); }
 
-    inline vmcs_field32_t ldtr_access_rights() const;
-    { return m_impl.ldtr_access_rights(); }
+    CONSTEXPR vmcs_field32_t ldtr_access_rights() const
+    { return impl<const IMPL>(this)->__ldtr_access_rights(); }
 
-    inline void set_ldtr_access_rights(vmcs_field32_t val);
-    { m_impl.set_ldtr_access_rights(val); }
+    CONSTEXPR void set_ldtr_access_rights(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_ldtr_access_rights(val); }
 
-    inline vmcs_field32_t tr_access_rights() const;
-    { return m_impl.tr_access_rights(); }
+    CONSTEXPR vmcs_field32_t tr_access_rights() const
+    { return impl<const IMPL>(this)->__tr_access_rights(); }
 
-    inline void set_tr_access_rights(vmcs_field32_t val);
-    { m_impl.set_tr_access_rights(val); }
+    CONSTEXPR void set_tr_access_rights(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_tr_access_rights(val); }
 
-    inline vmcs_field32_t interuptability_state() const;
-    { return m_impl.interuptability_state(); }
+    CONSTEXPR vmcs_field32_t interuptability_state() const
+    { return impl<const IMPL>(this)->__interuptability_state(); }
 
-    inline void set_interuptability_state(vmcs_field32_t val);
-    { m_impl.set_interuptability_state(val); }
+    CONSTEXPR void set_interuptability_state(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_interuptability_state(val); }
 
-    inline vmcs_field32_t activity_state() const;
-    { return m_impl.activity_state(); }
+    CONSTEXPR vmcs_field32_t activity_state() const
+    { return impl<const IMPL>(this)->__activity_state(); }
 
-    inline void set_activity_state(vmcs_field32_t val);
-    { m_impl.set_activity_state(val); }
+    CONSTEXPR void set_activity_state(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_activity_state(val); }
 
-    inline vmcs_field32_t ia32_sysenter_cs() const;
-    { return m_impl.ia32_sysenter_cs(); }
+    CONSTEXPR vmcs_field32_t ia32_sysenter_cs() const
+    { return impl<const IMPL>(this)->__ia32_sysenter_cs(); }
 
-    inline void set_ia32_sysenter_cs(vmcs_field32_t val);
-    { m_impl.set_ia32_sysenter_cs(val); }
+    CONSTEXPR void set_ia32_sysenter_cs(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_ia32_sysenter_cs(val); }
 
-    inline vmcs_field32_t preemption_timer_value() const;
-    { return m_impl.preemption_timer_value(); }
+    CONSTEXPR vmcs_field32_t preemption_timer_value() const
+    { return impl<const IMPL>(this)->__preemption_timer_value(); }
 
-    inline void set_preemption_timer_value(vmcs_field32_t val);
-    { m_impl.set_preemption_timer_value(val); }
+    CONSTEXPR void set_preemption_timer_value(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_preemption_timer_value(val); }
 
-public:
+    CONSTEXPR vmcs_field64_t cr0_mask() const
+    { return impl<const IMPL>(this)->__cr0_mask(); }
 
-    inline vmcs_field64_t cr0_mask() const;
-    { return m_impl.cr0_mask(); }
+    CONSTEXPR void set_cr0_mask(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr0_mask(val); }
 
-    inline void set_cr0_mask(vmcs_field64_t val);
-    { m_impl.set_cr0_mask(val); }
+    CONSTEXPR vmcs_field64_t cr4_mask() const
+    { return impl<const IMPL>(this)->__cr4_mask(); }
 
-    inline vmcs_field64_t cr4_mask() const;
-    { return m_impl.cr4_mask(); }
+    CONSTEXPR void set_cr4_mask(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr4_mask(val); }
 
-    inline void set_cr4_mask(vmcs_field64_t val);
-    { m_impl.set_cr4_mask(val); }
+    CONSTEXPR vmcs_field64_t cr0_read_shadow() const
+    { return impl<const IMPL>(this)->__cr0_read_shadow(); }
 
-    inline vmcs_field64_t cr0_read_shadow() const;
-    { return m_impl.cr0_read_shadow(); }
+    CONSTEXPR void set_cr0_read_shadow(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr0_read_shadow(val); }
 
-    inline void set_cr0_read_shadow(vmcs_field64_t val);
-    { m_impl.set_cr0_read_shadow(val); }
+    CONSTEXPR vmcs_field64_t cr4_read_shadow() const
+    { return impl<const IMPL>(this)->__cr4_read_shadow(); }
 
-    inline vmcs_field64_t cr4_read_shadow() const;
-    { return m_impl.cr4_read_shadow(); }
+    CONSTEXPR void set_cr4_read_shadow(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr4_read_shadow(val); }
 
-    inline void set_cr4_read_shadow(vmcs_field64_t val);
-    { m_impl.set_cr4_read_shadow(val); }
+    CONSTEXPR vmcs_field64_t cr3_target0() const
+    { return impl<const IMPL>(this)->__cr3_target0(); }
 
-    inline vmcs_field64_t cr3_target0() const;
-    { return m_impl.cr3_target0(); }
+    CONSTEXPR void set_cr3_target0(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr3_target0(val); }
 
-    inline void set_cr3_target0(vmcs_field64_t val);
-    { m_impl.set_cr3_target0(val); }
+    CONSTEXPR vmcs_field64_t cr3_target1() const
+    { return impl<const IMPL>(this)->__cr3_target1(); }
 
-    inline vmcs_field64_t cr3_target1() const;
-    { return m_impl.cr3_target1(); }
+    CONSTEXPR void set_cr3_target1(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr3_target1(val); }
 
-    inline void set_cr3_target1(vmcs_field64_t val);
-    { m_impl.set_cr3_target1(val); }
+    CONSTEXPR vmcs_field64_t cr3_target2() const
+    { return impl<const IMPL>(this)->__cr3_target2(); }
 
-    inline vmcs_field64_t cr3_target2() const;
-    { return m_impl.cr3_target2(); }
+    CONSTEXPR void set_cr3_target2(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr3_target2(val); }
 
-    inline void set_cr3_target2(vmcs_field64_t val);
-    { m_impl.set_cr3_target2(val); }
+    CONSTEXPR vmcs_field64_t cr3_target3() const
+    { return impl<const IMPL>(this)->__cr3_target3(); }
 
-    inline vmcs_field64_t cr3_target3() const;
-    { return m_impl.cr3_target3(); }
+    CONSTEXPR void set_cr3_target3(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr3_target3(val); }
 
-    inline void set_cr3_target3(vmcs_field64_t val);
-    { m_impl.set_cr3_target3(val); }
+    CONSTEXPR vmcs_field64_t exit_qualification() const
+    { return impl<const IMPL>(this)->__exit_qualification(); }
 
-public:
+    CONSTEXPR vmcs_field64_t io_rcx() const
+    { return impl<const IMPL>(this)->__io_rcx(); }
 
-    inline vmcs_field64_t exit_qualification() const;
-    { return m_impl.exit_qualification(); }
+    CONSTEXPR vmcs_field64_t io_rsi() const
+    { return impl<const IMPL>(this)->__io_rsi(); }
 
-    inline vmcs_field64_t io_rcx() const;
-    { return m_impl.io_rcx(); }
+    CONSTEXPR vmcs_field64_t io_rdi() const
+    { return impl<const IMPL>(this)->__io_rdi(); }
 
-    inline vmcs_field64_t io_rsi() const;
-    { return m_impl.io_rsi(); }
+    CONSTEXPR vmcs_field64_t io_rip() const
+    { return impl<const IMPL>(this)->__io_rip(); }
 
-    inline vmcs_field64_t io_rdi() const;
-    { return m_impl.io_rdi(); }
+    CONSTEXPR vmcs_field64_t gva() const
+    { return impl<const IMPL>(this)->__(); gva}
 
-    inline vmcs_field64_t io_rip() const;
-    { return m_impl.io_rip(); }
+    CONSTEXPR vmcs_field64_t cr0() const
+    { return impl<const IMPL>(this)->__cr0(); }
 
-    inline vmcs_field64_t gva() const;
-    { return m_impl.(); gva}
+    CONSTEXPR void set_cr0(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr0(val); }
 
-public:
+    CONSTEXPR vmcs_field64_t cr3() const
+    { return impl<const IMPL>(this)->__cr3(); }
 
-    inline vmcs_field64_t cr0() const;
-    { return m_impl.cr0(); }
+    CONSTEXPR void set_cr3(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr3(val); }
 
-    inline void set_cr0(vmcs_field64_t val);
-    { m_impl.set_cr0(val); }
+    CONSTEXPR vmcs_field64_t cr4() const
+    { return impl<const IMPL>(this)->__cr4(); }
 
-    inline vmcs_field64_t cr3() const;
-    { return m_impl.cr3(); }
+    CONSTEXPR void set_cr4(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr4(val); }
 
-    inline void set_cr3(vmcs_field64_t val);
-    { m_impl.set_cr3(val); }
+    CONSTEXPR vmcs_field64_t es_base() const
+    { return impl<const IMPL>(this)->__es_base(); }
 
-    inline vmcs_field64_t cr4() const;
-    { return m_impl.cr4(); }
+    CONSTEXPR void set_es_base(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_es_base(val); }
 
-    inline void set_cr4(vmcs_field64_t val);
-    { m_impl.set_cr4(val); }
+    CONSTEXPR vmcs_field64_t cs_base() const
+    { return impl<const IMPL>(this)->__cs_base(); }
 
-    inline vmcs_field64_t es_base() const;
-    { return m_impl.es_base(); }
+    CONSTEXPR void set_cs_base(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cs_base(val); }
 
-    inline void set_es_base(vmcs_field64_t val);
-    { m_impl.set_es_base(val); }
+    CONSTEXPR vmcs_field64_t ss_base() const
+    { return impl<const IMPL>(this)->__ss_base(); }
 
-    inline vmcs_field64_t cs_base() const;
-    { return m_impl.cs_base(); }
+    CONSTEXPR void set_ss_base(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_ss_base(val); }
 
-    inline void set_cs_base(vmcs_field64_t val);
-    { m_impl.set_cs_base(val); }
+    CONSTEXPR vmcs_field64_t ds_base() const
+    { return impl<const IMPL>(this)->__ds_base(); }
 
-    inline vmcs_field64_t ss_base() const;
-    { return m_impl.ss_base(); }
+    CONSTEXPR void set_ds_base(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_ds_base(val); }
 
-    inline void set_ss_base(vmcs_field64_t val);
-    { m_impl.set_ss_base(val); }
+    CONSTEXPR vmcs_field64_t fs_base() const
+    { return impl<const IMPL>(this)->__fs_base(); }
 
-    inline vmcs_field64_t ds_base() const;
-    { return m_impl.ds_base(); }
+    CONSTEXPR void set_fs_base(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_fs_base(val); }
 
-    inline void set_ds_base(vmcs_field64_t val);
-    { m_impl.set_ds_base(val); }
+    CONSTEXPR vmcs_field64_t gs_base() const
+    { return impl<const IMPL>(this)->__gs_base(); }
 
-    inline vmcs_field64_t fs_base() const;
-    { return m_impl.fs_base(); }
+    CONSTEXPR void set_gs_base(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_gs_base(val); }
 
-    inline void set_fs_base(vmcs_field64_t val);
-    { m_impl.set_fs_base(val); }
+    CONSTEXPR vmcs_field64_t ldtr_base() const
+    { return impl<const IMPL>(this)->__ldtr_base(); }
 
-    inline vmcs_field64_t gs_base() const;
-    { return m_impl.gs_base(); }
+    CONSTEXPR void set_ldtr_base(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_ldtr_base(val); }
 
-    inline void set_gs_base(vmcs_field64_t val);
-    { m_impl.set_gs_base(val); }
+    CONSTEXPR vmcs_field64_t tr_base() const
+    { return impl<const IMPL>(this)->__tr_base(); }
 
-    inline vmcs_field64_t ldtr_base() const;
-    { return m_impl.ldtr_base(); }
+    CONSTEXPR void set_tr_base(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_tr_base(val); }
 
-    inline void set_ldtr_base(vmcs_field64_t val);
-    { m_impl.set_ldtr_base(val); }
+    CONSTEXPR vmcs_field64_t gdtr_base() const
+    { return impl<const IMPL>(this)->__gdtr_base(); }
 
-    inline vmcs_field64_t tr_base() const;
-    { return m_impl.tr_base(); }
+    CONSTEXPR void set_gdtr_base(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_gdtr_base(val); }
 
-    inline void set_tr_base(vmcs_field64_t val);
-    { m_impl.set_tr_base(val); }
+    CONSTEXPR vmcs_field64_t idtr_base() const
+    { return impl<const IMPL>(this)->__idtr_base(); }
 
-    inline vmcs_field64_t gdtr_base() const;
-    { return m_impl.gdtr_base(); }
+    CONSTEXPR void set_idtr_base(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_idtr_base(val); }
 
-    inline void set_gdtr_base(vmcs_field64_t val);
-    { m_impl.set_gdtr_base(val); }
+    CONSTEXPR vmcs_field64_t dr7() const
+    { return impl<const IMPL>(this)->__dr7(); }
 
-    inline vmcs_field64_t idtr_base() const;
-    { return m_impl.idtr_base(); }
+    CONSTEXPR void set_dr7(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_dr7(val); }
 
-    inline void set_idtr_base(vmcs_field64_t val);
-    { m_impl.set_idtr_base(val); }
+    CONSTEXPR vmcs_field64_t rflags() const
+    { return impl<const IMPL>(this)->__rflags(); }
 
-    inline vmcs_field64_t dr7() const;
-    { return m_impl.dr7(); }
+    CONSTEXPR void set_rflags(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_rflags(val); }
 
-    inline void set_dr7(vmcs_field64_t val);
-    { m_impl.set_dr7(val); }
+    CONSTEXPR vmcs_field64_t pending_debug_exceptions() const
+    { return impl<const IMPL>(this)->__pending_debug_exceptions(); }
 
-    inline vmcs_field64_t rflags() const;
-    { return m_impl.rflags(); }
+    CONSTEXPR void set_pending_debug_exceptions(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_pending_debug_exceptions(val); }
 
-    inline void set_rflags(vmcs_field64_t val);
-    { m_impl.set_rflags(val); }
+    CONSTEXPR vmcs_field64_t ia32_sysenter_esp() const
+    { return impl<const IMPL>(this)->__ia32_sysenter_esp(); }
 
-    inline vmcs_field64_t pending_debug_exceptions() const;
-    { return m_impl.pending_debug_exceptions(); }
+    CONSTEXPR void set_ia32_sysenter_esp(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_ia32_sysenter_esp(val); }
 
-    inline void set_pending_debug_exceptions(vmcs_field64_t val);
-    { m_impl.set_pending_debug_exceptions(val); }
+    CONSTEXPR vmcs_field64_t ia32_sysenter_eip() const
+    { return impl<const IMPL>(this)->__ia32_sysenter_eip(); }
 
-    inline vmcs_field64_t ia32_sysenter_esp() const;
-    { return m_impl.ia32_sysenter_esp(); }
-
-    inline void set_ia32_sysenter_esp(vmcs_field64_t val);
-    { m_impl.set_ia32_sysenter_esp(val); }
-
-    inline vmcs_field64_t ia32_sysenter_eip() const;
-    { return m_impl.ia32_sysenter_eip(); }
-
-    inline void set_ia32_sysenter_eip(vmcs_field64_t val);
-    { m_impl.set_ia32_sysenter_eip(val); }
-
-private:
-
-    /// Private
-    ///
-    /// The following APIs are private and should not be used by an end user.
-    /// These are made public for internal use only, and these APIs are subject
-    /// to change. You have been warned.
-    ///
-    /// @cond
-    ///
-
-    inline void promote();
-    { return m_impl.promote(); }
-
-    inline vmcs_field16_t host_es_selector() const;
-    { return m_impl.host_es_selector(); }
-
-    inline void set_host_es_selector(vmcs_field16_t val);
-    { m_impl.set_host_es_selector(val); }
-
-    inline vmcs_field16_t host_cs_selector() const;
-    { return m_impl.host_cs_selector(); }
-
-    inline void set_host_cs_selector(vmcs_field16_t val);
-    { m_impl.set_host_cs_selector(val); }
-
-    inline vmcs_field16_t host_ss_selector() const;
-    { return m_impl.host_ss_selector(); }
-
-    inline void set_host_ss_selector(vmcs_field16_t val);
-    { m_impl.set_host_ss_selector(val); }
-
-    inline vmcs_field16_t host_ds_selector() const;
-    { return m_impl.host_ds_selector(); }
-
-    inline void set_host_ds_selector(vmcs_field16_t val);
-    { m_impl.set_host_ds_selector(val); }
-
-    inline vmcs_field16_t host_fs_selector() const;
-    { return m_impl.host_fs_selector(); }
-
-    inline void set_host_fs_selector(vmcs_field16_t val);
-    { m_impl.set_host_fs_selector(val); }
-
-    inline vmcs_field16_t host_gs_selector() const;
-    { return m_impl.host_gs_selector(); }
-
-    inline void set_host_gs_selector(vmcs_field16_t val);
-    { m_impl.set_host_gs_selector(val); }
-
-    inline vmcs_field16_t host_tr_selector() const;
-    { return m_impl.host_tr_selector(); }
-
-    inline void set_host_tr_selector(vmcs_field16_t val);
-    { m_impl.set_host_tr_selector(val); }
-
-    inline vmcs_field64_t host_ia32_pat() const;
-    { return m_impl.host_ia32_pat(); }
-
-    inline void set_host_ia32_pat(vmcs_field64_t val);
-    { m_impl.set_host_ia32_pat(val); }
-
-    inline vmcs_field64_t host_ia32_efer() const;
-    { return m_impl.host_ia32_efer(); }
-
-    inline void set_host_ia32_efer(vmcs_field64_t val);
-    { m_impl.set_host_ia32_efer(val); }
-
-    inline vmcs_field64_t host_ia32_perf_global_ctrl() const;
-    { return m_impl.host_ia32_perf_global_ctrl(); }
-
-    inline void set_host_ia32_perf_global_ctrl(vmcs_field64_t val);
-    { m_impl.set_host_ia32_perf_global_ctrl(val); }
-
-    inline vmcs_field64_t host_ia32_sysenter_cs() const;
-    { return m_impl.host_ia32_sysenter_cs(); }
-
-    inline void set_host_ia32_sysenter_cs(vmcs_field64_t val);
-    { m_impl.set_host_ia32_sysenter_cs(val); }
-
-    inline vmcs_field64_t host_cr0() const;
-    { return m_impl.host_cr0(); }
-
-    inline void set_host_cr0(vmcs_field64_t val);
-    { m_impl.set_host_cr0(val); }
-
-    inline vmcs_field64_t host_cr3() const;
-    { return m_impl.host_cr3(); }
-
-    inline void set_host_cr3(vmcs_field64_t val);
-    { m_impl.set_host_cr3(val); }
-
-    inline vmcs_field64_t host_cr4() const;
-    { return m_impl.host_cr4(); }
-
-    inline void set_host_cr4(vmcs_field64_t val);
-    { m_impl.set_host_cr4(val); }
-
-    inline vmcs_field64_t host_fs_base() const;
-    { return m_impl.host_fs_base(); }
-
-    inline void set_host_fs_base(vmcs_field64_t val);
-    { m_impl.set_host_fs_base(val); }
-
-    inline vmcs_field64_t host_gs_base() const;
-    { return m_impl.host_gs_base(); }
-
-    inline void set_host_gs_base(vmcs_field64_t val);
-    { m_impl.set_host_gs_base(val); }
-
-    inline vmcs_field64_t host_tr_base() const;
-    { return m_impl.host_tr_base(); }
-
-    inline void set_host_tr_base(vmcs_field64_t val);
-    { m_impl.set_host_tr_base(val); }
-
-    inline vmcs_field64_t host_gdtr_base() const;
-    { return m_impl.host_gdtr_base(); }
-
-    inline void set_host_gdtr_base(vmcs_field64_t val);
-    { m_impl.set_host_gdtr_base(val); }
-
-    inline vmcs_field64_t host_idtr_base() const;
-    { return m_impl.host_idtr_base(); }
-
-    inline void set_host_idtr_base(vmcs_field64_t val);
-    { m_impl.set_host_idtr_base(val); }
-
-    inline vmcs_field64_t host_ia32_sysenter_esp() const;
-    { return m_impl.host_ia32_sysenter_esp(); }
-
-    inline void set_host_ia32_sysenter_esp(vmcs_field64_t val);
-    { m_impl.set_host_ia32_sysenter_esp(val); }
-
-    inline vmcs_field64_t host_ia32_sysenter_eip() const;
-    { return m_impl.host_ia32_sysenter_eip(); }
-
-    inline void set_host_ia32_sysenter_eip(vmcs_field64_t val);
-    { m_impl.set_host_ia32_sysenter_eip(val); }
-
-    inline vmcs_field64_t host_rsp() const;
-    { return m_impl.host_rsp(); }
-
-    inline void set_host_rsp(vmcs_field64_t val);
-    { m_impl.set_host_rsp(val); }
-
-    inline vmcs_field64_t host_rip() const;
-    { return m_impl.host_rip(); }
-
-    inline void set_host_rip(vmcs_field64_t val);
-    { m_impl.set_host_rip(val); }
+    CONSTEXPR void set_ia32_sysenter_eip(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_ia32_sysenter_eip(val); }
 
     /// @endcond
-
-private:
-
-    page_ptr<uint32_t> m_vmcs_region{};
-    uintptr_t m_vmcs_region_phys{};
-
-    bool m_launched{false};
-
-    std::list<vmcs_delegate_t> m_vmlaunch_delegates{};
-    std::list<vmcs_delegate_t> m_vmresume_delegates{};
-    std::list<vmcs_delegate_t> m_vmload_delegates{};
-    std::list<vmcs_delegate_t> m_vmclear_delegates{};
-
-public:
-    MOCK_PROTOTYPE(vmcs);
-    COPY_MOVE_SEMANTICS(vmcs);
 };
 
 }
+
+// -----------------------------------------------------------------------------
+// Wrappers
+// -----------------------------------------------------------------------------
+
+/// @cond
+
+namespace bfvmm::intel_x64::vmcs
+{
+
+template<typename IMPL>
+constexpr void vmcs_run(
+    gsl::not_null<IMPL *> vcpu)
+{ vcpu->vmcs_run(); }
+
+template<typename IMPL>
+constexpr auto vmcs_advance(
+    gsl::not_null<IMPL *> vcpu)
+{ return vcpu->vmcs_advance(); }
+
+template<typename IMPL>
+constexpr void vmcs_load(
+    gsl::not_null<IMPL *> vcpu)
+{ vcpu->vmcs_load(); }
+
+template<typename IMPL>
+constexpr void vmcs_clear(
+    gsl::not_null<IMPL *> vcpu)
+{ vcpu->vmcs_clear(); }
+
+template<typename IMPL>
+constexpr auto vmcs_check(
+    gsl::not_null<const IMPL *> vcpu) noexcept
+{ return vcpu->vmcs_check(); }
+
+template<typename IMPL, typename... Args>
+constexpr void vmcs_add_vmlaunch_delegate(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->vmcs_add_vmlaunch_delegate(std::forward<Args>(args)...); }
+
+template<typename IMPL, typename... Args>
+constexpr void vmcs_add_vmresume_delegate(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->vmcs_add_vmresume_delegate(std::forward<Args>(args)...); }
+
+template<typename IMPL, typename... Args>
+constexpr void vmcs_add_vmload_delegate(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->vmcs_add_vmload_delegate(std::forward<Args>(args)...); }
+
+template<typename IMPL, typename... Args>
+constexpr void vmcs_add_vmclear_delegate(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->vmcs_add_vmclear_delegate(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vpid(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vpid(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vpid(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vpid(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto posted_interrupt_notification_vector(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->posted_interrupt_notification_vector(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_posted_interrupt_notification_vector(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_posted_interrupt_notification_vector(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto es_selector(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->es_selector(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_es_selector(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_es_selector(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cs_selector(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cs_selector(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cs_selector(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cs_selector(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ss_selector(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ss_selector(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ss_selector(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ss_selector(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ds_selector(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ds_selector(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ds_selector(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ds_selector(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto fs_selector(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->fs_selector(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_fs_selector(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_fs_selector(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto gs_selector(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->gs_selector(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_gs_selector(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_gs_selector(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ldtr_selector(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ldtr_selector(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ldtr_selector(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ldtr_selector(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto tr_selector(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->tr_selector(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_tr_selector(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_tr_selector(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto interrupt_status(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->interrupt_status(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_interrupt_status(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_interrupt_status(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto pml_index(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->pml_index(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_pml_index(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_pml_index(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto io_bitmap_a_addr(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->io_bitmap_a_addr(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_io_bitmap_a_addr(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_io_bitmap_a_addr(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto io_bitmap_b_addr(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->io_bitmap_b_addr(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_io_bitmap_b_addr(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_io_bitmap_b_addr(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto msr_bitmaps_addr(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->msr_bitmaps_addr(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_msr_bitmaps_addr(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_msr_bitmaps_addr(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vmexit_msr_store_addr(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmexit_msr_store_addr(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vmexit_msr_store_addr(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vmexit_msr_store_addr(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vmexit_msr_load_addr(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmexit_msr_load_addr(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vmexit_msr_load_addr(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vmexit_msr_load_addr(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto pml_addr(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->pml_addr(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_pml_addr(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_pml_addr(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto tsc_offset(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->tsc_offset(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_tsc_offset(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_tsc_offset(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vapic_addr(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vapic_addr(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vapic_addr(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vapic_addr(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto apic_access_addr(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->apic_access_addr(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_apic_access_addr(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_apic_access_addr(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto posted_interrupt_descriptor_addr(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->posted_interrupt_descriptor_addr(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_posted_interrupt_descriptor_addr(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_posted_interrupt_descriptor_addr(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vm_function_ctls(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vm_function_ctls(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vm_function_ctls(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vm_function_ctls(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto eptp(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->eptp(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_eptp(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_eptp(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto eoi_exit_bitmap_0(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->eoi_exit_bitmap_0(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_eoi_exit_bitmap_0(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_eoi_exit_bitmap_0(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto eoi_exit_bitmap_1(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->eoi_exit_bitmap_1(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_eoi_exit_bitmap_1(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_eoi_exit_bitmap_1(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto eoi_exit_bitmap_2(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->eoi_exit_bitmap_2(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_eoi_exit_bitmap_2(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_eoi_exit_bitmap_2(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto eoi_exit_bitmap_3(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->eoi_exit_bitmap_3(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_eoi_exit_bitmap_3(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_eoi_exit_bitmap_3(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto eptp_list_addr(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->eptp_list_addr(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_eptp_list_addr(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_eptp_list_addr(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vexception_info_addr(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vexception_info_addr(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vexception_info_addr(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vexception_info_addr(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto xss_exiting_bitmap(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->xss_exiting_bitmap(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_xss_exiting_bitmap(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_xss_exiting_bitmap(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto tsc_multiplier(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->tsc_multiplier(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_tsc_multiplier(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_tsc_multiplier(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto gpa(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->(); gpa}
+
+template<typename IMPL>
+constexpr auto ia32_debugctl(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ia32_debugctl(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ia32_debugctl(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ia32_debugctl(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ia32_pat(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ia32_pat(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ia32_pat(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ia32_pat(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ia32_efer(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ia32_efer(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ia32_efer(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ia32_efer(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ia32_perf_global_ctrl(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ia32_perf_global_ctrl(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ia32_perf_global_ctrl(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ia32_perf_global_ctrl(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto pdpte0(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->pdpte0(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_pdpte0(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_pdpte0(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto pdpte1(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->pdpte1(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_pdpte1(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_pdpte1(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto pdpte2(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->pdpte2(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_pdpte2(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_pdpte2(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto pdpte3(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->pdpte3(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_pdpte3(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_pdpte3(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto pin_based_ctls(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->pin_based_ctls(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_pin_based_ctls(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_pin_based_ctls(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto proc_based_ctls(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->proc_based_ctls(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_proc_based_ctls(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_proc_based_ctls(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto exception_bitmap(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->exception_bitmap(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_exception_bitmap(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_exception_bitmap(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto pf_error_code_mask(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->pf_error_code_mask(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_pf_error_code_mask(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_pf_error_code_mask(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto pf_error_code_match(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->pf_error_code_match(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_pf_error_code_match(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_pf_error_code_match(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cr3_target_count(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr3_target_count(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr3_target_count(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr3_target_count(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vmexit_ctls(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmexit_ctls(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vmexit_ctls(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vmexit_ctls(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vmexit_msr_store_count(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmexit_msr_store_count(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vmexit_msr_store_count(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vmexit_msr_store_count(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vmexit_load_count(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmexit_load_count(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vmexit_load_count(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vmexit_load_count(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vmentry_ctls(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmentry_ctls(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vmentry_ctls(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vmentry_ctls(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vmentry_msr_load_count(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmentry_msr_load_count(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vmentry_msr_load_count(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vmentry_msr_load_count(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vmentry_int_info(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmentry_int_info(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vmentry_int_info(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vmentry_int_info(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vmentry_exception_error_code(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmentry_exception_error_code(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vmentry_exception_error_code(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vmentry_exception_error_code(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vmentry_instr_len(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmentry_instr_len(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_vmentry_instr_len(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_vmentry_instr_len(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto tpr_threshold(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->tpr_threshold(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_tpr_threshold(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_tpr_threshold(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto proc_based_ctls2(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->proc_based_ctls2(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_proc_based_ctls2(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_proc_based_ctls2(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ple_gap(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ple_gap(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ple_gap(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ple_gap(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ple_window(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ple_window(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ple_window(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ple_window(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto vm_instr_error(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vm_instr_error(); }
+
+template<typename IMPL>
+constexpr auto vmexit_int_info(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmexit_int_info(); }
+
+template<typename IMPL>
+constexpr auto vmexit_int_error_code(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmexit_int_error_code(); }
+
+template<typename IMPL>
+constexpr auto idt_vectoring_info(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->idt_vectoring_info(); }
+
+template<typename IMPL>
+constexpr auto idt_vectoring_error_code(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->idt_vectoring_error_code(); }
+
+template<typename IMPL>
+constexpr auto vmexit_instr_len(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->vmexit_instr_len(); }
+
+template<typename IMPL>
+constexpr auto vmexit_instr_info(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->(); vmexit_instr_info}
+
+template<typename IMPL>
+constexpr auto es_limit(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->es_limit(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_es_limit(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_es_limit(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cs_limit(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cs_limit(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cs_limit(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cs_limit(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ss_limit(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ss_limit(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ss_limit(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ss_limit(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ds_limit(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ds_limit(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ds_limit(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ds_limit(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto fs_limit(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->fs_limit(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_fs_limit(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_fs_limit(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto gs_limit(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->gs_limit(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_gs_limit(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_gs_limit(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ldtr_limit(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ldtr_limit(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ldtr_limit(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ldtr_limit(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto tr_limit(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->tr_limit(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_tr_limit(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_tr_limit(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto gdtr_limit(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->gdtr_limit(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_gdtr_limit(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_gdtr_limit(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto idtr_limit(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->idtr_limit(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_idtr_limit(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_idtr_limit(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto es_access_rights(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->es_access_rights(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_es_access_rights(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_es_access_rights(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cs_access_rights(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cs_access_rights(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cs_access_rights(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cs_access_rights(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ss_access_rights(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ss_access_rights(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ss_access_rights(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ss_access_rights(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ds_access_rights(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ds_access_rights(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ds_access_rights(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ds_access_rights(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto fs_access_rights(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->fs_access_rights(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_fs_access_rights(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_fs_access_rights(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto gs_access_rights(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->gs_access_rights(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_gs_access_rights(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_gs_access_rights(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ldtr_access_rights(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ldtr_access_rights(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ldtr_access_rights(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ldtr_access_rights(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto tr_access_rights(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->tr_access_rights(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_tr_access_rights(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_tr_access_rights(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto interuptability_state(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->interuptability_state(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_interuptability_state(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_interuptability_state(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto activity_state(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->activity_state(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_activity_state(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_activity_state(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ia32_sysenter_cs(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ia32_sysenter_cs(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ia32_sysenter_cs(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ia32_sysenter_cs(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto preemption_timer_value(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->preemption_timer_value(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_preemption_timer_value(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_preemption_timer_value(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cr0_mask(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr0_mask(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr0_mask(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr0_mask(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cr4_mask(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr4_mask(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr4_mask(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr4_mask(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cr0_read_shadow(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr0_read_shadow(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr0_read_shadow(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr0_read_shadow(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cr4_read_shadow(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr4_read_shadow(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr4_read_shadow(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr4_read_shadow(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cr3_target0(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr3_target0(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr3_target0(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr3_target0(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cr3_target1(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr3_target1(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr3_target1(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr3_target1(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cr3_target2(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr3_target2(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr3_target2(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr3_target2(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cr3_target3(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr3_target3(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr3_target3(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr3_target3(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto exit_qualification(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->exit_qualification(); }
+
+template<typename IMPL>
+constexpr auto io_rcx(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->io_rcx(); }
+
+template<typename IMPL>
+constexpr auto io_rsi(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->io_rsi(); }
+
+template<typename IMPL>
+constexpr auto io_rdi(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->io_rdi(); }
+
+template<typename IMPL>
+constexpr auto io_rip(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->io_rip(); }
+
+template<typename IMPL>
+constexpr auto gva(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->(); gva}
+
+template<typename IMPL>
+constexpr auto cr0(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr0(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr0(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr0(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cr3(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr3(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr3(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr3(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cr4(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cr4(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cr4(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cr4(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto es_base(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->es_base(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_es_base(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_es_base(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto cs_base(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->cs_base(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_cs_base(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_cs_base(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ss_base(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ss_base(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ss_base(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ss_base(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ds_base(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ds_base(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ds_base(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ds_base(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto fs_base(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->fs_base(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_fs_base(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_fs_base(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto gs_base(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->gs_base(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_gs_base(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_gs_base(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ldtr_base(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ldtr_base(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ldtr_base(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ldtr_base(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto tr_base(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->tr_base(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_tr_base(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_tr_base(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto gdtr_base(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->gdtr_base(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_gdtr_base(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_gdtr_base(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto idtr_base(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->idtr_base(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_idtr_base(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_idtr_base(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto dr7(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->dr7(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_dr7(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_dr7(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto rflags(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->rflags(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_rflags(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_rflags(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto pending_debug_exceptions(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->pending_debug_exceptions(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_pending_debug_exceptions(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_pending_debug_exceptions(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ia32_sysenter_esp(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ia32_sysenter_esp(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ia32_sysenter_esp(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ia32_sysenter_esp(std::forward<Args>(args)...); }
+
+template<typename IMPL>
+constexpr auto ia32_sysenter_eip(
+    gsl::not_null<const IMPL *> vcpu)
+{ return vcpu->ia32_sysenter_eip(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_ia32_sysenter_eip(
+    gsl::not_null<IMPL *> vcpu, Args &&...args)
+{ vcpu->set_ia32_sysenter_eip(std::forward<Args>(args)...); }
+
+}
+
+/// @endcond
 
 #endif

@@ -39,14 +39,14 @@ PRIVATE:
     static inline void global_init()
     { bfdebug_info(0, "global init"); }
 
+    static inline auto make(id_t id)
+    { return std::make_unique<vcpu_dummy>(id); }
+
     inline void demote()
     { bfdebug_info(0, "host os is" bfcolor_green " now " bfcolor_end "in a vm"); }
 
     inline void promote()
     { bfdebug_info(0, "host os is" bfcolor_red " not " bfcolor_end "in a vm"); }
-
-    static inline auto make(id_t id)
-    { return std::make_unique<vcpu_dummy>(id); }
 
 PRIVATE:
     FRIEND_DEFINITIONS(vcpu)

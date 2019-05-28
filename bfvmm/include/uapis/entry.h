@@ -76,7 +76,8 @@
 ///   software that executes in the guest executes with ring0-3 privileges.
 ///   Also note that "guest", "guest VM" and "guest vCPU" all mean different
 ///   things and should not be confused. The "guest" simply refers to any code
-///   not running with ring-1 privileges.
+///   not running with ring-1 privileges, which includes code in the bfvmm
+///   folder (the parts that do not originate from a VMExit).
 ///
 /// - pCPU: A physical CPU. On systems with hyperthreading this is actually
 ///   a thread, but on systems without hyperthraeding, or hyperthreading
@@ -84,7 +85,7 @@
 ///   here is that a pCPU is a real CPU and it is the thing that actually
 ///   executes software.
 ///
-/// - vCPU: a virtual CPU is a virtual representation of a CPU. Another way
+/// - vCPU: a virtual CPU is a virtual representation of a pCPU. Another way
 ///   of looking at it is, a vCPU stores all of the state for a pCPU and allows
 ///   a hypervisor to swap states on the pCPU from one state to another. This
 ///   provides the hypervisor with a means to execute multiple operating
@@ -97,11 +98,12 @@
 /// - host OS: the host OS is the OS responsible for managing the system.
 ///   Another way of looking at it is, the host OS is the thing that starts
 ///   the VMM. When this occurs, all of the physical CPUs are given virtual
-///   vCPUs by demoting the host OS (i.e. running the host OS in a VM). Once
+///   CPUs by demoting the host OS (i.e. running the host OS in a VM). Once
 ///   the VMM is running, the host OS is free to do what it wants, including
 ///   starting other operating systems (e.g. UEFI starting Linux or Windows).
 ///   Although there is no requirement for the host OS to execute, the host
-///   vCPUs must always be present as they are the "root" vCPUs.
+///   vCPUs must always be present as they are the "root" vCPUs, and the host
+///   OS has to at least start the VMM.
 ///
 /// - guest VM: A "guest VM", not to be confused with "guest", is any
 ///   operating system that is executing on the system that is not the host OS.
@@ -119,6 +121,10 @@
 ///   that host vCPUs do not need to execute but they do need to exist as they
 ///   are the "root" vCPUs. Once again, extensions should not attempt to create
 ///   or destroy these vCPUs are they control promotion/demotion of the host OS.
+///   It should also be noted that guest vCPU can be created and left intact
+///   well after all of the host vCPUs have been destroyed. In fact, the host
+///   vCPUs can be created and destroyed many times without affecting the
+///   lifetime of a guest vCPU at all.
 ///
 /// - guest vCPU: A guest vCPU is any vCPU that is not a host vCPU. Guest
 ///   vCPUs can be used to create guest VMs, containerization, etc... There
@@ -133,6 +139,15 @@
 ///   vCPU is nothing more than a vCPU that is created by Bareflank and used
 ///   to demote/promote the host OS. All other vCPUs, for any reason are guest
 ///   vCPUs, and should use guest vCPU ids.
+///
+/// - bootstrap vCPU: The bootstrap vCPU is the fist host vCPU to be created,
+///   and it is the last host vCPU to be destroyed. It will always have a vCPU
+///   id of 0. It is also the vCPU that is used when setting up global resources
+///   in the VMM. Like the BSP on Intel, this is the vCPU that is used to
+///   bootstrap the VMM. Once the VMM is running on all cores, it has no
+///   additional meaning except that it will be the last host vCPU to be
+///   destroyed. Since the VMM is symmetric, the bootstrap vCPU has no special
+///   meaning while everything is running.
 ///
 /// - host-only: a host-only VMM (sometimes referred to as a host-only
 ///   hypervisor) is a VMM that never creates guest VMs (not to be confused
@@ -211,10 +226,12 @@
 /// - guest physical address (GPA): a guest physical address is not the same
 ///   thing as a host physical address or a physical address. If something like
 ///   EPT is used, the hypervisor is capable of using a set of page tables to
-///   remap a guests physical memory. Think of this as a second level of page
+///   remap guest physical memory. Think of this as a second level of page
 ///   tables. If EPT is disabled, the GPA == HPA == PA, meaning they are all
 ///   the same thing. If EPT is enabled however, you must use EPT to convert a
-///   guest physical address to an actual physical address (i.e. HPA).
+///   guest physical address to an actual physical address (i.e. HPA). Note
+///   that when we say guest, as described above, we mean any ring0-3 code,
+///   which could include the host OS.
 ///
 /// - guest virtual address (GVA): A guest virtual address is the address that
 ///   guest software (both in userspace and in the kernel) uses to access
@@ -222,15 +239,38 @@
 ///   each process that executes, and the process uses the GVA to access memory
 ///   when paging is turned on. If you allocate a block of memory in the kernrel
 ///   or in a userspace application, you get a GVA. If you want to access this
-///   GVA in the VMM, you ust first convert the GVA to a GPA and then, using
+///   GVA in the VMM, you must first convert the GVA to a GPA and then, using
 ///   something like EPT you must convert the GPA to a PA (i.e. HPA). Once you
 ///   have an HPA, you must map the HPA into the VMM which will give you an
 ///   HVA that you can use from within the VMM to access the memory.
-///   Bareflank provides a set of APIs to perform these conversions.
+///   Bareflank provides a set of APIs to perform these conversions, but as you
+///   can imagine, they are slow so only use these if needed. Also note that
+///   the guest has a lot of page tables, and the page tables between userspace
+///   and the kernel may not be shared (especially since Meltdown was released)
+///   so care should be taken to ensure any conversions of a GVA are handled
+///   properly.
 ///
-/// - deprivilege
+/// - deprivilege: When a VMM is not running, the host OS has complete control
+///   of the system. When the VMM is running, it has control of the host OS and
+///   any additional guest VMs that are created. The act of deprivilege is
+///   nothing more than restricting a VMs actions (either the host OS or a
+///   guest VM). Typically, a deprivileged VM cannot see or manipulate the
+///   resources of another VM which provides "isolation". On a system like Xen
+///   this usually does not include dom0 (i.e. the host OS). Using Bareflank,
+///   it is possible to not only deprivilege a guest VM, but also the host OS.
+///   This provides the ability to protect a guest VM from the host OS which is
+///   the opposite from what we are used too with other hypervisors.
 ///
-/// - disaggregation
+/// - disaggregation: Since most hypervisors cannot provide a deprivileged
+///   host OS, we usually attempt to disaggregate the host OS to reduce the
+///   risk of malware breaking into the host OS from completely owning the
+///   system. Disaggregation refers moving resources that the host OS would
+///   usually manage into guest VMs that can be deprivileged. Using Bareflank,
+///   we can deprivilege the host OS, so disaggregation is a "nice to have",
+///   "defense-in-depth" technique, and not a requirement. On other hypervisors
+///   disaggregation is the only mechanism we have to increase the security
+///   posture of the system by reducing the amount of software that is running
+///   with "privilege" (i.e. the ability to see another VM's resources).
 ///
 
 // -----------------------------------------------------------------------------
@@ -249,11 +289,12 @@
 ///
 void global_init();
 
-/// vCPU Init Nonroot
+/// vCPU Init
 ///
 /// This function is called after a vCPU has been fully constructed, but before
-/// the vCPU has been started. This code executes in nonroot (i.e. in the
-/// host OS's kernel).
+/// the vCPU has been started. Since the VMM is not running, we do not
+/// have a host or a guest, so this function is executed in the context of the
+/// host OS (on Intel this is ring0).
 ///
 /// Note:
 /// This is only called for host vCPUs
@@ -262,62 +303,95 @@ void global_init();
 ///
 void vcpu_init(vcpu_t *vcpu);
 
-/// vCPU Fini Nonroot
+/// vCPU Fini
 ///
-/// This function is called after a vCPU has been stopped, but just prior to
-/// it being destroyed. This code executes in nonroot (i.e. in the host OS's
-/// kernel).
+/// This function is called before a vCPU has been fully destroyed, but after
+/// the vCPU has been stopped. Since the VMM is not running, we do not
+/// have a host or a guest, so this function is executed in the context of the
+/// host OS (on Intel this is ring0).
 ///
 /// Note:
 /// This is only called for host vCPUs
 ///
-/// @param vcpu the vCPU being finalized
+/// @param vcpu the vCPU being finailized
 ///
 void vcpu_fini(vcpu_t *vcpu);
 
-/// vCPU Init Nonroot (Running)
+/// vCPU Init Guest
 ///
 /// This function is called after a vCPU has been fully constructed, right
-/// after the vCPU has been started (i.e. it is now running). This function is
-/// also called after the vcpu_init_root() function, and unlike that function,
-/// this code executes in nonroot (i.e. in the host OS's kernel).
+/// after the vCPU has been started (i.e. it is now running). There are two
+/// versions of this function: host/guest. The guest function is executed
+/// from the guest point of view, which means that it executes from the host
+/// OS (on Intel this is ring0). Remember that there is a difference between
+/// the guest, a guest vCPU and a guest VM. The "guest" is nothing more than
+/// any code not running in the "host". On Intel, the guest is any code running
+/// in ring0-3, even for host vCPUs. A guest vCPU is any vCPU that is not a
+/// host vCPU. This function never executes for a guest vCPU. A guest VM is
+/// any operating system that is not the host OS. This function is never called
+/// for a guest VM since guest VMs can only be executed by guest vCPUs, and
+/// this function is never executed for guest vCPUs. This function is only
+/// executed for host vCPUs on the host OS from the guest POV.
 ///
 /// Note:
 /// This is only called for host vCPUs
 ///
 /// @param vcpu the vCPU being initialized
 ///
-void vcpu_ini_guest(vcpu_t *vcpu);
+void vcpu_init_guest(vcpu_t *vcpu);
 
-/// vCPU Fini Nonroot (Running)
+/// vCPU Fini Guest
 ///
-/// This function is called just before the vCPU is stopped and the host OS
-/// is promoted. This code executes in nonroot (i.e. in the host OS's kernel).
+/// This function is called before a vCPU has been fully destroyed, right
+/// before the vCPU has been stopped (i.e. it is still running). There are two
+/// versions of this function: host/guest. The guest function is executed
+/// from the guest point of view, which means that it executes from the host
+/// OS (on Intel this is ring0). Remember that there is a difference between
+/// the guest, a guest vCPU and a guest VM. The "guest" is nothing more than
+/// any code not running in the "host". On Intel, the guest is any code running
+/// in ring0-3, even for host vCPUs. A guest vCPU is any vCPU that is not a
+/// host vCPU. This function never executes for a guest vCPU. A guest VM is
+/// any operating system that is not the host OS. This function is never called
+/// for a guest VM since guest VMs can only be executed by guest vCPUs, and
+/// this function is never executed for guest vCPUs. This function is only
+/// executed for host vCPUs on the host OS from the guest POV.
 ///
 /// Note:
 /// This is only called for host vCPUs
 ///
-/// @param vcpu the vCPU being initialized
+/// @param vcpu the vCPU being finailized
 ///
 void vcpu_fini_guest(vcpu_t *vcpu);
 
-/// vCPU Init (Root)
+/// vCPU Init Guest
 ///
-/// This function is called whenever a vCPU is being initialized in root mode
-/// (i.e. the vCPU is executing from an exit handler in ring -1). Extensions
-/// can override this function to provide their own custom initialization code.
+/// This function is called after a vCPU has been fully constructed, right
+/// after the vCPU has been started (i.e. it is now running). There are two
+/// versions of this function: host/guest. The host function is executed
+/// from the host point of view, which means that it executes from an exit
+/// handler. To do this, we generate a VMExit right after the VMM is stated
+/// on this vCPU.
 ///
-/// @param vcpu the vcpu being initialized
+/// Note:
+/// This is only called for host vCPUs
+///
+/// @param vcpu the vCPU being initialized
 ///
 void vcpu_init_host(vcpu_t *vcpu);
 
-/// vCPU Fini (Root)
+/// vCPU Fini Guest
 ///
-/// This function is called whenever a vCPU is being finalized in root mode
-/// (i.e. the vCPU is executing from an exit handler in ring -1). Extensions
-/// can override this function to provide their own custom finalization code.
+/// This function is called before a vCPU has been fully destroyed, right
+/// before the vCPU has been stopped (i.e. it is still running). There are two
+/// versions of this function: host/guest. The host function is executed
+/// from the host point of view, which means that it executes from an exit
+/// handler. To do this, we generate a VMExit right before the VMM is stopped
+/// on this vCPU.
 ///
-/// @param vcpu the vcpu being finalized
+/// Note:
+/// This is only called for host vCPUs
+///
+/// @param vcpu the vCPU being finailized
 ///
 void vcpu_fini_host(vcpu_t *vcpu);
 

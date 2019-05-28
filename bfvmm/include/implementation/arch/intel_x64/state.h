@@ -28,13 +28,6 @@
 #include "../../../uapis/arch/intel_x64/state.h"
 
 // -----------------------------------------------------------------------------
-// Ptototypes
-// -----------------------------------------------------------------------------
-
-namespace bfvmm::implementation::intel_x64
-{ class vcpu; }
-
-// -----------------------------------------------------------------------------
 // Defintion
 // -----------------------------------------------------------------------------
 
@@ -45,7 +38,7 @@ class state :
     public uapis::intel_x64::state<state>
 {
 PUBLIC:
-    explicit state(gsl::not_null<vcpu *> vcpu);
+    explicit state();
     VIRTUAL ~state() = default;
 
 PRIVATE:
@@ -88,6 +81,9 @@ PRIVATE:
     void __set_ia32_vmx_cr0_fixed0(reg_t val) noexcept;
     reg_t __ia32_vmx_cr4_fixed0() const noexcept;
     void __set_ia32_vmx_cr4_fixed0(reg_t val) noexcept;
+
+PRIVATE:
+    VIRTUAL const state_t *state() const noexcept;
 
 PRIVATE:
     struct state_t {

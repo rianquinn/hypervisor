@@ -27,9 +27,7 @@
 namespace bfvmm::implementation::intel_x64
 {
 
-state::state(
-    gsl::not_null<vcpu *> vcpu
-) :
+state::state() :
     m_ia32_vmx_cr0_fixed0{::intel_x64::msrs::ia32_vmx_cr0_fixed0::get()},
     m_ia32_vmx_cr4_fixed0{::intel_x64::msrs::ia32_vmx_cr4_fixed0::get()}
 {
@@ -194,5 +192,9 @@ state::__ia32_vmx_cr4_fixed0() const noexcept
 void
 state::__set_ia32_vmx_cr4_fixed0(reg_t val) noexcept
 { m_ia32_vmx_cr4_fixed0 = val; }
+
+const state_t *
+state::state() const noexcept
+{ return m_state.get(); }
 
 }

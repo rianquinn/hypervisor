@@ -34,97 +34,23 @@
 namespace bfvmm::uapis
 {
 
-/// Virtual CPU (vCPU)
+/// Virtual CPU (vCPU) Base
 ///
-/// To understand what a vCPU is we will need to define some types. Although
-/// Bareflank is designed to work with multiple CPU archiectures, the names
-/// mostly come from Intel with some mods to make things easier to understand.
+/// The general vCPU is broken up into two different generic interfaces, the
+/// "base" and "common". The base provides the base APIs that are needed by
+/// all of the vCPU APIs, which is why it exists in the first place. We need
+/// this class because some of the functionality of the other APIs depends on
+/// it to function properly. This functionality actually has an implementation
+/// as part of it. The "common" APIs do not have an implementation. These are
+/// APIs that architectural vCPUs have to provide, but all of them share in
+/// common. For example, all vCPU have to provide a run() function as this is
+/// the function that is used to execute a vCPU.
 ///
-/// - host: the host is the thing that is executed in ring-1. From an Intel
-///   point of view, the host is the collection of exit handlers. It is not
-///   all of the code in the "bfvmm" folder as some of that code is run
-///   outside of the host. It is simply the code running on the CPU with the
-///   highest privileges. It also has its own state including its own page
-///   tables, memory etc... When running in the host, DO NOT ASSUME you can
-///   access any resource (e.g. memory, kernel function calls, etc...) outside
-///   the host. The host is its own isolated entity that does not have access
-///   to anything outside of itself unless you explicitly grant it access to
-///   other resources. The most important thing to remember is that if the
-///   execution of code doesn't start from an exit handler, you are not in the
-///   host. You are only in the host if execution starts from a VMExit.
-///
-/// - guest: the guest is any code that is not executed from an exit handler.
-///   Note that if the VMM is not running, "host" and "guest" have no meaning
-///   which is why we do not use them in this context. You can only be in the
-///   "host" or the "guest", not both at the same time, and you are in neither
-///   if the VMM is not running. If the VMM is not running, you are simply
-///   running in the "host OS" which is described below. From an Intel point
-///   of view, the VMCS maintains a "host" and "guest" state and we use the
-///   same scheme here for all archiectures. Another way to look at this is
-///   software that executes in the host executes with ring-1 privileges while
-///   software that executes in the guest executes with ring0-3 privileges.
-///
-/// - pCPU: A physical CPU. On systems with hyperthreading this is actually
-///   a thread, but on systems without hyperthraeding, or hyperthreading
-///   disabled, the pCPU is a real-life core. The important thing to remember
-///   here is that a pCPU is a real CPU and it is the thing that actually
-///   executes software.
-///
-/// - vCPU: a virtual CPU is a virtual representation of a CPU. Another way
-///   of looking at it is, a vCPU stores all of the state for a pCPU and allows
-///   a hypervisor to swap states on the pCPU from one state to another. This
-///   provides the hypervisor with a means to execute multiple operating
-///   systems on the same pCPU at the same time. In the VMM we only really talk
-///   about vCPUs as everything we do in the hypervisor is manipulate vCPUs.
-///   In reality, at some point, a vCPU needs to be loaded onto a pCPU and its
-///   the pCPU that is actually executing code. That is what the run()
-///   function does.
-///
-/// - host OS: the host OS is the OS responsible for managing the system.
-///   Another way of looking at it is, the host OS is the thing that starts
-///   the VMM. When this occurs, all of the physical CPUs are given virtual
-///   vCPUs by demoting the host OS (i.e. running the host OS in a VM). Once
-///   the VMM is running, the host OS is free to do what it wants, including
-///   starting other operating systems (e.g. UEFI starting Linux or Windows).
-///
-/// - host vCPU: A host vCPU is a vCPU that stores the state for the host OS.
-///   It is a vCPU that executes the host OS. There is one host vCPU for every
-///   pCPU on the system and host vCPUs should not be created by the user.
-///   These are managed by Bareflank. It should be noted that host vCPUs do not
-///   need to execute. If you are not running guest VMs, the only vCPUs that
-///   execute are host vCPUs, but if you are running guest VMs, you would
-///   configure the hypervisor to create the guest VMs and never execute the
-///   host OS again, which means the host vCPUs would never execute again.
-///
-/// - guest vCPU: A guest vCPU is any vCPU that is not a host vCPU. Guest
-///   vCPUs can be used to create guest VMs, containerization, etc... There
-///   is no limit. Another way of looking at a guest vCPU is a guest vCPU is
-///   any vCPU that the user of these APIs creates themselves. If you are
-///   using Bareflank to reverse engineer without the help of guest VMs, you
-///   are only using host vCPUs. To work with a guest vCPU you have to create
-///   it first. Guest vCPUs are also not automatically given host state. For
-///   example, when using Bareflank's APIs if you add a handler to a guest
-///   vCPU, the handler will be ignored in cases where emulation is possible.
-///   In these cases, you must add emulation handles and explicitly give the
-///   guest vCPU host state.
-///
-/// - host-only
-///
-/// - early-boot
-///
-/// - late-launch
-///
-/// - hpa
-///
-/// - hva
-///
-/// - gpa
-///
-/// - gva
-///
-/// - deprivilege
-///
-/// - disaggregation
+/// For more information about what a vCPU is, please see the entry.h file as
+/// this has all of the documentation about a lot of the naming schemes that
+/// are found in this file, as well as the common version of the vCPU. That
+/// file should be read and well understood before continuing onto these APIs
+/// as they will not make any sense without it.
 ///
 template<typename IMPL>
 struct vcpu_base
@@ -143,13 +69,17 @@ struct vcpu_base
 
     /// Generate Guest vCPU Id
     ///
+    /// If you are creating a vCPU, you should ALWAYS use this function to
+    /// generate the ID. If you do not, the base APIs will execute host vCPU
+    /// functions that are only meant to be executed once.
+    ///
     /// @expects
     /// @ensures
     ///
     /// @return returns a new, unique guest vCPU id
     ///
-    constexpr static id_t generate_guest_id() noexcept
-    { return IMPL::__generate_guest_id(); }
+    constexpr static id_t generate_guest_vcpu_id() noexcept
+    { return IMPL::__generate_guest_vcpu_id(); }
 
     /// Is Bootstrap vCPU
     ///
@@ -186,7 +116,7 @@ struct vcpu_base
     /// A guest vCPU is any vCPU that is not controlling a physical CPU
     /// used by the host OS. Guest vCPUs are not given state information from
     /// the host or host OS. Guest vCPUs also have special ids which should
-    /// be created using generate_guest_id().
+    /// be created using generate_guest_vm_id().
     ///
     /// @expects
     /// @ensures
@@ -227,24 +157,6 @@ struct vcpu_base
     template<typename T, typename... Args>
     constexpr void set_data(Args &&...args)
     { impl<const IMPL>(this)->template set_data<T>(std::forward<Args>(args)...); }
-
-    /// Run
-    ///
-    /// Executes the vCPU. On most architectures, this function will not
-    /// return on success and throw on failure.
-    ///
-    /// Notes:
-    ///
-    /// This is an architural specific function, and how it is implemented
-    /// depends on the implementation provided by the architecture. For more
-    /// information, please see the arch/xxx/vcpu.h version of the vCPU for
-    /// the architecture of interest.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    constexpr void run()
-    { return impl<IMPL>(this)->arch_run(); }
 };
 
 }

@@ -48,10 +48,8 @@ using vcpu_t = bfvmm::implementation::intel_x64::vcpu;
 // #include "cpuid.h"
 // #include "exit_handler.h"
 #include "state.h"
-// #include "vmcs.h"
+#include "vmcs.h"
 #include "vmx.h"
-
-#include <bfdebug.h>
 
 // -----------------------------------------------------------------------------
 // Defintion
@@ -63,19 +61,15 @@ namespace bfvmm::implementation::intel_x64
 class vcpu :
     public implementation::vcpu_base,
     public implementation::intel_x64::vmx,
-    public implementation::intel_x64::state
+    public implementation::intel_x64::state,
+    public implementation::intel_x64::vmcs
 {
 public:
     explicit vcpu(id_t id);
+    VIRTUAL ~vcpu() = default;
 
 private:
     static void global_init();
-
-    inline void demote()
-    { bfdebug_info(0, "host os is" bfcolor_green " now " bfcolor_end "in a vm"); }
-
-    inline void promote()
-    { bfdebug_info(0, "host os is" bfcolor_red " not " bfcolor_end "in a vm"); }
 
     static inline auto make(id_t id)
     { return std::make_unique<vcpu>(id); }

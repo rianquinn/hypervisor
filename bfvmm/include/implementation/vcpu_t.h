@@ -30,4 +30,14 @@
 
 #include VCPU_T_HEADER
 
+template<typename T>
+constexpr auto
+vcpu_t_cast(T *t)
+{ return static_cast<vcpu_t *>(t); }
+
+template<typename T>
+constexpr auto
+vcpu_t_cast(const T *t)
+{ return static_cast<const vcpu_t *>(t); }
+
 #endif

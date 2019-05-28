@@ -48,19 +48,19 @@ WEAK_SYM global_init()
 { }
 
 void
-WEAK_SYM vcpu_init_nonroot(vcpu_t *vcpu)
+WEAK_SYM vcpu_init(vcpu_t *vcpu)
 { bfignored(vcpu); }
 
 void
-WEAK_SYM vcpu_fini_nonroot(vcpu_t *vcpu)
+WEAK_SYM vcpu_fini(vcpu_t *vcpu)
 { bfignored(vcpu); }
 
 void
-WEAK_SYM vcpu_init_nonroot_running(vcpu_t *vcpu)
+WEAK_SYM vcpu_init_guest(vcpu_t *vcpu)
 { bfignored(vcpu); }
 
 void
-WEAK_SYM vcpu_fini_nonroot_running(vcpu_t *vcpu)
+WEAK_SYM vcpu_fini_guest(vcpu_t *vcpu)
 { bfignored(vcpu); }
 
 // -----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ public:
     {
         return guard_exceptions([arg]() {
             auto vcpu = g_vcm->create(arg);
-            vcpu_init_nonroot(vcpu);
+            vcpu_init(vcpu);
             vcpu->demote();
             vcpu_init_nonroot_running(vcpu);
         });
@@ -107,7 +107,7 @@ public:
             auto vcpu = g_vcm->destroy(arg);
             vcpu_fini_nonroot_running(vcpu.get());
             vcpu->promote();
-            vcpu_fini_nonroot(vcpu.get());
+            vcpu_fini(vcpu.get());
         });
     }
 

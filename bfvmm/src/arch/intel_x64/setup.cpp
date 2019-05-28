@@ -16,3 +16,6 @@ FXRSTOR instructions or for handling SIMD floating-point exceptions.
 instructions (see Section 2.5, “Control Registers”).
 4. Set CR0.MP[bit 1] = 1. This setting is required for Intel 64 and IA-32 processors that support the SSE
 extensions (see Section 9.2.1, “Configuring the x87 FPU Environment”).
+
+
+    vmcs_link_pointer::set(0xFFFFFFFFFFFFFFFF);

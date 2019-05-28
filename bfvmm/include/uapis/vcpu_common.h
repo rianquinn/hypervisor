@@ -19,8 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef UAPIS_VCPU_H
-#define UAPIS_VCPU_H
+#ifndef UAPIS_VCPU_COMMON_H
+#define UAPIS_VCPU_COMMON_H
 
 #include <bfgsl.h>
 #include <bftypes.h>
@@ -43,7 +43,7 @@ struct vcpu
     /// Run
     ///
     /// Executes the vCPU. On most architectures, this function will not
-    /// return on success and throw on failure.
+    /// return on success and throws on failure.
     ///
     /// Notes:
     ///
@@ -56,7 +56,69 @@ struct vcpu
     /// @ensures none
     ///
     constexpr void run()
-    { return impl<IMPL>(this)->arch_run(); }
+    { return impl<IMPL>(this)->__arch_run(); }
+
+    /// Advance vCPU
+    ///
+    /// This function will advance the vCPU's instruction pointer to the next
+    /// instruction.
+    ///
+    /// Also note that this function always returns true. Most extensions will
+    /// not need to execute this function manually, and instead the base will
+    /// execute this for you. If you do need to execute this manually, it
+    /// should be paired, in most cases, with a "return" indicating that the
+    /// handler is done, and no other handlers should execute. In most cases,
+    /// extensions will return false in an exit handler indicating that the
+    /// base should complete the exit.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @return always returns true
+    ///
+    CONSTEXPR bool advance()
+    { return impl<const IMPL>(this)->__arch_advance(); }
+
+    /// Load
+    ///
+    /// This function loads the vCPU. This is not the same thing as run().
+    /// Loading a vCPU allows the vCPUs state to be changed. Some state can be
+    /// changed without the need for a load(), which is architecture dependent.
+    /// This function should only be used when needed as it is expensive.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    CONSTEXPR void load()
+    { impl<const IMPL>(this)->__arch_load(); }
+
+    /// Clear
+    ///
+    /// This function clears the vCPU. This does _not_ 0 out the vCPU's state.
+    /// All this does is mark the vCPU so that the next run() is executed, the
+    /// vCPU can reassign the vCPU to another pCPU if needed.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    CONSTEXPR void clear()
+    { impl<const IMPL>(this)->__arch_clear(); }
+
+    /// Check
+    ///
+    /// This function checks to see if the vCPU is configured improperly. If
+    /// the vCPU is configured properly, this function will return true. This
+    /// is a really expensive thing to do, so it should only be used in error
+    /// handling for debugging purposes.
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @return returns true if the vCPU is configured properly, false
+    ///     otherwise
+    ///
+    CONSTEXPR bool check() const noexcept
+    { return impl<const IMPL>(this)->__arch_check(); }
 };
 
 }

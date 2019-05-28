@@ -78,4 +78,5 @@ vmcs_resume:
     pop r12
     pop rbx
 
+    mov rax, 0x1
     ret
