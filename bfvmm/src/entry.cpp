@@ -96,7 +96,7 @@ public:
             auto vcpu = g_vcm->create(arg);
             vcpu_init(vcpu);
             vcpu->demote();
-            vcpu_init_nonroot_running(vcpu);
+            vcpu_init_guest(vcpu);
         });
     }
 
@@ -105,7 +105,7 @@ public:
     {
         return guard_exceptions([arg]() {
             auto vcpu = g_vcm->destroy(arg);
-            vcpu_fini_nonroot_running(vcpu.get());
+            vcpu_fini_guest(vcpu.get());
             vcpu->promote();
             vcpu_fini(vcpu.get());
         });

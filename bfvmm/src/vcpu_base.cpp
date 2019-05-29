@@ -21,6 +21,12 @@
 
 #include <implementation/vcpu_base.h>
 
+/// WARNING:
+///
+/// If you change the host/guest ID mask, you must also change this mask in
+/// the VMCS launch code as this is hardcoded in that file as well.
+///
+
 namespace bfvmm::implementation
 {
 

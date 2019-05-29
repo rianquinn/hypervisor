@@ -58,7 +58,7 @@ struct vcpu
     constexpr void run()
     { return impl<IMPL>(this)->__arch_run(); }
 
-    /// Advance vCPU
+    /// Advance vCPU Instruction Pointer
     ///
     /// This function will advance the vCPU's instruction pointer to the next
     /// instruction.
@@ -76,8 +76,8 @@ struct vcpu
     ///
     /// @return always returns true
     ///
-    CONSTEXPR bool advance()
-    { return impl<const IMPL>(this)->__arch_advance(); }
+    CONSTEXPR bool advance_ip()
+    { return impl<const IMPL>(this)->__arch_advance_ip(); }
 
     /// Load
     ///
@@ -94,31 +94,16 @@ struct vcpu
 
     /// Clear
     ///
-    /// This function clears the vCPU. This does _not_ 0 out the vCPU's state.
-    /// All this does is mark the vCPU so that the next run() is executed, the
-    /// vCPU can reassign the vCPU to another pCPU if needed.
+    /// This function clears the vCPU. Note that this does not 0 out the vCPU's
+    /// state. It simply tells the vCPU to relaunch itself on the next run().
+    /// On some archiectures, this might do nothing. On Intel, this executes a
+    /// VMCLear instruction.
     ///
     /// @expects none
     /// @ensures none
     ///
     CONSTEXPR void clear()
     { impl<const IMPL>(this)->__arch_clear(); }
-
-    /// Check
-    ///
-    /// This function checks to see if the vCPU is configured improperly. If
-    /// the vCPU is configured properly, this function will return true. This
-    /// is a really expensive thing to do, so it should only be used in error
-    /// handling for debugging purposes.
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return returns true if the vCPU is configured properly, false
-    ///     otherwise
-    ///
-    CONSTEXPR bool check() const noexcept
-    { return impl<const IMPL>(this)->__arch_check(); }
 };
 
 }

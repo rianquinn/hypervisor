@@ -20,7 +20,7 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(bfvmm CXX)
+project(bfvmm CXX ASM)
 
 # ------------------------------------------------------------------------------
 # bfvmm
@@ -35,6 +35,9 @@ add_library(bfvmm
     src/vcpu_base.cpp
     $<${INTEL_X64}:src/arch/intel_x64/state.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/vcpu.cpp>
+    $<${INTEL_X64}:src/arch/intel_x64/vmcs.cpp>
+    $<${INTEL_X64}:src/arch/intel_x64/vmentry.S>
+    $<${INTEL_X64}:src/arch/intel_x64/vmexit.S>
     $<${INTEL_X64}:src/arch/intel_x64/vmx.cpp>
 )
 

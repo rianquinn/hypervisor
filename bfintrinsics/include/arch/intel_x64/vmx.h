@@ -37,7 +37,6 @@ extern "C" bool _vmptrld(void *ptr) noexcept;
 extern "C" bool _vmptrst(void *ptr) noexcept;
 extern "C" bool _vmread(uint64_t field, uint64_t *value) noexcept;
 extern "C" bool _vmwrite(uint64_t field, uint64_t value) noexcept;
-extern "C" bool _vmlaunch_demote(void) noexcept;
 extern "C" bool _invept(uint64_t type, void *ptr) noexcept;
 extern "C" bool _invvpid(uint64_t type, void *ptr) noexcept;
 extern "C" uintptr_t _vmcall(uintptr_t r1, uintptr_t r2, uintptr_t r3, uintptr_t r4) noexcept;
@@ -171,13 +170,6 @@ namespace vm
             bferror_subnhex(0, "value", value);
 
             throw std::runtime_error("vm::write failed");
-        }
-    }
-
-    inline void launch_demote()
-    {
-        if (!_vmlaunch_demote()) {
-            throw std::runtime_error("vm::launch_demote failed");
         }
     }
 

@@ -22,6 +22,8 @@
 #ifndef IMPLEMENTATION_VMCS_INTEL_X64_H
 #define IMPLEMENTATION_VMCS_INTEL_X64_H
 
+#include <list>
+
 #include "../../macros.h"
 
 #include "../../../uapis/unique_page.h"
@@ -39,18 +41,21 @@ class vmcs :
 {
 PUBLIC:
     explicit vmcs();
-    VIRTUAL ~vmcs() = default;
+    VIRTUAL ~vmcs();
 
 PRIVATE:
     void demote();
     void promote();
 
+    void check() const noexcept;
+    void launch();
+    void resume();
+
 PRIVATE:
     void __arch_run();
-    bool __arch_advance();
+    bool __arch_advance_ip();
     void __arch_load();
     void __arch_clear();
-    bool __arch_check() const noexcept;
 
 PRIVATE:
     void __vmcs_add_vmlaunch_delegate(const vmcs_delegate_t &d);
@@ -382,7 +387,7 @@ PRIVATE:
     vmcs_field64_t __ia32_sysenter_eip() const;
     void __set_ia32_sysenter_eip(vmcs_field64_t val);
 
-PRIVATE
+PRIVATE:
     vmcs_field16_t host_es_selector() const;
     void set_host_es_selector(vmcs_field16_t val);
 
@@ -452,8 +457,7 @@ PRIVATE
     vmcs_field64_t host_rip() const;
     void set_host_rip(vmcs_field64_t val);
 
-private:
-
+PRIVATE:
     bool m_launched{false};
     unique_page<uint32_t> m_vmcs_region{};
 
@@ -469,6 +473,9 @@ PRIVATE:
 PRIVATE:
     template<typename T>
     friend struct uapis::intel_x64::vmcs;
+
+    friend class state;
+    friend class ::private_entry;
 };
 
 }

@@ -347,46 +347,6 @@ struct state
     CONSTEXPR void set_r15(reg_t val) noexcept
     { impl<const IMPL>(this)->__set_r15(val); }
 
-    /// Get RIP
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return returns the guest's rip register
-    ///
-    CONSTEXPR reg_t rip() const noexcept
-    { return impl<const IMPL>(this)->__rip(); }
-
-    /// Set RIP
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param val the value to set the guest's rip register to
-    ///
-    CONSTEXPR void set_rip(reg_t val) noexcept
-    { impl<const IMPL>(this)->__set_rip(val); }
-
-    /// Get RSP
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @return returns the guest's rsp register
-    ///
-    CONSTEXPR reg_t rsp() const noexcept
-    { return impl<const IMPL>(this)->__rsp(); }
-
-    /// Set RSP
-    ///
-    /// @expects none
-    /// @ensures none
-    ///
-    /// @param val the value to set the guest's rsp register to
-    ///
-    CONSTEXPR void set_rsp(reg_t val) noexcept
-    { impl<const IMPL>(this)->__set_rsp(val); }
-
     /// Exit Reason
     ///
     /// @expects none
@@ -396,6 +356,16 @@ struct state
     ///
     CONSTEXPR reg_t exit_reason() const noexcept
     { return impl<const IMPL>(this)->__exit_reason(); }
+
+    /// Set Exit Reason
+    ///
+    /// @expects none
+    /// @ensures none
+    ///
+    /// @param val the value to set the guest's exit_reason register to
+    ///
+    CONSTEXPR void set_exit_reason(reg_t val) noexcept
+    { impl<const IMPL>(this)->__set_exit_reason(val); }
 
     /// Get CR0 Fixed 0 (MSR)
     ///
@@ -570,24 +540,12 @@ constexpr void set_r15(gsl::not_null<IMPL *> vcpu, Args &&...args) noexcept
 { vcpu->set_r15(std::forward<Args>(args)...); }
 
 template<typename IMPL>
-constexpr auto rip(gsl::not_null<const IMPL *> vcpu) noexcept
-{ return vcpu->rip(); }
-
-template<typename IMPL, typename... Args>
-constexpr void set_rip(gsl::not_null<IMPL *> vcpu, Args &&...args) noexcept
-{ vcpu->set_rip(std::forward<Args>(args)...); }
-
-template<typename IMPL>
-constexpr auto rsp(gsl::not_null<const IMPL *> vcpu) noexcept
-{ return vcpu->rsp(); }
-
-template<typename IMPL, typename... Args>
-constexpr void set_rsp(gsl::not_null<IMPL *> vcpu, Args &&...args) noexcept
-{ vcpu->set_rsp(std::forward<Args>(args)...); }
-
-template<typename IMPL>
 constexpr auto exit_reason(gsl::not_null<const IMPL *> vcpu) noexcept
 { return vcpu->exit_reason(); }
+
+template<typename IMPL, typename... Args>
+constexpr void set_exit_reason(gsl::not_null<IMPL *> vcpu, Args &&...args) noexcept
+{ vcpu->set_exit_reason(std::forward<Args>(args)...); }
 
 template<typename IMPL>
 constexpr auto ia32_vmx_cr0_fixed0(

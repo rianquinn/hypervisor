@@ -72,18 +72,14 @@ PRIVATE:
     void __set_r14(reg_t val) noexcept;
     reg_t __r15() const noexcept;
     void __set_r15(reg_t val) noexcept;
-    reg_t __rip() const noexcept;
-    void __set_rip(reg_t val) noexcept;
-    reg_t __rsp() const noexcept;
-    void __set_rsp(reg_t val) noexcept;
     reg_t __exit_reason() const noexcept;
+    void __set_exit_reason(reg_t val) noexcept;
+
+PRIVATE:
     reg_t __ia32_vmx_cr0_fixed0() const noexcept;
     void __set_ia32_vmx_cr0_fixed0(reg_t val) noexcept;
     reg_t __ia32_vmx_cr4_fixed0() const noexcept;
     void __set_ia32_vmx_cr4_fixed0(reg_t val) noexcept;
-
-PRIVATE:
-    VIRTUAL const state_t *state() const noexcept;
 
 PRIVATE:
     struct state_t {
@@ -102,19 +98,20 @@ PRIVATE:
         reg_t r13;                      // 0x060
         reg_t r14;                      // 0x068
         reg_t r15;                      // 0x070
-        reg_t rip;                      // 0x078
-        reg_t rsp;                      // 0x080
+        reg_t exit_reason;              // 0x078
 
-        reg_t exit_reason;              // 0x088
-        void *vcpu_ptr;                 // 0x090
-        void *fxsave_region;            // 0x098
+        void *fxsave_region;            // 0x080
+        void *vcpu_ptr;                 // 0x088
     };
 
-    reg_t m_ia32_vmx_cr0_fixed0{};
-    reg_t m_ia32_vmx_cr4_fixed0{};
+    reg_t m_ia32_vmx_cr0_fixed0;
+    reg_t m_ia32_vmx_cr4_fixed0;
 
-    unique_page<state_t> m_state;
-    unique_page<uint8_t> m_fxsave_region;
+    unique_page<state_t> m_state{};
+    unique_page<uint8_t> m_fxsave_region{};
+
+PRIVATE:
+    VIRTUAL const void *state_ptr() const noexcept;
 
 PRIVATE:
     MOCK_PROTOTYPE(state)
@@ -123,6 +120,8 @@ PRIVATE:
 PRIVATE:
     template<typename T>
     friend struct uapis::intel_x64::state;
+
+    friend class vmcs;
 };
 
 }

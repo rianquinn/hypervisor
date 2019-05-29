@@ -24,6 +24,7 @@
 
 #include <bfgsl.h>
 #include <bftypes.h>
+#include <bfdelegate.h>
 
 #include "../../impl.h"
 #include "../../../implementation/vcpu_t.h"
@@ -349,7 +350,7 @@ struct vmcs
     { impl<IMPL>(this)->__set_tsc_multiplier(val); }
 
     CONSTEXPR vmcs_field64_t gpa() const
-    { return impl<const IMPL>(this)->__(); gpa}
+    { return impl<const IMPL>(this)->__gpa(); }
 
     // Missing Fields
     //
@@ -532,7 +533,7 @@ struct vmcs
     { return impl<const IMPL>(this)->__vmexit_instr_len(); }
 
     CONSTEXPR vmcs_field32_t vmexit_instr_info() const
-    { return impl<const IMPL>(this)->__(); vmexit_instr_info}
+    { return impl<const IMPL>(this)->__vmexit_instr_info(); }
 
     // Missing Fields
     //
@@ -735,7 +736,7 @@ struct vmcs
     { return impl<const IMPL>(this)->__io_rip(); }
 
     CONSTEXPR vmcs_field64_t gva() const
-    { return impl<const IMPL>(this)->__(); gva}
+    { return impl<const IMPL>(this)->__gva(); }
 
     CONSTEXPR vmcs_field64_t cr0() const
     { return impl<const IMPL>(this)->__cr0(); }
@@ -1227,7 +1228,7 @@ constexpr void set_tsc_multiplier(
 template<typename IMPL>
 constexpr auto gpa(
     gsl::not_null<const IMPL *> vcpu)
-{ return vcpu->(); gpa}
+{ return vcpu->gpa(); }
 
 template<typename IMPL>
 constexpr auto ia32_debugctl(
@@ -1522,7 +1523,7 @@ constexpr auto vmexit_instr_len(
 template<typename IMPL>
 constexpr auto vmexit_instr_info(
     gsl::not_null<const IMPL *> vcpu)
-{ return vcpu->(); vmexit_instr_info}
+{ return vcpu->vmexit_instr_info(); }
 
 template<typename IMPL>
 constexpr auto es_limit(
@@ -1852,7 +1853,7 @@ constexpr auto io_rip(
 template<typename IMPL>
 constexpr auto gva(
     gsl::not_null<const IMPL *> vcpu)
-{ return vcpu->(); gva}
+{ return vcpu->gva(); }
 
 template<typename IMPL>
 constexpr auto cr0(

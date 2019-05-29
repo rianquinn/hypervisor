@@ -19,15 +19,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <bfdebug.h>
 #include <implementation/arch/intel_x64/vcpu.h>
 
 namespace bfvmm::implementation::intel_x64
 {
 
 vcpu::vcpu(id_t id) :
-    implementation::vcpu_base{id},
-    implementation::intel_x64::state,
-    implementation::intel_x64::vmcs
+    implementation::vcpu_base{id}
 { }
 
 void

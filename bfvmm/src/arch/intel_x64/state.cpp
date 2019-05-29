@@ -21,7 +21,7 @@
 
 #include <arch/intel_x64/msrs.h>
 
-#include <implementation/arch/intel_x64/vcpu.h>
+#include <implementation/vcpu_t.h>
 #include <implementation/arch/intel_x64/state.h>
 
 namespace bfvmm::implementation::intel_x64
@@ -31,10 +31,10 @@ state::state() :
     m_ia32_vmx_cr0_fixed0{::intel_x64::msrs::ia32_vmx_cr0_fixed0::get()},
     m_ia32_vmx_cr4_fixed0{::intel_x64::msrs::ia32_vmx_cr4_fixed0::get()}
 {
-    m_state->vcpu_ptr = vcpu.get();
+    m_state->vcpu_ptr = vcpu_t_cast(this);
     m_state->fxsave_region = m_fxsave_region.get();
 
-    // vcpu->set_host_gs_base(m_state.hva()));
+    vcpu_t_cast(this)->set_host_gs_base(m_state.hva());
 }
 
 state::reg_t
@@ -158,24 +158,12 @@ state::__set_r15(reg_t val) noexcept
 { m_state->r15 = val; }
 
 state::reg_t
-state::__rip() const noexcept
-{ return m_state->rip; }
-
-void
-state::__set_rip(reg_t val) noexcept
-{ m_state->rip = val; }
-
-state::reg_t
-state::__rsp() const noexcept
-{ return m_state->rsp; }
-
-void
-state::__set_rsp(reg_t val) noexcept
-{ m_state->rsp = val; }
-
-state::reg_t
 state::__exit_reason() const noexcept
 { return m_state->exit_reason; }
+
+void
+state::__set_exit_reason(reg_t val) noexcept
+{ m_state->exit_reason = val; }
 
 state::reg_t
 state::__ia32_vmx_cr0_fixed0() const noexcept
@@ -193,8 +181,8 @@ void
 state::__set_ia32_vmx_cr4_fixed0(reg_t val) noexcept
 { m_ia32_vmx_cr4_fixed0 = val; }
 
-const state_t *
-state::state() const noexcept
+const void *
+state::state_ptr() const noexcept
 { return m_state.get(); }
 
 }
