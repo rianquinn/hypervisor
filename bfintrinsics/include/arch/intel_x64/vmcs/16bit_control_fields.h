@@ -24,13 +24,6 @@
 
 #include <arch/intel_x64/vmcs/helpers.h>
 
-/// Intel x86_64 VMCS 16-Bit Control Fields
-///
-/// The following provides the interface for the 16-bit control VMCS
-/// fields as defined in Appendix B.1.1, Vol. 3 of the Intel Software Developer's
-/// Manual.
-///
-
 // *INDENT-OFF*
 
 namespace intel_x64
@@ -45,7 +38,7 @@ namespace virtual_processor_identifier
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_vpid::is_allowed1();
     }
 
@@ -65,13 +58,13 @@ namespace virtual_processor_identifier
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace posted_interrupt_notification_vector
+namespace posted_int_notification_vector
 {
     constexpr const auto addr = 0x0000000000000002ULL;
-    constexpr const auto name = "posted_interrupt_notification_vector";
+    constexpr const auto name = "posted_int_notification_vector";
 
     inline bool exists()
-    { return msrs::ia32_vmx_true_pinbased_ctls::process_posted_interrupts::is_allowed1(); }
+    { return msrs::ia32_vmx_true_pinbased_ctls::process_posted_ints::is_allowed1(); }
 
     inline auto get()
     { return get_vmcs_field(addr, name, exists()); }
@@ -96,7 +89,7 @@ namespace eptp_index
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::ept_violation_ve::is_allowed1();
     }
 

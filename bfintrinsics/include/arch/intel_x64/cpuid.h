@@ -34,13 +34,13 @@ namespace cpuid
 using field_type = x64::cpuid::field_type;
 using value_type = x64::cpuid::value_type;
 
-namespace feature_information
+namespace feature_info
 {
     constexpr const auto addr = 0x00000001U;
 
     namespace eax
     {
-        constexpr const auto name = "feature_information_eax";
+        constexpr const auto name = "feature_info_eax";
 
         inline auto get() noexcept
         { return _cpuid_eax(addr); }
@@ -155,7 +155,7 @@ namespace feature_information
 
     namespace ebx
     {
-        constexpr const auto name = "feature_information_ebx";
+        constexpr const auto name = "feature_info_ebx";
 
         inline auto get() noexcept
         { return _cpuid_ebx(addr); }
@@ -192,11 +192,11 @@ namespace feature_information
             { bfdebug_subnhex(level, name, get(), msg); }
         }
 
-        namespace max_addressable_ids
+        namespace max_addrable_ids
         {
             constexpr const auto mask = 0x00FF0000U;
             constexpr const auto from = 16U;
-            constexpr const auto name = "max_addressable_ids";
+            constexpr const auto name = "max_addrable_ids";
 
             inline auto get() noexcept
             { return get_bits(_cpuid_ebx(addr), mask) >> from; }
@@ -229,14 +229,14 @@ namespace feature_information
             bfdebug_nhex(level, name, get(), msg);
             brand_index::dump(level, msg);
             clflush_line_size::dump(level, msg);
-            max_addressable_ids::dump(level, msg);
+            max_addrable_ids::dump(level, msg);
             initial_apic_id::dump(level, msg);
         }
     }
 
     namespace ecx
     {
-        constexpr const auto name = "feature_information_ecx";
+        constexpr const auto name = "feature_info_ecx";
 
         inline auto get() noexcept
         { return _cpuid_ecx(addr); }
@@ -549,11 +549,11 @@ namespace feature_information
             { bfdebug_subbool(level, name, is_enabled(), msg); }
         }
 
-        namespace xtpr_update_control
+        namespace xtpr_update_ctl
         {
             constexpr const auto mask = 0x00004000U;
             constexpr const auto from = 14U;
-            constexpr const auto name = "xtpr_update_control";
+            constexpr const auto name = "xtpr_update_ctl";
 
             inline auto is_enabled()
             { return is_bit_set(_cpuid_ecx(addr), from); }
@@ -918,7 +918,7 @@ namespace feature_information
             sdbg::dump(level, msg);
             fma::dump(level, msg);
             cmpxchg16b::dump(level, msg);
-            xtpr_update_control::dump(level, msg);
+            xtpr_update_ctl::dump(level, msg);
             pdcm::dump(level, msg);
             pcid::dump(level, msg);
             dca::dump(level, msg);
@@ -939,7 +939,7 @@ namespace feature_information
 
     namespace edx
     {
-        constexpr const auto name = "feature_information_edx";
+        constexpr const auto name = "feature_info_edx";
 
         inline auto get() noexcept
         { return _cpuid_edx(addr); }
@@ -2447,11 +2447,11 @@ namespace arch_perf_monitoring
             { bfdebug_subnhex(level, name, get(), msg); }
         }
 
-        namespace ebx_enumeration_length
+        namespace ebx_enumeration_len
         {
             constexpr const auto mask = 0xFF000000U;
             constexpr const auto from = 24U;
-            constexpr const auto name = "ebx_enumeration_length";
+            constexpr const auto name = "ebx_enumeration_len";
 
             inline auto get() noexcept
             { return get_bits(_cpuid_eax(addr), mask) >> from; }
@@ -2469,7 +2469,7 @@ namespace arch_perf_monitoring
             version_id::dump(level, msg);
             gppmc_count::dump(level, msg);
             gppmc_bit_width::dump(level, msg);
-            ebx_enumeration_length::dump(level, msg);
+            ebx_enumeration_len::dump(level, msg);
         }
     }
 
@@ -3201,11 +3201,11 @@ namespace monitor_mwait
             { bfdebug_subbool(level, name, is_enabled(), msg); }
         }
 
-        namespace interrupt_break_event
+        namespace int_break_event
         {
             constexpr const auto mask = 0x00000002U;
             constexpr const auto from = 1U;
-            constexpr const auto name = "interrupt_break_event";
+            constexpr const auto name = "int_break_event";
 
             inline auto is_enabled()
             { return is_bit_set(_cpuid_ecx(addr), from); }
@@ -3227,7 +3227,7 @@ namespace monitor_mwait
         {
             bfdebug_nhex(level, name, get(), msg);
             enum_mwait_extensions::dump(level, msg);
-            interrupt_break_event::dump(level, msg);
+            int_break_event::dump(level, msg);
         }
     }
 
@@ -3689,11 +3689,11 @@ namespace therm_power_management
         inline auto get() noexcept
         { return _cpuid_ebx(addr); }
 
-        namespace num_interrupts
+        namespace num_ints
         {
             constexpr const auto mask = 0x0000000FU;
             constexpr const auto from = 0U;
-            constexpr const auto name = "num_interrupts";
+            constexpr const auto name = "num_ints";
 
             inline auto get() noexcept
             { return get_bits(_cpuid_ebx(addr), mask) >> from; }
@@ -3708,7 +3708,7 @@ namespace therm_power_management
         inline void dump(int level, std::string *msg = nullptr)
         {
             bfdebug_nhex(level, name, get(), msg);
-            num_interrupts::dump(level, msg);
+            num_ints::dump(level, msg);
         }
     }
 
@@ -4575,11 +4575,11 @@ namespace allocation_enumeration
             inline auto get() noexcept
             { return _cpuid_subeax(addr, leaf); }
 
-            namespace mask_length
+            namespace mask_len
             {
                 constexpr const auto mask = 0x0000001FU;
                 constexpr const auto from = 0U;
-                constexpr const auto name = "mask_length";
+                constexpr const auto name = "mask_len";
 
                 inline auto get() noexcept
                 { return get_bits(_cpuid_subeax(addr, leaf), mask) >> from; }
@@ -4594,7 +4594,7 @@ namespace allocation_enumeration
             inline void dump(int level, std::string *msg = nullptr)
             {
                 bfdebug_nhex(level, name, get(), msg);
-                mask_length::dump(level, msg);
+                mask_len::dump(level, msg);
             }
         }
 
@@ -4714,11 +4714,11 @@ namespace allocation_enumeration
             inline auto get() noexcept
             { return _cpuid_subeax(addr, leaf); }
 
-            namespace mask_length
+            namespace mask_len
             {
                 constexpr const auto mask = 0x0000001FU;
                 constexpr const auto from = 0U;
-                constexpr const auto name = "mask_length";
+                constexpr const auto name = "mask_len";
 
                 inline auto get() noexcept
                 { return get_bits(_cpuid_subeax(addr, leaf), mask) >> from; }
@@ -4733,7 +4733,7 @@ namespace allocation_enumeration
             inline void dump(int level, std::string *msg = nullptr)
             {
                 bfdebug_nhex(level, name, get(), msg);
-                mask_length::dump(level, msg);
+                mask_len::dump(level, msg);
             }
         }
 
@@ -5642,11 +5642,11 @@ namespace trace_enumeration
             inline auto get() noexcept
             { return _cpuid_subeax(addr, leaf); }
 
-            namespace num_address_ranges
+            namespace num_addr_ranges
             {
                 constexpr const auto mask = 0x00000007U;
                 constexpr const auto from = 0U;
-                constexpr const auto name = "num_address_ranges";
+                constexpr const auto name = "num_addr_ranges";
 
                 inline auto get() noexcept
                 { return get_bits(_cpuid_subeax(addr, leaf), mask) >> from; }
@@ -5677,7 +5677,7 @@ namespace trace_enumeration
             inline void dump(int level, std::string *msg = nullptr)
             {
                 bfdebug_nhex(level, name, get(), msg);
-                num_address_ranges::dump(level, msg);
+                num_addr_ranges::dump(level, msg);
                 bitmap_mtc::dump(level, msg);
             }
         }

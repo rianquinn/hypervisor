@@ -141,7 +141,7 @@ clear_vmcs_field_bit_if_exists(
 }
 
 inline void
-enable_vm_control(
+enable_vm_ctl(
     field_type addr, value_type from, bool is_allowed1, const char *name, bool exists)
 {
     if (!exists) {
@@ -156,7 +156,7 @@ enable_vm_control(
 }
 
 inline void
-enable_vm_control_if_allowed(
+enable_vm_ctl_if_allowed(
     field_type addr, value_type from, bool is_allowed1, const char *name, bool verbose, bool exists)
 {
     if (!exists) {
@@ -177,7 +177,7 @@ enable_vm_control_if_allowed(
 }
 
 inline void
-disable_vm_control(
+disable_vm_ctl(
     field_type addr, value_type from, bool is_allowed0, const char *name, bool exists)
 {
     if (!exists) {
@@ -192,7 +192,7 @@ disable_vm_control(
 }
 
 inline void
-disable_vm_control_if_allowed(
+disable_vm_ctl_if_allowed(
     field_type addr, value_type from, bool is_allowed0, const char *name, bool verbose, bool exists)
 {
     if (!exists) {
@@ -213,7 +213,7 @@ disable_vm_control_if_allowed(
 }
 
 inline void
-dump_vm_control(int level, bool exists, bool is_allowed1, bool enabled, const char *name, std::string *msg)
+dump_vm_ctl(int level, bool exists, bool is_allowed1, bool enabled, const char *name, std::string *msg)
 {
     if (!exists || !is_allowed1) {
         bfdebug_subtext(level, name, "unsupported", msg);

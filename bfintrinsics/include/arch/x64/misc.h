@@ -39,7 +39,7 @@ namespace exception
 {
     constexpr const auto divide_error = 0U;
     constexpr const auto debug_exception = 1U;
-    constexpr const auto nmi_interrupt = 2U;
+    constexpr const auto nmi_int = 2U;
     constexpr const auto breakpoint = 3U;
     constexpr const auto overflow = 4U;
     constexpr const auto bound_range_exceeded = 5U;
@@ -71,19 +71,19 @@ namespace memory_type
     constexpr const auto uncacheable_minus = 0x00000007ULL;
 }
 
-inline auto is_address_canonical(uintptr_t addr)
+inline auto is_addr_canonical(uint64_t addr)
 { return ((addr <= 0x00007FFFFFFFFFFFULL) || (addr >= 0xFFFF800000000000ULL)); }
 
-inline auto is_address_canonical(void *addr)
-{ return is_address_canonical(reinterpret_cast<uintptr_t>(addr)); }
+inline auto is_addr_canonical(void *addr)
+{ return is_addr_canonical(reinterpret_cast<uint64_t>(addr)); }
 
-inline auto is_linear_address_valid(uintptr_t addr)
-{ return is_address_canonical(addr); }
+inline auto is_linear_addr_valid(uint64_t addr)
+{ return is_addr_canonical(addr); }
 
-inline auto is_linear_address_valid(void *addr)
-{ return is_address_canonical(addr); }
+inline auto is_linear_addr_valid(void *addr)
+{ return is_addr_canonical(addr); }
 
-inline auto is_physical_address_valid(uintptr_t addr)
+inline auto is_physical_addr_valid(uint64_t addr)
 {
     auto size = cpuid::addr_size::phys::get();
     auto mask = (0xFFFFFFFFFFFFFFFFULL >> size) << size;
@@ -91,14 +91,14 @@ inline auto is_physical_address_valid(uintptr_t addr)
     return ((addr & mask) == 0);
 }
 
-inline auto is_physical_address_valid(uintptr_t addr, uint64_t size)
+inline auto is_physical_addr_valid(uint64_t addr, uint64_t size)
 {
     auto mask = (0xFFFFFFFFFFFFFFFFULL >> size) << size;
     return ((addr & mask) == 0);
 }
 
-inline auto is_physical_address_valid(void *addr)
-{ return is_physical_address_valid(reinterpret_cast<uintptr_t>(addr)); }
+inline auto is_physical_addr_valid(void *addr)
+{ return is_physical_addr_valid(reinterpret_cast<uint64_t>(addr)); }
 
 }
 

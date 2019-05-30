@@ -39,11 +39,11 @@ extern "C" bool _vmread(uint64_t field, uint64_t *value) noexcept;
 extern "C" bool _vmwrite(uint64_t field, uint64_t value) noexcept;
 extern "C" bool _invept(uint64_t type, void *ptr) noexcept;
 extern "C" bool _invvpid(uint64_t type, void *ptr) noexcept;
-extern "C" uintptr_t _vmcall(uintptr_t r1, uintptr_t r2, uintptr_t r3, uintptr_t r4) noexcept;
-extern "C" uintptr_t _vmcall1(void *r1) noexcept;
-extern "C" uintptr_t _vmcall2(void *r1, void *r2) noexcept;
-extern "C" uintptr_t _vmcall3(void *r1, void *r2, void *r3) noexcept;
-extern "C" uintptr_t _vmcall4(void *r1, void *r2, void *r3, void *r4) noexcept;
+extern "C" uint64_t _vmcall(uint64_t r1, uint64_t r2, uint64_t r3, uint64_t r4) noexcept;
+extern "C" uint64_t _vmcall1(void *r1) noexcept;
+extern "C" uint64_t _vmcall2(void *r1, void *r2) noexcept;
+extern "C" uint64_t _vmcall3(void *r1, void *r2, void *r3) noexcept;
+extern "C" uint64_t _vmcall4(void *r1, void *r2, void *r3, void *r4) noexcept;
 
 // *INDENT-OFF*
 
@@ -53,7 +53,7 @@ namespace vmx
 {
     using vpid_type = uint64_t;
     using eptp_type = uint64_t;
-    using integer_pointer = uintptr_t;
+    using integer_pointer = uint64_t;
 
     inline void on(uint64_t ptr)
     {
@@ -85,11 +85,11 @@ namespace vmx
         }
     }
 
-    inline void invvpid_individual_address(vpid_type vpid, integer_pointer addr)
+    inline void invvpid_individual_addr(vpid_type vpid, integer_pointer addr)
     {
         uint64_t descriptor[2] = { vpid, addr };
         if (!_invvpid(0, static_cast<void *>(descriptor))) {
-            throw std::runtime_error("vm::invvpid_individual_address failed");
+            throw std::runtime_error("vm::invvpid_individual_addr failed");
         }
     }
 
@@ -123,7 +123,7 @@ namespace vm
     using field_type = uint64_t;
     using value_type = uint64_t;
     using name_type = const char *;
-    using integer_pointer = uintptr_t;
+    using integer_pointer = uint64_t;
 
     inline void clear(uint64_t ptr)
     {
@@ -173,19 +173,19 @@ namespace vm
         }
     }
 
-    inline uintptr_t call(uintptr_t r1 = 0, uintptr_t r2 = 0, uintptr_t r3 = 0, uintptr_t r4 = 0)
+    inline uint64_t call(uint64_t r1 = 0, uint64_t r2 = 0, uint64_t r3 = 0, uint64_t r4 = 0)
     { return _vmcall(r1, r2, r3, r4); }
 
-    inline uintptr_t call(uintptr_t *r1)
+    inline uint64_t call(uint64_t *r1)
     { return _vmcall1(r1); }
 
-    inline uintptr_t call(uintptr_t *r1, uintptr_t *r2)
+    inline uint64_t call(uint64_t *r1, uint64_t *r2)
     { return _vmcall2(r1, r2); }
 
-    inline uintptr_t call(uintptr_t *r1, uintptr_t *r2, uintptr_t *r3)
+    inline uint64_t call(uint64_t *r1, uint64_t *r2, uint64_t *r3)
     { return _vmcall3(r1, r2, r3); }
 
-    inline uintptr_t call(uintptr_t *r1, uintptr_t *r2, uintptr_t *r3, uintptr_t *r4)
+    inline uint64_t call(uint64_t *r1, uint64_t *r2, uint64_t *r3, uint64_t *r4)
     { return _vmcall4(r1, r2, r3, r4); }
 }
 }

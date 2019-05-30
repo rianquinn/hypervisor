@@ -24,13 +24,6 @@
 
 #include <arch/intel_x64/vmcs/helpers.h>
 
-/// Intel x86_64 VMCS Natural-Width Read-Only Data Fields
-///
-/// The following provides the interface for the natural-width read-only data VMCS
-/// fields as defined in Appendix B.4.2, Vol. 3 of the Intel Software Developer's
-/// Manual.
-///
-
 // *INDENT-OFF*
 
 namespace intel_x64
@@ -369,9 +362,9 @@ namespace exit_qualification
             constexpr const auto from = 30ULL;
             constexpr const auto name = "task_switch_init_source";
 
-            constexpr const auto call_instruction = 0U;
-            constexpr const auto iret_instruction = 1U;
-            constexpr const auto jmp_instruction = 2U;
+            constexpr const auto call_instr = 0U;
+            constexpr const auto iret_instr = 1U;
+            constexpr const auto jmp_instr = 2U;
             constexpr const auto task_gate_in_idt = 3U;
 
             inline auto get()
@@ -662,9 +655,9 @@ namespace exit_qualification
         { dump_vmcs_nhex(level, msg); }
     }
 
-    namespace control_register_access
+    namespace ctl_register_access
     {
-        constexpr const auto name = "control_register_access";
+        constexpr const auto name = "ctl_register_access";
 
         inline auto get()
         { return get_vmcs_field(addr, name, exists()); }
@@ -672,11 +665,11 @@ namespace exit_qualification
         inline auto get_if_exists(bool verbose = false)
         { return get_vmcs_field_if_exists(addr, name, verbose, exists()); }
 
-        namespace control_register_number
+        namespace ctl_register_number
         {
             constexpr const auto mask = 0x000000000000000FULL;
             constexpr const auto from = 0ULL;
-            constexpr const auto name = "control_register_number";
+            constexpr const auto name = "ctl_register_number";
 
             inline auto get()
             { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
@@ -815,7 +808,7 @@ namespace exit_qualification
         inline void dump(int level, std::string *msg = nullptr)
         {
             dump_vmcs_nhex(level, msg);
-            control_register_number::dump(level, msg);
+            ctl_register_number::dump(level, msg);
             access_type::dump(level, msg);
             lmsw_operand_type::dump(level, msg);
             reserved::dump(level, msg);
@@ -940,9 +933,9 @@ namespace exit_qualification
         }
     }
 
-    namespace io_instruction
+    namespace io_instr
     {
-        constexpr const auto name = "io_instruction";
+        constexpr const auto name = "io_instr";
 
         inline auto get()
         { return get_vmcs_field(addr, name, exists()); }
@@ -995,11 +988,11 @@ namespace exit_qualification
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace string_instruction
+        namespace string_instr
         {
             constexpr const auto mask = 0x0000000000000010ULL;
             constexpr const auto from = 4ULL;
-            constexpr const auto name = "string_instruction";
+            constexpr const auto name = "string_instr";
 
             inline auto is_enabled()
             { return is_bit_set(get_vmcs_field(addr, name, exists()), from); }
@@ -1116,7 +1109,7 @@ namespace exit_qualification
             dump_vmcs_nhex(level, msg);
             size_of_access::dump(level, msg);
             direction_of_access::dump(level, msg);
-            string_instruction::dump(level, msg);
+            string_instr::dump(level, msg);
             rep_prefixed::dump(level, msg);
             operand_encoding::dump(level, msg);
             reserved::dump(level, msg);
@@ -1173,9 +1166,9 @@ namespace exit_qualification
             constexpr const auto from = 12ULL;
             constexpr const auto name = "access_type";
 
-            constexpr const auto read_during_instruction_execution = 0U;
-            constexpr const auto write_during_instruction_execution = 1U;
-            constexpr const auto instruction_fetch = 2U;
+            constexpr const auto read_during_instr_execution = 0U;
+            constexpr const auto write_during_instr_execution = 1U;
+            constexpr const auto instr_fetch = 2U;
             constexpr const auto event_delivery = 3U;
 
             inline auto get()
@@ -1236,7 +1229,7 @@ namespace exit_qualification
             constexpr const auto name = "access_type";
 
             constexpr const auto event_delivery = 10U;
-            constexpr const auto instruction_fetch_or_execution = 15U;
+            constexpr const auto instr_fetch_or_execution = 15U;
 
             inline auto get()
             { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
@@ -1344,11 +1337,11 @@ namespace exit_qualification
             { dump_vmcs_subbool(level, msg); }
         }
 
-        namespace instruction_fetch
+        namespace instr_fetch
         {
             constexpr const auto mask = 0x0000000000000004ULL;
             constexpr const auto from = 2ULL;
-            constexpr const auto name = "instruction_fetch";
+            constexpr const auto name = "instr_fetch";
 
             inline auto is_enabled()
             { return is_bit_set(get_vmcs_field(addr, name, exists()), from); }
@@ -1475,11 +1468,11 @@ namespace exit_qualification
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace valid_guest_linear_address
+        namespace valid_guest_linear_addr
         {
             constexpr const auto mask = 0x0000000000000080ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "valid_guest_linear_address";
+            constexpr const auto name = "valid_guest_linear_addr";
 
             inline auto is_enabled()
             { return is_bit_set(get_vmcs_field(addr, name, exists()), from); }
@@ -1536,12 +1529,12 @@ namespace exit_qualification
             dump_vmcs_nhex(level, msg);
             data_read::dump(level, msg);
             data_write::dump(level, msg);
-            instruction_fetch::dump(level, msg);
+            instr_fetch::dump(level, msg);
             readable::dump(level, msg);
             writeable::dump(level, msg);
             executable::dump(level, msg);
             reserved::dump(level, msg);
-            valid_guest_linear_address::dump(level, msg);
+            valid_guest_linear_addr::dump(level, msg);
             nmi_unblocking_due_to_iret::dump(level, msg);
         }
     }
@@ -1691,10 +1684,10 @@ namespace io_rip
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace guest_linear_address
+namespace guest_linear_addr
 {
     constexpr const auto addr = 0x000000000000640AULL;
-    constexpr const auto name = "guest_linear_address";
+    constexpr const auto name = "guest_linear_addr";
 
     inline auto exists()
     { return true; }

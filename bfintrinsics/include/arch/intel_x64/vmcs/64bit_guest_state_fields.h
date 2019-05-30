@@ -24,13 +24,6 @@
 
 #include <arch/intel_x64/vmcs/helpers.h>
 
-/// Intel x86_64 VMCS 64-bit Guest-State Fields
-///
-/// The following provides the interface for the 64-bit guest-state VMCS
-/// fields as defined in Appendix B.2.3, Vol. 3 of the Intel Software Developer's
-/// Manual.
-///
-
 // *INDENT-OFF*
 
 namespace intel_x64
@@ -38,10 +31,10 @@ namespace intel_x64
 namespace vmcs
 {
 
-namespace vmcs_link_pointer
+namespace vmcs_link_ptr
 {
     constexpr const auto addr = 0x0000000000002800ULL;
-    constexpr const auto name = "vmcs_link_pointer";
+    constexpr const auto name = "vmcs_link_ptr";
 
     inline auto exists()
     { return true; }
@@ -1872,7 +1865,7 @@ namespace guest_pdpte0
 
     inline auto exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_ept::is_allowed1();
     }
 
@@ -2131,7 +2124,7 @@ namespace guest_pdpte1
 
     inline auto exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_ept::is_allowed1();
     }
 
@@ -2390,7 +2383,7 @@ namespace guest_pdpte2
 
     inline auto exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_ept::is_allowed1();
     }
 
@@ -2649,7 +2642,7 @@ namespace guest_pdpte3
 
     inline auto exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_ept::is_allowed1();
     }
 

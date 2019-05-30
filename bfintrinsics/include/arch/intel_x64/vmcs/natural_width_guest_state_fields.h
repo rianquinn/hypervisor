@@ -24,13 +24,6 @@
 
 #include <arch/intel_x64/vmcs/helpers.h>
 
-/// Intel x86_64 VMCS Natural-Width Guest-State Fields
-///
-/// The following provides the interface for the natural-width guest-state VMCS
-/// fields as defined in Appendix B.4.2, Vol. 3 of the Intel Software Developer's
-/// Manual.
-///
-
 // *INDENT-OFF*
 
 namespace intel_x64
@@ -779,11 +772,11 @@ namespace guest_cr4
         { dump_vmcs_subbool(level, msg); }
     }
 
-    namespace protected_mode_virtual_interrupts
+    namespace protected_mode_virtual_ints
     {
         constexpr const auto mask = 0x0000000000000002ULL;
         constexpr const auto from = 1ULL;
-        constexpr const auto name = "protected_mode_virtual_interrupts";
+        constexpr const auto name = "protected_mode_virtual_ints";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, exists()), from); }
@@ -999,11 +992,11 @@ namespace guest_cr4
         { dump_vmcs_subbool(level, msg); }
     }
 
-    namespace physical_address_extensions
+    namespace physical_addr_extensions
     {
         constexpr const auto mask = 0x0000000000000020ULL;
         constexpr const auto from = 5ULL;
-        constexpr const auto name = "physical_address_extensions";
+        constexpr const auto name = "physical_addr_extensions";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, exists()), from); }
@@ -1773,11 +1766,11 @@ namespace guest_cr4
     {
         dump_vmcs_nhex(level, msg);
         v8086_mode_extensions::dump(level, msg);
-        protected_mode_virtual_interrupts::dump(level, msg);
+        protected_mode_virtual_ints::dump(level, msg);
         time_stamp_disable::dump(level, msg);
         debugging_extensions::dump(level, msg);
         page_size_extensions::dump(level, msg);
-        physical_address_extensions::dump(level, msg);
+        physical_addr_extensions::dump(level, msg);
         machine_check_enable::dump(level, msg);
         page_global_enable::dump(level, msg);
         performance_monitor_counter_enable::dump(level, msg);
@@ -2456,11 +2449,11 @@ namespace guest_rflags
         { dump_vmcs_subbool(level, msg); }
     }
 
-    namespace interrupt_enable_flag
+    namespace int_enable_flag
     {
         constexpr const auto mask = 0x0000000000000200ULL;
         constexpr const auto from = 9ULL;
-        constexpr const auto name = "interrupt_enable_flag";
+        constexpr const auto name = "int_enable_flag";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, exists()), from); }
@@ -2814,11 +2807,11 @@ namespace guest_rflags
         { dump_vmcs_subbool(level, msg); }
     }
 
-    namespace alignment_check_access_control
+    namespace alignment_check_access_ctl
     {
         constexpr const auto mask = 0x0000000000040000ULL;
         constexpr const auto from = 18ULL;
-        constexpr const auto name = "alignment_check_access_control";
+        constexpr const auto name = "alignment_check_access_ctl";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, exists()), from); }
@@ -2869,11 +2862,11 @@ namespace guest_rflags
         { dump_vmcs_subbool(level, msg); }
     }
 
-    namespace virtual_interrupt_flag
+    namespace virtual_int_flag
     {
         constexpr const auto mask = 0x0000000000080000ULL;
         constexpr const auto from = 19ULL;
-        constexpr const auto name = "virtual_interrupt_flag";
+        constexpr const auto name = "virtual_int_flag";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, exists()), from); }
@@ -2924,11 +2917,11 @@ namespace guest_rflags
         { dump_vmcs_subbool(level, msg); }
     }
 
-    namespace virtual_interrupt_pending
+    namespace virtual_int_pending
     {
         constexpr const auto mask = 0x0000000000100000ULL;
         constexpr const auto from = 20ULL;
-        constexpr const auto name = "virtual_interrupt_pending";
+        constexpr const auto name = "virtual_int_pending";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, exists()), from); }
@@ -3127,16 +3120,16 @@ namespace guest_rflags
         zero_flag::dump(level, msg);
         sign_flag::dump(level, msg);
         trap_flag::dump(level, msg);
-        interrupt_enable_flag::dump(level, msg);
+        int_enable_flag::dump(level, msg);
         direction_flag::dump(level, msg);
         overflow_flag::dump(level, msg);
         privilege_level::dump(level, msg);
         nested_task::dump(level, msg);
         resume_flag::dump(level, msg);
         virtual_8086_mode::dump(level, msg);
-        alignment_check_access_control::dump(level, msg);
-        virtual_interrupt_flag::dump(level, msg);
-        virtual_interrupt_pending::dump(level, msg);
+        alignment_check_access_ctl::dump(level, msg);
+        virtual_int_flag::dump(level, msg);
+        virtual_int_pending::dump(level, msg);
         id_flag::dump(level, msg);
         reserved::dump(level, msg);
         always_disabled::dump(level, msg);

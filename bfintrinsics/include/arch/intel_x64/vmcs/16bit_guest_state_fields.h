@@ -24,13 +24,6 @@
 
 #include <arch/intel_x64/vmcs/helpers.h>
 
-/// Intel x86_64 VMCS 16-Bit Guest-State Fields
-///
-/// The following provides the interface for the 16-bit guest-state VMCS
-/// fields as defined in Appendix B.1.2, Vol. 3 of the Intel Software Developer's
-/// Manual.
-///
-
 // *INDENT-OFF*
 
 namespace intel_x64
@@ -1158,15 +1151,15 @@ namespace guest_tr_selector
     }
 }
 
-namespace guest_interrupt_status
+namespace guest_int_status
 {
     constexpr const auto addr = 0x0000000000000810ULL;
-    constexpr const auto name = "guest_interrupt_status";
+    constexpr const auto name = "guest_int_status";
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
-               msrs::ia32_vmx_procbased_ctls2::virtual_interrupt_delivery::is_allowed1();
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
+               msrs::ia32_vmx_procbased_ctls2::virtual_int_delivery::is_allowed1();
     }
 
     inline auto get()
@@ -1192,7 +1185,7 @@ namespace pml_index
 
     inline bool exists() noexcept
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_pml::is_allowed1();
     }
 

@@ -37,9 +37,9 @@ namespace pml4
     constexpr const auto num_entries = 512;
 
     constexpr const auto from = 39U;
-    constexpr const auto size = num_entries * sizeof(uintptr_t);
+    constexpr const auto size = num_entries * sizeof(uint64_t);
 
-    inline auto index(uintptr_t virt)
+    inline auto index(uint64_t virt)
     {
         return gsl::narrow_cast<std::ptrdiff_t>(
             (virt & ((0x1FFULL) << from)) >> from
@@ -51,7 +51,7 @@ namespace pml4
         typename = std::enable_if<std::is_pointer<T>::value >
         >
     auto index(T virt)
-    { return index(reinterpret_cast<uintptr_t>(virt)); }
+    { return index(reinterpret_cast<uint64_t>(virt)); }
 
     namespace entry
     {
@@ -268,12 +268,12 @@ namespace pdpt
     constexpr const auto num_entries = 512;
 
     constexpr const auto from = 30U;
-    constexpr const auto size = num_entries * sizeof(uintptr_t);
+    constexpr const auto size = num_entries * sizeof(uint64_t);
 
     constexpr const auto page_size = 0x40000000ULL;
     constexpr const auto page_shift = 30;
 
-    inline auto index(uintptr_t virt)
+    inline auto index(uint64_t virt)
     {
         return gsl::narrow_cast<std::ptrdiff_t>(
             (virt & ((0x1FFULL) << from)) >> from
@@ -285,7 +285,7 @@ namespace pdpt
         typename = std::enable_if<std::is_pointer<T>::value >
         >
     auto index(T virt)
-    { return index(reinterpret_cast<uintptr_t>(virt)); }
+    { return index(reinterpret_cast<uint64_t>(virt)); }
 
     namespace entry
     {
@@ -646,12 +646,12 @@ namespace pd
     constexpr const auto num_entries = 512;
 
     constexpr const auto from = 21U;
-    constexpr const auto size = num_entries * sizeof(uintptr_t);
+    constexpr const auto size = num_entries * sizeof(uint64_t);
 
     constexpr const auto page_size = 0x200000ULL;
     constexpr const auto page_shift = 21;
 
-    inline auto index(uintptr_t virt)
+    inline auto index(uint64_t virt)
     {
         return gsl::narrow_cast<std::ptrdiff_t>(
             (virt & ((0x1FFULL) << from)) >> from
@@ -663,7 +663,7 @@ namespace pd
         typename = std::enable_if<std::is_pointer<T>::value >
         >
     auto index(T virt)
-    { return index(reinterpret_cast<uintptr_t>(virt)); }
+    { return index(reinterpret_cast<uint64_t>(virt)); }
 
     namespace entry
     {
@@ -1015,12 +1015,12 @@ namespace pt
     constexpr const auto num_entries = 512;
 
     constexpr const auto from = 12U;
-    constexpr const auto size = num_entries * sizeof(uintptr_t);
+    constexpr const auto size = num_entries * sizeof(uint64_t);
 
     constexpr const auto page_size = 0x1000ULL;
     constexpr const auto page_shift = 12;
 
-    inline auto index(uintptr_t virt)
+    inline auto index(uint64_t virt)
     {
         return gsl::narrow_cast<std::ptrdiff_t>(
             (virt & ((0x1FFULL) << from)) >> from
@@ -1032,7 +1032,7 @@ namespace pt
         typename = std::enable_if<std::is_pointer<T>::value >
         >
     auto index(T virt)
-    { return index(reinterpret_cast<uintptr_t>(virt)); }
+    { return index(reinterpret_cast<uint64_t>(virt)); }
 
     namespace entry
     {

@@ -22,18 +22,18 @@
 #ifndef VMCS_INTEL_X64_DEBUG_H
 #define VMCS_INTEL_X64_DEBUG_H
 
-#include <arch/intel_x64/vmcs/16bit_control_fields.h>
+#include <arch/intel_x64/vmcs/16bit_ctl_fields.h>
 #include <arch/intel_x64/vmcs/16bit_guest_state_fields.h>
 #include <arch/intel_x64/vmcs/16bit_host_state_fields.h>
-#include <arch/intel_x64/vmcs/32bit_control_fields.h>
+#include <arch/intel_x64/vmcs/32bit_ctl_fields.h>
 #include <arch/intel_x64/vmcs/32bit_guest_state_fields.h>
 #include <arch/intel_x64/vmcs/32bit_host_state_fields.h>
 #include <arch/intel_x64/vmcs/32bit_read_only_data_fields.h>
-#include <arch/intel_x64/vmcs/64bit_control_fields.h>
+#include <arch/intel_x64/vmcs/64bit_ctl_fields.h>
 #include <arch/intel_x64/vmcs/64bit_guest_state_fields.h>
 #include <arch/intel_x64/vmcs/64bit_host_state_fields.h>
 #include <arch/intel_x64/vmcs/64bit_read_only_data_fields.h>
-#include <arch/intel_x64/vmcs/natural_width_control_fields.h>
+#include <arch/intel_x64/vmcs/natural_width_ctl_fields.h>
 #include <arch/intel_x64/vmcs/natural_width_guest_state_fields.h>
 #include <arch/intel_x64/vmcs/natural_width_host_state_fields.h>
 #include <arch/intel_x64/vmcs/natural_width_read_only_data_fields.h>
@@ -51,11 +51,11 @@ namespace debug
     {
         bfdebug_transaction(level, [&](std::string * msg) {
             bfdebug_lnbr(level, msg);
-            bfdebug_info(level, "16bit control fields", msg);
+            bfdebug_info(level, "16bit ctl fields", msg);
             bfdebug_brk3(level, msg);
 
             virtual_processor_identifier::dump(level, msg);
-            posted_interrupt_notification_vector::dump(level, msg);
+            posted_int_notification_vector::dump(level, msg);
             eptp_index::dump(level, msg);
 
             bfdebug_lnbr(level, msg);
@@ -70,7 +70,7 @@ namespace debug
             guest_gs_selector::dump(level, msg);
             guest_ldtr_selector::dump(level, msg);
             guest_tr_selector::dump(level, msg);
-            guest_interrupt_status::dump(level, msg);
+            guest_int_status::dump(level, msg);
 
             bfdebug_lnbr(level, msg);
             bfdebug_info(level, "16bit host state fields", msg);
@@ -85,43 +85,43 @@ namespace debug
             host_tr_selector::dump(level, msg);
 
             bfdebug_lnbr(level, msg);
-            bfdebug_info(level, "64bit control fields", msg);
+            bfdebug_info(level, "64bit ctl fields", msg);
             bfdebug_brk3(level, msg);
 
-            address_of_io_bitmap_a::dump(level, msg);
-            address_of_io_bitmap_b::dump(level, msg);
-            address_of_msr_bitmap::dump(level, msg);
-            vm_exit_msr_store_address::dump(level, msg);
-            vm_exit_msr_load_address::dump(level, msg);
-            vm_entry_msr_load_address::dump(level, msg);
-            executive_vmcs_pointer::dump(level, msg);
+            addr_of_io_bitmap_a::dump(level, msg);
+            addr_of_io_bitmap_b::dump(level, msg);
+            addr_of_msr_bitmap::dump(level, msg);
+            vmexit_msr_store_addr::dump(level, msg);
+            vmexit_msr_load_addr::dump(level, msg);
+            vmentry_msr_load_addr::dump(level, msg);
+            executive_vmcs_ptr::dump(level, msg);
             tsc_offset::dump(level, msg);
-            virtual_apic_address::dump(level, msg);
-            apic_access_address::dump(level, msg);
-            posted_interrupt_descriptor_address::dump(level, msg);
-            vm_function_controls::dump(level, msg);
-            ept_pointer::dump(level, msg);
+            virtual_apic_addr::dump(level, msg);
+            apic_access_addr::dump(level, msg);
+            posted_int_descriptor_addr::dump(level, msg);
+            vm_function_ctls::dump(level, msg);
+            ept_ptr::dump(level, msg);
             eoi_exit_bitmap_0::dump(level, msg);
             eoi_exit_bitmap_1::dump(level, msg);
             eoi_exit_bitmap_2::dump(level, msg);
             eoi_exit_bitmap_3::dump(level, msg);
-            eptp_list_address::dump(level, msg);
-            vmread_bitmap_address::dump(level, msg);
-            vmwrite_bitmap_address::dump(level, msg);
-            virtualization_exception_information_address::dump(level, msg);
+            eptp_list_addr::dump(level, msg);
+            vmread_bitmap_addr::dump(level, msg);
+            vmwrite_bitmap_addr::dump(level, msg);
+            virtualization_exception_info_addr::dump(level, msg);
             xss_exiting_bitmap::dump(level, msg);
 
             bfdebug_lnbr(level, msg);
             bfdebug_info(level, "64bit read-only data fields", msg);
             bfdebug_brk3(level, msg);
 
-            guest_physical_address::dump(level, msg);
+            guest_physical_addr::dump(level, msg);
 
             bfdebug_lnbr(level, msg);
             bfdebug_info(level, "64bit guest state fields", msg);
             bfdebug_brk3(level, msg);
 
-            vmcs_link_pointer::dump(level, msg);
+            vmcs_link_ptr::dump(level, msg);
             guest_ia32_debugctl::dump(level, msg);
             guest_ia32_pat::dump(level, msg);
             guest_ia32_efer::dump(level, msg);
@@ -140,25 +140,25 @@ namespace debug
             host_ia32_perf_global_ctrl::dump(level, msg);
 
             bfdebug_lnbr(level, msg);
-            bfdebug_info(level, "32bit control fields", msg);
+            bfdebug_info(level, "32bit ctl fields", msg);
             bfdebug_brk3(level, msg);
 
-            pin_based_vm_execution_controls::dump(level, msg);
-            primary_processor_based_vm_execution_controls::dump(level, msg);
+            pin_based_vm_execution_ctls::dump(level, msg);
+            primary_processor_based_vm_execution_ctls::dump(level, msg);
             exception_bitmap::dump(level, msg);
             page_fault_error_code_mask::dump(level, msg);
             page_fault_error_code_match::dump(level, msg);
             cr3_target_count::dump(level, msg);
-            vm_exit_controls::dump(level, msg);
-            vm_exit_msr_store_count::dump(level, msg);
-            vm_exit_msr_load_count::dump(level, msg);
-            vm_entry_controls::dump(level, msg);
-            vm_entry_msr_load_count::dump(level, msg);
-            vm_entry_interruption_information::dump(level, msg);
-            vm_entry_exception_error_code::dump(level, msg);
-            vm_entry_instruction_length::dump(level, msg);
+            vmexit_ctls::dump(level, msg);
+            vmexit_msr_store_count::dump(level, msg);
+            vmexit_msr_load_count::dump(level, msg);
+            vmentry_ctls::dump(level, msg);
+            vmentry_msr_load_count::dump(level, msg);
+            vmentry_interruption_info::dump(level, msg);
+            vmentry_exception_error_code::dump(level, msg);
+            vmentry_instr_len::dump(level, msg);
             tpr_threshold::dump(level, msg);
-            secondary_processor_based_vm_execution_controls::dump(level, msg);
+            secondary_processor_based_vm_execution_ctls::dump(level, msg);
             ple_gap::dump(level, msg);
             ple_window::dump(level, msg);
 
@@ -167,12 +167,12 @@ namespace debug
             bfdebug_brk3(level, msg);
 
             exit_reason::dump(level, msg);
-            vm_exit_interruption_information::dump(level, msg);
-            vm_exit_interruption_error_code::dump(level, msg);
-            idt_vectoring_information::dump(level, msg);
+            vmexit_interruption_info::dump(level, msg);
+            vmexit_interruption_error_code::dump(level, msg);
+            idt_vectoring_info::dump(level, msg);
             idt_vectoring_error_code::dump(level, msg);
-            vm_exit_instruction_length::dump(level, msg);
-            vm_exit_instruction_information::dump(level, msg);
+            vmexit_instr_len::dump(level, msg);
+            vmexit_instr_info::dump(level, msg);
 
             bfdebug_lnbr(level, msg);
             bfdebug_info(level, "32bit guest state fields", msg);
@@ -196,7 +196,7 @@ namespace debug
             guest_gs_access_rights::dump(level, msg);
             guest_ldtr_access_rights::dump(level, msg);
             guest_tr_access_rights::dump(level, msg);
-            guest_interruptibility_state::dump(level, msg);
+            guest_interruptability_state::dump(level, msg);
             guest_activity_state::dump(level, msg);
             guest_smbase::dump(level, msg);
             guest_ia32_sysenter_cs::dump(level, msg);
@@ -209,7 +209,7 @@ namespace debug
             host_ia32_sysenter_cs::dump(level, msg);
 
             bfdebug_lnbr(level, msg);
-            bfdebug_info(level, "natural width control fields", msg);
+            bfdebug_info(level, "natural width ctl fields", msg);
             bfdebug_brk3(level, msg);
 
             cr0_guest_host_mask::dump(level, msg);
@@ -230,7 +230,7 @@ namespace debug
             io_rsi::dump(level, msg);
             io_rdi::dump(level, msg);
             io_rip::dump(level, msg);
-            guest_linear_address::dump(level, msg);
+            guest_linear_addr::dump(level, msg);
 
             bfdebug_lnbr(level, msg);
             bfdebug_info(level, "natural width guest state fields", msg);

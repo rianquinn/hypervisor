@@ -62,7 +62,7 @@ namespace portio
     using port_8bit_type = uint8_t;
     using port_16bit_type = uint16_t;
     using port_32bit_type = uint32_t;
-    using integer_pointer = uintptr_t;
+    using integer_pointer = uint64_t;
     using size_type = uint32_t;
 
     inline auto inb(port_addr_type port) noexcept

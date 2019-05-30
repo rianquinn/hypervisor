@@ -40,7 +40,7 @@ namespace cache
 {
 
 using pointer = void *;
-using integer_pointer = uintptr_t;
+using integer_pointer = uint64_t;
 
 inline void invd() noexcept
 { _invd(); }

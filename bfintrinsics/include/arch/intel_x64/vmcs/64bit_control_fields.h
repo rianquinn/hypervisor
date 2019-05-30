@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Assured Information Security, Inc.
+// Copyright (C) 2019 Assured info Security, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,6 @@
 
 #include <arch/intel_x64/vmcs/helpers.h>
 
-/// Intel x86_64 VMCS 64-bit Control Fields
-///
-/// The following provides the interface for the 64-bit control VMCS
-/// fields as defined in Appendix B.2.1, Vol. 3 of the Intel Software Developer's
-/// Manual.
-///
-
 // *INDENT-OFF*
 
 namespace intel_x64
@@ -38,10 +31,10 @@ namespace intel_x64
 namespace vmcs
 {
 
-namespace address_of_io_bitmap_a
+namespace io_bitmap_a_addr
 {
     constexpr const auto addr = 0x0000000000002000ULL;
-    constexpr const auto name = "address_of_io_bitmap_a";
+    constexpr const auto name = "io_bitmap_a_addr";
 
     inline bool exists()
     { return true; }
@@ -62,10 +55,10 @@ namespace address_of_io_bitmap_a
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace address_of_io_bitmap_b
+namespace io_bitmap_b_addr
 {
     constexpr const auto addr = 0x0000000000002002ULL;
-    constexpr const auto name = "address_of_io_bitmap_b";
+    constexpr const auto name = "io_bitmap_b_addr";
 
     inline bool exists()
     { return true; }
@@ -86,10 +79,10 @@ namespace address_of_io_bitmap_b
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace address_of_msr_bitmap
+namespace msr_bitmaps_addr
 {
     constexpr const auto addr = 0x0000000000002004ULL;
-    constexpr const auto name = "address_of_msr_bitmap";
+    constexpr const auto name = "msr_bitmaps_addr";
 
     inline bool exists()
     { return msrs::ia32_vmx_true_procbased_ctls::use_msr_bitmap::is_allowed1(); }
@@ -110,10 +103,10 @@ namespace address_of_msr_bitmap
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace vm_exit_msr_store_address
+namespace vmexit_msr_store_addr
 {
     constexpr const auto addr = 0x0000000000002006ULL;
-    constexpr const auto name = "vm_exit_msr_store_address";
+    constexpr const auto name = "vmexit_msr_store_addr";
 
     inline bool exists()
     { return true; }
@@ -134,10 +127,10 @@ namespace vm_exit_msr_store_address
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace vm_exit_msr_load_address
+namespace vmexit_msr_load_addr
 {
     constexpr const auto addr = 0x0000000000002008ULL;
-    constexpr const auto name = "vm_exit_msr_load_address";
+    constexpr const auto name = "vmexit_msr_load_addr";
 
     inline bool exists()
     { return true; }
@@ -158,10 +151,10 @@ namespace vm_exit_msr_load_address
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace vm_entry_msr_load_address
+namespace vmentry_msr_load_addr
 {
     constexpr const auto addr = 0x000000000000200AULL;
-    constexpr const auto name = "vm_entry_msr_load_address";
+    constexpr const auto name = "vmentry_msr_load_addr";
 
     inline bool exists()
     { return true; }
@@ -182,10 +175,10 @@ namespace vm_entry_msr_load_address
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace executive_vmcs_pointer
+namespace executive_vmcs_ptr
 {
     constexpr const auto addr = 0x000000000000200CULL;
-    constexpr const auto name = "executive_vmcs_pointer";
+    constexpr const auto name = "executive_vmcs_ptr";
 
     inline bool exists()
     { return true; }
@@ -206,14 +199,14 @@ namespace executive_vmcs_pointer
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace pml_address
+namespace pml_addr
 {
     constexpr const auto addr = 0x000000000000200EULL;
-    constexpr const auto name = "pml_address";
+    constexpr const auto name = "pml_addr";
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_pml::is_allowed1();
     }
 
@@ -257,10 +250,10 @@ namespace tsc_offset
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace virtual_apic_address
+namespace virtual_apic_addr
 {
     constexpr const auto addr = 0x0000000000002012ULL;
-    constexpr const auto name = "virtual_apic_address";
+    constexpr const auto name = "virtual_apic_addr";
 
     inline bool exists()
     { return msrs::ia32_vmx_true_procbased_ctls::use_tpr_shadow::is_allowed1(); }
@@ -281,14 +274,14 @@ namespace virtual_apic_address
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace apic_access_address
+namespace apic_access_addr
 {
     constexpr const auto addr = 0x0000000000002014ULL;
-    constexpr const auto name = "apic_access_address";
+    constexpr const auto name = "apic_access_addr";
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::virtualize_apic_accesses::is_allowed1();
     }
 
@@ -308,13 +301,13 @@ namespace apic_access_address
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace posted_interrupt_descriptor_address
+namespace posted_int_descriptor_addr
 {
     constexpr const auto addr = 0x0000000000002016ULL;
-    constexpr const auto name = "posted_interrupt_descriptor_address";
+    constexpr const auto name = "posted_int_descriptor_addr";
 
     inline bool exists()
-    { return msrs::ia32_vmx_true_pinbased_ctls::process_posted_interrupts::is_allowed1(); }
+    { return msrs::ia32_vmx_true_pinbased_ctls::process_posted_ints::is_allowed1(); }
 
     inline auto get()
     { return get_vmcs_field(addr, name, exists()); }
@@ -332,15 +325,15 @@ namespace posted_interrupt_descriptor_address
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace vm_function_controls
+namespace vm_function_ctls
 {
     constexpr const auto addr = 0x0000000000002018ULL;
-    constexpr const auto name = "vm_function_controls";
+    constexpr const auto name = "vm_function_ctls";
     constexpr const auto msr_addr = 0x00000491U;
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_vm_functions::is_allowed1();
     }
 
@@ -447,14 +440,14 @@ namespace vm_function_controls
     }
 }
 
-namespace ept_pointer
+namespace ept_ptr
 {
     constexpr const auto addr = 0x000000000000201AULL;
-    constexpr const auto name = "ept_pointer";
+    constexpr const auto name = "ept_ptr";
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_ept::is_allowed1();
     }
 
@@ -501,11 +494,11 @@ namespace ept_pointer
         { dump_vmcs_subnhex(level, msg); }
     }
 
-    namespace page_walk_length_minus_one
+    namespace page_walk_len_minus_one
     {
         constexpr const auto mask = 0x0000000000000038ULL;
         constexpr const auto from = 3ULL;
-        constexpr const auto name = "page_walk_length_minus_one";
+        constexpr const auto name = "page_walk_len_minus_one";
 
         inline auto get()
         { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
@@ -644,7 +637,7 @@ namespace ept_pointer
     {
         dump_vmcs_nhex(level, msg);
         memory_type::dump(level, msg);
-        page_walk_length_minus_one::dump(level, msg);
+        page_walk_len_minus_one::dump(level, msg);
         accessed_and_dirty_flags::dump(level, msg);
         phys_addr::dump(level, msg);
         reserved::dump(level, msg);
@@ -658,8 +651,8 @@ namespace eoi_exit_bitmap_0
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
-               msrs::ia32_vmx_procbased_ctls2::virtual_interrupt_delivery::is_allowed1();
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
+               msrs::ia32_vmx_procbased_ctls2::virtual_int_delivery::is_allowed1();
     }
 
     inline auto get()
@@ -685,8 +678,8 @@ namespace eoi_exit_bitmap_1
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
-               msrs::ia32_vmx_procbased_ctls2::virtual_interrupt_delivery::is_allowed1();
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
+               msrs::ia32_vmx_procbased_ctls2::virtual_int_delivery::is_allowed1();
     }
 
     inline auto get()
@@ -712,8 +705,8 @@ namespace eoi_exit_bitmap_2
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
-               msrs::ia32_vmx_procbased_ctls2::virtual_interrupt_delivery::is_allowed1();
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
+               msrs::ia32_vmx_procbased_ctls2::virtual_int_delivery::is_allowed1();
     }
 
     inline auto get()
@@ -739,8 +732,8 @@ namespace eoi_exit_bitmap_3
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
-               msrs::ia32_vmx_procbased_ctls2::virtual_interrupt_delivery::is_allowed1();
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
+               msrs::ia32_vmx_procbased_ctls2::virtual_int_delivery::is_allowed1();
     }
 
     inline auto get()
@@ -759,14 +752,14 @@ namespace eoi_exit_bitmap_3
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace eptp_list_address
+namespace eptp_list_addr
 {
     constexpr const auto addr = 0x0000000000002024ULL;
-    constexpr const auto name = "eptp_list_address";
+    constexpr const auto name = "eptp_list_addr";
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_vm_functions::is_allowed1() &&
                msrs::ia32_vmx_vmfunc::eptp_switching::is_allowed1();
     }
@@ -787,14 +780,14 @@ namespace eptp_list_address
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace vmread_bitmap_address
+namespace vmread_bitmap_addr
 {
     constexpr const auto addr = 0x0000000000002026ULL;
-    constexpr const auto name = "vmread_bitmap_address";
+    constexpr const auto name = "vmread_bitmap_addr";
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::vmcs_shadowing::is_allowed1();
     }
 
@@ -814,14 +807,14 @@ namespace vmread_bitmap_address
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace vmwrite_bitmap_address
+namespace vmwrite_bitmap_addr
 {
     constexpr const auto addr = 0x0000000000002028ULL;
-    constexpr const auto name = "vmwrite_bitmap_address";
+    constexpr const auto name = "vmwrite_bitmap_addr";
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::vmcs_shadowing::is_allowed1();
     }
 
@@ -841,14 +834,14 @@ namespace vmwrite_bitmap_address
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace virtualization_exception_information_address
+namespace virtualization_exception_info_addr
 {
     constexpr const auto addr = 0x000000000000202AULL;
-    constexpr const auto name = "virtualization_exception_information_address";
+    constexpr const auto name = "virtualization_exception_info_addr";
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::ept_violation_ve::is_allowed1();
     }
 
@@ -875,7 +868,7 @@ namespace xss_exiting_bitmap
 
     inline bool exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_xsaves_xrstors::is_allowed1();
     }
 
@@ -902,7 +895,7 @@ namespace encls_exiting_bitmap
 
     inline bool exists() noexcept
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_encls_exiting::is_allowed1();
     }
 
@@ -929,7 +922,7 @@ namespace tsc_multiplier
 
     inline bool exists() noexcept
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::use_tsc_scaling::is_allowed1();
     }
 

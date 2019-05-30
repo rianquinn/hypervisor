@@ -86,10 +86,10 @@ namespace ia32_platform_id
     }
 }
 
-namespace ia32_feature_control
+namespace ia32_feature_ctl
 {
     constexpr const auto addr = 0x0000003AU;
-    constexpr const auto name = "ia32_feature_control";
+    constexpr const auto name = "ia32_feature_ctl";
 
     inline auto get() noexcept
     { return _read_msr(addr); }
@@ -255,11 +255,11 @@ namespace ia32_feature_control
         { bfdebug_subbool(level, name, is_enabled(), msg); }
     }
 
-    namespace sgx_launch_control_enable
+    namespace sgx_launch_ctl_enable
     {
         constexpr const auto mask = 0x0000000000020000ULL;
         constexpr const auto from = 17ULL;
-        constexpr const auto name = "sgx_launch_control_enable";
+        constexpr const auto name = "sgx_launch_ctl_enable";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -365,7 +365,7 @@ namespace ia32_feature_control
         enable_vmx_outside_smx::dump(level, msg);
         senter_local_function_enable::dump(level, msg);
         senter_global_function_enables::dump(level, msg);
-        sgx_launch_control_enable::dump(level, msg);
+        sgx_launch_ctl_enable::dump(level, msg);
         sgx_global_enable::dump(level, msg);
         lmce::dump(level, msg);
     }
@@ -1431,10 +1431,10 @@ namespace ia32_clock_modulation
     }
 }
 
-namespace ia32_therm_interrupt
+namespace ia32_therm_int
 {
     constexpr const auto addr = 0x0000019B;
-    constexpr const auto name = "ia32_therm_interrupt";
+    constexpr const auto name = "ia32_therm_int";
 
     inline auto get() noexcept
     { return _read_msr(addr); }
@@ -2354,11 +2354,11 @@ namespace ia32_misc_enable
         { bfdebug_subbool(level, name, is_enabled(), msg); }
     }
 
-    namespace auto_therm_control
+    namespace auto_therm_ctl
     {
         constexpr const auto mask = 0x0000000000000008ULL;
         constexpr const auto from = 3ULL;
-        constexpr const auto name = "auto_therm_control";
+        constexpr const auto name = "auto_therm_ctl";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -2664,7 +2664,7 @@ namespace ia32_misc_enable
     {
         bfdebug_nhex(level, name, get(), msg);
         fast_strings::dump(level, msg);
-        auto_therm_control::dump(level, msg);
+        auto_therm_ctl::dump(level, msg);
         perf_monitor::dump(level, msg);
         branch_trace_storage::dump(level, msg);
         processor_sampling::dump(level, msg);
@@ -3095,7 +3095,7 @@ namespace ia32_package_therm_status
     }
 }
 
-namespace ia32_package_therm_interrupt
+namespace ia32_package_therm_int
 {
     constexpr const auto addr = 0x000001B2U;
     constexpr const auto name = "ia32_energy_perf_bias";
@@ -10743,11 +10743,11 @@ namespace ia32_vmx_basic
         { bfdebug_subnhex(level, name, get(), msg); }
     }
 
-    namespace physical_address_width
+    namespace physical_addr_width
     {
         constexpr const auto mask = 0x0001000000000000ULL;
         constexpr const auto from = 48ULL;
-        constexpr const auto name = "physical_address_width";
+        constexpr const auto name = "physical_addr_width";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -10803,11 +10803,11 @@ namespace ia32_vmx_basic
         { bfdebug_subnhex(level, name, get(), msg); }
     }
 
-    namespace ins_outs_exit_information
+    namespace ins_outs_exit_info
     {
         constexpr const auto mask = 0x0040000000000000ULL;
         constexpr const auto from = 54ULL;
-        constexpr const auto name = "ins_outs_exit_information";
+        constexpr const auto name = "ins_outs_exit_info";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -10825,11 +10825,11 @@ namespace ia32_vmx_basic
         { bfdebug_subbool(level, name, is_enabled(), msg); }
     }
 
-    namespace true_based_controls
+    namespace true_based_ctls
     {
         constexpr const auto mask = 0x0080000000000000ULL;
         constexpr const auto from = 55ULL;
-        constexpr const auto name = "true_based_controls";
+        constexpr const auto name = "true_based_ctls";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -10852,11 +10852,11 @@ namespace ia32_vmx_basic
         bfdebug_nhex(level, name, get(), msg);
         revision_id::dump(level, msg);
         vmxon_vmcs_region_size::dump(level, msg);
-        physical_address_width::dump(level, msg);
+        physical_addr_width::dump(level, msg);
         dual_monitor_mode_support::dump(level, msg);
         memory_type::dump(level, msg);
-        ins_outs_exit_information::dump(level, msg);
-        true_based_controls::dump(level, msg);
+        ins_outs_exit_info::dump(level, msg);
+        true_based_ctls::dump(level, msg);
     }
 }
 
@@ -11076,11 +11076,11 @@ namespace ia32_vmx_misc
         { bfdebug_subnhex(level, name, get(), msg); }
     }
 
-    namespace store_efer_lma_on_vm_exit
+    namespace store_efer_lma_on_vmexit
     {
         constexpr const auto mask = 0x0000000000000020ULL;
         constexpr const auto from = 5ULL;
-        constexpr const auto name = "store_efer_lma_on_vm_exit";
+        constexpr const auto name = "store_efer_lma_on_vmexit";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -11284,11 +11284,11 @@ namespace ia32_vmx_misc
         { bfdebug_subbool(level, name, is_enabled(), msg); }
     }
 
-    namespace injection_with_instruction_length_of_zero
+    namespace injection_with_instr_len_of_zero
     {
         constexpr const auto mask = 0x0000000040000000ULL;
         constexpr const auto from = 30ULL;
-        constexpr const auto name = "injection_with_instruction_length_of_zero";
+        constexpr const auto name = "injection_with_instr_len_of_zero";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -11310,7 +11310,7 @@ namespace ia32_vmx_misc
     {
         bfdebug_nhex(level, name, get(), msg);
         preemption_timer_decrement::dump(level, msg);
-        store_efer_lma_on_vm_exit::dump(level, msg);
+        store_efer_lma_on_vmexit::dump(level, msg);
         activity_state_hlt_support::dump(level, msg);
         activity_state_shutdown_support::dump(level, msg);
         activity_state_wait_for_sipi_support::dump(level, msg);
@@ -11320,7 +11320,7 @@ namespace ia32_vmx_misc
         max_num_msr_load_store_on_exit::dump(level, msg);
         vmxoff_blocked_smi_support::dump(level, msg);
         vmwrite_all_fields_support::dump(level, msg);
-        injection_with_instruction_length_of_zero::dump(level, msg);
+        injection_with_instr_len_of_zero::dump(level, msg);
     }
 }
 
@@ -11669,11 +11669,11 @@ namespace ia32_vmx_procbased_ctls2
         { bfdebug_subbool(level, name, is_allowed1(), msg); }
     }
 
-    namespace virtual_interrupt_delivery
+    namespace virtual_int_delivery
     {
         constexpr const auto mask = 0x0000000000000200ULL;
         constexpr const auto from = 9ULL;
-        constexpr const auto name = "virtual_interrupt_delivery";
+        constexpr const auto name = "virtual_int_delivery";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -12005,11 +12005,11 @@ namespace ia32_vmx_procbased_ctls2
         { bfdebug_subbool(level, name, is_allowed1(), msg); }
     }
 
-    namespace ept_mode_based_control
+    namespace ept_mode_based_ctl
     {
         constexpr const auto mask = 0x0000000000400000ULL;
         constexpr const auto from = 22ULL;
-        constexpr const auto name = "ept_mode_based_control";
+        constexpr const auto name = "ept_mode_based_ctl";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -12073,7 +12073,7 @@ namespace ia32_vmx_procbased_ctls2
         wbinvd_exiting::dump(level, msg);
         unrestricted_guest::dump(level, msg);
         apic_register_virtualization::dump(level, msg);
-        virtual_interrupt_delivery::dump(level, msg);
+        virtual_int_delivery::dump(level, msg);
         pause_loop_exiting::dump(level, msg);
         rdrand_exiting::dump(level, msg);
         enable_invpcid::dump(level, msg);
@@ -12085,7 +12085,7 @@ namespace ia32_vmx_procbased_ctls2
         ept_violation_ve::dump(level, msg);
         pt_conceal_nonroot_operation::dump(level, msg);
         enable_xsaves_xrstors::dump(level, msg);
-        ept_mode_based_control::dump(level, msg);
+        ept_mode_based_ctl::dump(level, msg);
         use_tsc_scaling::dump(level, msg);
     }
 }
@@ -12120,11 +12120,11 @@ namespace ia32_vmx_ept_vpid_cap
         { bfdebug_subbool(level, name, is_enabled(), msg); }
     }
 
-    namespace page_walk_length_of_4
+    namespace page_walk_len_of_4
     {
         constexpr const auto mask = 0x0000000000000040ULL;
         constexpr const auto from = 6ULL;
-        constexpr const auto name = "page_walk_length_of_4";
+        constexpr const auto name = "page_walk_len_of_4";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -12340,11 +12340,11 @@ namespace ia32_vmx_ept_vpid_cap
         { bfdebug_subbool(level, name, is_enabled(), msg); }
     }
 
-    namespace invvpid_individual_address_support
+    namespace invvpid_individual_addr_support
     {
         constexpr const auto mask = 0x0000010000000000ULL;
         constexpr const auto from = 40ULL;
-        constexpr const auto name = "invvpid_individual_address_support";
+        constexpr const auto name = "invvpid_individual_addr_support";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -12432,7 +12432,7 @@ namespace ia32_vmx_ept_vpid_cap
     {
         bfdebug_nhex(level, name, get(), msg);
         execute_only_translation::dump(level, msg);
-        page_walk_length_of_4::dump(level, msg);
+        page_walk_len_of_4::dump(level, msg);
         memory_type_uncacheable_supported::dump(level, msg);
         memory_type_write_back_supported::dump(level, msg);
         pde_2mb_support::dump(level, msg);
@@ -12442,7 +12442,7 @@ namespace ia32_vmx_ept_vpid_cap
         invept_single_context_support::dump(level, msg);
         invept_all_context_support::dump(level, msg);
         invvpid_support::dump(level, msg);
-        invvpid_individual_address_support::dump(level, msg);
+        invvpid_individual_addr_support::dump(level, msg);
         invvpid_single_context_support::dump(level, msg);
         invvpid_all_context_support::dump(level, msg);
         invvpid_single_context_retaining_globals_support::dump(level, msg);
@@ -12463,11 +12463,11 @@ namespace ia32_vmx_true_pinbased_ctls
     inline auto allowed1()
     { return ((_read_msr(addr) & 0xFFFFFFFF00000000ULL) >> 32); }
 
-    namespace external_interrupt_exiting
+    namespace external_int_exiting
     {
         constexpr const auto mask = 0x0000000000000001ULL;
         constexpr const auto from = 0ULL;
-        constexpr const auto name = "external_interrupt_exiting";
+        constexpr const auto name = "external_int_exiting";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -12575,11 +12575,11 @@ namespace ia32_vmx_true_pinbased_ctls
         { bfdebug_subbool(level, name, is_allowed1(), msg); }
     }
 
-    namespace process_posted_interrupts
+    namespace process_posted_ints
     {
         constexpr const auto mask = 0x0000000000000080ULL;
         constexpr const auto from = 7ULL;
-        constexpr const auto name = "process_posted_interrupts";
+        constexpr const auto name = "process_posted_ints";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -12606,11 +12606,11 @@ namespace ia32_vmx_true_pinbased_ctls
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        external_interrupt_exiting::dump(level, msg);
+        external_int_exiting::dump(level, msg);
         nmi_exiting::dump(level, msg);
         virtual_nmis::dump(level, msg);
         activate_preemption_timer::dump(level, msg);
-        process_posted_interrupts::dump(level, msg);
+        process_posted_ints::dump(level, msg);
     }
 }
 
@@ -12628,11 +12628,11 @@ namespace ia32_vmx_true_procbased_ctls
     inline auto allowed1()
     { return ((_read_msr(addr) & 0xFFFFFFFF00000000ULL) >> 32); }
 
-    namespace interrupt_window_exiting
+    namespace int_window_exiting
     {
         constexpr const auto mask = 0x0000000000000004ULL;
         constexpr const auto from = 2ULL;
-        constexpr const auto name = "interrupt_window_exiting";
+        constexpr const auto name = "int_window_exiting";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -13188,11 +13188,11 @@ namespace ia32_vmx_true_procbased_ctls
         { bfdebug_subbool(level, name, is_allowed1(), msg); }
     }
 
-    namespace activate_secondary_controls
+    namespace activate_secondary_ctls
     {
         constexpr const auto mask = 0x0000000080000000ULL;
         constexpr const auto from = 31ULL;
-        constexpr const auto name = "activate_secondary_controls";
+        constexpr const auto name = "activate_secondary_ctls";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -13219,7 +13219,7 @@ namespace ia32_vmx_true_procbased_ctls
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        interrupt_window_exiting::dump(level, msg);
+        int_window_exiting::dump(level, msg);
         use_tsc_offsetting::dump(level, msg);
         hlt_exiting::dump(level, msg);
         invlpg_exiting::dump(level, msg);
@@ -13239,7 +13239,7 @@ namespace ia32_vmx_true_procbased_ctls
         use_msr_bitmap::dump(level, msg);
         monitor_exiting::dump(level, msg);
         pause_exiting::dump(level, msg);
-        activate_secondary_controls::dump(level, msg);
+        activate_secondary_ctls::dump(level, msg);
     }
 }
 
@@ -13257,11 +13257,11 @@ namespace ia32_vmx_true_exit_ctls
     inline auto allowed1()
     { return ((_read_msr(addr) & 0xFFFFFFFF00000000ULL) >> 32); }
 
-    namespace save_debug_controls
+    namespace save_debug_ctls
     {
         constexpr const auto mask = 0x0000000000000004ULL;
         constexpr const auto from = 2ULL;
-        constexpr const auto name = "save_debug_controls";
+        constexpr const auto name = "save_debug_ctls";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -13285,11 +13285,11 @@ namespace ia32_vmx_true_exit_ctls
         { bfdebug_subbool(level, name, is_allowed1(), msg); }
     }
 
-    namespace host_address_space_size
+    namespace host_addr_space_size
     {
         constexpr const auto mask = 0x0000000000000200ULL;
         constexpr const auto from = 9ULL;
-        constexpr const auto name = "host_address_space_size";
+        constexpr const auto name = "host_addr_space_size";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -13341,11 +13341,11 @@ namespace ia32_vmx_true_exit_ctls
         { bfdebug_subbool(level, name, is_allowed1(), msg); }
     }
 
-    namespace acknowledge_interrupt_on_exit
+    namespace acknowledge_int_on_exit
     {
         constexpr const auto mask = 0x0000000000008000ULL;
         constexpr const auto from = 15ULL;
-        constexpr const auto name = "acknowledge_interrupt_on_exit";
+        constexpr const auto name = "acknowledge_int_on_exit";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -13540,10 +13540,10 @@ namespace ia32_vmx_true_exit_ctls
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        save_debug_controls::dump(level, msg);
-        host_address_space_size::dump(level, msg);
+        save_debug_ctls::dump(level, msg);
+        host_addr_space_size::dump(level, msg);
         load_ia32_perf_global_ctrl::dump(level, msg);
-        acknowledge_interrupt_on_exit::dump(level, msg);
+        acknowledge_int_on_exit::dump(level, msg);
         save_ia32_pat::dump(level, msg);
         load_ia32_pat::dump(level, msg);
         save_ia32_efer::dump(level, msg);
@@ -13567,11 +13567,11 @@ namespace ia32_vmx_true_entry_ctls
     inline auto allowed1()
     { return ((_read_msr(addr) & 0xFFFFFFFF00000000ULL) >> 32); }
 
-    namespace load_debug_controls
+    namespace load_debug_ctls
     {
         constexpr const auto mask = 0x0000000000000004ULL;
         constexpr const auto from = 2ULL;
-        constexpr const auto name = "load_debug_controls";
+        constexpr const auto name = "load_debug_ctls";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -13794,7 +13794,7 @@ namespace ia32_vmx_true_entry_ctls
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        load_debug_controls::dump(level, msg);
+        load_debug_ctls::dump(level, msg);
         ia_32e_mode_guest::dump(level, msg);
         entry_to_smm::dump(level, msg);
         deactivate_dual_monitor_treatment::dump(level, msg);
@@ -14076,11 +14076,11 @@ namespace ia32_rtit_output_base
     inline void set(value_type val) noexcept
     { _write_msr(addr, val); }
 
-    namespace base_phys_address
+    namespace base_phys_addr
     {
         constexpr const auto mask = 0x7FFFFFFFFFFFFF80ULL;
         constexpr const auto from = 7ULL;
-        constexpr const auto name = "base_phys_address";
+        constexpr const auto name = "base_phys_addr";
 
         inline auto get() noexcept
         { return get_bits(_read_msr(addr), mask) >> from; }
@@ -14101,7 +14101,7 @@ namespace ia32_rtit_output_base
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        base_phys_address::dump(level, msg);
+        base_phys_addr::dump(level, msg);
     }
 }
 
@@ -14961,11 +14961,11 @@ namespace ia32_rtit_addr0_a
     inline void set(value_type val) noexcept
     { _write_msr(addr, val); }
 
-    namespace virtual_address
+    namespace virtual_addr
     {
         constexpr const auto mask = 0x0000FFFFFFFFFFFFULL;
         constexpr const auto from = 0ULL;
-        constexpr const auto name = "virtual_address";
+        constexpr const auto name = "virtual_addr";
 
         inline auto get() noexcept
         { return get_bits(_read_msr(addr), mask) >> from; }
@@ -15008,7 +15008,7 @@ namespace ia32_rtit_addr0_a
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        virtual_address::dump(level, msg);
+        virtual_addr::dump(level, msg);
         signext_va::dump(level, msg);
     }
 }
@@ -15024,11 +15024,11 @@ namespace ia32_rtit_addr0_b
     inline void set(value_type val) noexcept
     { _write_msr(addr, val); }
 
-    namespace virtual_address
+    namespace virtual_addr
     {
         constexpr const auto mask = 0x0000FFFFFFFFFFFFULL;
         constexpr const auto from = 0ULL;
-        constexpr const auto name = "virtual_address";
+        constexpr const auto name = "virtual_addr";
 
         inline auto get() noexcept
         { return get_bits(_read_msr(addr), mask) >> from; }
@@ -15071,7 +15071,7 @@ namespace ia32_rtit_addr0_b
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        virtual_address::dump(level, msg);
+        virtual_addr::dump(level, msg);
         signext_va::dump(level, msg);
     }
 }
@@ -15087,11 +15087,11 @@ namespace ia32_rtit_addr1_a
     inline void set(value_type val) noexcept
     { _write_msr(addr, val); }
 
-    namespace virtual_address
+    namespace virtual_addr
     {
         constexpr const auto mask = 0x0000FFFFFFFFFFFFULL;
         constexpr const auto from = 0ULL;
-        constexpr const auto name = "virtual_address";
+        constexpr const auto name = "virtual_addr";
 
         inline auto get() noexcept
         { return get_bits(_read_msr(addr), mask) >> from; }
@@ -15134,7 +15134,7 @@ namespace ia32_rtit_addr1_a
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        virtual_address::dump(level, msg);
+        virtual_addr::dump(level, msg);
         signext_va::dump(level, msg);
     }
 }
@@ -15150,11 +15150,11 @@ namespace ia32_rtit_addr1_b
     inline void set(value_type val) noexcept
     { _write_msr(addr, val); }
 
-    namespace virtual_address
+    namespace virtual_addr
     {
         constexpr const auto mask = 0x0000FFFFFFFFFFFFULL;
         constexpr const auto from = 0ULL;
-        constexpr const auto name = "virtual_address";
+        constexpr const auto name = "virtual_addr";
 
         inline auto get() noexcept
         { return get_bits(_read_msr(addr), mask) >> from; }
@@ -15197,7 +15197,7 @@ namespace ia32_rtit_addr1_b
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        virtual_address::dump(level, msg);
+        virtual_addr::dump(level, msg);
         signext_va::dump(level, msg);
     }
 }
@@ -15213,11 +15213,11 @@ namespace ia32_rtit_addr2_a
     inline void set(value_type val) noexcept
     { _write_msr(addr, val); }
 
-    namespace virtual_address
+    namespace virtual_addr
     {
         constexpr const auto mask = 0x0000FFFFFFFFFFFFULL;
         constexpr const auto from = 0ULL;
-        constexpr const auto name = "virtual_address";
+        constexpr const auto name = "virtual_addr";
 
         inline auto get() noexcept
         { return get_bits(_read_msr(addr), mask) >> from; }
@@ -15260,7 +15260,7 @@ namespace ia32_rtit_addr2_a
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        virtual_address::dump(level, msg);
+        virtual_addr::dump(level, msg);
         signext_va::dump(level, msg);
     }
 }
@@ -15276,11 +15276,11 @@ namespace ia32_rtit_addr2_b
     inline void set(value_type val) noexcept
     { _write_msr(addr, val); }
 
-    namespace virtual_address
+    namespace virtual_addr
     {
         constexpr const auto mask = 0x0000FFFFFFFFFFFFULL;
         constexpr const auto from = 0ULL;
-        constexpr const auto name = "virtual_address";
+        constexpr const auto name = "virtual_addr";
 
         inline auto get() noexcept
         { return get_bits(_read_msr(addr), mask) >> from; }
@@ -15323,7 +15323,7 @@ namespace ia32_rtit_addr2_b
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        virtual_address::dump(level, msg);
+        virtual_addr::dump(level, msg);
         signext_va::dump(level, msg);
     }
 }
@@ -15339,11 +15339,11 @@ namespace ia32_rtit_addr3_a
     inline void set(value_type val) noexcept
     { _write_msr(addr, val); }
 
-    namespace virtual_address
+    namespace virtual_addr
     {
         constexpr const auto mask = 0x0000FFFFFFFFFFFFULL;
         constexpr const auto from = 0ULL;
-        constexpr const auto name = "virtual_address";
+        constexpr const auto name = "virtual_addr";
 
         inline auto get() noexcept
         { return get_bits(_read_msr(addr), mask) >> from; }
@@ -15386,7 +15386,7 @@ namespace ia32_rtit_addr3_a
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        virtual_address::dump(level, msg);
+        virtual_addr::dump(level, msg);
         signext_va::dump(level, msg);
     }
 }
@@ -15402,11 +15402,11 @@ namespace ia32_rtit_addr3_b
     inline void set(value_type val) noexcept
     { _write_msr(addr, val); }
 
-    namespace virtual_address
+    namespace virtual_addr
     {
         constexpr const auto mask = 0x0000FFFFFFFFFFFFULL;
         constexpr const auto from = 0ULL;
-        constexpr const auto name = "virtual_address";
+        constexpr const auto name = "virtual_addr";
 
         inline auto get() noexcept
         { return get_bits(_read_msr(addr), mask) >> from; }
@@ -15449,7 +15449,7 @@ namespace ia32_rtit_addr3_b
     inline void dump(int level, std::string *msg = nullptr)
     {
         bfdebug_nhex(level, name, get(), msg);
-        virtual_address::dump(level, msg);
+        virtual_addr::dump(level, msg);
         signext_va::dump(level, msg);
     }
 }
@@ -15750,10 +15750,10 @@ namespace ia32_hwp_request_pkg
     }
 }
 
-namespace ia32_hwp_interrupt
+namespace ia32_hwp_int
 {
     constexpr const auto addr = 0x00000773U;
-    constexpr const auto name = "ia32_hwp_interrupt";
+    constexpr const auto name = "ia32_hwp_int";
 
     inline auto get() noexcept
     { return _read_msr(addr); }
@@ -15958,11 +15958,11 @@ namespace ia32_hwp_request
         { bfdebug_subnhex(level, name, get(), msg); }
     }
 
-    namespace package_control
+    namespace package_ctl
     {
         constexpr const auto mask = 0x0000040000000000ULL;
         constexpr const auto from = 42ULL;
-        constexpr const auto name = "package_control";
+        constexpr const auto name = "package_ctl";
 
         inline auto is_enabled()
         { return is_bit_set(_read_msr(addr), from); }
@@ -16000,7 +16000,7 @@ namespace ia32_hwp_request
         desired_perf::dump(level, msg);
         energy_perf_pref::dump(level, msg);
         activity_window::dump(level, msg);
-        package_control::dump(level, msg);
+        package_ctl::dump(level, msg);
     }
 }
 
@@ -16547,11 +16547,11 @@ namespace ia32_bndcfgs
         { bfdebug_subbool(level, name, is_enabled(), msg); }
     }
 
-    namespace base_address
+    namespace base_addr
     {
         constexpr const auto mask = 0xFFFFFFFFFFFFF000ULL;
         constexpr const auto from = 12ULL;
-        constexpr const auto name = "base_address";
+        constexpr const auto name = "base_addr";
 
         inline auto get() noexcept
         { return get_bits(_read_msr(addr), mask) >> from; }
@@ -16574,7 +16574,7 @@ namespace ia32_bndcfgs
         bfdebug_nhex(level, name, get(), msg);
         en::dump(level, msg);
         bndpreserve::dump(level, msg);
-        base_address::dump(level, msg);
+        base_addr::dump(level, msg);
     }
 }
 

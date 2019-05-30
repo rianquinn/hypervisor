@@ -64,12 +64,16 @@ PRIVATE:
     void __vmcs_add_vmclear_delegate(const vmcs_delegate_t &d);
 
 PRIVATE:
-    vmcs_field16_t __vpid() const;
-    void __set_vpid(vmcs_field16_t val);
+    vmcs_field16_t __virtual_processor_identifier() const;
+    void __set_virtual_processor_identifier(vmcs_field16_t val);
 
-    vmcs_field16_t __posted_interrupt_notification_vector() const;
-    void __set_posted_interrupt_notification_vector(vmcs_field16_t val);
+    vmcs_field16_t __posted_int_notification_vector() const;
+    void __set_posted_int_notification_vector(vmcs_field16_t val);
 
+    vmcs_field16_t __eptp_index() const;
+    void __set_eptp_index(vmcs_field16_t val);
+
+PRIVATE:
     vmcs_field16_t __es_selector() const;
     void __set_es_selector(vmcs_field16_t val);
 
@@ -94,12 +98,13 @@ PRIVATE:
     vmcs_field16_t __tr_selector() const;
     void __set_tr_selector(vmcs_field16_t val);
 
-    vmcs_field16_t __interrupt_status() const;
-    void __set_interrupt_status(vmcs_field16_t val);
+    vmcs_field16_t __int_status() const;
+    void __set_int_status(vmcs_field16_t val);
 
     vmcs_field16_t __pml_index() const;
     void __set_pml_index(vmcs_field16_t val);
 
+PRIVATE:
     vmcs_field64_t __io_bitmap_a_addr() const;
     void __set_io_bitmap_a_addr(vmcs_field64_t val);
 
@@ -115,26 +120,32 @@ PRIVATE:
     vmcs_field64_t __vmexit_msr_load_addr() const;
     void __set_vmexit_msr_load_addr(vmcs_field64_t val);
 
+    vmcs_field64_t __vmentry_msr_load_addr() const;
+    void __set_vmentry_msr_load_addr(vmcs_field64_t val);
+
+    vmcs_field64_t __executive_vmcs_ptr() const;
+    void __set_executive_vmcs_ptr(vmcs_field64_t val);
+
     vmcs_field64_t __pml_addr() const;
     void __set_pml_addr(vmcs_field64_t val);
 
     vmcs_field64_t __tsc_offset() const;
     void __set_tsc_offset(vmcs_field64_t val);
 
-    vmcs_field64_t __vapic_addr() const;
-    void __set_vapic_addr(vmcs_field64_t val);
+    vmcs_field64_t __virtual_apic_addr() const;
+    void __set_virtual_apic_addr(vmcs_field64_t val);
 
     vmcs_field64_t __apic_access_addr() const;
     void __set_apic_access_addr(vmcs_field64_t val);
 
-    vmcs_field64_t __posted_interrupt_descriptor_addr() const;
-    void __set_posted_interrupt_descriptor_addr(vmcs_field64_t val);
+    vmcs_field64_t __posted_int_descriptor_addr() const;
+    void __set_posted_int_descriptor_addr(vmcs_field64_t val);
 
     vmcs_field64_t __vm_function_ctls() const;
     void __set_vm_function_ctls(vmcs_field64_t val);
 
-    vmcs_field64_t __eptp() const;
-    void __set_eptp(vmcs_field64_t val);
+    vmcs_field64_t __ept_ptr() const;
+    void __set_ept_ptr(vmcs_field64_t val);
 
     vmcs_field64_t __eoi_exit_bitmap_0() const;
     void __set_eoi_exit_bitmap_0(vmcs_field64_t val);
@@ -151,8 +162,17 @@ PRIVATE:
     vmcs_field64_t __eptp_list_addr() const;
     void __set_eptp_list_addr(vmcs_field64_t val);
 
-    vmcs_field64_t __vexception_info_addr() const;
-    void __set_vexception_info_addr(vmcs_field64_t val);
+    vmcs_field64_t __vmread_bitmap_addr() const;
+    void __set_vmread_bitmap_addr(vmcs_field64_t val);
+
+    vmcs_field64_t __vmwrite_bitmap_addr() const;
+    void __set_vmwrite_bitmap_addr(vmcs_field64_t val);
+
+    vmcs_field64_t __virtualization_exception_info_addr() const;
+    void __set_virtualization_exception_info_addr(vmcs_field64_t val);
+
+    vmcs_field64_t __encls_exiting_bitmap() const;
+    void __set_encls_exiting_bitmap(vmcs_field64_t val);
 
     vmcs_field64_t __xss_exiting_bitmap() const;
     void __set_xss_exiting_bitmap(vmcs_field64_t val);
@@ -160,7 +180,12 @@ PRIVATE:
     vmcs_field64_t __tsc_multiplier() const;
     void __set_tsc_multiplier(vmcs_field64_t val);
 
+PRIVATE:
     vmcs_field64_t __gpa() const;
+
+PRIVATE:
+    vmcs_field64_t __vmcs_link_ptr() const;
+    void __set_vmcs_link_ptr(vmcs_field64_t val);
 
     vmcs_field64_t __ia32_debugctl() const;
     void __set_ia32_debugctl(vmcs_field64_t val);
@@ -186,20 +211,24 @@ PRIVATE:
     vmcs_field64_t __pdpte3() const;
     void __set_pdpte3(vmcs_field64_t val);
 
-    vmcs_field32_t __pin_based_ctls() const;
-    void __set_pin_based_ctls(vmcs_field32_t val);
+    vmcs_field64_t __ia32_bndcfgs() const;
+    void __set_ia32_bndcfgs(vmcs_field64_t val);
 
-    vmcs_field32_t __proc_based_ctls() const;
-    void __set_proc_based_ctls(vmcs_field32_t val);
+PRIVATE:
+    vmcs_field32_t __pin_based_vm_execution_ctls() const;
+    void __set_pin_based_vm_execution_ctls(vmcs_field32_t val);
+
+    vmcs_field32_t __processor_based_vm_execution_ctls() const;
+    void __set_processor_based_vm_execution_ctls(vmcs_field32_t val);
 
     vmcs_field32_t __exception_bitmap() const;
     void __set_exception_bitmap(vmcs_field32_t val);
 
-    vmcs_field32_t __pf_error_code_mask() const;
-    void __set_pf_error_code_mask(vmcs_field32_t val);
+    vmcs_field32_t __page_fault_error_code_mask() const;
+    void __set_page_fault_error_code_mask(vmcs_field32_t val);
 
-    vmcs_field32_t __pf_error_code_match() const;
-    void __set_pf_error_code_match(vmcs_field32_t val);
+    vmcs_field32_t __page_fault_error_code_match() const;
+    void __set_page_fault_error_code_match(vmcs_field32_t val);
 
     vmcs_field32_t __cr3_target_count() const;
     void __set_cr3_target_count(vmcs_field32_t val);
@@ -210,8 +239,8 @@ PRIVATE:
     vmcs_field32_t __vmexit_msr_store_count() const;
     void __set_vmexit_msr_store_count(vmcs_field32_t val);
 
-    vmcs_field32_t __vmexit_load_count() const;
-    void __set_vmexit_load_count(vmcs_field32_t val);
+    vmcs_field32_t __vmexit_msr_load_count() const;
+    void __set_vmexit_msr_load_count(vmcs_field32_t val);
 
     vmcs_field32_t __vmentry_ctls() const;
     void __set_vmentry_ctls(vmcs_field32_t val);
@@ -219,8 +248,8 @@ PRIVATE:
     vmcs_field32_t __vmentry_msr_load_count() const;
     void __set_vmentry_msr_load_count(vmcs_field32_t val);
 
-    vmcs_field32_t __vmentry_int_info() const;
-    void __set_vmentry_int_info(vmcs_field32_t val);
+    vmcs_field32_t __vmentry_interruption_info() const;
+    void __set_vmentry_interruption_info(vmcs_field32_t val);
 
     vmcs_field32_t __vmentry_exception_error_code() const;
     void __set_vmentry_exception_error_code(vmcs_field32_t val);
@@ -231,8 +260,8 @@ PRIVATE:
     vmcs_field32_t __tpr_threshold() const;
     void __set_tpr_threshold(vmcs_field32_t val);
 
-    vmcs_field32_t __proc_based_ctls2() const;
-    void __set_proc_based_ctls2(vmcs_field32_t val);
+    vmcs_field32_t __processor_based_vm_execution_ctls2() const;
+    void __set_processor_based_vm_execution_ctls2(vmcs_field32_t val);
 
     vmcs_field32_t __ple_gap() const;
     void __set_ple_gap(vmcs_field32_t val);
@@ -240,9 +269,16 @@ PRIVATE:
     vmcs_field32_t __ple_window() const;
     void __set_ple_window(vmcs_field32_t val);
 
+PRIVATE:
     vmcs_field32_t __vm_instr_error() const;
     vmcs_field32_t __vmexit_int_info() const;
+    vmcs_field32_t __vmexit_int_error_code() const;
+    vmcs_field32_t __idt_vectoring_info() const;
+    vmcs_field32_t __idt_vectoring_error_code() const;
+    vmcs_field32_t __vmexit_instr_len() const;
+    vmcs_field32_t __vmexit_instr_info() const;
 
+PRIVATE:
     vmcs_field32_t __es_limit() const;
     void __set_es_limit(vmcs_field32_t val);
 
@@ -303,12 +339,16 @@ PRIVATE:
     vmcs_field32_t __activity_state() const;
     void __set_activity_state(vmcs_field32_t val);
 
+    vmcs_field32_t __smbase() const;
+    void __set_smbase(vmcs_field32_t val);
+
     vmcs_field32_t __ia32_sysenter_cs() const;
     void __set_ia32_sysenter_cs(vmcs_field32_t val);
 
     vmcs_field32_t __preemption_timer_value() const;
     void __set_preemption_timer_value(vmcs_field32_t val);
 
+PRIVATE:
     vmcs_field64_t __cr0_mask() const;
     void __set_cr0_mask(vmcs_field64_t val);
 
@@ -333,8 +373,17 @@ PRIVATE:
     vmcs_field64_t __cr3_target3() const;
     void __set_cr3_target3(vmcs_field64_t val);
 
+PRIVATE:
     vmcs_field64_t __exit_qualification() const;
     vmcs_field64_t __io_rcx() const;
+    vmcs_field64_t __io_rsi() const;
+    vmcs_field64_t __io_rdi() const;
+    vmcs_field64_t __io_rip() const;
+    vmcs_field64_t __gva() const;
+
+PRIVATE:
+    vmcs_field64_t __cr0() const;
+    void __set_cr0(vmcs_field64_t val);
 
     vmcs_field64_t __cr3() const;
     void __set_cr3(vmcs_field64_t val);
@@ -374,6 +423,12 @@ PRIVATE:
 
     vmcs_field64_t __dr7() const;
     void __set_dr7(vmcs_field64_t val);
+
+    vmcs_field64_t __rsp() const;
+    void __set_rsp(vmcs_field64_t val);
+
+    vmcs_field64_t __rip() const;
+    void __set_rip(vmcs_field64_t val);
 
     vmcs_field64_t __rflags() const;
     void __set_rflags(vmcs_field64_t val);

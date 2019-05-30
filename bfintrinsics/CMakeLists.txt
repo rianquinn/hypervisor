@@ -35,15 +35,10 @@ add_library(bfintrinsics
     $<${X64}:src/arch/x64/msrs.asm>
     $<${X64}:src/arch/x64/pm.asm>
     $<${X64}:src/arch/x64/portio.asm>
-    $<${X64}:src/arch/x64/rdtsc.asm>
     $<${X64}:src/arch/x64/rflags.asm>
     $<${X64}:src/arch/x64/srs.asm>
-    $<${X64}:src/arch/x64/tlb.asm>
-    $<${INTEL_X64}:src/arch/intel_x64/barrier.asm>
-    $<${INTEL_X64}:src/arch/intel_x64/bit.asm>
     $<${INTEL_X64}:src/arch/intel_x64/crs.asm>
     $<${INTEL_X64}:src/arch/intel_x64/drs.asm>
-    $<${INTEL_X64}:src/arch/intel_x64/pause.asm>
     $<${INTEL_X64}:src/arch/intel_x64/vmx.asm>
 )
 

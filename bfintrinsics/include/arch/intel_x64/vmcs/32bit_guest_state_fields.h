@@ -24,13 +24,6 @@
 
 #include <arch/intel_x64/vmcs/helpers.h>
 
-/// Intel x86_64 VMCS 32-bit Guest-State Fields
-///
-/// The following provides the interface for the 32-bit guest-state VMCS
-/// fields as defined in Appendix B.3.3, Vol. 3 of the Intel Software Developer's
-/// Manual.
-///
-
 // *INDENT-OFF*
 
 namespace intel_x64

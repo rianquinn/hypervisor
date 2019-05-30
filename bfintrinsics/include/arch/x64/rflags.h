@@ -253,11 +253,11 @@ namespace trap_flag
     { bfdebug_subbool(level, name, is_enabled(), msg); }
 }
 
-namespace interrupt_enable_flag
+namespace int_enable_flag
 {
     constexpr const auto mask = 0x0000000000000200ULL;
     constexpr const auto from = 9ULL;
-    constexpr const auto name = "interrupt_enable_flag";
+    constexpr const auto name = "int_enable_flag";
 
     inline auto is_enabled()
     { return is_bit_set(_read_rflags(), from); }
@@ -479,11 +479,11 @@ namespace virtual_8086_mode
     { bfdebug_subbool(level, name, is_enabled(), msg); }
 }
 
-namespace alignment_check_access_control
+namespace alignment_check_access_ctl
 {
     constexpr const auto mask = 0x0000000000040000ULL;
     constexpr const auto from = 18ULL;
-    constexpr const auto name = "alignment_check_access_control";
+    constexpr const auto name = "alignment_check_access_ctl";
 
     inline auto is_enabled()
     { return is_bit_set(_read_rflags(), from); }
@@ -624,14 +624,14 @@ inline void dump(int level, std::string *msg = nullptr)
     zero_flag::dump(level, msg);
     sign_flag::dump(level, msg);
     trap_flag::dump(level, msg);
-    interrupt_enable_flag::dump(level, msg);
+    int_enable_flag::dump(level, msg);
     direction_flag::dump(level, msg);
     overflow_flag::dump(level, msg);
     privilege_level::dump(level, msg);
     nested_task::dump(level, msg);
     resume_flag::dump(level, msg);
     virtual_8086_mode::dump(level, msg);
-    alignment_check_access_control::dump(level, msg);
+    alignment_check_access_ctl::dump(level, msg);
     virtual_interupt_flag::dump(level, msg);
     virtual_interupt_pending::dump(level, msg);
     id_flag::dump(level, msg);

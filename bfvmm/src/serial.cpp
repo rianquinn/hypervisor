@@ -20,7 +20,6 @@
 // SOFTWARE.
 
 #include <arch/x64/portio.h>
-#include <arch/intel_x64/pause.h>
 
 #include <bfconstants.h>
 #include <implementation/serial.h>
@@ -77,7 +76,7 @@ serial::instance() noexcept
 void
 serial::write(const char c) const noexcept
 {
-    ::intel_x64::spin_until_true(is_transmit_empty());
+    while(!is_transmit_empty());
     outb(0, static_cast<uint8_t>(c));
 }
 

@@ -24,13 +24,6 @@
 
 #include <arch/intel_x64/vmcs/helpers.h>
 
-/// Intel x86_64 VMCS Natural-Width Host-State Fields
-///
-/// The following provides the interface for the natural-width host-state VMCS
-/// fields as defined in Appendix B.4.4, Vol. 3 of the Intel Software Developer's
-/// Manual.
-///
-
 // *INDENT-OFF*
 
 namespace intel_x64
@@ -779,11 +772,11 @@ namespace host_cr4
         { dump_vmcs_subbool(level, msg); }
     }
 
-    namespace protected_mode_virtual_interrupts
+    namespace protected_mode_virtual_ints
     {
         constexpr const auto mask = 0x0000000000000002ULL;
         constexpr const auto from = 1ULL;
-        constexpr const auto name = "protected_mode_virtual_interrupts";
+        constexpr const auto name = "protected_mode_virtual_ints";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, exists()), from); }
@@ -999,11 +992,11 @@ namespace host_cr4
         { dump_vmcs_subbool(level, msg); }
     }
 
-    namespace physical_address_extensions
+    namespace physical_addr_extensions
     {
         constexpr const auto mask = 0x0000000000000020ULL;
         constexpr const auto from = 5ULL;
-        constexpr const auto name = "physical_address_extensions";
+        constexpr const auto name = "physical_addr_extensions";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, exists()), from); }
@@ -1773,11 +1766,11 @@ namespace host_cr4
     {
         dump_vmcs_nhex(level, msg);
         v8086_mode_extensions::dump(level, msg);
-        protected_mode_virtual_interrupts::dump(level, msg);
+        protected_mode_virtual_ints::dump(level, msg);
         time_stamp_disable::dump(level, msg);
         debugging_extensions::dump(level, msg);
         page_size_extensions::dump(level, msg);
-        physical_address_extensions::dump(level, msg);
+        physical_addr_extensions::dump(level, msg);
         machine_check_enable::dump(level, msg);
         page_global_enable::dump(level, msg);
         performance_monitor_counter_enable::dump(level, msg);

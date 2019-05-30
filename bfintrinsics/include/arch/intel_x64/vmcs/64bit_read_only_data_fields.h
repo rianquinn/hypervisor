@@ -24,13 +24,6 @@
 
 #include <arch/intel_x64/vmcs/helpers.h>
 
-/// Intel x86_64 VMCS 64-bit Read-Only Data Fields
-///
-/// The following provides the interface for the 64-bit read-only data VMCS
-/// fields as defined in Appendix B.2.2, Vol. 3 of the Intel Software Developer's
-/// Manual.
-///
-
 // *INDENT-OFF*
 
 namespace intel_x64
@@ -38,14 +31,14 @@ namespace intel_x64
 namespace vmcs
 {
 
-namespace guest_physical_address
+namespace guest_physical_addr
 {
     constexpr const auto addr = 0x0000000000002400ULL;
-    constexpr const auto name = "guest_physical_address";
+    constexpr const auto name = "guest_physical_addr";
 
     inline auto exists()
     {
-        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1() &&
+        return msrs::ia32_vmx_true_procbased_ctls::activate_secondary_ctls::is_allowed1() &&
                msrs::ia32_vmx_procbased_ctls2::enable_ept::is_allowed1();
     }
 

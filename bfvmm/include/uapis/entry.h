@@ -45,6 +45,8 @@
 /// various stages of a vCPU's lifecycle and give you a place to setup and
 /// teardown whatever custom logic your extension is providing.
 ///
+/// Defintions:
+///
 /// To understand what a vCPU is we will need to define some types. Although
 /// Bareflank is designed to work with multiple CPU archiectures, the names
 /// mostly come from Intel with some mods to make things easier to understand.
@@ -272,7 +274,17 @@
 ///   posture of the system by reducing the amount of software that is running
 ///   with "privilege" (i.e. the ability to see another VM's resources).
 ///
-
+/// Shorthands:
+/// - info = information
+/// - instr = instruction
+/// - int(s) = interrupt(s) or integer
+/// - len = length
+/// - addr = address
+/// - ptr = pointer
+/// - ctl(s) = control(s)
+/// - v = virtual
+/// - p = physical
+///
 // -----------------------------------------------------------------------------
 // Definitions
 // -----------------------------------------------------------------------------

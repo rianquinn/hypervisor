@@ -24,13 +24,6 @@
 
 #include <arch/intel_x64/vmcs/helpers.h>
 
-/// Intel x86_64 VMCS 32-bit Read-Only Data Fields
-///
-/// The following provides the interface for the 32-bit read-only data VMCS
-/// fields as defined in Appendix B.3.2, Vol. 3 of the Intel Software Developer's
-/// Manual.
-///
-
 // *INDENT-OFF*
 
 namespace intel_x64
@@ -38,10 +31,10 @@ namespace intel_x64
 namespace vmcs
 {
 
-namespace vm_instruction_error
+namespace vm_instr_error
 {
     constexpr const auto addr = 0x0000000000004400ULL;
-    constexpr const auto name = "vm_instruction_error";
+    constexpr const auto name = "vm_instr_error";
 
     inline auto exists()
     { return true; }
@@ -49,17 +42,17 @@ namespace vm_instruction_error
     inline auto get()
     { return get_vmcs_field(addr, name, exists()); }
 
-    inline auto vm_instruction_error_description(value_type error)
+    inline auto vm_instr_error_description(value_type error)
     {
         switch (error) {
             case 1U:
                 return "VMCALL executed in VMX root operation";
 
             case 2U:
-                return "VMCLEAR with invalid physical address";
+                return "VMCLEAR with invalid physical addr";
 
             case 3U:
-                return "VMCLEAR with VMXON pointer";
+                return "VMCLEAR with VMXON ptr";
 
             case 4U:
                 return "VMLAUNCH with non-clear VMCS";
@@ -71,16 +64,16 @@ namespace vm_instruction_error
                 return "VMRESUME after VMXOFF (VMXOFF AND VMXON between VMLAUNCH and VMRESUME)";
 
             case 7U:
-                return "VM entry with invalid control field(s)";
+                return "VM entry with invalid ctl field(s)";
 
             case 8U:
                 return "VM entry with invalid host-state field(s)";
 
             case 9U:
-                return "VMPTRLD with invalid physical address";
+                return "VMPTRLD with invalid physical addr";
 
             case 10U:
-                return "VMPTRLD with VMXON pointer";
+                return "VMPTRLD with VMXON ptr";
 
             case 11U:
                 return "VMPTRLD with incorrect VMCS revision identifier";
@@ -95,13 +88,13 @@ namespace vm_instruction_error
                 return "VMXON executed in VMX root operation";
 
             case 16U:
-                return "VM entry with invalid executive-VMCS pointer";
+                return "VM entry with invalid executive-VMCS ptr";
 
             case 17U:
                 return "VM entry with non-launched executive VMCS";
 
             case 18U:
-                return "VM entry with executive-VMCS pointer not VMXON pointer "
+                return "VM entry with executive-VMCS ptr not VMXON ptr "
                        "(when attempting to deactivate the dual-monitor treatment of SMIs and SMM)";
 
             case 19U:
@@ -109,7 +102,7 @@ namespace vm_instruction_error
                        " the dual-monitor treatment of SMIs and SMM)";
 
             case 20U:
-                return "VMCALL with invalid VM-exit control fields";
+                return "VMCALL with invalid VM-exit ctl fields";
 
             case 22U:
                 return "VMCALL with incorrect MSEG revision identifier (when attempting "
@@ -123,7 +116,7 @@ namespace vm_instruction_error
                        "activate the dual-monitor treatment of SMIs and SMM)";
 
             case 25U:
-                return "VM entry with invalid VM-execution control fields in executive"
+                return "VM entry with invalid VM-execution ctl fields in executive"
                        " VMCS (when attempting to return from SMM)";
 
             case 26U:
@@ -133,12 +126,12 @@ namespace vm_instruction_error
                 return "Invalid operand to INVEPT/INVVPID";
 
             default:
-                return "Unknown VM-instruction error";
+                return "Unknown VM-instr error";
         }
     }
 
     inline auto description()
-    { return vm_instruction_error_description(get_vmcs_field(addr, name, exists())); }
+    { return vm_instr_error_description(get_vmcs_field(addr, name, exists())); }
 }
 
 namespace exit_reason
@@ -159,13 +152,13 @@ namespace exit_reason
         constexpr const auto name = "basic_exit_reason";                        // Short Name
 
         constexpr const auto exception_or_nmi = 0U;
-        constexpr const auto external_interrupt = 1U;
+        constexpr const auto external_int = 1U;
         constexpr const auto triple_fault = 2U;
         constexpr const auto init_signal = 3U;
         constexpr const auto sipi = 4U;
         constexpr const auto smi = 5U;
         constexpr const auto other_smi = 6U;
-        constexpr const auto interrupt_window = 7U;
+        constexpr const auto int_window = 7U;
         constexpr const auto nmi_window = 8U;
         constexpr const auto task_switch = 9U;
         constexpr const auto cpuid = 10U;
@@ -186,18 +179,18 @@ namespace exit_reason
         constexpr const auto vmwrite = 25U;
         constexpr const auto vmxoff = 26U;
         constexpr const auto vmxon = 27U;
-        constexpr const auto control_register_accesses = 28U;
+        constexpr const auto ctl_register_accesses = 28U;
         constexpr const auto mov_dr = 29U;
-        constexpr const auto io_instruction = 30U;
+        constexpr const auto io_instr = 30U;
         constexpr const auto rdmsr = 31U;
         constexpr const auto wrmsr = 32U;
-        constexpr const auto vm_entry_failure_invalid_guest_state = 33U;
-        constexpr const auto vm_entry_failure_msr_loading = 34U;
+        constexpr const auto vmentry_failure_invalid_guest_state = 33U;
+        constexpr const auto vmentry_failure_msr_loading = 34U;
         constexpr const auto mwait = 36U;
         constexpr const auto monitor_trap_flag = 37U;
         constexpr const auto monitor = 39U;
         constexpr const auto pause = 40U;
-        constexpr const auto vm_entry_failure_machine_check_event = 41U;
+        constexpr const auto vmentry_failure_machine_check_event = 41U;
         constexpr const auto tpr_below_threshold = 43U;
         constexpr const auto apic_access = 44U;
         constexpr const auto virtualized_eoi = 45U;
@@ -228,8 +221,8 @@ namespace exit_reason
                 case exception_or_nmi:
                     return "exception_or_nmi";
 
-                case external_interrupt:
-                    return "external_interrupt";
+                case external_int:
+                    return "external_int";
 
                 case triple_fault:
                     return "triple_fault";
@@ -246,8 +239,8 @@ namespace exit_reason
                 case other_smi:
                     return "other_smi";
 
-                case interrupt_window:
-                    return "interrupt_window";
+                case int_window:
+                    return "int_window";
 
                 case nmi_window:
                     return "nmi_window";
@@ -309,14 +302,14 @@ namespace exit_reason
                 case vmxon:
                     return "vmxon";
 
-                case control_register_accesses:
-                    return "control_register_accesses";
+                case ctl_register_accesses:
+                    return "ctl_register_accesses";
 
                 case mov_dr:
                     return "mov_dr";
 
-                case io_instruction:
-                    return "io_instruction";
+                case io_instr:
+                    return "io_instr";
 
                 case rdmsr:
                     return "rdmsr";
@@ -324,11 +317,11 @@ namespace exit_reason
                 case wrmsr:
                     return "wrmsr";
 
-                case vm_entry_failure_invalid_guest_state:
-                    return "vm_entry_failure_invalid_guest_state";
+                case vmentry_failure_invalid_guest_state:
+                    return "vmentry_failure_invalid_guest_state";
 
-                case vm_entry_failure_msr_loading:
-                    return "vm_entry_failure_msr_loading";
+                case vmentry_failure_msr_loading:
+                    return "vmentry_failure_msr_loading";
 
                 case mwait:
                     return "mwait";
@@ -342,8 +335,8 @@ namespace exit_reason
                 case pause:
                     return "pause";
 
-                case vm_entry_failure_machine_check_event:
-                    return "vm_entry_failure_machine_check_event";
+                case vmentry_failure_machine_check_event:
+                    return "vmentry_failure_machine_check_event";
 
                 case tpr_below_threshold:
                     return "tpr_below_threshold";
@@ -433,11 +426,11 @@ namespace exit_reason
         { dump_vmcs_subnhex(level, msg); }
     }
 
-    namespace vm_exit_incident_to_enclave_mode
+    namespace vmexit_incident_to_enclave_mode
     {
         constexpr const auto mask = 0x0000000008000000ULL;
         constexpr const auto from = 27ULL;
-        constexpr const auto name = "vm_exit_incident_to_enclave_mode";
+        constexpr const auto name = "vmexit_incident_to_enclave_mode";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, true), from); }
@@ -461,11 +454,11 @@ namespace exit_reason
         { dump_vmcs_subbool(level, msg); }
     }
 
-    namespace pending_mtf_vm_exit
+    namespace pending_mtf_vmexit
     {
         constexpr const auto mask = 0x0000000010000000ULL;
         constexpr const auto from = 28ULL;
-        constexpr const auto name = "pending_mtf_vm_exit";
+        constexpr const auto name = "pending_mtf_vmexit";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, true), from); }
@@ -489,11 +482,11 @@ namespace exit_reason
         { dump_vmcs_subbool(level, msg); }
     }
 
-    namespace vm_exit_from_vmx_root_operation
+    namespace vmexit_from_vmx_root_operation
     {
         constexpr const auto mask = 0x0000000020000000ULL;
         constexpr const auto from = 29ULL;
-        constexpr const auto name = "vm_exit_from_vmx_root_operation";
+        constexpr const auto name = "vmexit_from_vmx_root_operation";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, true), from); }
@@ -517,11 +510,11 @@ namespace exit_reason
         { dump_vmcs_subbool(level, msg); }
     }
 
-    namespace vm_entry_failure
+    namespace vmentry_failure
     {
         constexpr const auto mask = 0x0000000080000000ULL;
         constexpr const auto from = 31ULL;
-        constexpr const auto name = "vm_entry_failure";
+        constexpr const auto name = "vmentry_failure";
 
         inline auto is_enabled()
         { return is_bit_set(get_vmcs_field(addr, name, true), from); }
@@ -550,17 +543,17 @@ namespace exit_reason
         dump_vmcs_nhex(level, msg);
         basic_exit_reason::dump(level, msg);
         reserved::dump(level, msg);
-        vm_exit_incident_to_enclave_mode::dump(level, msg);
-        pending_mtf_vm_exit::dump(level, msg);
-        vm_exit_from_vmx_root_operation::dump(level, msg);
-        vm_entry_failure::dump(level, msg);
+        vmexit_incident_to_enclave_mode::dump(level, msg);
+        pending_mtf_vmexit::dump(level, msg);
+        vmexit_from_vmx_root_operation::dump(level, msg);
+        vmentry_failure::dump(level, msg);
     }
 }
 
-namespace vm_exit_interruption_information
+namespace vmexit_intion_info
 {
     constexpr const auto addr = 0x0000000000004404ULL;
-    constexpr const auto name = "vm_exit_interruption_information";
+    constexpr const auto name = "vmexit_intion_info";
 
     inline auto exists()
     { return true; }
@@ -590,14 +583,14 @@ namespace vm_exit_interruption_information
         { dump_vmcs_subnhex(level, msg); }
     }
 
-    namespace interruption_type
+    namespace intion_type
     {
         constexpr const auto mask = 0x00000700ULL;
         constexpr const auto from = 8ULL;
-        constexpr const auto name = "interruption_type";
+        constexpr const auto name = "intion_type";
 
-        constexpr const auto external_interrupt = 0ULL;
-        constexpr const auto non_maskable_interrupt = 2ULL;
+        constexpr const auto external_int = 0ULL;
+        constexpr const auto non_maskable_int = 2ULL;
         constexpr const auto hardware_exception = 3ULL;
         constexpr const auto software_exception = 6ULL;
 
@@ -721,7 +714,7 @@ namespace vm_exit_interruption_information
     {
         dump_vmcs_nhex(level, msg);
         vector::dump(level, msg);
-        interruption_type::dump(level, msg);
+        intion_type::dump(level, msg);
         error_code_valid::dump(level, msg);
         nmi_unblocking_due_to_iret::dump(level, msg);
         reserved::dump(level, msg);
@@ -729,10 +722,10 @@ namespace vm_exit_interruption_information
     }
 }
 
-namespace vm_exit_interruption_error_code
+namespace vmexit_intion_error_code
 {
     constexpr const auto addr = 0x0000000000004406ULL;
-    constexpr const auto name = "vm_exit_interruption_error_code";
+    constexpr const auto name = "vmexit_intion_error_code";
 
     inline auto exists()
     { return true; }
@@ -747,10 +740,10 @@ namespace vm_exit_interruption_error_code
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace idt_vectoring_information
+namespace idt_vectoring_info
 {
     constexpr const auto addr = 0x0000000000004408ULL;
-    constexpr const auto name = "idt_vectoring_information_field";
+    constexpr const auto name = "idt_vectoring_info_field";
 
     inline auto exists()
     { return true; }
@@ -780,16 +773,16 @@ namespace idt_vectoring_information
         { dump_vmcs_subnhex(level, msg); }
     }
 
-    namespace interruption_type
+    namespace intion_type
     {
         constexpr const auto mask = 0x00000700ULL;
         constexpr const auto from = 8ULL;
-        constexpr const auto name = "interruption_type";
+        constexpr const auto name = "intion_type";
 
-        constexpr const auto external_interrupt = 0ULL;
-        constexpr const auto non_maskable_interrupt = 2ULL;
+        constexpr const auto external_int = 0ULL;
+        constexpr const auto non_maskable_int = 2ULL;
         constexpr const auto hardware_exception = 3ULL;
-        constexpr const auto software_interrupt = 4ULL;
+        constexpr const auto software_int = 4ULL;
         constexpr const auto privileged_software_exception = 5ULL;
         constexpr const auto software_exception = 6ULL;
 
@@ -885,7 +878,7 @@ namespace idt_vectoring_information
     {
         dump_vmcs_nhex(level, msg);
         vector::dump(level, msg);
-        interruption_type::dump(level, msg);
+        intion_type::dump(level, msg);
         error_code_valid::dump(level, msg);
         reserved::dump(level, msg);
         valid_bit::dump(level, msg);
@@ -910,10 +903,10 @@ namespace idt_vectoring_error_code
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace vm_exit_instruction_length
+namespace vmexit_instr_len
 {
     constexpr const auto addr = 0x000000000000440CULL;
-    constexpr const auto name = "vm_exit_instruction_length";
+    constexpr const auto name = "vmexit_instr_len";
 
     inline auto exists()
     { return true; }
@@ -928,10 +921,10 @@ namespace vm_exit_instruction_length
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace vm_exit_instruction_information
+namespace vmexit_instr_info
 {
     constexpr const auto addr = 0x000000000000440EULL;
-    constexpr const auto name = "vm_exit_instruction_information";
+    constexpr const auto name = "vmexit_instr_info";
 
     inline auto exists()
     { return true; }
@@ -955,11 +948,11 @@ namespace vm_exit_instruction_information
         inline auto get_if_exists(bool verbose = false)
         { return get_vmcs_field_if_exists(addr, name, verbose, exists()); }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -981,7 +974,7 @@ namespace vm_exit_instruction_information
         inline void dump(int level, std::string *msg = nullptr)
         {
             dump_vmcs_nhex(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
         }
     }
 
@@ -995,11 +988,11 @@ namespace vm_exit_instruction_information
         inline auto get_if_exists(bool verbose = false)
         { return get_vmcs_field_if_exists(addr, name, verbose, exists()); }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -1047,7 +1040,7 @@ namespace vm_exit_instruction_information
         inline void dump(int level, std::string *msg = nullptr)
         {
             dump_vmcs_nhex(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             segment_register::dump(level, msg);
         }
     }
@@ -1086,11 +1079,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -1303,7 +1296,7 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
@@ -1347,11 +1340,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -1564,7 +1557,7 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
@@ -1608,11 +1601,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -1825,7 +1818,7 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
@@ -1869,11 +1862,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -2068,11 +2061,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subbool(level, msg); }
         }
 
-        namespace instruction_identity
+        namespace instr_identity
         {
             constexpr const auto mask = 0x0000000030000000ULL;
             constexpr const auto from = 28ULL;
-            constexpr const auto name = "instruction_identity";
+            constexpr const auto name = "instr_identity";
 
             constexpr const auto sgdt = 0UL;
             constexpr const auto sidt = 1UL;
@@ -2096,14 +2089,14 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             operand_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
             base_reg::dump(level, msg);
             base_reg_invalid::dump(level, msg);
-            instruction_identity::dump(level, msg);
+            instr_identity::dump(level, msg);
         }
     }
 
@@ -2141,11 +2134,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -2340,11 +2333,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subbool(level, msg); }
         }
 
-        namespace instruction_identity
+        namespace instr_identity
         {
             constexpr const auto mask = 0x0000000030000000ULL;
             constexpr const auto from = 28ULL;
-            constexpr const auto name = "instruction_identity";
+            constexpr const auto name = "instr_identity";
 
             constexpr const auto sgdt = 0UL;
             constexpr const auto sidt = 1UL;
@@ -2368,14 +2361,14 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             operand_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
             base_reg::dump(level, msg);
             base_reg_invalid::dump(level, msg);
-            instruction_identity::dump(level, msg);
+            instr_identity::dump(level, msg);
         }
     }
 
@@ -2413,11 +2406,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -2612,11 +2605,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subbool(level, msg); }
         }
 
-        namespace instruction_identity
+        namespace instr_identity
         {
             constexpr const auto mask = 0x0000000030000000ULL;
             constexpr const auto from = 28ULL;
-            constexpr const auto name = "instruction_identity";
+            constexpr const auto name = "instr_identity";
 
             constexpr const auto sgdt = 0UL;
             constexpr const auto sidt = 1UL;
@@ -2640,14 +2633,14 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             operand_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
             base_reg::dump(level, msg);
             base_reg_invalid::dump(level, msg);
-            instruction_identity::dump(level, msg);
+            instr_identity::dump(level, msg);
         }
     }
 
@@ -2685,11 +2678,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -2884,11 +2877,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subbool(level, msg); }
         }
 
-        namespace instruction_identity
+        namespace instr_identity
         {
             constexpr const auto mask = 0x0000000030000000ULL;
             constexpr const auto from = 28ULL;
-            constexpr const auto name = "instruction_identity";
+            constexpr const auto name = "instr_identity";
 
             constexpr const auto sgdt = 0UL;
             constexpr const auto sidt = 1UL;
@@ -2912,14 +2905,14 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             operand_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
             base_reg::dump(level, msg);
             base_reg_invalid::dump(level, msg);
-            instruction_identity::dump(level, msg);
+            instr_identity::dump(level, msg);
         }
     }
 
@@ -2993,11 +2986,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -3192,11 +3185,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subbool(level, msg); }
         }
 
-        namespace instruction_identity
+        namespace instr_identity
         {
             constexpr const auto mask = 0x0000000030000000ULL;
             constexpr const auto from = 28ULL;
-            constexpr const auto name = "instruction_identity";
+            constexpr const auto name = "instr_identity";
 
             constexpr const auto sldt = 0UL;
             constexpr const auto str = 1UL;
@@ -3221,14 +3214,14 @@ namespace vm_exit_instruction_information
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
             reg1::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             mem_reg::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
             base_reg::dump(level, msg);
             base_reg_invalid::dump(level, msg);
-            instruction_identity::dump(level, msg);
+            instr_identity::dump(level, msg);
         }
     }
 
@@ -3302,11 +3295,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -3501,11 +3494,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subbool(level, msg); }
         }
 
-        namespace instruction_identity
+        namespace instr_identity
         {
             constexpr const auto mask = 0x0000000030000000ULL;
             constexpr const auto from = 28ULL;
-            constexpr const auto name = "instruction_identity";
+            constexpr const auto name = "instr_identity";
 
             constexpr const auto sldt = 0UL;
             constexpr const auto str = 1UL;
@@ -3530,14 +3523,14 @@ namespace vm_exit_instruction_information
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
             reg1::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             mem_reg::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
             base_reg::dump(level, msg);
             base_reg_invalid::dump(level, msg);
-            instruction_identity::dump(level, msg);
+            instr_identity::dump(level, msg);
         }
     }
 
@@ -3611,11 +3604,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -3810,11 +3803,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subbool(level, msg); }
         }
 
-        namespace instruction_identity
+        namespace instr_identity
         {
             constexpr const auto mask = 0x0000000030000000ULL;
             constexpr const auto from = 28ULL;
-            constexpr const auto name = "instruction_identity";
+            constexpr const auto name = "instr_identity";
 
             constexpr const auto sldt = 0UL;
             constexpr const auto str = 1UL;
@@ -3839,14 +3832,14 @@ namespace vm_exit_instruction_information
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
             reg1::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             mem_reg::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
             base_reg::dump(level, msg);
             base_reg_invalid::dump(level, msg);
-            instruction_identity::dump(level, msg);
+            instr_identity::dump(level, msg);
         }
     }
 
@@ -3920,11 +3913,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -4119,11 +4112,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subbool(level, msg); }
         }
 
-        namespace instruction_identity
+        namespace instr_identity
         {
             constexpr const auto mask = 0x0000000030000000ULL;
             constexpr const auto from = 28ULL;
-            constexpr const auto name = "instruction_identity";
+            constexpr const auto name = "instr_identity";
 
             constexpr const auto sldt = 0UL;
             constexpr const auto str = 1UL;
@@ -4148,14 +4141,14 @@ namespace vm_exit_instruction_information
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
             reg1::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             mem_reg::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
             base_reg::dump(level, msg);
             base_reg_invalid::dump(level, msg);
-            instruction_identity::dump(level, msg);
+            instr_identity::dump(level, msg);
         }
     }
 
@@ -4347,11 +4340,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -4528,7 +4521,7 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
@@ -4571,11 +4564,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -4752,7 +4745,7 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
@@ -4795,11 +4788,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -4976,7 +4969,7 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
@@ -5019,11 +5012,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -5200,7 +5193,7 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
@@ -5243,11 +5236,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -5424,7 +5417,7 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
@@ -5467,11 +5460,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -5648,7 +5641,7 @@ namespace vm_exit_instruction_information
         {
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
             index_reg_invalid::dump(level, msg);
@@ -5727,11 +5720,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -5967,7 +5960,7 @@ namespace vm_exit_instruction_information
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
             reg1::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             mem_reg::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
@@ -6048,11 +6041,11 @@ namespace vm_exit_instruction_information
             { dump_vmcs_subnhex(level, msg); }
         }
 
-        namespace address_size
+        namespace addr_size
         {
             constexpr const auto mask = 0x0000000000000380ULL;
             constexpr const auto from = 7ULL;
-            constexpr const auto name = "address_size";
+            constexpr const auto name = "addr_size";
 
             constexpr const auto _16bit = 0UL;
             constexpr const auto _32bit = 1UL;
@@ -6288,7 +6281,7 @@ namespace vm_exit_instruction_information
             dump_vmcs_nhex(level, msg);
             scaling::dump(level, msg);
             reg1::dump(level, msg);
-            address_size::dump(level, msg);
+            addr_size::dump(level, msg);
             mem_reg::dump(level, msg);
             segment_register::dump(level, msg);
             index_reg::dump(level, msg);
