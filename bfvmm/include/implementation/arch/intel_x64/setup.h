@@ -19,42 +19,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VMCS_INTEL_X64_32BIT_HOST_STATE_FIELD_H
-#define VMCS_INTEL_X64_32BIT_HOST_STATE_FIELD_H
+#ifndef IMPLEMENTATION_SETUP_INTEL_X64_H
+#define IMPLEMENTATION_SETUP_INTEL_X64_H
 
-#include "helpers.h"
+#include "../../macros.h"
 
-// *INDENT-OFF*
+// -----------------------------------------------------------------------------
+// Defintion
+// -----------------------------------------------------------------------------
 
-namespace intel_x64::vmcs
+namespace bfvmm::implementation::intel_x64
 {
 
-namespace host_ia32_sysenter_cs
+class setup
 {
-    constexpr const auto addr = 0x0000000000004C00ULL;
-    constexpr const auto name = "host_ia32_sysenter_cs";
-
-    inline bool exists()
-    { return true; }
-
-    inline auto get()
-    { return get_vmcs_field(addr, name, exists()); }
-
-    inline auto get_if_exists(bool verbose = false)
-    { return get_vmcs_field_if_exists(addr, name, verbose, exists()); }
-
-    inline void set(value_type val)
-    { set_vmcs_field(val, addr, name, exists()); }
-
-    inline void set_if_exists(value_type val, bool verbose = false)
-    { set_vmcs_field_if_exists(val, addr, name, verbose, exists()); }
-
-    inline void dump(int level, std::string *msg = nullptr)
-    { dump_vmcs_nhex(level, msg); }
-}
+PUBLIC:
+    explicit setup();
+    ~setup() = default;
+};
 
 }
-
-// *INDENT-ON*
 
 #endif

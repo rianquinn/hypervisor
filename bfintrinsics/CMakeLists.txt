@@ -20,7 +20,7 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(bfintrinsics CXX)
+project(bfintrinsics CXX ASM)
 
 # -----------------------------------------------------------------------------
 # bfintrinsics
@@ -28,18 +28,18 @@ project(bfintrinsics CXX)
 
 add_library(bfintrinsics
     src/null.cpp
-    $<${X64}:src/arch/x64/cache.asm>
-    $<${X64}:src/arch/x64/cpuid.asm>
-    $<${X64}:src/arch/x64/gdt.asm>
-    $<${X64}:src/arch/x64/idt.asm>
-    $<${X64}:src/arch/x64/msrs.asm>
-    $<${X64}:src/arch/x64/pm.asm>
-    $<${X64}:src/arch/x64/portio.asm>
-    $<${X64}:src/arch/x64/rflags.asm>
-    $<${X64}:src/arch/x64/srs.asm>
-    $<${INTEL_X64}:src/arch/intel_x64/crs.asm>
-    $<${INTEL_X64}:src/arch/intel_x64/drs.asm>
-    $<${INTEL_X64}:src/arch/intel_x64/vmx.asm>
+    $<${INTEL_X64}:src/arch/x64/cache.S>
+    $<${INTEL_X64}:src/arch/x64/cpuid.S>
+    $<${INTEL_X64}:src/arch/x64/gdt.S>
+    $<${INTEL_X64}:src/arch/x64/idt.S>
+    $<${INTEL_X64}:src/arch/x64/msrs.S>
+    $<${INTEL_X64}:src/arch/x64/pm.S>
+    $<${INTEL_X64}:src/arch/x64/portio.S>
+    $<${INTEL_X64}:src/arch/x64/rflags.S>
+    $<${INTEL_X64}:src/arch/x64/srs.S>
+    $<${INTEL_X64}:src/arch/intel_x64/crs.S>
+    $<${INTEL_X64}:src/arch/intel_x64/drs.S>
+    $<${INTEL_X64}:src/arch/intel_x64/vmx.S>
 )
 
 # -----------------------------------------------------------------------------

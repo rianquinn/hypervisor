@@ -39,11 +39,11 @@
  *   only be called if an extension uses it. The base hypervisor doesn't create
  *   guest vCPUs. It only creates host vCPUs.
  */
-        .code64
-        .intel_syntax noprefix
+    .code64
+    .intel_syntax noprefix
 
-        .globl  _vmlaunch
-        .type   _vmlaunch, @function
+    .globl  _vmlaunch
+    .type   _vmlaunch, @function
 _vmlaunch:
     mov rax, rdi
 
@@ -166,8 +166,8 @@ _vmlaunch_guest:
  * of this as the epilog for the VMM and the VMExit logic is the prolog.
  */
 
-        .globl  _vmresume
-        .type   _vmresume, @function
+    .globl  _vmresume
+    .type   _vmresume, @function
 _vmresume:
     mov rax, rdi
 
@@ -226,8 +226,8 @@ _vmresume:
  * out to the community and ask first.
  */
 
-        .globl  _vmprmote
-        .type   _vmprmote, @function
+    .globl  _vmprmote
+    .type   _vmprmote, @function
 _vmprmote:
     push rdi
 
@@ -422,7 +422,8 @@ _vmprmote:
     mov rsi, 0x00006820
     vmread rdi, rsi
     and rdi, 0xFFFFFFFFFFFFFDFF
-    mov rflags, rdi
+    push rdi
+    popf
 
     /*
      * Restore General Purpose Registers

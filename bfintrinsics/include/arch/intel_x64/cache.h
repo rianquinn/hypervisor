@@ -19,39 +19,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VMCS_INTEL_X64_32BIT_HOST_STATE_FIELD_H
-#define VMCS_INTEL_X64_32BIT_HOST_STATE_FIELD_H
+#ifndef CACHE_INTEL_X64_H
+#define CACHE_INTEL_X64_H
 
-#include "helpers.h"
+#include <bftypes.h>
+#include <bfbitmanip.h>
+
+// -----------------------------------------------------------------------------
+// Definitions
+// -----------------------------------------------------------------------------
+
+extern "C" void _invd(void) noexcept;
+extern "C" void _wbinvd(void) noexcept;
+extern "C" void _clflush(void *addr) noexcept;
 
 // *INDENT-OFF*
 
-namespace intel_x64::vmcs
+namespace intel_x64::cache
 {
 
-namespace host_ia32_sysenter_cs
-{
-    constexpr const auto addr = 0x0000000000004C00ULL;
-    constexpr const auto name = "host_ia32_sysenter_cs";
+using pointer = void *;
+using integer_pointer = uint64_t;
 
-    inline bool exists()
-    { return true; }
+inline void invd() noexcept
+{ _invd(); }
 
-    inline auto get()
-    { return get_vmcs_field(addr, name, exists()); }
+inline void wbinvd() noexcept
+{ _wbinvd(); }
 
-    inline auto get_if_exists(bool verbose = false)
-    { return get_vmcs_field_if_exists(addr, name, verbose, exists()); }
+inline void clflush(integer_pointer addr) noexcept
+{ _clflush(reinterpret_cast<pointer>(addr)); }
 
-    inline void set(value_type val)
-    { set_vmcs_field(val, addr, name, exists()); }
-
-    inline void set_if_exists(value_type val, bool verbose = false)
-    { set_vmcs_field_if_exists(val, addr, name, verbose, exists()); }
-
-    inline void dump(int level, std::string *msg = nullptr)
-    { dump_vmcs_nhex(level, msg); }
-}
+inline void clflush(pointer addr) noexcept
+{ _clflush(addr); }
 
 }
 

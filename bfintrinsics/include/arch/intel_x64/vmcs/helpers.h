@@ -32,9 +32,7 @@
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace vmcs
+namespace intel_x64::vmcs
 {
 
 using field_type = uint64_t;
@@ -48,7 +46,7 @@ get_vmcs_field(
         throw std::logic_error("field doesn't exist: " + std::string(name));
     }
 
-    return intel_x64::vm::read(addr, name);
+    return vmx::read(addr);
 }
 
 inline value_type
@@ -56,7 +54,7 @@ get_vmcs_field_if_exists(
     field_type addr, const char *name, bool verbose, bool exists)
 {
     if (exists) {
-        return intel_x64::vm::read(addr, name);
+        return vmx::read(addr);
     }
     else {
         if (verbose) {
@@ -75,7 +73,7 @@ set_vmcs_field(
         throw std::logic_error("field doesn't exist: " + std::string(name));
     }
 
-    intel_x64::vm::write(addr, val, name);
+    vmx::write(addr, val);
 }
 
 inline void
@@ -83,7 +81,7 @@ set_vmcs_field_if_exists(
     value_type val, field_type addr, const char *name, bool verbose, bool exists)
 {
     if (exists) {
-        intel_x64::vm::write(addr, val, name);
+        vmx::write(addr, val);
     }
     else {
         if (verbose) {
@@ -152,7 +150,7 @@ enable_vm_ctl(
         throw std::logic_error("field is_allowed1 false: " + std::string(name));
     }
 
-    intel_x64::vm::write(addr, set_bit(intel_x64::vm::read(addr, name), from), name);
+    vmx::write(addr, set_bit(vmx::read(addr), from));
 }
 
 inline void
@@ -173,7 +171,7 @@ enable_vm_ctl_if_allowed(
         return;
     }
 
-    intel_x64::vm::write(addr, set_bit(intel_x64::vm::read(addr, name), from), name);
+    vmx::write(addr, set_bit(vmx::read(addr), from));
 }
 
 inline void
@@ -188,7 +186,7 @@ disable_vm_ctl(
         throw std::logic_error("field is_allowed0 false: " + std::string(name));
     }
 
-    intel_x64::vm::write(addr, clear_bit(intel_x64::vm::read(addr, name), from), name);
+    vmx::write(addr, clear_bit(vmx::read(addr), from));
 }
 
 inline void
@@ -209,7 +207,7 @@ disable_vm_ctl_if_allowed(
         return;
     }
 
-    intel_x64::vm::write(addr, clear_bit(intel_x64::vm::read(addr, name), from), name);
+    vmx::write(addr, clear_bit(vmx::read(addr), from));
 }
 
 inline void
@@ -288,7 +286,6 @@ memory_type_reserved(value_type memory_type)
         bfdebug_subtext(a, name, "unsupported", b);                                                \
     }
 
-}
 }
 
 // *INDENT-ON*

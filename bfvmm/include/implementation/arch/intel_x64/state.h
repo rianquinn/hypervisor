@@ -111,7 +111,7 @@ PRIVATE:
     unique_page<uint8_t> m_fxsave_region{};
 
 PRIVATE:
-    VIRTUAL const void *state_ptr() const noexcept;
+    VIRTUAL uint64_t state_hva() const noexcept;
 
 PRIVATE:
     MOCK_PROTOTYPE(state)

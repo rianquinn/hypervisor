@@ -22,8 +22,7 @@
 #ifndef VMX_INTEL_X64_H
 #define VMX_INTEL_X64_H
 
-#include <bfgsl.h>
-#include <bfdebug.h>
+#include <bftypes.h>
 #include <bfbitmanip.h>
 
 // -----------------------------------------------------------------------------
@@ -39,155 +38,117 @@ extern "C" bool _vmread(uint64_t field, uint64_t *value) noexcept;
 extern "C" bool _vmwrite(uint64_t field, uint64_t value) noexcept;
 extern "C" bool _invept(uint64_t type, void *ptr) noexcept;
 extern "C" bool _invvpid(uint64_t type, void *ptr) noexcept;
-extern "C" uint64_t _vmcall(uint64_t r1, uint64_t r2, uint64_t r3, uint64_t r4) noexcept;
-extern "C" uint64_t _vmcall1(void *r1) noexcept;
-extern "C" uint64_t _vmcall2(void *r1, void *r2) noexcept;
-extern "C" uint64_t _vmcall3(void *r1, void *r2, void *r3) noexcept;
-extern "C" uint64_t _vmcall4(void *r1, void *r2, void *r3, void *r4) noexcept;
 
 // *INDENT-OFF*
 
-namespace intel_x64
+namespace intel_x64::vmx
 {
-namespace vmx
+
+using field_type = uint64_t;
+using value_type = uint64_t;
+using integer_pointer = uint64_t;
+
+inline void on(integer_pointer ptr)
 {
-    using vpid_type = uint64_t;
-    using eptp_type = uint64_t;
-    using integer_pointer = uint64_t;
-
-    inline void on(uint64_t ptr)
-    {
-        if (!_vmxon(&ptr)) {
-            throw std::runtime_error("vmx::on failed");
-        }
-    }
-
-    inline void off()
-    {
-        if (!_vmxoff()) {
-            throw std::runtime_error("vmx::off failed");
-        }
-    }
-
-    inline void invept_single_context(eptp_type eptp)
-    {
-        uint64_t descriptor[2] = { eptp, 0 };
-        if (!_invept(1, static_cast<void *>(descriptor))) {
-            throw std::runtime_error("vm::invept_singal_context failed");
-        }
-    }
-
-    inline void invept_global()
-    {
-        uint64_t descriptor[2] = { 0, 0 };
-        if (!_invept(2, static_cast<void *>(descriptor))) {
-            throw std::runtime_error("vm::invept_global failed");
-        }
-    }
-
-    inline void invvpid_individual_addr(vpid_type vpid, integer_pointer addr)
-    {
-        uint64_t descriptor[2] = { vpid, addr };
-        if (!_invvpid(0, static_cast<void *>(descriptor))) {
-            throw std::runtime_error("vm::invvpid_individual_addr failed");
-        }
-    }
-
-    inline void invvpid_single_context(vpid_type vpid)
-    {
-        uint64_t descriptor[2] = { vpid, 0 };
-        if (!_invvpid(1, static_cast<void *>(descriptor))) {
-            throw std::runtime_error("vm::invvpid_single_context failed");
-        }
-    }
-
-    inline void invvpid_all_contexts()
-    {
-        uint64_t descriptor[2] = { 0, 0 };
-        if (!_invvpid(2, static_cast<void *>(descriptor))) {
-            throw std::runtime_error("vm::invvpid_all_contexts failed");
-        }
-    }
-
-    inline void invvpid_single_context_global(vpid_type vpid)
-    {
-        uint64_t descriptor[2] = { vpid, 0 };
-        if (!_invvpid(3, static_cast<void *>(descriptor))) {
-            throw std::runtime_error("vm::invvpid_single_context_global failed");
-        }
+    if (!_vmxon(&ptr)) {
+        throw std::runtime_error("vmx::on failed");
     }
 }
 
-namespace vm
+inline void off()
 {
-    using field_type = uint64_t;
-    using value_type = uint64_t;
-    using name_type = const char *;
-    using integer_pointer = uint64_t;
-
-    inline void clear(uint64_t ptr)
-    {
-        if (!_vmclear(&ptr)) {
-            throw std::runtime_error("vm::clear failed");
-        }
+    if (!_vmxoff()) {
+        throw std::runtime_error("vmx::off failed");
     }
-
-    inline void load(uint64_t ptr)
-    {
-        if (!_vmptrld(&ptr)) {
-            throw std::runtime_error("vm::load failed");
-        }
-    }
-
-    inline void reset(uint64_t ptr)
-    {
-        if (!_vmptrst(&ptr)) {
-            throw std::runtime_error("vm::reset failed");
-        }
-    }
-
-    inline auto read(field_type field, name_type name = "")
-    {
-        value_type value = {};
-
-        if (!_vmread(field, &value))
-        {
-            bferror_info(0, "vm::read failed");
-            bferror_subtext(0, "field", name);
-
-            throw std::runtime_error("vm::read failed");
-        }
-
-        return value;
-    }
-
-    inline void write(field_type field, value_type value, name_type name = "")
-    {
-        if (!_vmwrite(field, value))
-        {
-            bferror_info(0, "vm::write failed");
-            bferror_subtext(0, "field", name);
-            bferror_subnhex(0, "value", value);
-
-            throw std::runtime_error("vm::write failed");
-        }
-    }
-
-    inline uint64_t call(uint64_t r1 = 0, uint64_t r2 = 0, uint64_t r3 = 0, uint64_t r4 = 0)
-    { return _vmcall(r1, r2, r3, r4); }
-
-    inline uint64_t call(uint64_t *r1)
-    { return _vmcall1(r1); }
-
-    inline uint64_t call(uint64_t *r1, uint64_t *r2)
-    { return _vmcall2(r1, r2); }
-
-    inline uint64_t call(uint64_t *r1, uint64_t *r2, uint64_t *r3)
-    { return _vmcall3(r1, r2, r3); }
-
-    inline uint64_t call(uint64_t *r1, uint64_t *r2, uint64_t *r3, uint64_t *r4)
-    { return _vmcall4(r1, r2, r3, r4); }
 }
+
+inline void invept_single_context(value_type eptp)
+{
+    value_type descriptor[2] = { eptp, 0 };
+    if (!_invept(1, static_cast<void *>(descriptor))) {
+        throw std::runtime_error("vmx::invept_singal_context failed");
+    }
+}
+
+inline void invept_global()
+{
+    value_type descriptor[2] = { 0, 0 };
+    if (!_invept(2, static_cast<void *>(descriptor))) {
+        throw std::runtime_error("vmx::invept_global failed");
+    }
+}
+
+inline void invvpid_individual_addr(value_type vpid, integer_pointer addr)
+{
+    value_type descriptor[2] = { vpid, addr };
+    if (!_invvpid(0, static_cast<void *>(descriptor))) {
+        throw std::runtime_error("vmx::invvpid_individual_addr failed");
+    }
+}
+
+inline void invvpid_single_context(value_type vpid)
+{
+    value_type descriptor[2] = { vpid, 0 };
+    if (!_invvpid(1, static_cast<void *>(descriptor))) {
+        throw std::runtime_error("vmx::invvpid_single_context failed");
+    }
+}
+
+inline void invvpid_all_contexts()
+{
+    value_type descriptor[2] = { 0, 0 };
+    if (!_invvpid(2, static_cast<void *>(descriptor))) {
+        throw std::runtime_error("vmx::invvpid_all_contexts failed");
+    }
+}
+
+inline void invvpid_single_context_global(value_type vpid)
+{
+    value_type descriptor[2] = { vpid, 0 };
+    if (!_invvpid(3, static_cast<void *>(descriptor))) {
+        throw std::runtime_error("vmx::invvpid_single_context_global failed");
+    }
+}
+
+inline void clear(integer_pointer ptr)
+{
+    if (!_vmclear(&ptr)) {
+        throw std::runtime_error("vmx::clear failed");
+    }
+}
+
+inline void load(integer_pointer ptr)
+{
+    if (!_vmptrld(&ptr)) {
+        throw std::runtime_error("vmx::load failed");
+    }
+}
+
+inline void reset(integer_pointer ptr)
+{
+    if (!_vmptrst(&ptr)) {
+        throw std::runtime_error("vmx::reset failed");
+    }
+}
+
+inline auto read(field_type field)
+{
+    value_type value = {};
+
+    if (!_vmread(field, &value)) {
+        throw std::runtime_error("vmx::read failed");
+    }
+
+    return value;
+}
+
+inline void write(field_type field, value_type value)
+{
+    if (!_vmwrite(field, value)) {
+        throw std::runtime_error("vmx::write failed");
+    }
+}
+
 }
 
 // *INDENT-ON*

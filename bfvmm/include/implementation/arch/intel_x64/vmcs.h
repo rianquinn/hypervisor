@@ -271,8 +271,8 @@ PRIVATE:
 
 PRIVATE:
     vmcs_field32_t __vm_instr_error() const;
-    vmcs_field32_t __vmexit_int_info() const;
-    vmcs_field32_t __vmexit_int_error_code() const;
+    vmcs_field32_t __vmexit_interruption_info() const;
+    vmcs_field32_t __vmexit_interruption_error_code() const;
     vmcs_field32_t __idt_vectoring_info() const;
     vmcs_field32_t __idt_vectoring_error_code() const;
     vmcs_field32_t __vmexit_instr_len() const;
@@ -333,8 +333,8 @@ PRIVATE:
     vmcs_field32_t __tr_access_rights() const;
     void __set_tr_access_rights(vmcs_field32_t val);
 
-    vmcs_field32_t __interuptability_state() const;
-    void __set_interuptability_state(vmcs_field32_t val);
+    vmcs_field32_t __interruptibility_state() const;
+    void __set_interruptibility_state(vmcs_field32_t val);
 
     vmcs_field32_t __activity_state() const;
     void __set_activity_state(vmcs_field32_t val);
@@ -349,11 +349,11 @@ PRIVATE:
     void __set_preemption_timer_value(vmcs_field32_t val);
 
 PRIVATE:
-    vmcs_field64_t __cr0_mask() const;
-    void __set_cr0_mask(vmcs_field64_t val);
+    vmcs_field64_t __cr0_guest_host_mask() const;
+    void __set_cr0_guest_host_mask(vmcs_field64_t val);
 
-    vmcs_field64_t __cr4_mask() const;
-    void __set_cr4_mask(vmcs_field64_t val);
+    vmcs_field64_t __cr4_guest_host_mask() const;
+    void __set_cr4_guest_host_mask(vmcs_field64_t val);
 
     vmcs_field64_t __cr0_read_shadow() const;
     void __set_cr0_read_shadow(vmcs_field64_t val);

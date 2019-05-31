@@ -26,9 +26,7 @@
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace cpuid
+namespace intel_x64::cpuid
 {
 
 using field_type = x64::cpuid::field_type;
@@ -6398,7 +6396,6 @@ namespace invariant_tsc
     }
 }
 
-}
 }
 
 // *INDENT-ON*

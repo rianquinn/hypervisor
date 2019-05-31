@@ -19,11 +19,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-        .code64
-        .intel_syntax noprefix
+    .code64
+    .intel_syntax noprefix
 
-        .globl  _vmexit
-        .type   _vmexit, @function
+    .globl  _vmexit
+    .type   _vmexit, @function
 _vmexit:
 
     mov gs:[0x000], rax

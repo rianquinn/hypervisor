@@ -19,32 +19,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VMCS_INTEL_X64_CHECK_GUEST_H
-#define VMCS_INTEL_X64_CHECK_GUEST_H
+#ifndef IMPLEMENTATION_CHECK_VMCS_GUEST_INTEL_X64_H
+#define IMPLEMENTATION_CHECK_VMCS_GUEST_INTEL_X64_H
 
-/// Intel x86_64 VMCS Check Guest
-///
-/// This namespace implements the guest checks found in
-/// section 26.3, Vol. 3 of the SDM.
-///
-
-namespace bfvmm
-{
-namespace intel_x64
-{
-namespace check
+namespace bfvmm::implementation::intel_x64::check
 {
 
 void guest_cr0_for_unsupported_bits();
 void guest_cr0_verify_paging_enabled();
 void guest_cr4_for_unsupported_bits();
-void guest_load_debug_controls_verify_reserved();
+void guest_load_debug_ctls_verify_reserved();
 void guest_verify_ia_32e_mode_enabled();
 void guest_verify_ia_32e_mode_disabled();
 void guest_cr3_for_unsupported_bits();
-void guest_load_debug_controls_verify_dr7();
-void guest_ia32_sysenter_esp_canonical_address();
-void guest_ia32_sysenter_eip_canonical_address();
+void guest_load_debug_ctls_verify_dr7();
+void guest_ia32_sysenter_esp_canonical_addr();
+void guest_ia32_sysenter_eip_canonical_addr();
 void guest_verify_load_ia32_perf_global_ctrl();
 void guest_verify_load_ia32_pat();
 void guest_verify_load_ia32_efer();
@@ -144,37 +134,35 @@ void guest_rip_upper_bits();
 void guest_rip_valid_addr();
 void guest_rflags_reserved_bits();
 void guest_rflags_vm_bit();
-void guest_rflag_interrupt_enable();
+void guest_rflag_int_enable();
 void guest_valid_activity_state();
 void guest_activity_state_not_hlt_when_dpl_not_0();
 void guest_must_be_active_if_injecting_blocking_state();
-void guest_hlt_valid_interrupts();
-void guest_shutdown_valid_interrupts();
-void guest_sipi_valid_interrupts();
+void guest_hlt_valid_ints();
+void guest_shutdown_valid_ints();
+void guest_sipi_valid_ints();
 void guest_valid_activity_state_and_smm();
 void guest_interruptibility_state_reserved();
 void guest_interruptibility_state_sti_mov_ss();
 void guest_interruptibility_state_sti();
-void guest_interruptibility_state_external_interrupt();
+void guest_interruptibility_state_external_int();
 void guest_interruptibility_state_nmi();
 void guest_interruptibility_not_in_smm();
 void guest_interruptibility_entry_to_smm();
 void guest_interruptibility_state_sti_and_nmi();
 void guest_interruptibility_state_virtual_nmi();
-void guest_interruptibility_state_enclave_interrupt();
+void guest_interruptibility_state_enclave_int();
 void guest_pending_debug_exceptions_reserved();
 void guest_pending_debug_exceptions_dbg_ctl();
 void guest_pending_debug_exceptions_rtm();
-void guest_vmcs_link_pointer_bits_11_0();
-void guest_vmcs_link_pointer_valid_addr();
-void guest_vmcs_link_pointer_first_word();
-void guest_vmcs_link_pointer_not_in_smm();
-void guest_vmcs_link_pointer_in_smm();
+void guest_vmcs_link_ptr_bits_11_0();
+void guest_vmcs_link_ptr_valid_addr();
+void guest_vmcs_link_ptr_first_word();
+void guest_vmcs_link_ptr_not_in_smm();
+void guest_vmcs_link_ptr_in_smm();
 void guest_valid_pdpte_with_ept_disabled();
 void guest_valid_pdpte_with_ept_enabled();
 
-}
-}
 }
 
 #endif

@@ -22,13 +22,11 @@
 #ifndef VMCS_INTEL_X64_NATURAL_WIDTH_CONTROL_FIELDS_H
 #define VMCS_INTEL_X64_NATURAL_WIDTH_CONTROL_FIELDS_H
 
-#include <arch/intel_x64/vmcs/helpers.h>
+#include "helpers.h"
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace vmcs
+namespace intel_x64::vmcs
 {
 
 namespace cr0_guest_host_mask
@@ -127,10 +125,10 @@ namespace cr4_read_shadow
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace cr3_target_value_0
+namespace cr3_target0
 {
     constexpr const auto addr = 0x0000000000006008ULL;
-    constexpr const auto name = "cr3_target_value_0";
+    constexpr const auto name = "cr3_target0";
 
     inline auto exists()
     { return true; }
@@ -151,10 +149,10 @@ namespace cr3_target_value_0
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace cr3_target_value_1
+namespace cr3_target1
 {
     constexpr const auto addr = 0x000000000000600AULL;
-    constexpr const auto name = "cr3_target_value_1";
+    constexpr const auto name = "cr3_target1";
 
     inline auto exists()
     { return true; }
@@ -175,10 +173,10 @@ namespace cr3_target_value_1
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace cr3_target_value_2
+namespace cr3_target2
 {
     constexpr const auto addr = 0x000000000000600CULL;
-    constexpr const auto name = "cr3_target_value_2";
+    constexpr const auto name = "cr3_target2";
 
     inline auto exists()
     { return true; }
@@ -199,10 +197,10 @@ namespace cr3_target_value_2
     { dump_vmcs_nhex(level, msg); }
 }
 
-namespace cr3_target_value_3
+namespace cr3_target3
 {
     constexpr const auto addr = 0x000000000000600EULL;
-    constexpr const auto name = "cr3_target_value_3";
+    constexpr const auto name = "cr3_target3";
 
     inline auto exists()
     { return true; }
@@ -223,7 +221,6 @@ namespace cr3_target_value_3
     { dump_vmcs_nhex(level, msg); }
 }
 
-}
 }
 
 // *INDENT-ON*

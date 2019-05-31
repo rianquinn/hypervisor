@@ -22,13 +22,11 @@
 #ifndef VMCS_INTEL_X64_64BIT_READ_ONLY_DATA_FIELD_H
 #define VMCS_INTEL_X64_64BIT_READ_ONLY_DATA_FIELD_H
 
-#include <arch/intel_x64/vmcs/helpers.h>
+#include "helpers.h"
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace vmcs
+namespace intel_x64::vmcs
 {
 
 namespace guest_physical_addr
@@ -52,7 +50,6 @@ namespace guest_physical_addr
     { dump_vmcs_nhex(level, msg); }
 }
 
-}
 }
 
 // *INDENT-ON*

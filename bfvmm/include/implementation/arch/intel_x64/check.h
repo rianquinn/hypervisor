@@ -19,62 +19,51 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VMCS_INTEL_X64_CHECK_H
-#define VMCS_INTEL_X64_CHECK_H
+#ifndef IMPLEMENTATION_CHECK_INTEL_X64_H
+#define IMPLEMENTATION_CHECK_INTEL_X64_H
 
-#include "check_vmcs_host_fields.h"
-#include "check_vmcs_guest_fields.h"
 #include "check_vmcs_control_fields.h"
-
-/// Intel x86_64 VMCS Check
-///
-/// This namespace implements the checks found in sections 26.1 through
-/// 26.3, Vol. 3 of the SDM.
-///
+#include "check_vmcs_guest_fields.h"
+#include "check_vmcs_host_fields.h"
 
 // *INDENT-OFF*
 
-namespace bfvmm
-{
-namespace intel_x64
-{
-namespace check
+namespace bfvmm::implementation::intel_x64::check
 {
 
-inline void
-all()
+void all()
 {
-    control_vm_exit_ctls_reserved_properly_set();
-    control_activate_and_save_preemption_timer_must_be_0();
-    control_exit_msr_store_address();
-    control_exit_msr_load_address();
-    control_vm_entry_ctls_reserved_properly_set();
-    control_event_injection_type_vector_checks();
-    control_event_injection_delivery_ec_checks();
-    control_event_injection_reserved_bits_checks();
-    control_event_injection_ec_checks();
-    control_event_injection_instr_length_checks();
-    control_entry_msr_load_address();
-    control_pin_based_ctls_reserved_properly_set();
-    control_proc_based_ctls_reserved_properly_set();
-    control_proc_based_ctls2_reserved_properly_set();
-    control_cr3_count_less_then_4();
-    control_io_bitmap_address_bits();
-    control_msr_bitmap_address_bits();
-    control_tpr_shadow_and_virtual_apic();
-    control_nmi_exiting_and_virtual_nmi();
-    control_virtual_nmi_and_nmi_window();
-    control_virtual_apic_address_bits();
-    control_x2apic_mode_and_virtual_apic_access();
-    control_virtual_interrupt_and_external_interrupt();
-    control_process_posted_interrupt_checks();
-    control_vpid_checks();
-    control_enable_ept_checks();
-    control_enable_pml_checks();
-    control_unrestricted_guests();
-    control_enable_vm_functions();
-    control_enable_vmcs_shadowing();
-    control_enable_ept_violation_checks();
+    ctl_vmexit_ctls_reserved_properly_set();
+    ctl_activate_and_save_preemption_timer_must_be_0();
+    ctl_exit_msr_store_addr();
+    ctl_exit_msr_load_addr();
+    ctl_vmentry_ctls_reserved_properly_set();
+    ctl_event_injection_type_vector_checks();
+    ctl_event_injection_delivery_ec_checks();
+    ctl_event_injection_reserved_bits_checks();
+    ctl_event_injection_ec_checks();
+    ctl_event_injection_instr_len_checks();
+    ctl_entry_msr_load_addr();
+    ctl_pin_based_ctls_reserved_properly_set();
+    ctl_proc_based_ctls_reserved_properly_set();
+    ctl_proc_based_ctls2_reserved_properly_set();
+    ctl_cr3_count_less_then_4();
+    ctl_io_bitmap_addr_bits();
+    ctl_msr_bitmaps_addr_bits();
+    ctl_tpr_shadow_and_virtual_apic();
+    ctl_nmi_exiting_and_virtual_nmi();
+    ctl_virtual_nmi_and_nmi_window();
+    ctl_virtual_apic_addr_bits();
+    ctl_x2apic_mode_and_virtual_apic_access();
+    ctl_virtual_int_and_external_int();
+    ctl_process_posted_int_checks();
+    ctl_vpid_checks();
+    ctl_enable_ept_checks();
+    ctl_enable_pml_checks();
+    ctl_unrestricted_guests();
+    ctl_enable_vm_functions();
+    ctl_enable_vmcs_shadowing();
+    ctl_enable_ept_violation_checks();
 
     guest_tr_ti_bit_equals_0();
     guest_ldtr_ti_bit_equals_0();
@@ -171,42 +160,42 @@ all()
     guest_rip_valid_addr();
     guest_rflags_reserved_bits();
     guest_rflags_vm_bit();
-    guest_rflag_interrupt_enable();
+    guest_rflag_int_enable();
     guest_valid_activity_state();
     guest_activity_state_not_hlt_when_dpl_not_0();
     guest_must_be_active_if_injecting_blocking_state();
-    guest_hlt_valid_interrupts();
-    guest_shutdown_valid_interrupts();
-    guest_sipi_valid_interrupts();
+    guest_hlt_valid_ints();
+    guest_shutdown_valid_ints();
+    guest_sipi_valid_ints();
     guest_valid_activity_state_and_smm();
     guest_interruptibility_state_reserved();
     guest_interruptibility_state_sti_mov_ss();
     guest_interruptibility_state_sti();
-    guest_interruptibility_state_external_interrupt();
+    guest_interruptibility_state_external_int();
     guest_interruptibility_state_nmi();
     guest_interruptibility_not_in_smm();
     guest_interruptibility_entry_to_smm();
     guest_interruptibility_state_sti_and_nmi();
     guest_interruptibility_state_virtual_nmi();
-    guest_interruptibility_state_enclave_interrupt();
+    guest_interruptibility_state_enclave_int();
     guest_pending_debug_exceptions_reserved();
     guest_pending_debug_exceptions_dbg_ctl();
     guest_pending_debug_exceptions_rtm();
-    guest_vmcs_link_pointer_bits_11_0();
-    guest_vmcs_link_pointer_valid_addr();
-    guest_vmcs_link_pointer_first_word();
-    guest_vmcs_link_pointer_not_in_smm();
-    guest_vmcs_link_pointer_in_smm();
+    guest_vmcs_link_ptr_bits_11_0();
+    guest_vmcs_link_ptr_valid_addr();
+    guest_vmcs_link_ptr_first_word();
+    guest_vmcs_link_ptr_not_in_smm();
+    guest_vmcs_link_ptr_in_smm();
     guest_cr0_for_unsupported_bits();
     guest_cr0_verify_paging_enabled();
     guest_cr4_for_unsupported_bits();
-    guest_load_debug_controls_verify_reserved();
+    guest_load_debug_ctls_verify_reserved();
     guest_verify_ia_32e_mode_enabled();
     guest_verify_ia_32e_mode_disabled();
     guest_cr3_for_unsupported_bits();
-    guest_load_debug_controls_verify_dr7();
-    guest_ia32_sysenter_esp_canonical_address();
-    guest_ia32_sysenter_eip_canonical_address();
+    guest_load_debug_ctls_verify_dr7();
+    guest_ia32_sysenter_esp_canonical_addr();
+    guest_ia32_sysenter_eip_canonical_addr();
     guest_verify_load_ia32_perf_global_ctrl();
     guest_verify_load_ia32_pat();
     guest_verify_load_ia32_efer();
@@ -224,27 +213,25 @@ all()
     host_cs_not_equal_zero();
     host_tr_not_equal_zero();
     host_ss_not_equal_zero();
-    host_fs_canonical_base_address();
-    host_gs_canonical_base_address();
-    host_gdtr_canonical_base_address();
-    host_idtr_canonical_base_address();
-    host_tr_canonical_base_address();
+    host_fs_canonical_base_addr();
+    host_gs_canonical_base_addr();
+    host_gdtr_canonical_base_addr();
+    host_idtr_canonical_base_addr();
+    host_tr_canonical_base_addr();
     host_if_outside_ia32e_mode();
-    host_address_space_size_exit_ctl_is_set();
-    host_address_space_disabled();
-    host_address_space_enabled();
+    host_addr_space_size_exit_ctl_is_set();
+    host_addr_space_disabled();
+    host_addr_space_enabled();
     host_cr0_for_unsupported_bits();
     host_cr4_for_unsupported_bits();
     host_cr3_for_unsupported_bits();
-    host_ia32_sysenter_esp_canonical_address();
-    host_ia32_sysenter_eip_canonical_address();
+    host_ia32_sysenter_esp_canonical_addr();
+    host_ia32_sysenter_eip_canonical_addr();
     host_verify_load_ia32_perf_global_ctrl();
     host_verify_load_ia32_pat();
     host_verify_load_ia32_efer();
 }
 
-}
-}
 }
 
 // *INDENT-ON*

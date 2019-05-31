@@ -19,10 +19,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RFLAGS_X64_H
-#define RFLAGS_X64_H
+#ifndef RFLAGS_INTEL_X64_H
+#define RFLAGS_INTEL_X64_H
 
-#include <bfdebug.h>
+#include <bftypes.h>
 #include <bfbitmanip.h>
 
 // -----------------------------------------------------------------------------
@@ -34,9 +34,7 @@ extern "C" void _write_rflags(uint64_t val) noexcept;
 
 // *INDENT-OFF*
 
-namespace x64
-{
-namespace rflags
+namespace intel_x64::rflags
 {
 
 using value_type = uint64_t;
@@ -637,7 +635,6 @@ inline void dump(int level, std::string *msg = nullptr)
     id_flag::dump(level, msg);
 }
 
-}
 }
 
 // *INDENT-ON*

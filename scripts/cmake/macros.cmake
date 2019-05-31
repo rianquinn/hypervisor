@@ -177,8 +177,6 @@ endmacro(setup_flags)
 # subproject to keep their CMakeLists.txt files simpilar.
 #
 macro(setup_generator_expression_shorthands)
-    set(ARM $<STREQUAL:${CMAKE_HOST_SYSTEM_PROCESSOR},aarch64>)
-    set(X64 $<STREQUAL:${CMAKE_HOST_SYSTEM_PROCESSOR},x86_64>)
     set(INTEL_X64 $<STREQUAL:${CMAKE_HOST_SYSTEM_PROCESSOR},x86_64>)
 
     set(C $<COMPILE_LANGUAGE:C>)
@@ -814,51 +812,6 @@ function(setup_interfaces)
         export(PACKAGE bareflank_test)
     endif()
 endfunction(setup_interfaces)
-
-# ------------------------------------------------------------------------------
-# enable_asm
-# ------------------------------------------------------------------------------
-
-# TODO
-#
-# Remove the need for NASM internally. Instead, we should convert to either
-# already existing intrinsics, and native ASM so that NASM is no longer needed.
-#
-
-macro(enable_asm)
-    find_program(NASM_BIN nasm)
-
-    if(NOT NASM_BIN)
-        set(NASM_BIN "c:\\Program Files\\NASM\\nasm.exe")
-        if(NOT EXISTS ${NASM_BIN})
-            message(FATAL_ERROR "Unable to find nasm, or nasm is not installed")
-        endif()
-    endif()
-
-    execute_process(COMMAND ${NASM_BIN} -v OUTPUT_VARIABLE NASM_ID OUTPUT_STRIP_TRAILING_WHITESPACE)
-    set(CMAKE_ASM_NASM_COMPILER_ID ${NASM_ID})
-
-    if(CMAKE_INSTALL_PREFIX MATCHES "vmm")
-        set(CMAKE_ASM_NASM_OBJECT_FORMAT "elf64")
-    else()
-        if(CMAKE_INSTALL_PREFIX MATCHES "pe")
-            set(CMAKE_ASM_NASM_OBJECT_FORMAT "win64")
-        endif()
-        if(CMAKE_INSTALL_PREFIX MATCHES "elf")
-            set(CMAKE_ASM_NASM_OBJECT_FORMAT "elf64")
-        endif()
-    endif()
-
-    enable_language(ASM_NASM)
-
-    if(CMAKE_INSTALL_PREFIX MATCHES "vmm")
-        set(CMAKE_ASM_NASM_FLAGS "-d ${HOST_OSTYPE} -d SYSV -d vmm")
-    else()
-        set(CMAKE_ASM_NASM_FLAGS "-d ${HOST_OSTYPE} -d ${HOST_ABITYPE}")
-    endif()
-
-    set(CMAKE_ASM_NASM_CREATE_STATIC_LIBRARY TRUE)
-endmacro(enable_asm)
 
 # ------------------------------------------------------------------------------
 # set_vmm

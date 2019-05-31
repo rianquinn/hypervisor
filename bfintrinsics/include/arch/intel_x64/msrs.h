@@ -26,9 +26,7 @@
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace msrs
+namespace intel_x64::msrs
 {
 
 using field_type = x64::msrs::field_type;
@@ -16989,7 +16987,6 @@ namespace ia32_platform_info
     }
 }
 
-}
 }
 
 // *INDENT-ON*

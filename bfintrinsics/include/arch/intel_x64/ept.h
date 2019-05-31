@@ -22,14 +22,12 @@
 #ifndef EPT_INTEL_X64_H
 #define EPT_INTEL_X64_H
 
-#include <bfdebug.h>
+#include <bftypes.h>
 #include <bfbitmanip.h>
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace ept
+namespace intel_x64::ept
 {
 
 namespace pml4
@@ -882,7 +880,6 @@ namespace pt
     }
 }
 
-}
 }
 
 // *INDENT-ON*

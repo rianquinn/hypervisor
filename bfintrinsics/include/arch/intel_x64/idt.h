@@ -19,30 +19,98 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef PM_X64_H
-#define PM_X64_H
+#ifndef IDT_INTEL_X64_H
+#define IDT_INTEL_X64_H
+
+#include <bftypes.h>
+#include <bfbitmanip.h>
+
+#pragma pack(push, 1)
 
 // -----------------------------------------------------------------------------
 // Definitions
 // -----------------------------------------------------------------------------
 
-extern "C" void _halt(void) noexcept;
-extern "C" void _stop(void) noexcept;
+extern "C" void _read_idt(void *idt_reg) noexcept;
+extern "C" void _write_idt(void *idt_reg) noexcept;
 
 // *INDENT-OFF*
 
-namespace x64
+namespace intel_x64
 {
-namespace pm
-{
-    inline void halt() noexcept
-    { _halt(); }
 
-    inline void stop() noexcept
-    { _stop(); }
+namespace idt_reg
+{
+
+struct reg_t {
+    uint16_t limit{0};
+    uint64_t base{0};
+};
+
+inline auto get() noexcept
+{
+    reg_t reg;
+    _read_idt(&reg);
+
+    return reg;
 }
+
+inline void set(uint64_t base, uint16_t limit) noexcept
+{
+    reg_t reg;
+
+    reg.base = base;
+    reg.limit = limit;
+
+    _write_idt(&reg);
+}
+
+namespace base
+{
+    inline auto get() noexcept
+    {
+        reg_t reg;
+        _read_idt(&reg);
+
+        return reg.base;
+    }
+
+    inline void set(uint64_t base) noexcept
+    {
+        reg_t reg;
+        _read_idt(&reg);
+
+        reg.base = base;
+        _write_idt(&reg);
+    }
+}
+
+namespace limit
+{
+    inline auto get() noexcept
+    {
+        reg_t reg;
+        _read_idt(&reg);
+
+        return reg.limit;
+    }
+
+    inline void set(uint16_t limit) noexcept
+    {
+        reg_t reg;
+        _read_idt(&reg);
+
+        reg.limit = limit;
+        _write_idt(&reg);
+    }
+}
+
+}
+
 }
 
 // *INDENT-ON*
+
+#pragma pack(pop)
 
 #endif

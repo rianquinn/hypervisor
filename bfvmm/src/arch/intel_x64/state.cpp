@@ -33,8 +33,6 @@ state::state() :
 {
     m_state->vcpu_ptr = vcpu_t_cast(this);
     m_state->fxsave_region = m_fxsave_region.get();
-
-    vcpu_t_cast(this)->set_host_gs_base(m_state.hva());
 }
 
 state::reg_t
@@ -181,8 +179,8 @@ void
 state::__set_ia32_vmx_cr4_fixed0(reg_t val) noexcept
 { m_ia32_vmx_cr4_fixed0 = val; }
 
-const void *
-state::state_ptr() const noexcept
-{ return m_state.get(); }
+uint64_t
+state::state_hva() const noexcept
+{ return m_state.hva(); }
 
 }

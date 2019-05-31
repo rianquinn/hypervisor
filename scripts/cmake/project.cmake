@@ -21,7 +21,6 @@
 
 include(${SOURCE_ROOT_DIR}/scripts/cmake/macros.cmake)
 
-enable_asm()
 setup_generator_expression_shorthands()
 
 include_directories(

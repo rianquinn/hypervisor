@@ -52,7 +52,7 @@ vmx::~vmx()
 void
 vmx::check_cpuid_vmx_supported()
 {
-    if (::intel_x64::cpuid::feature_information::ecx::vmx::is_disabled()) {
+    if (::intel_x64::cpuid::feature_info::ecx::vmx::is_disabled()) {
         throw std::runtime_error("VMX extensions not supported");
     }
 }
@@ -62,16 +62,16 @@ vmx::check_vmx_capabilities_msr()
 {
     using namespace ::intel_x64::msrs::ia32_vmx_basic;
 
-    if (physical_address_width::is_enabled()) {
-        throw std::runtime_error("invalid physical address width");
+    if (physical_addr_width::is_enabled()) {
+        throw std::runtime_error("invalid physical addr width");
     }
 
     if (memory_type::get() != ::x64::memory_type::write_back) {
         throw std::runtime_error("invalid memory type");
     }
 
-    if (true_based_controls::is_disabled()) {
-        throw std::runtime_error("invalid vmx true based controls");
+    if (true_based_ctls::is_disabled()) {
+        throw std::runtime_error("invalid vmx true based ctls");
     }
 }
 
@@ -105,9 +105,9 @@ vmx::enable_vmx()
     this->check_cpuid_vmx_supported();
     this->check_vmx_capabilities_msr();
 
-    if (::intel_x64::msrs::ia32_feature_control::lock_bit::is_disabled()) {
-        ::intel_x64::msrs::ia32_feature_control::enable_vmx_outside_smx::enable();
-        ::intel_x64::msrs::ia32_feature_control::lock_bit::enable();
+    if (::intel_x64::msrs::ia32_feature_ctl::lock_bit::is_disabled()) {
+        ::intel_x64::msrs::ia32_feature_ctl::enable_vmx_outside_smx::enable();
+        ::intel_x64::msrs::ia32_feature_ctl::lock_bit::enable();
     }
 
     if (::intel_x64::cr4::vmx_enable_bit::is_enabled()) {

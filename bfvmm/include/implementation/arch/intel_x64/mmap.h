@@ -19,8 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef MMAP_CR3_X64_H
-#define MMAP_CR3_X64_H
+#ifndef IMPLEMENTATION_MMAP_INTEL_X64_H
+#define IMPLEMENTATION_MMAP_INTEL_X64_H
 
 #include <mutex>
 #include <unordered_map>
@@ -29,46 +29,18 @@
 #include <bfdebug.h>
 #include <bfupperlower.h>
 
-#include <intrinsics.h>
 #include "../../../memory_manager.h"
 
 // -----------------------------------------------------------------------------
 // Definition
 // -----------------------------------------------------------------------------
 
-namespace bfvmm::x64::cr3
+namespace bfvmm::implementation::x64::cr3
 {
 
-/// CR3 Memory Map
-///
-/// This class constructs a set of CR3 page tables, and provides the needed
-/// APIs to map virtual to physical addresses to these pages. For more
-/// information on how CR3 page tables work, please see the Intel SDM. This
-/// implementation attempts to map directly to the SDM text.
-///
-/// TODO:
-///
-/// Currently, we have a last lookup cache set up that helps to reduce the
-/// time it takes to map. We need to implement a TLB as well, and the TLB
-/// should be enabled by default.
-///
-/// The goal of the TLB would be to queue unmaps based on incoming maps,
-/// similar to the way the hardware's TLB removes entries from the actual
-/// hardware TLB. All unmaps are added to a queue. Each time an unmap occurs,
-/// the unmap is added to the top of the queue. If the unmap is already in
-/// the queue, it is moved to the top. Once the queue reaches a certain limit,
-/// an unmap causes the unmap at the end of the queue to actually be
-/// unmapped. The queue should be hand made to prevent the need for memory
-/// allocations. This will provide huge increase in performance for mapping
-/// operations as it will prevent the map from mapping and unmapping the same
-/// addresses. Note that attemps to map an address that is in the unmap queue
-/// should remove the map from the unmap queue and do nothing else.
-///
 class mmap
 {
-
 public:
-
     using phys_addr_t = uintptr_t;                      ///< Phys Address Type (as Int)
     using virt_addr_t = uintptr_t;                      ///< Virt Address Type (as Ptr)
     using size_type = size_t;                           ///< Size Type
@@ -726,7 +698,6 @@ private:
     }
 
 private:
-
     pair
     phys_to_pair(phys_addr_t phys_addr, size_type num_entries)
     {
@@ -1105,7 +1076,6 @@ private:
     }
 
 private:
-
     pair m_pml4;
     pair m_pdpt;
     pair m_pd;
@@ -1115,16 +1085,11 @@ private:
     std::unordered_map<void *, phys_addr_t> m_mdl;
 
 public:
-
-    /// @cond
-
     mmap(mmap &&) = default;
     mmap &operator=(mmap &&) = default;
 
     mmap(const mmap &) = delete;
     mmap &operator=(const mmap &) = delete;
-
-    /// @endcond
 };
 
 }

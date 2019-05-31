@@ -35,9 +35,7 @@ extern "C" void _write_msr(uint32_t addr, uint64_t val) noexcept;
 
 // *INDENT-OFF*
 
-namespace x64
-{
-namespace msrs
+namespace x64::msrs
 {
 
 using field_type = uint32_t;
@@ -1395,7 +1393,6 @@ namespace ia32_tsc_aux
     }
 }
 
-}
 }
 
 // *INDENT-ON*

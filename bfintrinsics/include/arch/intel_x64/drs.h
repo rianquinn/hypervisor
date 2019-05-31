@@ -22,6 +22,9 @@
 #ifndef DRS_INTEL_X64_H
 #define DRS_INTEL_X64_H
 
+#include <bftypes.h>
+#include <bfbitmanip.h>
+
 // -----------------------------------------------------------------------------
 // Definitions
 // -----------------------------------------------------------------------------
@@ -31,18 +34,17 @@ extern "C" void _write_dr7(uint64_t val) noexcept;
 
 // *INDENT-OFF*
 
-namespace intel_x64
+namespace intel_x64::dr7
 {
-namespace dr7
-{
-    using value_type = uint64_t;
 
-    inline auto get() noexcept
-    { return _read_dr7(); }
+using value_type = uint64_t;
 
-    inline void set(value_type val) noexcept
-    { _write_dr7(val); }
-}
+inline auto get() noexcept
+{ return _read_dr7(); }
+
+inline void set(value_type val) noexcept
+{ _write_dr7(val); }
+
 }
 
 // *INDENT-ON*

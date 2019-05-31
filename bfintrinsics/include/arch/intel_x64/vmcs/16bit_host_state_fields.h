@@ -22,13 +22,11 @@
 #ifndef VMCS_INTEL_X64_16BIT_HOST_STATE_FIELDS_H
 #define VMCS_INTEL_X64_16BIT_HOST_STATE_FIELDS_H
 
-#include <arch/intel_x64/vmcs/helpers.h>
+#include "helpers.h"
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace vmcs
+namespace intel_x64::vmcs
 {
 
 namespace host_es_selector
@@ -1011,7 +1009,6 @@ namespace host_tr_selector
     }
 }
 
-}
 }
 
 // *INDENT-ON*

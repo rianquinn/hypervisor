@@ -22,13 +22,11 @@
 #ifndef VMCS_INTEL_X64_32BIT_READ_ONLY_DATA_FIELDS_H
 #define VMCS_INTEL_X64_32BIT_READ_ONLY_DATA_FIELDS_H
 
-#include <arch/intel_x64/vmcs/helpers.h>
+#include "helpers.h"
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace vmcs
+namespace intel_x64::vmcs
 {
 
 namespace vm_instr_error
@@ -550,10 +548,10 @@ namespace exit_reason
     }
 }
 
-namespace vmexit_intion_info
+namespace vmexit_interruption_info
 {
     constexpr const auto addr = 0x0000000000004404ULL;
-    constexpr const auto name = "vmexit_intion_info";
+    constexpr const auto name = "vmexit_interruption_info";
 
     inline auto exists()
     { return true; }
@@ -583,11 +581,11 @@ namespace vmexit_intion_info
         { dump_vmcs_subnhex(level, msg); }
     }
 
-    namespace intion_type
+    namespace interruption_type
     {
         constexpr const auto mask = 0x00000700ULL;
         constexpr const auto from = 8ULL;
-        constexpr const auto name = "intion_type";
+        constexpr const auto name = "interruption_type";
 
         constexpr const auto external_int = 0ULL;
         constexpr const auto non_maskable_int = 2ULL;
@@ -714,7 +712,7 @@ namespace vmexit_intion_info
     {
         dump_vmcs_nhex(level, msg);
         vector::dump(level, msg);
-        intion_type::dump(level, msg);
+        interruption_type::dump(level, msg);
         error_code_valid::dump(level, msg);
         nmi_unblocking_due_to_iret::dump(level, msg);
         reserved::dump(level, msg);
@@ -722,10 +720,10 @@ namespace vmexit_intion_info
     }
 }
 
-namespace vmexit_intion_error_code
+namespace vmexit_interruption_error_code
 {
     constexpr const auto addr = 0x0000000000004406ULL;
-    constexpr const auto name = "vmexit_intion_error_code";
+    constexpr const auto name = "vmexit_interruption_error_code";
 
     inline auto exists()
     { return true; }
@@ -773,11 +771,11 @@ namespace idt_vectoring_info
         { dump_vmcs_subnhex(level, msg); }
     }
 
-    namespace intion_type
+    namespace interruption_type
     {
         constexpr const auto mask = 0x00000700ULL;
         constexpr const auto from = 8ULL;
-        constexpr const auto name = "intion_type";
+        constexpr const auto name = "interruption_type";
 
         constexpr const auto external_int = 0ULL;
         constexpr const auto non_maskable_int = 2ULL;
@@ -878,7 +876,7 @@ namespace idt_vectoring_info
     {
         dump_vmcs_nhex(level, msg);
         vector::dump(level, msg);
-        intion_type::dump(level, msg);
+        interruption_type::dump(level, msg);
         error_code_valid::dump(level, msg);
         reserved::dump(level, msg);
         valid_bit::dump(level, msg);
@@ -6293,7 +6291,6 @@ namespace vmexit_instr_info
     }
 }
 
-}
 }
 
 // *INDENT-ON*

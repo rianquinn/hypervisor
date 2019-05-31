@@ -19,17 +19,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef MISC_X64_H
-#define MISC_X64_H
+#ifndef MISC_INTEL_X64_H
+#define MISC_INTEL_X64_H
 
-#include <bfdebug.h>
+#include <bftypes.h>
 #include <bfbitmanip.h>
 
 #include <arch/x64/cpuid.h>
 
 // *INDENT-OFF*
 
-namespace x64
+namespace intel_x64
 {
 
 constexpr const auto cache_line_size = 64ULL;

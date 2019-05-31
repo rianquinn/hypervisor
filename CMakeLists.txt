@@ -75,9 +75,8 @@ add_subproject(bfvmm vmm DEPENDS bfruntime bfunwind bfintrinsics PRIVATE)
 # ------------------------------------------------------------------------------
 
 add_subproject(bfsdk userspace DEPENDS gsl json argparse PRIVATE NOINSTALL)
-add_subproject(bfintrinsics userspace DEPENDS bfsdk PRIVATE)
 add_subproject(bfm userspace DEPENDS bfintrinsics PRIVATE)
-add_subproject(bfack userspace DEPENDS bfintrinsics PRIVATE)
+# add_subproject(bfack userspace DEPENDS bfintrinsics PRIVATE)
 
 # ------------------------------------------------------------------------------
 # Unit Tests

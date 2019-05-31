@@ -19,93 +19,54 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IDT_X64_H
-#define IDT_X64_H
+#ifndef PORTIO_INTEL_X64_H
+#define PORTIO_INTEL_X64_H
 
-#pragma pack(push, 1)
+#include <bftypes.h>
+#include <bfbitmanip.h>
 
 // -----------------------------------------------------------------------------
 // Definitions
 // -----------------------------------------------------------------------------
 
-extern "C" void _read_idt(void *idt_reg) noexcept;
-extern "C" void _write_idt(void *idt_reg) noexcept;
+extern "C" uint8_t _inb(uint16_t port) noexcept;
+extern "C" uint16_t _inw(uint16_t port) noexcept;
+extern "C" uint32_t _ind(uint16_t port) noexcept;
+
+extern "C" void _outb(uint16_t port, uint8_t val) noexcept;
+extern "C" void _outw(uint16_t port, uint16_t val) noexcept;
+extern "C" void _outd(uint16_t port, uint32_t val) noexcept;
 
 // *INDENT-OFF*
 
-namespace x64
-{
-namespace idt_reg
+namespace intel_x64::portio
 {
 
-struct reg_t {
-    uint16_t limit{0};
-    uint64_t base{0};
-};
+using port_addr_type = uint16_t;
+using port_8bit_type = uint8_t;
+using port_16bit_type = uint16_t;
+using port_32bit_type = uint32_t;
 
-inline auto get() noexcept
-{
-    reg_t reg;
-    _read_idt(&reg);
+inline auto inb(port_addr_type port) noexcept
+{ return _inb(port); }
 
-    return reg;
-}
+inline auto inw(port_addr_type port) noexcept
+{ return _inw(port); }
 
-inline void set(uint64_t base, uint16_t limit) noexcept
-{
-    reg_t reg;
+inline auto ind(port_addr_type port) noexcept
+{ return _ind(port); }
 
-    reg.base = base;
-    reg.limit = limit;
+inline void outb(port_addr_type port, port_8bit_type val) noexcept
+{ _outb(port, val); }
 
-    _write_idt(&reg);
-}
+inline void outw(port_addr_type port, port_16bit_type val) noexcept
+{ _outw(port, val); }
 
-namespace base
-{
-    inline auto get() noexcept
-    {
-        reg_t reg;
-        _read_idt(&reg);
+inline void outd(port_addr_type port, port_32bit_type val) noexcept
+{ _outd(port, val); }
 
-        return reg.base;
-    }
-
-    inline void set(uint64_t base) noexcept
-    {
-        reg_t reg;
-        _read_idt(&reg);
-
-        reg.base = base;
-        _write_idt(&reg);
-    }
-}
-
-namespace limit
-{
-    inline auto get() noexcept
-    {
-        reg_t reg;
-        _read_idt(&reg);
-
-        return reg.limit;
-    }
-
-    inline void set(uint16_t limit) noexcept
-    {
-        reg_t reg;
-        _read_idt(&reg);
-
-        reg.limit = limit;
-        _write_idt(&reg);
-    }
-}
-
-}
 }
 
 // *INDENT-ON*
-
-#pragma pack(pop)
 
 #endif

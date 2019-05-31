@@ -27,18 +27,21 @@ project(bfvmm CXX ASM)
 # ------------------------------------------------------------------------------
 
 add_library(bfvmm
-    src/debug_ring.cpp
-    src/entry.cpp
-    src/memory_manager.cpp
-    src/serial.cpp
-    src/unistd.cpp
-    src/vcpu_base.cpp
+    $<${INTEL_X64}:src/arch/intel_x64/check_vmcs_control_fields.cpp>
+    $<${INTEL_X64}:src/arch/intel_x64/check_vmcs_guest_fields.cpp>
+    $<${INTEL_X64}:src/arch/intel_x64/check_vmcs_host_fields.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/state.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/vcpu.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/vmcs.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/vmentry.S>
     $<${INTEL_X64}:src/arch/intel_x64/vmexit.S>
     $<${INTEL_X64}:src/arch/intel_x64/vmx.cpp>
+    src/debug_ring.cpp
+    src/entry.cpp
+    src/memory_manager.cpp
+    src/serial.cpp
+    src/unistd.cpp
+    src/vcpu_base.cpp
 )
 
 # -----------------------------------------------------------------------------

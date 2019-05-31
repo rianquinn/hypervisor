@@ -22,13 +22,11 @@
 #ifndef VMCS_INTEL_X64_NATURAL_WIDTH_HOST_STATE_FIELDS_H
 #define VMCS_INTEL_X64_NATURAL_WIDTH_HOST_STATE_FIELDS_H
 
-#include <arch/intel_x64/vmcs/helpers.h>
+#include "helpers.h"
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace vmcs
+namespace intel_x64::vmcs
 {
 
 namespace host_cr0
@@ -2006,7 +2004,6 @@ namespace host_rip
     { dump_vmcs_nhex(level, msg); }
 }
 
-}
 }
 
 // *INDENT-ON*

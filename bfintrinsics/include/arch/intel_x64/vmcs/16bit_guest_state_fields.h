@@ -22,13 +22,11 @@
 #ifndef VMCS_INTEL_X64_16BIT_GUEST_STATE_FIELDS_H
 #define VMCS_INTEL_X64_16BIT_GUEST_STATE_FIELDS_H
 
-#include <arch/intel_x64/vmcs/helpers.h>
+#include "helpers.h"
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace vmcs
+namespace intel_x64::vmcs
 {
 
 namespace guest_es_selector
@@ -1205,7 +1203,6 @@ namespace pml_index
     { dump_vmcs_nhex(level, msg); }
 }
 
-}
 }
 
 // *INDENT-ON*

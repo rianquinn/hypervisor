@@ -19,42 +19,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef CACHE_X64_H
-#define CACHE_X64_H
+#ifndef PM_INTEL_X64_H
+#define PM_INTEL_X64_H
 
-#include <cstdint>
+#include <bftypes.h>
+#include <bfbitmanip.h>
 
 // -----------------------------------------------------------------------------
 // Definitions
 // -----------------------------------------------------------------------------
 
-extern "C" void _invd(void) noexcept;
-extern "C" void _wbinvd(void) noexcept;
-extern "C" void _clflush(void *addr) noexcept;
+extern "C" void _halt(void) noexcept;
+extern "C" void _stop(void) noexcept;
 
 // *INDENT-OFF*
 
-namespace x64
+namespace intel_x64::pm
 {
-namespace cache
-{
+    inline void halt() noexcept
+    { _halt(); }
 
-using pointer = void *;
-using integer_pointer = uint64_t;
-
-inline void invd() noexcept
-{ _invd(); }
-
-inline void wbinvd() noexcept
-{ _wbinvd(); }
-
-inline void clflush(integer_pointer addr) noexcept
-{ _clflush(reinterpret_cast<pointer>(addr)); }
-
-inline void clflush(pointer addr) noexcept
-{ _clflush(addr); }
-
-}
+    inline void stop() noexcept
+    { _stop(); }
 }
 
 // *INDENT-ON*

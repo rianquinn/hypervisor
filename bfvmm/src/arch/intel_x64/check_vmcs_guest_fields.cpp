@@ -19,25 +19,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VMCS_INTEL_X64_CHECK_GUEST_H
-#define VMCS_INTEL_X64_CHECK_GUEST_H
+#include <arch/intel_x64/vmcs/16bit_guest_state_fields.h>
+#include <arch/intel_x64/vmcs/32bit_control_fields.h>
+#include <arch/intel_x64/vmcs/32bit_guest_state_fields.h>
+#include <arch/intel_x64/vmcs/64bit_guest_state_fields.h>
+#include <arch/intel_x64/vmcs/natural_width_guest_state_fields.h>
 
-#include <type_traits>
+#include <arch/x64/gdt.h>
+#include <arch/intel_x64/cpuid.h>
+#include <arch/intel_x64/crs.h>
 
-#include <intrinsics.h>
-#include <memory_manager/memory_manager.h>
-
-/// Intel x86_64 VMCS Check Guest
-///
-/// This namespace implements the guest checks found in
-/// section 26.3, Vol. 3 of the SDM.
-///
-
-namespace bfvmm
-{
-namespace intel_x64
-{
-namespace check
+namespace bfvmm::implementation::intel_x64::check
 {
 
 void
@@ -47,7 +39,7 @@ guest_cr0_for_unsupported_bits()
     auto ia32_vmx_cr0_fixed0 = ::intel_x64::msrs::ia32_vmx_cr0_fixed0::get();
     auto ia32_vmx_cr0_fixed1 = ::intel_x64::msrs::ia32_vmx_cr0_fixed1::get();
 
-    if (::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::unrestricted_guest::is_enabled_if_exists()) {
+    if (::intel_x64::vmcs::processor_based_vm_execution_ctls2::unrestricted_guest::is_enabled_if_exists()) {
         ia32_vmx_cr0_fixed0 &= ~(::intel_x64::cr0::paging::mask | ::intel_x64::cr0::protection_enable::mask);
     }
 
@@ -95,9 +87,9 @@ guest_cr4_for_unsupported_bits()
 }
 
 void
-guest_load_debug_controls_verify_reserved()
+guest_load_debug_ctls_verify_reserved()
 {
-    if (::intel_x64::vmcs::vm_entry_controls::load_debug_controls::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::load_debug_ctls::is_disabled()) {
         return;
     }
 
@@ -109,7 +101,7 @@ guest_load_debug_controls_verify_reserved()
 void
 guest_verify_ia_32e_mode_enabled()
 {
-    if (::intel_x64::vmcs::vm_entry_controls::ia_32e_mode_guest::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_disabled()) {
         return;
     }
 
@@ -117,7 +109,7 @@ guest_verify_ia_32e_mode_enabled()
         throw std::logic_error("paging must be enabled if ia 32e ::intel_x64::vmcs::guest mode is enabled");
     }
 
-    if (::intel_x64::vmcs::guest_cr4::physical_address_extensions::is_disabled()) {
+    if (::intel_x64::vmcs::guest_cr4::physical_addr_extensions::is_disabled()) {
         throw std::logic_error("pae must be enabled if ia 32e ::intel_x64::vmcs::guest mode is enabled");
     }
 }
@@ -125,7 +117,7 @@ guest_verify_ia_32e_mode_enabled()
 void
 guest_verify_ia_32e_mode_disabled()
 {
-    if (::intel_x64::vmcs::vm_entry_controls::ia_32e_mode_guest::is_enabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_enabled()) {
         return;
     }
 
@@ -137,37 +129,37 @@ guest_verify_ia_32e_mode_disabled()
 void
 guest_cr3_for_unsupported_bits()
 {
-    if (!::x64::is_physical_address_valid(::intel_x64::vmcs::guest_cr3::get())) {
+    if (!::x64::is_physical_addr_valid(::intel_x64::vmcs::guest_cr3::get())) {
         throw std::logic_error("guest cr3 too large");
     }
 }
 
 void
-guest_load_debug_controls_verify_dr7()
+guest_load_debug_ctls_verify_dr7()
 {
-    if (::intel_x64::vmcs::vm_entry_controls::load_debug_controls::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::load_debug_ctls::is_disabled()) {
         return;
     }
 
     auto dr7 = ::intel_x64::vmcs::guest_dr7::get();
 
     if ((dr7 & 0xFFFFFFFF00000000) != 0) {
-        throw std::logic_error("bits 63:32 of dr7 must be 0 if load debug controls is 1");
+        throw std::logic_error("bits 63:32 of dr7 must be 0 if load debug ctls is 1");
     }
 }
 
 void
-guest_ia32_sysenter_esp_canonical_address()
+guest_ia32_sysenter_esp_canonical_addr()
 {
-    if (!::x64::is_address_canonical(::intel_x64::vmcs::guest_ia32_sysenter_esp::get())) {
+    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_ia32_sysenter_esp::get())) {
         throw std::logic_error("guest sysenter esp must be canonical");
     }
 }
 
 void
-guest_ia32_sysenter_eip_canonical_address()
+guest_ia32_sysenter_eip_canonical_addr()
 {
-    if (!::x64::is_address_canonical(::intel_x64::vmcs::guest_ia32_sysenter_eip::get())) {
+    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_ia32_sysenter_eip::get())) {
         throw std::logic_error("guest sysenter eip must be canonical");
     }
 }
@@ -175,7 +167,7 @@ guest_ia32_sysenter_eip_canonical_address()
 void
 guest_verify_load_ia32_perf_global_ctrl()
 {
-    if (::intel_x64::vmcs::vm_entry_controls::load_ia32_perf_global_ctrl::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::load_ia32_perf_global_ctrl::is_disabled()) {
         return;
     }
 
@@ -187,7 +179,7 @@ guest_verify_load_ia32_perf_global_ctrl()
 void
 guest_verify_load_ia32_pat()
 {
-    if (::intel_x64::vmcs::vm_entry_controls::load_ia32_pat::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::load_ia32_pat::is_disabled()) {
         return;
     }
 
@@ -227,7 +219,7 @@ guest_verify_load_ia32_pat()
 void
 guest_verify_load_ia32_efer()
 {
-    if (::intel_x64::vmcs::vm_entry_controls::load_ia32_efer::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::load_ia32_efer::is_disabled()) {
         return;
     }
 
@@ -239,11 +231,11 @@ guest_verify_load_ia32_efer()
     auto lma = ::intel_x64::vmcs::guest_ia32_efer::lma::is_enabled();
     auto lme = ::intel_x64::vmcs::guest_ia32_efer::lme::is_enabled();
 
-    if (::intel_x64::vmcs::vm_entry_controls::ia_32e_mode_guest::is_disabled() && lma) {
+    if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_disabled() && lma) {
         throw std::logic_error("ia 32e mode is 0, but efer.lma is 1");
     }
 
-    if (::intel_x64::vmcs::vm_entry_controls::ia_32e_mode_guest::is_enabled() && !lma) {
+    if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_enabled() && !lma) {
         throw std::logic_error("ia 32e mode is 1, but efer.lma is 0");
     }
 
@@ -263,7 +255,7 @@ guest_verify_load_ia32_efer()
 void
 guest_verify_load_ia32_bndcfgs()
 {
-    if (::intel_x64::vmcs::vm_entry_controls::load_ia32_bndcfgs::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::load_ia32_bndcfgs::is_disabled()) {
         return;
     }
 
@@ -276,8 +268,8 @@ guest_verify_load_ia32_bndcfgs()
 
     auto bound_addr = bndcfgs & 0xFFFFFFFFFFFFF000;
 
-    if (!::x64::is_address_canonical(bound_addr)) {
-        throw std::logic_error("bound address in ia32 bndcfgs msr must be "
+    if (!::x64::is_addr_canonical(bound_addr)) {
+        throw std::logic_error("bound addr in ia32 bndcfgs msr must be "
                                "canonical if load ia32 bndcfgs entry is enabled");
     }
 }
@@ -305,14 +297,14 @@ guest_ldtr_ti_bit_equals_0()
 void
 guest_ss_and_cs_rpl_are_the_same()
 {
-    using namespace ::intel_x64::vmcs::primary_processor_based_vm_execution_controls;
-    using namespace ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls2;
 
     if (::intel_x64::vmcs::guest_rflags::virtual_8086_mode::is_enabled()) {
         return;
     }
 
-    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_controls::is_enabled()) {
+    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_ctls::is_enabled()) {
         return;
     }
 
@@ -408,7 +400,7 @@ guest_gs_base_is_shifted()
 void
 guest_tr_base_is_canonical()
 {
-    if (!::x64::is_address_canonical(::intel_x64::vmcs::guest_tr_base::get())) {
+    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_tr_base::get())) {
         throw std::logic_error("guest tr base non-canonical");
     }
 }
@@ -416,7 +408,7 @@ guest_tr_base_is_canonical()
 void
 guest_fs_base_is_canonical()
 {
-    if (!::x64::is_address_canonical(::intel_x64::vmcs::guest_fs_base::get())) {
+    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_fs_base::get())) {
         throw std::logic_error("guest fs base non-canonical");
     }
 }
@@ -424,7 +416,7 @@ guest_fs_base_is_canonical()
 void
 guest_gs_base_is_canonical()
 {
-    if (!::x64::is_address_canonical(::intel_x64::vmcs::guest_gs_base::get())) {
+    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_gs_base::get())) {
         throw std::logic_error("guest gs base non-canonical");
     }
 }
@@ -436,7 +428,7 @@ guest_ldtr_base_is_canonical()
         return;
     }
 
-    if (!::x64::is_address_canonical(::intel_x64::vmcs::guest_ldtr_base::get())) {
+    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_ldtr_base::get())) {
         throw std::logic_error("guest ldtr base non-canonical");
     }
 }
@@ -644,8 +636,8 @@ guest_v8086_gs_access_rights()
 void
 guest_cs_access_rights_type()
 {
-    using namespace ::intel_x64::vmcs::primary_processor_based_vm_execution_controls;
-    using namespace ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls2;
 
     if (::intel_x64::vmcs::guest_rflags::virtual_8086_mode::is_enabled()) {
         return;
@@ -653,7 +645,7 @@ guest_cs_access_rights_type()
 
     switch (::intel_x64::vmcs::guest_cs_access_rights::type::get()) {
         case ::x64::access_rights::type::read_write_accessed:
-            if (activate_secondary_controls::is_disabled()) {
+            if (activate_secondary_ctls::is_disabled()) {
                 break;
             }
 
@@ -958,14 +950,14 @@ guest_cs_dpl_adheres_to_ss_dpl()
 void
 guest_ss_dpl_must_equal_rpl()
 {
-    using namespace ::intel_x64::vmcs::primary_processor_based_vm_execution_controls;
-    using namespace ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls2;
 
     if (::intel_x64::vmcs::guest_rflags::virtual_8086_mode::is_enabled()) {
         return;
     }
 
-    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_controls::is_enabled()) {
+    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_ctls::is_enabled()) {
         return;
     }
 
@@ -1002,14 +994,14 @@ guest_ss_dpl_must_equal_zero()
 void
 guest_ds_dpl()
 {
-    using namespace ::intel_x64::vmcs::primary_processor_based_vm_execution_controls;
-    using namespace ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls2;
 
     if (::intel_x64::vmcs::guest_rflags::virtual_8086_mode::is_enabled()) {
         return;
     }
 
-    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_controls::is_enabled()) {
+    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_ctls::is_enabled()) {
         return;
     }
 
@@ -1042,14 +1034,14 @@ guest_ds_dpl()
 void
 guest_es_dpl()
 {
-    using namespace ::intel_x64::vmcs::primary_processor_based_vm_execution_controls;
-    using namespace ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls2;
 
     if (::intel_x64::vmcs::guest_rflags::virtual_8086_mode::is_enabled()) {
         return;
     }
 
-    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_controls::is_enabled()) {
+    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_ctls::is_enabled()) {
         return;
     }
 
@@ -1082,14 +1074,14 @@ guest_es_dpl()
 void
 guest_fs_dpl()
 {
-    using namespace ::intel_x64::vmcs::primary_processor_based_vm_execution_controls;
-    using namespace ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls2;
 
     if (::intel_x64::vmcs::guest_rflags::virtual_8086_mode::is_enabled()) {
         return;
     }
 
-    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_controls::is_enabled()) {
+    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_ctls::is_enabled()) {
         return;
     }
 
@@ -1122,14 +1114,14 @@ guest_fs_dpl()
 void
 guest_gs_dpl()
 {
-    using namespace ::intel_x64::vmcs::primary_processor_based_vm_execution_controls;
-    using namespace ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls;
+    using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls2;
 
     if (::intel_x64::vmcs::guest_rflags::virtual_8086_mode::is_enabled()) {
         return;
     }
 
-    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_controls::is_enabled()) {
+    if (unrestricted_guest::is_enabled_if_exists() && activate_secondary_ctls::is_enabled()) {
         return;
     }
 
@@ -1350,7 +1342,7 @@ guest_cs_db_must_be_0_if_l_equals_1()
         return;
     }
 
-    if (::intel_x64::vmcs::vm_entry_controls::ia_32e_mode_guest::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_disabled()) {
         return;
     }
 
@@ -1595,7 +1587,7 @@ guest_tr_type_must_be_11()
     const auto rights = ::intel_x64::vmcs::guest_tr_access_rights::type::get();
     switch (rights) {
         case ::x64::access_rights::type::read_write_accessed:
-            if (::intel_x64::vmcs::vm_entry_controls::ia_32e_mode_guest::is_enabled()) {
+            if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_enabled()) {
                 throw std::logic_error("tr type cannot be 3 if ia_32e_mode_guest is enabled");
             }
 
@@ -1753,7 +1745,7 @@ guest_ldtr_access_rights_remaining_reserved_bit_0()
 void
 guest_gdtr_base_must_be_canonical()
 {
-    if (!::x64::is_address_canonical(::intel_x64::vmcs::guest_gdtr_base::get())) {
+    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_gdtr_base::get())) {
         throw std::logic_error("gdtr base is non-canonical");
     }
 }
@@ -1761,7 +1753,7 @@ guest_gdtr_base_must_be_canonical()
 void
 guest_idtr_base_must_be_canonical()
 {
-    if (!::x64::is_address_canonical(::intel_x64::vmcs::guest_idtr_base::get())) {
+    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_idtr_base::get())) {
         throw std::logic_error("idtr base is non-canonical");
     }
 }
@@ -1791,7 +1783,7 @@ guest_rip_upper_bits()
 {
     auto cs_l = ::intel_x64::vmcs::guest_cs_access_rights::l::is_enabled();
 
-    if (::intel_x64::vmcs::vm_entry_controls::ia_32e_mode_guest::is_enabled() && cs_l) {
+    if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_enabled() && cs_l) {
         return;
     }
 
@@ -1805,7 +1797,7 @@ guest_rip_valid_addr()
 {
     auto cs_l = ::intel_x64::vmcs::guest_cs_access_rights::l::is_enabled();
 
-    if (::intel_x64::vmcs::vm_entry_controls::ia_32e_mode_guest::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_disabled()) {
         return;
     }
 
@@ -1813,7 +1805,7 @@ guest_rip_valid_addr()
         return;
     }
 
-    if (!::x64::is_linear_address_valid(::intel_x64::vmcs::guest_rip::get())) {
+    if (!::x64::is_linear_addr_valid(::intel_x64::vmcs::guest_rip::get())) {
         throw std::logic_error("rip bits must be canonical");
     }
 }
@@ -1833,7 +1825,7 @@ guest_rflags_reserved_bits()
 void
 guest_rflags_vm_bit()
 {
-    if (::intel_x64::vmcs::vm_entry_controls::ia_32e_mode_guest::is_disabled() &&
+    if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_disabled() &&
         ::intel_x64::vmcs::guest_cr0::protection_enable::is_enabled()) {
         return;
     }
@@ -1844,20 +1836,20 @@ guest_rflags_vm_bit()
 }
 
 void
-guest_rflag_interrupt_enable()
+guest_rflag_int_enable()
 {
-    using namespace ::intel_x64::vmcs::vm_entry_interruption_information;
+    using namespace ::intel_x64::vmcs::vmentry_interruption_info;
 
     if (valid_bit::is_disabled()) {
         return;
     }
 
-    if (interruption_type::get() != interruption_type::external_interrupt) {
+    if (interruption_type::get() != interruption_type::external_int) {
         return;
     }
 
-    if (::intel_x64::vmcs::guest_rflags::interrupt_enable_flag::is_disabled()) {
-        throw std::logic_error("rflags IF must be 1 if the valid bit is 1 and interrupt type is external");
+    if (::intel_x64::vmcs::guest_rflags::int_enable_flag::is_disabled()) {
+        throw std::logic_error("rflags IF must be 1 if the valid bit is 1 and int type is external");
     }
 }
 
@@ -1900,9 +1892,9 @@ guest_must_be_active_if_injecting_blocking_state()
 }
 
 void
-guest_hlt_valid_interrupts()
+guest_hlt_valid_ints()
 {
-    using namespace ::intel_x64::vmcs::vm_entry_interruption_information;
+    using namespace ::intel_x64::vmcs::vmentry_interruption_info;
 
     if (valid_bit::is_disabled()) {
         return;
@@ -1916,8 +1908,8 @@ guest_hlt_valid_interrupts()
     auto vector = vector::get();
 
     switch (type) {
-        case interruption_type::external_interrupt:
-        case interruption_type::non_maskable_interrupt:
+        case interruption_type::external_int:
+        case interruption_type::non_maskable_int:
             return;
 
         case interruption_type::hardware_exception:
@@ -1946,9 +1938,9 @@ guest_hlt_valid_interrupts()
 }
 
 void
-guest_shutdown_valid_interrupts()
+guest_shutdown_valid_ints()
 {
-    using namespace ::intel_x64::vmcs::vm_entry_interruption_information;
+    using namespace ::intel_x64::vmcs::vmentry_interruption_info;
 
     if (valid_bit::is_disabled()) {
         return;
@@ -1962,7 +1954,7 @@ guest_shutdown_valid_interrupts()
     auto vector = vector::get();
 
     switch (type) {
-        case interruption_type::non_maskable_interrupt:
+        case interruption_type::non_maskable_int:
             return;
 
         case interruption_type::hardware_exception:
@@ -1980,9 +1972,9 @@ guest_shutdown_valid_interrupts()
 }
 
 void
-guest_sipi_valid_interrupts()
+guest_sipi_valid_ints()
 {
-    if (::intel_x64::vmcs::vm_entry_interruption_information::valid_bit::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_interruption_info::valid_bit::is_disabled()) {
         return;
     }
 
@@ -1996,7 +1988,7 @@ guest_sipi_valid_interrupts()
 void
 guest_valid_activity_state_and_smm()
 {
-    if (::intel_x64::vmcs::vm_entry_controls::entry_to_smm::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::entry_to_smm::is_disabled()) {
         return;
     }
 
@@ -2030,54 +2022,54 @@ guest_interruptibility_state_sti_mov_ss()
 void
 guest_interruptibility_state_sti()
 {
-    if (::intel_x64::vmcs::guest_rflags::interrupt_enable_flag::is_enabled()) {
+    if (::intel_x64::vmcs::guest_rflags::int_enable_flag::is_enabled()) {
         return;
     }
 
     if (::intel_x64::vmcs::guest_interruptibility_state::blocking_by_sti::is_enabled()) {
-        throw std::logic_error("interruptibility state sti must be 0 if rflags interrupt enabled is 0");
+        throw std::logic_error("interruptibility state sti must be 0 if rflags int enabled is 0");
     }
 }
 
 void
-guest_interruptibility_state_external_interrupt()
+guest_interruptibility_state_external_int()
 {
-    using namespace ::intel_x64::vmcs::vm_entry_interruption_information;
+    using namespace ::intel_x64::vmcs::vmentry_interruption_info;
 
     if (valid_bit::is_disabled()) {
         return;
     }
 
-    if (interruption_type::get() != interruption_type::external_interrupt) {
+    if (interruption_type::get() != interruption_type::external_int) {
         return;
     }
 
     if (::intel_x64::vmcs::guest_interruptibility_state::blocking_by_sti::is_enabled()) {
         throw std::logic_error("interruptibility state sti must be 0 if "
-                               "interrupt type is external and valid");
+                               "int type is external and valid");
     }
 
     if (::intel_x64::vmcs::guest_interruptibility_state::blocking_by_mov_ss::is_enabled()) {
         throw std::logic_error("interruptibility state mov_ss must be 0 if "
-                               "interrupt type is external and valid");
+                               "int type is external and valid");
     }
 }
 
 void
 guest_interruptibility_state_nmi()
 {
-    using namespace ::intel_x64::vmcs::vm_entry_interruption_information;
+    using namespace ::intel_x64::vmcs::vmentry_interruption_info;
 
     if (valid_bit::is_disabled()) {
         return;
     }
 
-    if (interruption_type::get() != interruption_type::non_maskable_interrupt) {
+    if (interruption_type::get() != interruption_type::non_maskable_int) {
         return;
     }
 
     if (::intel_x64::vmcs::guest_interruptibility_state::blocking_by_mov_ss::is_enabled()) {
-        throw std::logic_error("valid interrupt type must not be nmi if "
+        throw std::logic_error("valid int type must not be nmi if "
                                "interruptibility state is mov-ss");
     }
 }
@@ -2090,7 +2082,7 @@ guest_interruptibility_not_in_smm()
 void
 guest_interruptibility_entry_to_smm()
 {
-    if (::intel_x64::vmcs::vm_entry_controls::entry_to_smm::is_disabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::entry_to_smm::is_disabled()) {
         return;
     }
 
@@ -2103,13 +2095,13 @@ guest_interruptibility_entry_to_smm()
 void
 guest_interruptibility_state_sti_and_nmi()
 {
-    using namespace ::intel_x64::vmcs::vm_entry_interruption_information;
+    using namespace ::intel_x64::vmcs::vmentry_interruption_info;
 
     if (valid_bit::is_disabled()) {
         return;
     }
 
-    if (interruption_type::get() != interruption_type::non_maskable_interrupt) {
+    if (interruption_type::get() != interruption_type::non_maskable_int) {
         return;
     }
 
@@ -2122,9 +2114,9 @@ guest_interruptibility_state_sti_and_nmi()
 void
 guest_interruptibility_state_virtual_nmi()
 {
-    using namespace ::intel_x64::vmcs::vm_entry_interruption_information;
+    using namespace ::intel_x64::vmcs::vmentry_interruption_info;
 
-    if (::intel_x64::vmcs::pin_based_vm_execution_controls::virtual_nmis::is_disabled()) {
+    if (::intel_x64::vmcs::pin_based_vm_execution_ctls::virtual_nmis::is_disabled()) {
         return;
     }
 
@@ -2132,7 +2124,7 @@ guest_interruptibility_state_virtual_nmi()
         return;
     }
 
-    if (interruption_type::get() != interruption_type::non_maskable_interrupt) {
+    if (interruption_type::get() != interruption_type::non_maskable_int) {
         return;
     }
 
@@ -2143,19 +2135,19 @@ guest_interruptibility_state_virtual_nmi()
 }
 
 void
-guest_interruptibility_state_enclave_interrupt()
+guest_interruptibility_state_enclave_int()
 {
     if (::intel_x64::vmcs::guest_interruptibility_state::enclave_interruption::is_disabled()) {
         return;
     }
 
     if (::intel_x64::vmcs::guest_interruptibility_state::blocking_by_mov_ss::is_enabled()) {
-        throw std::logic_error("blocking by mov ss is enabled but enclave interrupt is "
+        throw std::logic_error("blocking by mov ss is enabled but enclave int is "
                                "also enabled in interruptibility state");
     }
 
     if (::intel_x64::cpuid::extended_feature_flags::subleaf0::ebx::sgx::is_disabled()) {
-        throw std::logic_error("enclave interrupt is 1 in interruptibility state "
+        throw std::logic_error("enclave int is 1 in interruptibility state "
                                "but the processor does not support sgx");
     }
 }
@@ -2222,75 +2214,56 @@ guest_pending_debug_exceptions_rtm()
 }
 
 void
-guest_vmcs_link_pointer_bits_11_0()
+guest_vmcs_link_ptr_bits_11_0()
 {
-    auto vmcs_link_pointer = ::intel_x64::vmcs::vmcs_link_pointer::get();
+    auto vmcs_link_ptr = ::intel_x64::vmcs::vmcs_link_ptr::get();
 
-    if (vmcs_link_pointer == 0xFFFFFFFFFFFFFFFF) {
+    if (vmcs_link_ptr == 0xFFFFFFFFFFFFFFFF) {
         return;
     }
 
-    if ((vmcs_link_pointer & 0x0000000000000FFF) != 0) {
-        throw std::logic_error("vmcs link pointer bits 11:0 must be 0");
+    if ((vmcs_link_ptr & 0x0000000000000FFF) != 0) {
+        throw std::logic_error("vmcs link ptr bits 11:0 must be 0");
     }
 }
 
 void
-guest_vmcs_link_pointer_valid_addr()
+guest_vmcs_link_ptr_valid_addr()
 {
-    auto vmcs_link_pointer = ::intel_x64::vmcs::vmcs_link_pointer::get();
+    auto vmcs_link_ptr = ::intel_x64::vmcs::vmcs_link_ptr::get();
 
-    if (vmcs_link_pointer == 0xFFFFFFFFFFFFFFFF) {
+    if (vmcs_link_ptr == 0xFFFFFFFFFFFFFFFF) {
         return;
     }
 
-    if (!::x64::is_physical_address_valid(vmcs_link_pointer)) {
-        throw std::logic_error("vmcs link pointer invalid physical address");
+    if (!::x64::is_physical_addr_valid(vmcs_link_ptr)) {
+        throw std::logic_error("vmcs link ptr invalid physical addr");
     }
 }
 
 void
-guest_vmcs_link_pointer_first_word()
+guest_vmcs_link_ptr_first_word()
 {
-    auto vmcs_link_pointer = ::intel_x64::vmcs::vmcs_link_pointer::get();
+    auto vmcs_link_ptr = ::intel_x64::vmcs::vmcs_link_ptr::get();
 
-    if (vmcs_link_pointer == 0xFFFFFFFFFFFFFFFF) {
+    if (vmcs_link_ptr == 0xFFFFFFFFFFFFFFFF) {
         return;
     }
 
-    auto vmcs = g_mm->physint_to_virtptr(vmcs_link_pointer);
-
-    if (vmcs == nullptr) {
-        throw std::logic_error("invalid vmcs physical address");
-    }
-
-    auto revision_id = *static_cast<uint32_t *>(vmcs) & 0x7FFFFFFF;
-    auto vmcs_shadow = *static_cast<uint32_t *>(vmcs) & 0x80000000;
-
-    if (revision_id != ::intel_x64::msrs::ia32_vmx_basic::revision_id::get()) {
-        throw std::logic_error("shadow vmcs must contain CPU's revision id");
-    }
-
-    if (::intel_x64::vmcs::primary_processor_based_vm_execution_controls::activate_secondary_controls::is_disabled()) {
-        return;
-    }
-
-    if (::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::vmcs_shadowing::is_disabled_if_exists()) {
-        return;
-    }
-
-    if (vmcs_shadow == 0) {
-        throw std::logic_error("shadow vmcs bit must be enabled if vmcs shadowing is enabled");
-    }
+    // TODO
+    //
+    // There are some additional checks that we are not performing here
+    // that require a physical to virtual address translation.
+    //
 }
 
 void
-guest_vmcs_link_pointer_not_in_smm()
+guest_vmcs_link_ptr_not_in_smm()
 {
 }
 
 void
-guest_vmcs_link_pointer_in_smm()
+guest_vmcs_link_ptr_in_smm()
 {
 }
 
@@ -2301,40 +2274,23 @@ guest_valid_pdpte_with_ept_disabled()
         return;
     }
 
-    if (::intel_x64::vmcs::guest_cr4::physical_address_extensions::is_disabled()) {
+    if (::intel_x64::vmcs::guest_cr4::physical_addr_extensions::is_disabled()) {
         return;
     }
 
-    if (::intel_x64::vmcs::vm_entry_controls::ia_32e_mode_guest::is_enabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_enabled()) {
         return;
     }
 
-    if (::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_ept::is_enabled_if_exists()) {
+    if (::intel_x64::vmcs::processor_based_vm_execution_ctls2::enable_ept::is_enabled_if_exists()) {
         return;
     }
 
-    auto cr3 = ::intel_x64::vmcs::guest_cr3::get();
-    auto virt_pdpt = static_cast<uint64_t *>(g_mm->physint_to_virtptr(cr3 & 0xFFFFFFE0ULL));
-
-    if (virt_pdpt == nullptr) {
-        throw std::logic_error("pdpt address is null");
-    }
-
-    if ((virt_pdpt[0] & ::x64::pdpt::entry::reserved::mask()) != 0U) {
-        throw std::logic_error("pdpte0 reserved bits set with ept disabled and pae paging enabled");
-    }
-
-    if ((virt_pdpt[1] & ::x64::pdpt::entry::reserved::mask()) != 0U) {
-        throw std::logic_error("pdpte1 reserved bits set with ept disabled and pae paging enabled");
-    }
-
-    if ((virt_pdpt[2] & ::x64::pdpt::entry::reserved::mask()) != 0U) {
-        throw std::logic_error("pdpte2 reserved bits set with ept disabled and pae paging enabled");
-    }
-
-    if ((virt_pdpt[3] & ::x64::pdpt::entry::reserved::mask()) != 0U) {
-        throw std::logic_error("pdpte3 reserved bits set with ept disabled and pae paging enabled");
-    }
+    // TODO
+    //
+    // There are some additional checks that we are not performing here
+    // that require a physical to virtual address translation.
+    //
 }
 
 void
@@ -2344,19 +2300,19 @@ guest_valid_pdpte_with_ept_enabled()
         return;
     }
 
-    if (::intel_x64::vmcs::guest_cr4::physical_address_extensions::is_disabled()) {
+    if (::intel_x64::vmcs::guest_cr4::physical_addr_extensions::is_disabled()) {
         return;
     }
 
-    if (::intel_x64::vmcs::vm_entry_controls::ia_32e_mode_guest::is_enabled()) {
+    if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_enabled()) {
         return;
     }
 
-    if (::intel_x64::vmcs::primary_processor_based_vm_execution_controls::activate_secondary_controls::is_disabled()) {
+    if (::intel_x64::vmcs::processor_based_vm_execution_ctls::activate_secondary_ctls::is_disabled()) {
         return;
     }
 
-    if (::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_ept::is_disabled_if_exists()) {
+    if (::intel_x64::vmcs::processor_based_vm_execution_ctls2::enable_ept::is_disabled_if_exists()) {
         return;
     }
 
@@ -2378,7 +2334,3 @@ guest_valid_pdpte_with_ept_enabled()
 }
 
 }
-}
-}
-
-#endif

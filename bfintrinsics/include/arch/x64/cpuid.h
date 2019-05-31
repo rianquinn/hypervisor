@@ -22,10 +22,8 @@
 #ifndef CPUID_X64_H
 #define CPUID_X64_H
 
-#include <bfdebug.h>
+#include <bftypes.h>
 #include <bfbitmanip.h>
-
-#pragma pack(push, 1)
 
 // -----------------------------------------------------------------------------
 // Definitions
@@ -43,9 +41,7 @@ extern "C" void _cpuid(void *eax, void *ebx, void *ecx, void *edx) noexcept;
 
 // *INDENT-OFF*
 
-namespace x64
-{
-namespace cpuid
+namespace x64::cpuid
 {
 
 using field_type = uint32_t;
@@ -350,10 +346,7 @@ namespace processor_string_3
 }
 
 }
-}
 
 // *INDENT-ON*
-
-#pragma pack(pop)
 
 #endif

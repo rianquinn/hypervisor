@@ -22,7 +22,7 @@
 #ifndef PAGING_X64_H
 #define PAGING_X64_H
 
-#include <bfdebug.h>
+#include <bftypes.h>
 #include <bfbitmanip.h>
 
 #include <arch/x64/cpuid.h>

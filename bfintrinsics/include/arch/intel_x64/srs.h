@@ -19,11 +19,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef SRS_X64_H
-#define SRS_X64_H
+#ifndef SRS_INTEL_X64_H
+#define SRS_INTEL_X64_H
 
 #include <bfgsl.h>
-#include <bfdebug.h>
+#include <bftypes.h>
 #include <bfbitmanip.h>
 
 // -----------------------------------------------------------------------------
@@ -56,9 +56,7 @@ extern "C" void _write_tr(uint16_t val) noexcept;
 
 // *INDENT-OFF*
 
-namespace x64
-{
-namespace segment_register
+namespace intel_x64::segment_register
 {
 
 using value_type = uint16_t;
@@ -851,7 +849,6 @@ inline void dump(int level, std::string *msg = nullptr)
     tr::dump(level, msg);
 }
 
-}
 }
 
 // *INDENT-ON*

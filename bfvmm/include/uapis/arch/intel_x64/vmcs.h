@@ -551,11 +551,11 @@ struct vmcs
     CONSTEXPR vmcs_field32_t vm_instr_error() const
     { return impl<const IMPL>(this)->__vm_instr_error(); }
 
-    CONSTEXPR vmcs_field32_t vmexit_int_info() const
-    { return impl<const IMPL>(this)->__vmexit_int_info(); }
+    CONSTEXPR vmcs_field32_t vmexit_interruption_info() const
+    { return impl<const IMPL>(this)->__vmexit_interruption_info(); }
 
-    CONSTEXPR vmcs_field32_t vmexit_int_error_code() const
-    { return impl<const IMPL>(this)->__vmexit_int_error_code(); }
+    CONSTEXPR vmcs_field32_t vmexit_interruption_error_code() const
+    { return impl<const IMPL>(this)->__vmexit_interruption_error_code(); }
 
     CONSTEXPR vmcs_field32_t idt_vectoring_info() const
     { return impl<const IMPL>(this)->__idt_vectoring_info(); }
@@ -677,11 +677,11 @@ struct vmcs
     CONSTEXPR void set_tr_access_rights(vmcs_field32_t val)
     { impl<IMPL>(this)->__set_tr_access_rights(val); }
 
-    CONSTEXPR vmcs_field32_t interuptability_state() const
-    { return impl<const IMPL>(this)->__interuptability_state(); }
+    CONSTEXPR vmcs_field32_t interruptibility_state() const
+    { return impl<const IMPL>(this)->__interruptibility_state(); }
 
-    CONSTEXPR void set_interuptability_state(vmcs_field32_t val)
-    { impl<IMPL>(this)->__set_interuptability_state(val); }
+    CONSTEXPR void set_interruptibility_state(vmcs_field32_t val)
+    { impl<IMPL>(this)->__set_interruptibility_state(val); }
 
     CONSTEXPR vmcs_field32_t activity_state() const
     { return impl<const IMPL>(this)->__activity_state(); }
@@ -707,17 +707,17 @@ struct vmcs
     CONSTEXPR void set_preemption_timer_value(vmcs_field32_t val)
     { impl<IMPL>(this)->__set_preemption_timer_value(val); }
 
-    CONSTEXPR vmcs_field64_t cr0_mask() const
-    { return impl<const IMPL>(this)->__cr0_mask(); }
+    CONSTEXPR vmcs_field64_t cr0_guest_host_mask() const
+    { return impl<const IMPL>(this)->__cr0_guest_host_mask(); }
 
-    CONSTEXPR void set_cr0_mask(vmcs_field64_t val)
-    { impl<IMPL>(this)->__set_cr0_mask(val); }
+    CONSTEXPR void set_cr0_guest_host_mask(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr0_guest_host_mask(val); }
 
-    CONSTEXPR vmcs_field64_t cr4_mask() const
-    { return impl<const IMPL>(this)->__cr4_mask(); }
+    CONSTEXPR vmcs_field64_t cr4_guest_host_mask() const
+    { return impl<const IMPL>(this)->__cr4_guest_host_mask(); }
 
-    CONSTEXPR void set_cr4_mask(vmcs_field64_t val)
-    { impl<IMPL>(this)->__set_cr4_mask(val); }
+    CONSTEXPR void set_cr4_guest_host_mask(vmcs_field64_t val)
+    { impl<IMPL>(this)->__set_cr4_guest_host_mask(val); }
 
     CONSTEXPR vmcs_field64_t cr0_read_shadow() const
     { return impl<const IMPL>(this)->__cr0_read_shadow(); }
@@ -1623,14 +1623,14 @@ constexpr auto vm_instr_error(
 { return vcpu->vm_instr_error(); }
 
 template<typename IMPL>
-constexpr auto vmexit_int_info(
+constexpr auto vmexit_interruption_info(
     gsl::not_null<const IMPL *> vcpu)
-{ return vcpu->vmexit_int_info(); }
+{ return vcpu->vmexit_interruption_info(); }
 
 template<typename IMPL>
-constexpr auto vmexit_int_error_code(
+constexpr auto vmexit_interruption_error_code(
     gsl::not_null<const IMPL *> vcpu)
-{ return vcpu->vmexit_int_error_code(); }
+{ return vcpu->vmexit_interruption_error_code(); }
 
 template<typename IMPL>
 constexpr auto idt_vectoring_info(
@@ -1833,14 +1833,14 @@ constexpr void set_tr_access_rights(
 { vcpu->set_tr_access_rights(std::forward<Args>(args)...); }
 
 template<typename IMPL>
-constexpr auto interuptability_state(
+constexpr auto interruptibility_state(
     gsl::not_null<const IMPL *> vcpu)
-{ return vcpu->interuptability_state(); }
+{ return vcpu->interruptibility_state(); }
 
 template<typename IMPL, typename... Args>
-constexpr void set_interuptability_state(
+constexpr void set_interruptibility_state(
     gsl::not_null<IMPL *> vcpu, Args &&...args)
-{ vcpu->set_interuptability_state(std::forward<Args>(args)...); }
+{ vcpu->set_interruptibility_state(std::forward<Args>(args)...); }
 
 template<typename IMPL>
 constexpr auto activity_state(
@@ -1883,24 +1883,24 @@ constexpr void set_preemption_timer_value(
 { vcpu->set_preemption_timer_value(std::forward<Args>(args)...); }
 
 template<typename IMPL>
-constexpr auto cr0_mask(
+constexpr auto cr0_guest_host_mask(
     gsl::not_null<const IMPL *> vcpu)
-{ return vcpu->cr0_mask(); }
+{ return vcpu->cr0_guest_host_mask(); }
 
 template<typename IMPL, typename... Args>
-constexpr void set_cr0_mask(
+constexpr void set_cr0_guest_host_mask(
     gsl::not_null<IMPL *> vcpu, Args &&...args)
-{ vcpu->set_cr0_mask(std::forward<Args>(args)...); }
+{ vcpu->set_cr0_guest_host_mask(std::forward<Args>(args)...); }
 
 template<typename IMPL>
-constexpr auto cr4_mask(
+constexpr auto cr4_guest_host_mask(
     gsl::not_null<const IMPL *> vcpu)
-{ return vcpu->cr4_mask(); }
+{ return vcpu->cr4_guest_host_mask(); }
 
 template<typename IMPL, typename... Args>
-constexpr void set_cr4_mask(
+constexpr void set_cr4_guest_host_mask(
     gsl::not_null<IMPL *> vcpu, Args &&...args)
-{ vcpu->set_cr4_mask(std::forward<Args>(args)...); }
+{ vcpu->set_cr4_guest_host_mask(std::forward<Args>(args)...); }
 
 template<typename IMPL>
 constexpr auto cr0_read_shadow(

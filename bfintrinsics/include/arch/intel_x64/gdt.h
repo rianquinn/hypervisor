@@ -19,8 +19,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef GDT_X64_H
-#define GDT_X64_H
+#ifndef GDT_INTEL_X64_H
+#define GDT_INTEL_X64_H
+
+#include <bftypes.h>
+#include <bfbitmanip.h>
 
 #pragma pack(push, 1)
 
@@ -33,7 +36,7 @@ extern "C" void _write_gdt(void *gdt_reg) noexcept;
 
 // *INDENT-OFF*
 
-namespace x64
+namespace intel_x64
 {
 
 namespace access_rights
@@ -146,6 +149,7 @@ namespace limit
 }
 
 }
+
 }
 
 // *INDENT-ON*

@@ -22,13 +22,11 @@
 #ifndef VMCS_INTEL_X64_64BIT_GUEST_STATE_FIELDS_H
 #define VMCS_INTEL_X64_64BIT_GUEST_STATE_FIELDS_H
 
-#include <arch/intel_x64/vmcs/helpers.h>
+#include "helpers.h"
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace vmcs
+namespace intel_x64::vmcs
 {
 
 namespace vmcs_link_ptr
@@ -3093,7 +3091,6 @@ namespace guest_ia32_bndcfgs
     }
 }
 
-}
 }
 
 // *INDENT-ON*

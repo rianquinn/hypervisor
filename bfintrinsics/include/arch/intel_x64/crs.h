@@ -22,7 +22,7 @@
 #ifndef CRS_INTEL_X64_H
 #define CRS_INTEL_X64_H
 
-#include <bfdebug.h>
+#include <bftypes.h>
 #include <bfbitmanip.h>
 
 // -----------------------------------------------------------------------------
@@ -50,6 +50,7 @@ extern "C" void _write_xcr0(uint64_t val) noexcept;
 
 namespace intel_x64
 {
+
 namespace cr0
 {
     constexpr const auto name = "cr0";
@@ -1194,7 +1195,6 @@ namespace xcr0
     inline void set(value_type val) noexcept
     { _write_xcr0(val); }
 }
-
 
 }
 

@@ -22,13 +22,11 @@
 #ifndef VMCS_INTEL_X64_64BIT_CONTROL_FIELDS_H
 #define VMCS_INTEL_X64_64BIT_CONTROL_FIELDS_H
 
-#include <arch/intel_x64/vmcs/helpers.h>
+#include "helpers.h"
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace vmcs
+namespace intel_x64::vmcs
 {
 
 namespace io_bitmap_a_addr
@@ -942,7 +940,6 @@ namespace tsc_multiplier
     { dump_vmcs_nhex(level, msg); }
 }
 
-}
 }
 
 // *INDENT-ON*

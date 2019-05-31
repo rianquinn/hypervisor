@@ -22,13 +22,11 @@
 #ifndef VMCS_INTEL_X64_NATURAL_WIDTH_GUEST_STATE_FIELDS_H
 #define VMCS_INTEL_X64_NATURAL_WIDTH_GUEST_STATE_FIELDS_H
 
-#include <arch/intel_x64/vmcs/helpers.h>
+#include "helpers.h"
 
 // *INDENT-OFF*
 
-namespace intel_x64
-{
-namespace vmcs
+namespace intel_x64::vmcs
 {
 
 namespace guest_cr0
@@ -3632,7 +3630,6 @@ namespace guest_ia32_sysenter_eip
     { dump_vmcs_nhex(level, msg); }
 }
 
-}
 }
 
 // *INDENT-ON*
