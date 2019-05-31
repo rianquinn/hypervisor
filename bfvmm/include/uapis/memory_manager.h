@@ -93,7 +93,7 @@ template<typename IMPL>
 struct memory_manager
 {
     using pointer = void *;                                 ///< Pointer type
-    using integer_pointer = uintptr_t;                      ///< Interger pointer type
+    using integer_pointer = uint64_t;                       ///< Interger pointer type
     using size_type = std::size_t;                          ///< Size type
     using attr_type = decltype(memory_descriptor::type);    ///< Attribute type
 
@@ -249,16 +249,45 @@ constexpr *alloc_page() noexcept
 namespace bfvmm::memory_manager
 {
 
-template<typename IMPL, typename... Args>
+template<typename IMPL>
 constexpr auto hva_to_hpa(
-    gsl::not_null<IMPL *> mm, Args &&...args)
-{ return mm->hva_to_hpa(std::forward<Args>(args)...); }
+    gsl::not_null<IMPL *> mm, typename bfvmm::uapis::memory_manager<IMPL>::integer_pointer hva)
+{ return mm->hva_to_hpa(hva); }
 
+template<typename RET, typename IMPL>
+constexpr auto hva_to_hpa(
+    gsl::not_null<IMPL *> mm, typename bfvmm::uapis::memory_manager<IMPL>::integer_pointer hva)
+{ return reinterpret_cast<RET>(mm->hva_to_hpa(hva)); }
 
-template<typename IMPL, typename... Args>
+template<typename IMPL>
+constexpr auto hva_to_hpa(
+    gsl::not_null<IMPL *> mm, void *hva)
+{ return mm->hva_to_hpa(reinterpret_cast<typename bfvmm::uapis::memory_manager<IMPL>::integer_pointer>(hva)); }
+
+template<typename RET, typename IMPL>
+constexpr auto hva_to_hpa(
+    gsl::not_null<IMPL *> mm, void *hva)
+{ return reinterpret_cast<RET>(mm->hva_to_hpa(reinterpret_cast<typename bfvmm::uapis::memory_manager<IMPL>::integer_pointer>(hva))); }
+
+template<typename IMPL>
 constexpr auto hpa_to_hva(
-    gsl::not_null<IMPL *> mm, Args &&...args)
-{ return mm->hpa_to_hva(std::forward<Args>(args)...); }
+    gsl::not_null<IMPL *> mm, typename bfvmm::uapis::memory_manager<IMPL>::integer_pointer hpa)
+{ return mm->hpa_to_hva(hpa); }
+
+template<typename RET, typename IMPL>
+constexpr auto hpa_to_hva(
+    gsl::not_null<IMPL *> mm, typename bfvmm::uapis::memory_manager<IMPL>::integer_pointer hpa)
+{ return reinterpret_cast<RET>(mm->hpa_to_hva(hpa)); }
+
+template<typename IMPL>
+constexpr auto hpa_to_hva(
+    gsl::not_null<IMPL *> mm, void *hpa)
+{ return mm->hpa_to_hva(reinterpret_cast<typename bfvmm::uapis::memory_manager<IMPL>::integer_pointer>(hpa)); }
+
+template<typename RET, typename IMPL>
+constexpr auto hpa_to_hva(
+    gsl::not_null<IMPL *> mm, void *hpa)
+{ return reinterpret_cast<RET>(mm->hpa_to_hva(reinterpret_cast<typename bfvmm::uapis::memory_manager<IMPL>::integer_pointer>(hpa))); }
 
 }
 

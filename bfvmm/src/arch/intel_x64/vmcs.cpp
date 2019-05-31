@@ -19,26 +19,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <arch/intel_x64/vmcs/debug.h>
-#include <arch/intel_x64/vmcs/16bit_control_fields.h>
-#include <arch/intel_x64/vmcs/16bit_guest_state_fields.h>
-#include <arch/intel_x64/vmcs/16bit_host_state_fields.h>
-#include <arch/intel_x64/vmcs/32bit_control_fields.h>
-#include <arch/intel_x64/vmcs/32bit_guest_state_fields.h>
-#include <arch/intel_x64/vmcs/32bit_host_state_fields.h>
-#include <arch/intel_x64/vmcs/32bit_read_only_data_fields.h>
-#include <arch/intel_x64/vmcs/64bit_control_fields.h>
-#include <arch/intel_x64/vmcs/64bit_guest_state_fields.h>
-#include <arch/intel_x64/vmcs/64bit_host_state_fields.h>
-#include <arch/intel_x64/vmcs/64bit_read_only_data_fields.h>
-#include <arch/intel_x64/vmcs/natural_width_control_fields.h>
-#include <arch/intel_x64/vmcs/natural_width_guest_state_fields.h>
-#include <arch/intel_x64/vmcs/natural_width_host_state_fields.h>
-#include <arch/intel_x64/vmcs/natural_width_read_only_data_fields.h>
-#include <arch/intel_x64/cpuid.h>
-#include <arch/intel_x64/crs.h>
-#include <arch/intel_x64/msrs.h>
-#include <arch/intel_x64/vmx.h>
+#include <uapis/arch/intel_x64/intrinsics/vmcs/debug.h>
+#include <uapis/arch/intel_x64/intrinsics/cpuid.h>
+#include <uapis/arch/intel_x64/intrinsics/crs.h>
+#include <uapis/arch/intel_x64/intrinsics/msrs.h>
+#include <uapis/arch/intel_x64/intrinsics/vmx.h>
 
 #include <implementation/vcpu_t.h>
 #include <implementation/arch/intel_x64/check.h>
@@ -69,7 +54,7 @@ vmcs::vmcs()
 
 vmcs::~vmcs()
 {
-    ::intel_x64::vm::clear(m_vmcs_region.hpa());
+    ::intel_x64::vmx::clear(m_vmcs_region.hpa());
 }
 
 void
@@ -81,8 +66,8 @@ vmcs::demote()
 
     this->launch();
 
-    ::x64::cpuid::get(0x4BF00010, 0, 0, 0);
-    ::x64::cpuid::get(0x4BF00011, 0, 0, 0);
+    ::intel_x64::cpuid::get(0x4BF00010, 0, 0, 0);
+    ::intel_x64::cpuid::get(0x4BF00011, 0, 0, 0);
 }
 
 void
@@ -92,8 +77,8 @@ vmcs::promote()
         throw std::runtime_error("demoting a guest vCPU is unsupported");
     }
 
-    ::x64::cpuid::get(0x4BF00020, 0, 0, 0);
-    ::x64::cpuid::get(0x4BF00021, 0, 0, 0);
+    ::intel_x64::cpuid::get(0x4BF00020, 0, 0, 0);
+    ::intel_x64::cpuid::get(0x4BF00021, 0, 0, 0);
 }
 
 void
@@ -169,7 +154,7 @@ vmcs::__arch_load()
         d(vcpu_t_cast(this));
     }
 
-    ::intel_x64::vm::load(m_vmcs_region.hpa());
+    ::intel_x64::vmx::load(m_vmcs_region.hpa());
 }
 
 void
@@ -184,7 +169,7 @@ vmcs::__arch_clear()
     }
 
     m_launched = false;
-    ::intel_x64::vm::clear(m_vmcs_region.hpa());
+    ::intel_x64::vmx::clear(m_vmcs_region.hpa());
 }
 
 void
@@ -207,841 +192,843 @@ vmcs::__vmcs_add_vmclear_delegate(const vmcs_delegate_t &d)
 // VMCS Fields
 // -----------------------------------------------------------------------------
 
+using namespace ::intel_x64::vmcs;
+
 vmcs::vmcs_field16_t
 vmcs::__virtual_processor_identifier() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::virtual_processor_identifier::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(virtual_processor_identifier::get()); }
 
 void
 vmcs::__set_virtual_processor_identifier(vmcs_field16_t val)
-{ ::intel_x64::vmcs::virtual_processor_identifier::set(val); }
+{ virtual_processor_identifier::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__posted_int_notification_vector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::posted_int_notification_vector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(posted_int_notification_vector::get()); }
 
 void
 vmcs::__set_posted_int_notification_vector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::posted_int_notification_vector::set(val); }
+{ posted_int_notification_vector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__eptp_index() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::eptp_index::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(eptp_index::get()); }
 
 void
 vmcs::__set_eptp_index(vmcs_field16_t val)
-{ ::intel_x64::vmcs::eptp_index::set(val); }
+{ eptp_index::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__es_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::guest_es_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(guest_es_selector::get()); }
 
 void
 vmcs::__set_es_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::guest_es_selector::set(val); }
+{ guest_es_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__cs_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::guest_cs_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(guest_cs_selector::get()); }
 
 void
 vmcs::__set_cs_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::guest_cs_selector::set(val); }
+{ guest_cs_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__ss_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::guest_ss_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(guest_ss_selector::get()); }
 
 void
 vmcs::__set_ss_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::guest_ss_selector::set(val); }
+{ guest_ss_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__ds_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::guest_ds_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(guest_ds_selector::get()); }
 
 void
 vmcs::__set_ds_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::guest_ds_selector::set(val); }
+{ guest_ds_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__fs_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::guest_fs_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(guest_fs_selector::get()); }
 
 void
 vmcs::__set_fs_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::guest_fs_selector::set(val); }
+{ guest_fs_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__gs_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::guest_gs_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(guest_gs_selector::get()); }
 
 void
 vmcs::__set_gs_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::guest_gs_selector::set(val); }
+{ guest_gs_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__ldtr_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::guest_ldtr_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(guest_ldtr_selector::get()); }
 
 void
 vmcs::__set_ldtr_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::guest_ldtr_selector::set(val); }
+{ guest_ldtr_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__tr_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::guest_tr_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(guest_tr_selector::get()); }
 
 void
 vmcs::__set_tr_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::guest_tr_selector::set(val); }
+{ guest_tr_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__int_status() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::guest_int_status::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(guest_int_status::get()); }
 
 void
 vmcs::__set_int_status(vmcs_field16_t val)
-{ ::intel_x64::vmcs::guest_int_status::set(val); }
+{ guest_int_status::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::__pml_index() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::pml_index::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(pml_index::get()); }
 
 void
 vmcs::__set_pml_index(vmcs_field16_t val)
-{ ::intel_x64::vmcs::pml_index::set(val); }
+{ pml_index::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__io_bitmap_a_addr() const
-{ return ::intel_x64::vmcs::io_bitmap_a_addr::get(); }
+{ return io_bitmap_a_addr::get(); }
 
 void
 vmcs::__set_io_bitmap_a_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::io_bitmap_a_addr::set(val); }
+{ io_bitmap_a_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__io_bitmap_b_addr() const
-{ return ::intel_x64::vmcs::io_bitmap_b_addr::get(); }
+{ return io_bitmap_b_addr::get(); }
 
 void
 vmcs::__set_io_bitmap_b_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::io_bitmap_b_addr::set(val); }
+{ io_bitmap_b_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__msr_bitmaps_addr() const
-{ return ::intel_x64::vmcs::msr_bitmaps_addr::get(); }
+{ return msr_bitmaps_addr::get(); }
 
 void
 vmcs::__set_msr_bitmaps_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::msr_bitmaps_addr::set(val); }
+{ msr_bitmaps_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__vmexit_msr_store_addr() const
-{ return ::intel_x64::vmcs::vmexit_msr_store_addr::get(); }
+{ return vmexit_msr_store_addr::get(); }
 
 void
 vmcs::__set_vmexit_msr_store_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::vmexit_msr_store_addr::set(val); }
+{ vmexit_msr_store_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__vmexit_msr_load_addr() const
-{ return ::intel_x64::vmcs::vmexit_msr_load_addr::get(); }
+{ return vmexit_msr_load_addr::get(); }
 
 void
 vmcs::__set_vmexit_msr_load_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::vmexit_msr_load_addr::set(val); }
+{ vmexit_msr_load_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__vmentry_msr_load_addr() const
-{ return ::intel_x64::vmcs::vmentry_msr_load_addr::get(); }
+{ return vmentry_msr_load_addr::get(); }
 
 void
 vmcs::__set_vmentry_msr_load_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::vmentry_msr_load_addr::set(val); }
+{ vmentry_msr_load_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__executive_vmcs_ptr() const
-{ return ::intel_x64::vmcs::executive_vmcs_ptr::get(); }
+{ return executive_vmcs_ptr::get(); }
 
 void
 vmcs::__set_executive_vmcs_ptr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::executive_vmcs_ptr::set(val); }
+{ executive_vmcs_ptr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__pml_addr() const
-{ return ::intel_x64::vmcs::pml_addr::get(); }
+{ return pml_addr::get(); }
 
 void
 vmcs::__set_pml_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::pml_addr::set(val); }
+{ pml_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__tsc_offset() const
-{ return ::intel_x64::vmcs::tsc_offset::get(); }
+{ return tsc_offset::get(); }
 
 void
 vmcs::__set_tsc_offset(vmcs_field64_t val)
-{ ::intel_x64::vmcs::tsc_offset::set(val); }
+{ tsc_offset::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__virtual_apic_addr() const
-{ return ::intel_x64::vmcs::virtual_apic_addr::get(); }
+{ return virtual_apic_addr::get(); }
 
 void
 vmcs::__set_virtual_apic_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::virtual_apic_addr::set(val); }
+{ virtual_apic_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__apic_access_addr() const
-{ return ::intel_x64::vmcs::apic_access_addr::get(); }
+{ return apic_access_addr::get(); }
 
 void
 vmcs::__set_apic_access_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::apic_access_addr::set(val); }
+{ apic_access_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__posted_int_descriptor_addr() const
-{ return ::intel_x64::vmcs::posted_int_descriptor_addr::get(); }
+{ return posted_int_descriptor_addr::get(); }
 
 void
 vmcs::__set_posted_int_descriptor_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::posted_int_descriptor_addr::set(val); }
+{ posted_int_descriptor_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__vm_function_ctls() const
-{ return ::intel_x64::vmcs::vm_function_ctls::get(); }
+{ return vm_function_ctls::get(); }
 
 void
 vmcs::__set_vm_function_ctls(vmcs_field64_t val)
-{ ::intel_x64::vmcs::vm_function_ctls::set(val); }
+{ vm_function_ctls::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__ept_ptr() const
-{ return ::intel_x64::vmcs::ept_ptr::get(); }
+{ return ept_ptr::get(); }
 
 void
 vmcs::__set_ept_ptr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::ept_ptr::set(val); }
+{ ept_ptr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__eoi_exit_bitmap_0() const
-{ return ::intel_x64::vmcs::eoi_exit_bitmap_0::get(); }
+{ return eoi_exit_bitmap_0::get(); }
 
 void
 vmcs::__set_eoi_exit_bitmap_0(vmcs_field64_t val)
-{ ::intel_x64::vmcs::eoi_exit_bitmap_0::set(val); }
+{ eoi_exit_bitmap_0::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__eoi_exit_bitmap_1() const
-{ return ::intel_x64::vmcs::eoi_exit_bitmap_1::get(); }
+{ return eoi_exit_bitmap_1::get(); }
 
 void
 vmcs::__set_eoi_exit_bitmap_1(vmcs_field64_t val)
-{ ::intel_x64::vmcs::eoi_exit_bitmap_1::set(val); }
+{ eoi_exit_bitmap_1::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__eoi_exit_bitmap_2() const
-{ return ::intel_x64::vmcs::eoi_exit_bitmap_2::get(); }
+{ return eoi_exit_bitmap_2::get(); }
 
 void
 vmcs::__set_eoi_exit_bitmap_2(vmcs_field64_t val)
-{ ::intel_x64::vmcs::eoi_exit_bitmap_2::set(val); }
+{ eoi_exit_bitmap_2::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__eoi_exit_bitmap_3() const
-{ return ::intel_x64::vmcs::eoi_exit_bitmap_3::get(); }
+{ return eoi_exit_bitmap_3::get(); }
 
 void
 vmcs::__set_eoi_exit_bitmap_3(vmcs_field64_t val)
-{ ::intel_x64::vmcs::eoi_exit_bitmap_3::set(val); }
+{ eoi_exit_bitmap_3::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__eptp_list_addr() const
-{ return ::intel_x64::vmcs::eptp_list_addr::get(); }
+{ return eptp_list_addr::get(); }
 
 void
 vmcs::__set_eptp_list_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::eptp_list_addr::set(val); }
+{ eptp_list_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__vmread_bitmap_addr() const
-{ return ::intel_x64::vmcs::vmread_bitmap_addr::get(); }
+{ return vmread_bitmap_addr::get(); }
 
 void
 vmcs::__set_vmread_bitmap_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::vmread_bitmap_addr::set(val); }
+{ vmread_bitmap_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__vmwrite_bitmap_addr() const
-{ return ::intel_x64::vmcs::vmwrite_bitmap_addr::get(); }
+{ return vmwrite_bitmap_addr::get(); }
 
 void
 vmcs::__set_vmwrite_bitmap_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::vmwrite_bitmap_addr::set(val); }
+{ vmwrite_bitmap_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__virtualization_exception_info_addr() const
-{ return ::intel_x64::vmcs::virtualization_exception_info_addr::get(); }
+{ return virtualization_exception_info_addr::get(); }
 
 void
 vmcs::__set_virtualization_exception_info_addr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::virtualization_exception_info_addr::set(val); }
+{ virtualization_exception_info_addr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__encls_exiting_bitmap() const
-{ return ::intel_x64::vmcs::encls_exiting_bitmap::get(); }
+{ return encls_exiting_bitmap::get(); }
 
 void
 vmcs::__set_encls_exiting_bitmap(vmcs_field64_t val)
-{ ::intel_x64::vmcs::encls_exiting_bitmap::set(val); }
+{ encls_exiting_bitmap::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__xss_exiting_bitmap() const
-{ return ::intel_x64::vmcs::xss_exiting_bitmap::get(); }
+{ return xss_exiting_bitmap::get(); }
 
 void
 vmcs::__set_xss_exiting_bitmap(vmcs_field64_t val)
-{ ::intel_x64::vmcs::xss_exiting_bitmap::set(val); }
+{ xss_exiting_bitmap::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__tsc_multiplier() const
-{ return ::intel_x64::vmcs::tsc_multiplier::get(); }
+{ return tsc_multiplier::get(); }
 
 void
 vmcs::__set_tsc_multiplier(vmcs_field64_t val)
-{ ::intel_x64::vmcs::tsc_multiplier::set(val); }
+{ tsc_multiplier::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__gpa() const
-{ return ::intel_x64::vmcs::guest_physical_addr::get(); }
+{ return guest_physical_addr::get(); }
 
 vmcs::vmcs_field64_t
 vmcs::__vmcs_link_ptr() const
-{ return ::intel_x64::vmcs::vmcs_link_ptr::get(); }
+{ return vmcs_link_ptr::get(); }
 
 void
 vmcs::__set_vmcs_link_ptr(vmcs_field64_t val)
-{ ::intel_x64::vmcs::vmcs_link_ptr::set(val); }
+{ vmcs_link_ptr::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__ia32_debugctl() const
-{ return ::intel_x64::vmcs::guest_ia32_debugctl::get(); }
+{ return guest_ia32_debugctl::get(); }
 
 void
 vmcs::__set_ia32_debugctl(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_ia32_debugctl::set(val); }
+{ guest_ia32_debugctl::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__ia32_pat() const
-{ return ::intel_x64::vmcs::guest_ia32_pat::get(); }
+{ return guest_ia32_pat::get(); }
 
 void
 vmcs::__set_ia32_pat(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_ia32_pat::set(val); }
+{ guest_ia32_pat::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__ia32_efer() const
-{ return ::intel_x64::vmcs::guest_ia32_efer::get(); }
+{ return guest_ia32_efer::get(); }
 
 void
 vmcs::__set_ia32_efer(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_ia32_efer::set(val); }
+{ guest_ia32_efer::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__ia32_perf_global_ctrl() const
-{ return ::intel_x64::vmcs::guest_ia32_perf_global_ctrl::get(); }
+{ return guest_ia32_perf_global_ctrl::get(); }
 
 void
 vmcs::__set_ia32_perf_global_ctrl(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_ia32_perf_global_ctrl::set(val); }
+{ guest_ia32_perf_global_ctrl::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__pdpte0() const
-{ return ::intel_x64::vmcs::guest_pdpte0::get(); }
+{ return guest_pdpte0::get(); }
 
 void
 vmcs::__set_pdpte0(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_pdpte0::set(val); }
+{ guest_pdpte0::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__pdpte1() const
-{ return ::intel_x64::vmcs::guest_pdpte1::get(); }
+{ return guest_pdpte1::get(); }
 
 void
 vmcs::__set_pdpte1(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_pdpte1::set(val); }
+{ guest_pdpte1::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__pdpte2() const
-{ return ::intel_x64::vmcs::guest_pdpte2::get(); }
+{ return guest_pdpte2::get(); }
 
 void
 vmcs::__set_pdpte2(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_pdpte2::set(val); }
+{ guest_pdpte2::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__pdpte3() const
-{ return ::intel_x64::vmcs::guest_pdpte3::get(); }
+{ return guest_pdpte3::get(); }
 
 void
 vmcs::__set_pdpte3(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_pdpte3::set(val); }
+{ guest_pdpte3::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__ia32_bndcfgs() const
-{ return ::intel_x64::vmcs::guest_ia32_bndcfgs::get(); }
+{ return guest_ia32_bndcfgs::get(); }
 
 void
 vmcs::__set_ia32_bndcfgs(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_ia32_bndcfgs::set(val); }
+{ guest_ia32_bndcfgs::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__pin_based_vm_execution_ctls() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::pin_based_vm_execution_ctls::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(pin_based_vm_execution_ctls::get()); }
 
 void
 vmcs::__set_pin_based_vm_execution_ctls(vmcs_field32_t val)
-{ ::intel_x64::vmcs::pin_based_vm_execution_ctls::set(val); }
+{ pin_based_vm_execution_ctls::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__processor_based_vm_execution_ctls() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::processor_based_vm_execution_ctls::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(processor_based_vm_execution_ctls::get()); }
 
 void
 vmcs::__set_processor_based_vm_execution_ctls(vmcs_field32_t val)
-{ ::intel_x64::vmcs::processor_based_vm_execution_ctls::set(val); }
+{ processor_based_vm_execution_ctls::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__exception_bitmap() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::exception_bitmap::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(exception_bitmap::get()); }
 
 void
 vmcs::__set_exception_bitmap(vmcs_field32_t val)
-{ ::intel_x64::vmcs::exception_bitmap::set(val); }
+{ exception_bitmap::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__page_fault_error_code_mask() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::page_fault_error_code_mask::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(page_fault_error_code_mask::get()); }
 
 void
 vmcs::__set_page_fault_error_code_mask(vmcs_field32_t val)
-{ ::intel_x64::vmcs::page_fault_error_code_mask::set(val); }
+{ page_fault_error_code_mask::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__page_fault_error_code_match() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::page_fault_error_code_match::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(page_fault_error_code_match::get()); }
 
 void
 vmcs::__set_page_fault_error_code_match(vmcs_field32_t val)
-{ ::intel_x64::vmcs::page_fault_error_code_match::set(val); }
+{ page_fault_error_code_match::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__cr3_target_count() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::cr3_target_count::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(cr3_target_count::get()); }
 
 void
 vmcs::__set_cr3_target_count(vmcs_field32_t val)
-{ ::intel_x64::vmcs::cr3_target_count::set(val); }
+{ cr3_target_count::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmexit_ctls() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmexit_ctls::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmexit_ctls::get()); }
 
 void
 vmcs::__set_vmexit_ctls(vmcs_field32_t val)
-{ ::intel_x64::vmcs::vmexit_ctls::set(val); }
+{ vmexit_ctls::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmexit_msr_store_count() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmexit_msr_store_count::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmexit_msr_store_count::get()); }
 
 void
 vmcs::__set_vmexit_msr_store_count(vmcs_field32_t val)
-{ ::intel_x64::vmcs::vmexit_msr_store_count::set(val); }
+{ vmexit_msr_store_count::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmexit_msr_load_count() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmexit_msr_load_count::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmexit_msr_load_count::get()); }
 
 void
 vmcs::__set_vmexit_msr_load_count(vmcs_field32_t val)
-{ ::intel_x64::vmcs::vmexit_msr_load_count::set(val); }
+{ vmexit_msr_load_count::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmentry_ctls() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmentry_ctls::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmentry_ctls::get()); }
 
 void
 vmcs::__set_vmentry_ctls(vmcs_field32_t val)
-{ ::intel_x64::vmcs::vmentry_ctls::set(val); }
+{ vmentry_ctls::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmentry_msr_load_count() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmentry_msr_load_count::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmentry_msr_load_count::get()); }
 
 void
 vmcs::__set_vmentry_msr_load_count(vmcs_field32_t val)
-{ ::intel_x64::vmcs::vmentry_msr_load_count::set(val); }
+{ vmentry_msr_load_count::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmentry_interruption_info() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmentry_interruption_info::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmentry_interruption_info::get()); }
 
 void
 vmcs::__set_vmentry_interruption_info(vmcs_field32_t val)
-{ ::intel_x64::vmcs::vmentry_interruption_info::set(val); }
+{ vmentry_interruption_info::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmentry_exception_error_code() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmentry_exception_error_code::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmentry_exception_error_code::get()); }
 
 void
 vmcs::__set_vmentry_exception_error_code(vmcs_field32_t val)
-{ ::intel_x64::vmcs::vmentry_exception_error_code::set(val); }
+{ vmentry_exception_error_code::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmentry_instr_len() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmentry_instr_len::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmentry_instr_len::get()); }
 
 void
 vmcs::__set_vmentry_instr_len(vmcs_field32_t val)
-{ ::intel_x64::vmcs::vmentry_instr_len::set(val); }
+{ vmentry_instr_len::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__tpr_threshold() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::tpr_threshold::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(tpr_threshold::get()); }
 
 void
 vmcs::__set_tpr_threshold(vmcs_field32_t val)
-{ ::intel_x64::vmcs::tpr_threshold::set(val); }
+{ tpr_threshold::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__processor_based_vm_execution_ctls2() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::processor_based_vm_execution_ctls2::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(processor_based_vm_execution_ctls2::get()); }
 
 void
 vmcs::__set_processor_based_vm_execution_ctls2(vmcs_field32_t val)
-{ ::intel_x64::vmcs::processor_based_vm_execution_ctls2::set(val); }
+{ processor_based_vm_execution_ctls2::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__ple_gap() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::ple_gap::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(ple_gap::get()); }
 
 void
 vmcs::__set_ple_gap(vmcs_field32_t val)
-{ ::intel_x64::vmcs::ple_gap::set(val); }
+{ ple_gap::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__ple_window() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::ple_window::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(ple_window::get()); }
 
 void
 vmcs::__set_ple_window(vmcs_field32_t val)
-{ ::intel_x64::vmcs::ple_window::set(val); }
+{ ple_window::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__vm_instr_error() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vm_instr_error::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vm_instr_error::get()); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmexit_interruption_info() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmexit_interruption_info::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmexit_interruption_info::get()); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmexit_interruption_error_code() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmexit_interruption_error_code::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmexit_interruption_error_code::get()); }
 
 vmcs::vmcs_field32_t
 vmcs::__idt_vectoring_info() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::idt_vectoring_info::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(idt_vectoring_info::get()); }
 
 vmcs::vmcs_field32_t
 vmcs::__idt_vectoring_error_code() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::idt_vectoring_error_code::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(idt_vectoring_error_code::get()); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmexit_instr_len() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmexit_instr_len::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmexit_instr_len::get()); }
 
 vmcs::vmcs_field32_t
 vmcs::__vmexit_instr_info() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::vmexit_instr_info::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(vmexit_instr_info::get()); }
 
 vmcs::vmcs_field32_t
 vmcs::__es_limit() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_es_limit::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_es_limit::get()); }
 
 void
 vmcs::__set_es_limit(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_es_limit::set(val); }
+{ guest_es_limit::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__cs_limit() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_cs_limit::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_cs_limit::get()); }
 
 void
 vmcs::__set_cs_limit(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_cs_limit::set(val); }
+{ guest_cs_limit::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__ss_limit() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_ss_limit::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_ss_limit::get()); }
 
 void
 vmcs::__set_ss_limit(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_ss_limit::set(val); }
+{ guest_ss_limit::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__ds_limit() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_ds_limit::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_ds_limit::get()); }
 
 void
 vmcs::__set_ds_limit(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_ds_limit::set(val); }
+{ guest_ds_limit::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__fs_limit() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_fs_limit::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_fs_limit::get()); }
 
 void
 vmcs::__set_fs_limit(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_fs_limit::set(val); }
+{ guest_fs_limit::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__gs_limit() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_gs_limit::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_gs_limit::get()); }
 
 void
 vmcs::__set_gs_limit(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_gs_limit::set(val); }
+{ guest_gs_limit::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__ldtr_limit() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_ldtr_limit::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_ldtr_limit::get()); }
 
 void
 vmcs::__set_ldtr_limit(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_ldtr_limit::set(val); }
+{ guest_ldtr_limit::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__tr_limit() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_tr_limit::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_tr_limit::get()); }
 
 void
 vmcs::__set_tr_limit(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_tr_limit::set(val); }
+{ guest_tr_limit::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__gdtr_limit() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_gdtr_limit::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_gdtr_limit::get()); }
 
 void
 vmcs::__set_gdtr_limit(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_gdtr_limit::set(val); }
+{ guest_gdtr_limit::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__idtr_limit() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_idtr_limit::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_idtr_limit::get()); }
 
 void
 vmcs::__set_idtr_limit(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_idtr_limit::set(val); }
+{ guest_idtr_limit::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__es_access_rights() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_es_access_rights::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_es_access_rights::get()); }
 
 void
 vmcs::__set_es_access_rights(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_es_access_rights::set(val); }
+{ guest_es_access_rights::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__cs_access_rights() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_cs_access_rights::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_cs_access_rights::get()); }
 
 void
 vmcs::__set_cs_access_rights(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_cs_access_rights::set(val); }
+{ guest_cs_access_rights::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__ss_access_rights() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_ss_access_rights::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_ss_access_rights::get()); }
 
 void
 vmcs::__set_ss_access_rights(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_ss_access_rights::set(val); }
+{ guest_ss_access_rights::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__ds_access_rights() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_ds_access_rights::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_ds_access_rights::get()); }
 
 void
 vmcs::__set_ds_access_rights(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_ds_access_rights::set(val); }
+{ guest_ds_access_rights::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__fs_access_rights() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_fs_access_rights::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_fs_access_rights::get()); }
 
 void
 vmcs::__set_fs_access_rights(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_fs_access_rights::set(val); }
+{ guest_fs_access_rights::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__gs_access_rights() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_gs_access_rights::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_gs_access_rights::get()); }
 
 void
 vmcs::__set_gs_access_rights(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_gs_access_rights::set(val); }
+{ guest_gs_access_rights::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__ldtr_access_rights() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_ldtr_access_rights::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_ldtr_access_rights::get()); }
 
 void
 vmcs::__set_ldtr_access_rights(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_ldtr_access_rights::set(val); }
+{ guest_ldtr_access_rights::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__tr_access_rights() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_tr_access_rights::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_tr_access_rights::get()); }
 
 void
 vmcs::__set_tr_access_rights(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_tr_access_rights::set(val); }
+{ guest_tr_access_rights::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__interruptibility_state() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_interruptibility_state::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_interruptibility_state::get()); }
 
 void
 vmcs::__set_interruptibility_state(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_interruptibility_state::set(val); }
+{ guest_interruptibility_state::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__activity_state() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_activity_state::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_activity_state::get()); }
 
 void
 vmcs::__set_activity_state(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_activity_state::set(val); }
+{ guest_activity_state::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__smbase() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_smbase::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_smbase::get()); }
 
 void
 vmcs::__set_smbase(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_smbase::set(val); }
+{ guest_smbase::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__ia32_sysenter_cs() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::guest_ia32_sysenter_cs::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(guest_ia32_sysenter_cs::get()); }
 
 void
 vmcs::__set_ia32_sysenter_cs(vmcs_field32_t val)
-{ ::intel_x64::vmcs::guest_ia32_sysenter_cs::set(val); }
+{ guest_ia32_sysenter_cs::set(val); }
 
 vmcs::vmcs_field32_t
 vmcs::__preemption_timer_value() const
-{ return gsl::narrow_cast<vmcs_field32_t>(::intel_x64::vmcs::preemption_timer_value::get()); }
+{ return gsl::narrow_cast<vmcs_field32_t>(preemption_timer_value::get()); }
 
 void
 vmcs::__set_preemption_timer_value(vmcs_field32_t val)
-{ ::intel_x64::vmcs::preemption_timer_value::set(val); }
+{ preemption_timer_value::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__cr0_guest_host_mask() const
-{ return ::intel_x64::vmcs::cr0_guest_host_mask::get(); }
+{ return cr0_guest_host_mask::get(); }
 
 void
 vmcs::__set_cr0_guest_host_mask(vmcs_field64_t val)
-{ ::intel_x64::vmcs::cr0_guest_host_mask::set(val); }
+{ cr0_guest_host_mask::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__cr4_guest_host_mask() const
-{ return ::intel_x64::vmcs::cr4_guest_host_mask::get(); }
+{ return cr4_guest_host_mask::get(); }
 
 void
 vmcs::__set_cr4_guest_host_mask(vmcs_field64_t val)
-{ ::intel_x64::vmcs::cr4_guest_host_mask::set(val); }
+{ cr4_guest_host_mask::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__cr0_read_shadow() const
-{ return ::intel_x64::vmcs::cr0_read_shadow::get(); }
+{ return cr0_read_shadow::get(); }
 
 void
 vmcs::__set_cr0_read_shadow(vmcs_field64_t val)
-{ ::intel_x64::vmcs::cr0_read_shadow::set(val); }
+{ cr0_read_shadow::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__cr4_read_shadow() const
-{ return ::intel_x64::vmcs::cr4_read_shadow::get(); }
+{ return cr4_read_shadow::get(); }
 
 void
 vmcs::__set_cr4_read_shadow(vmcs_field64_t val)
-{ ::intel_x64::vmcs::cr4_read_shadow::set(val); }
+{ cr4_read_shadow::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__cr3_target0() const
-{ return ::intel_x64::vmcs::cr3_target0::get(); }
+{ return cr3_target0::get(); }
 
 void
 vmcs::__set_cr3_target0(vmcs_field64_t val)
-{ ::intel_x64::vmcs::cr3_target0::set(val); }
+{ cr3_target0::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__cr3_target1() const
-{ return ::intel_x64::vmcs::cr3_target1::get(); }
+{ return cr3_target1::get(); }
 
 void
 vmcs::__set_cr3_target1(vmcs_field64_t val)
-{ ::intel_x64::vmcs::cr3_target1::set(val); }
+{ cr3_target1::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__cr3_target2() const
-{ return ::intel_x64::vmcs::cr3_target2::get(); }
+{ return cr3_target2::get(); }
 
 void
 vmcs::__set_cr3_target2(vmcs_field64_t val)
-{ ::intel_x64::vmcs::cr3_target2::set(val); }
+{ cr3_target2::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__cr3_target3() const
-{ return ::intel_x64::vmcs::cr3_target3::get(); }
+{ return cr3_target3::get(); }
 
 void
 vmcs::__set_cr3_target3(vmcs_field64_t val)
-{ ::intel_x64::vmcs::cr3_target3::set(val); }
+{ cr3_target3::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__exit_qualification() const
-{ return ::intel_x64::vmcs::exit_qualification::get(); }
+{ return exit_qualification::get(); }
 
 vmcs::vmcs_field64_t
 vmcs::__io_rcx() const
-{ return ::intel_x64::vmcs::io_rcx::get(); }
+{ return io_rcx::get(); }
 
 vmcs::vmcs_field64_t
 vmcs::__io_rsi() const
-{ return ::intel_x64::vmcs::io_rsi::get(); }
+{ return io_rsi::get(); }
 
 vmcs::vmcs_field64_t
 vmcs::__io_rdi() const
-{ return ::intel_x64::vmcs::io_rdi::get(); }
+{ return io_rdi::get(); }
 
 vmcs::vmcs_field64_t
 vmcs::__io_rip() const
-{ return ::intel_x64::vmcs::io_rip::get(); }
+{ return io_rip::get(); }
 
 vmcs::vmcs_field64_t
 vmcs::__gva() const
-{ return ::intel_x64::vmcs::guest_linear_addr::get(); }
+{ return guest_linear_addr::get(); }
 
 vmcs::vmcs_field64_t
 vmcs::__cr0() const
-{ return ::intel_x64::vmcs::guest_cr0::get(); }
+{ return guest_cr0::get(); }
 
 void
 vmcs::__set_cr0(vmcs_field64_t val)
@@ -1053,21 +1040,21 @@ vmcs::__set_cr0(vmcs_field64_t val)
     ::intel_x64::cr0::not_write_through::disable(actual_cr0);
     ::intel_x64::cr0::cache_disable::disable(actual_cr0);
 
-    ::intel_x64::vmcs::guest_cr0::set(actual_cr0);
-    ::intel_x64::vmcs::cr0_read_shadow::set(shadow_cr0);
+    guest_cr0::set(actual_cr0);
+    cr0_read_shadow::set(shadow_cr0);
 }
 
 vmcs::vmcs_field64_t
 vmcs::__cr3() const
-{ return ::intel_x64::vmcs::guest_cr3::get(); }
+{ return guest_cr3::get(); }
 
 void
 vmcs::__set_cr3(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_cr3::set(val & 0x7FFFFFFFFFFFFFFF); }
+{ guest_cr3::set(val & 0x7FFFFFFFFFFFFFFF); }
 
 vmcs::vmcs_field64_t
 vmcs::__cr4() const
-{ return ::intel_x64::vmcs::guest_cr4::get(); }
+{ return guest_cr4::get(); }
 
 void
 vmcs::__set_cr4(vmcs_field64_t val)
@@ -1075,328 +1062,328 @@ vmcs::__set_cr4(vmcs_field64_t val)
     auto shadow_cr4 = val;
     auto actual_cr4 = val | vcpu_t_cast(this)->ia32_vmx_cr4_fixed0();
 
-    ::intel_x64::vmcs::guest_cr4::set(actual_cr4);
-    ::intel_x64::vmcs::cr4_read_shadow::set(shadow_cr4);
+    guest_cr4::set(actual_cr4);
+    cr4_read_shadow::set(shadow_cr4);
 }
 
 vmcs::vmcs_field64_t
 vmcs::__es_base() const
-{ return ::intel_x64::vmcs::guest_es_base::get(); }
+{ return guest_es_base::get(); }
 
 void
 vmcs::__set_es_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_es_base::set(val); }
+{ guest_es_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__cs_base() const
-{ return ::intel_x64::vmcs::guest_cs_base::get(); }
+{ return guest_cs_base::get(); }
 
 void
 vmcs::__set_cs_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_cs_base::set(val); }
+{ guest_cs_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__ss_base() const
-{ return ::intel_x64::vmcs::guest_ss_base::get(); }
+{ return guest_ss_base::get(); }
 
 void
 vmcs::__set_ss_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_ss_base::set(val); }
+{ guest_ss_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__ds_base() const
-{ return ::intel_x64::vmcs::guest_ds_base::get(); }
+{ return guest_ds_base::get(); }
 
 void
 vmcs::__set_ds_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_ds_base::set(val); }
+{ guest_ds_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__fs_base() const
-{ return ::intel_x64::vmcs::guest_fs_base::get(); }
+{ return guest_fs_base::get(); }
 
 void
 vmcs::__set_fs_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_fs_base::set(val); }
+{ guest_fs_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__gs_base() const
-{ return ::intel_x64::vmcs::guest_gs_base::get(); }
+{ return guest_gs_base::get(); }
 
 void
 vmcs::__set_gs_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_gs_base::set(val); }
+{ guest_gs_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__ldtr_base() const
-{ return ::intel_x64::vmcs::guest_ldtr_base::get(); }
+{ return guest_ldtr_base::get(); }
 
 void
 vmcs::__set_ldtr_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_ldtr_base::set(val); }
+{ guest_ldtr_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__tr_base() const
-{ return ::intel_x64::vmcs::guest_tr_base::get(); }
+{ return guest_tr_base::get(); }
 
 void
 vmcs::__set_tr_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_tr_base::set(val); }
+{ guest_tr_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__gdtr_base() const
-{ return ::intel_x64::vmcs::guest_gdtr_base::get(); }
+{ return guest_gdtr_base::get(); }
 
 void
 vmcs::__set_gdtr_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_gdtr_base::set(val); }
+{ guest_gdtr_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__idtr_base() const
-{ return ::intel_x64::vmcs::guest_idtr_base::get(); }
+{ return guest_idtr_base::get(); }
 
 void
 vmcs::__set_idtr_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_idtr_base::set(val); }
+{ guest_idtr_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__dr7() const
-{ return ::intel_x64::vmcs::guest_dr7::get(); }
+{ return guest_dr7::get(); }
 
 void
 vmcs::__set_dr7(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_dr7::set(val); }
+{ guest_dr7::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__rsp() const
-{ return ::intel_x64::vmcs::guest_rsp::get(); }
+{ return guest_rsp::get(); }
 
 void
 vmcs::__set_rsp(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_rsp::set(val); }
+{ guest_rsp::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__rip() const
-{ return ::intel_x64::vmcs::guest_rip::get(); }
+{ return guest_rip::get(); }
 
 void
 vmcs::__set_rip(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_rip::set(val); }
+{ guest_rip::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__rflags() const
-{ return ::intel_x64::vmcs::guest_rflags::get(); }
+{ return guest_rflags::get(); }
 
 void
 vmcs::__set_rflags(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_rflags::set(val); }
+{ guest_rflags::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__pending_debug_exceptions() const
-{ return ::intel_x64::vmcs::guest_pending_debug_exceptions::get(); }
+{ return guest_pending_debug_exceptions::get(); }
 
 void
 vmcs::__set_pending_debug_exceptions(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_pending_debug_exceptions::set(val); }
+{ guest_pending_debug_exceptions::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__ia32_sysenter_esp() const
-{ return ::intel_x64::vmcs::guest_ia32_sysenter_esp::get(); }
+{ return guest_ia32_sysenter_esp::get(); }
 
 void
 vmcs::__set_ia32_sysenter_esp(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_ia32_sysenter_esp::set(val); }
+{ guest_ia32_sysenter_esp::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::__ia32_sysenter_eip() const
-{ return ::intel_x64::vmcs::guest_ia32_sysenter_eip::get(); }
+{ return guest_ia32_sysenter_eip::get(); }
 
 void
 vmcs::__set_ia32_sysenter_eip(vmcs_field64_t val)
-{ ::intel_x64::vmcs::guest_ia32_sysenter_eip::set(val); }
+{ guest_ia32_sysenter_eip::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::host_es_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::host_es_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(host_es_selector::get()); }
 
 void
 vmcs::set_host_es_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::host_es_selector::set(val); }
+{ host_es_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::host_cs_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::host_cs_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(host_cs_selector::get()); }
 
 void
 vmcs::set_host_cs_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::host_cs_selector::set(val); }
+{ host_cs_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::host_ss_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::host_ss_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(host_ss_selector::get()); }
 
 void
 vmcs::set_host_ss_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::host_ss_selector::set(val); }
+{ host_ss_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::host_ds_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::host_ds_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(host_ds_selector::get()); }
 
 void
 vmcs::set_host_ds_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::host_ds_selector::set(val); }
+{ host_ds_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::host_fs_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::host_fs_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(host_fs_selector::get()); }
 
 void
 vmcs::set_host_fs_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::host_fs_selector::set(val); }
+{ host_fs_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::host_gs_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::host_gs_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(host_gs_selector::get()); }
 
 void
 vmcs::set_host_gs_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::host_gs_selector::set(val); }
+{ host_gs_selector::set(val); }
 
 vmcs::vmcs_field16_t
 vmcs::host_tr_selector() const
-{ return gsl::narrow_cast<vmcs_field16_t>(::intel_x64::vmcs::host_tr_selector::get()); }
+{ return gsl::narrow_cast<vmcs_field16_t>(host_tr_selector::get()); }
 
 void
 vmcs::set_host_tr_selector(vmcs_field16_t val)
-{ ::intel_x64::vmcs::host_tr_selector::set(val); }
+{ host_tr_selector::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_ia32_pat() const
-{ return ::intel_x64::vmcs::host_ia32_pat::get(); }
+{ return host_ia32_pat::get(); }
 
 void
 vmcs::set_host_ia32_pat(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_ia32_pat::set(val); }
+{ host_ia32_pat::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_ia32_efer() const
-{ return ::intel_x64::vmcs::host_ia32_efer::get(); }
+{ return host_ia32_efer::get(); }
 
 void
 vmcs::set_host_ia32_efer(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_ia32_efer::set(val); }
+{ host_ia32_efer::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_ia32_perf_global_ctrl() const
-{ return ::intel_x64::vmcs::host_ia32_perf_global_ctrl::get(); }
+{ return host_ia32_perf_global_ctrl::get(); }
 
 void
 vmcs::set_host_ia32_perf_global_ctrl(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_ia32_perf_global_ctrl::set(val); }
+{ host_ia32_perf_global_ctrl::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_ia32_sysenter_cs() const
-{ return ::intel_x64::vmcs::host_ia32_sysenter_cs::get(); }
+{ return host_ia32_sysenter_cs::get(); }
 
 void
 vmcs::set_host_ia32_sysenter_cs(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_ia32_sysenter_cs::set(val); }
+{ host_ia32_sysenter_cs::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_cr0() const
-{ return ::intel_x64::vmcs::host_cr0::get(); }
+{ return host_cr0::get(); }
 
 void
 vmcs::set_host_cr0(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_cr0::set(val); }
+{ host_cr0::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_cr3() const
-{ return ::intel_x64::vmcs::host_cr3::get(); }
+{ return host_cr3::get(); }
 
 void
 vmcs::set_host_cr3(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_cr3::set(val); }
+{ host_cr3::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_cr4() const
-{ return ::intel_x64::vmcs::host_cr4::get(); }
+{ return host_cr4::get(); }
 
 void
 vmcs::set_host_cr4(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_cr4::set(val); }
+{ host_cr4::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_fs_base() const
-{ return ::intel_x64::vmcs::host_fs_base::get(); }
+{ return host_fs_base::get(); }
 
 void
 vmcs::set_host_fs_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_fs_base::set(val); }
+{ host_fs_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_gs_base() const
-{ return ::intel_x64::vmcs::host_gs_base::get(); }
+{ return host_gs_base::get(); }
 
 void
 vmcs::set_host_gs_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_gs_base::set(val); }
+{ host_gs_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_tr_base() const
-{ return ::intel_x64::vmcs::host_tr_base::get(); }
+{ return host_tr_base::get(); }
 
 void
 vmcs::set_host_tr_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_tr_base::set(val); }
+{ host_tr_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_gdtr_base() const
-{ return ::intel_x64::vmcs::host_gdtr_base::get(); }
+{ return host_gdtr_base::get(); }
 
 void
 vmcs::set_host_gdtr_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_gdtr_base::set(val); }
+{ host_gdtr_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_idtr_base() const
-{ return ::intel_x64::vmcs::host_idtr_base::get(); }
+{ return host_idtr_base::get(); }
 
 void
 vmcs::set_host_idtr_base(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_idtr_base::set(val); }
+{ host_idtr_base::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_ia32_sysenter_esp() const
-{ return ::intel_x64::vmcs::host_ia32_sysenter_esp::get(); }
+{ return host_ia32_sysenter_esp::get(); }
 
 void
 vmcs::set_host_ia32_sysenter_esp(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_ia32_sysenter_esp::set(val); }
+{ host_ia32_sysenter_esp::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_ia32_sysenter_eip() const
-{ return ::intel_x64::vmcs::host_ia32_sysenter_eip::get(); }
+{ return host_ia32_sysenter_eip::get(); }
 
 void
 vmcs::set_host_ia32_sysenter_eip(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_ia32_sysenter_eip::set(val); }
+{ host_ia32_sysenter_eip::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_rsp() const
-{ return ::intel_x64::vmcs::host_rsp::get(); }
+{ return host_rsp::get(); }
 
 void
 vmcs::set_host_rsp(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_rsp::set(val); }
+{ host_rsp::set(val); }
 
 vmcs::vmcs_field64_t
 vmcs::host_rip() const
-{ return ::intel_x64::vmcs::host_rip::get(); }
+{ return host_rip::get(); }
 
 void
 vmcs::set_host_rip(vmcs_field64_t val)
-{ ::intel_x64::vmcs::host_rip::set(val); }
+{ host_rip::set(val); }
 
 }

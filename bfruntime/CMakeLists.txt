@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 cmake_minimum_required(VERSION 3.13)
-project(bfruntime CXX)
+project(bfruntime CXX ASM)
 
 # -----------------------------------------------------------------------------
 # bfdso
@@ -33,7 +33,7 @@ add_library(bfdso
 
 add_library(bfpthread
     src/pthread/pthread.cpp
-    $<${X64}:src/pthread/arch/x64/threadcontext.asm>
+    $<${INTEL_X64}:src/pthread/arch/x64/threadcontext.S>
 )
 
 # -----------------------------------------------------------------------------
@@ -48,17 +48,16 @@ add_library(bfsyscall
 # bfcrt
 # -----------------------------------------------------------------------------
 
-# There is a chicken/egg issue with the CRT. It cannot have the stack 
-# protector becuase it is responsbile for setting this up and it ends 
+# There is a chicken/egg issue with the CRT. It cannot have the stack
+# protector becuase it is responsbile for setting this up and it ends
 # up in a scenario where it tries to protect itself before it is setup
-# resulting in a false positive fail. 
+# resulting in a false positive fail.
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-stack-protector")
 
 add_library(bfcrt
     src/crt/crt.cpp
-    $<${X64}:src/crt/arch/x64/start.asm>
-    $<${ARM}:src/crt/arch/aarch64/start.S>
+    $<${LINUX}:src/crt/platform/linux/start.S>
 )
 
 do_test(tests/crt/test_crt.cpp DEPENDS bfcrt)

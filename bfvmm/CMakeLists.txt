@@ -27,9 +27,22 @@ project(bfvmm CXX ASM)
 # ------------------------------------------------------------------------------
 
 add_library(bfvmm
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/cache.S>
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/cpuid.S>
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/gdt.S>
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/idt.S>
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/msrs.S>
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/pm.S>
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/portio.S>
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/rflags.S>
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/srs.S>
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/crs.S>
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/drs.S>
+    $<${INTEL_X64}:src/arch/intel_x64/intrinsics/vmx.S>
     $<${INTEL_X64}:src/arch/intel_x64/check_vmcs_control_fields.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/check_vmcs_guest_fields.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/check_vmcs_host_fields.cpp>
+    $<${INTEL_X64}:src/arch/intel_x64/hpt.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/state.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/vcpu.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/vmcs.cpp>

@@ -19,50 +19,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IMPLEMENTATION_TSS_INTEL_X64_H
-#define IMPLEMENTATION_TSS_INTEL_X64_H
+#ifndef UAPIS_CACHE_INTEL_X64_H
+#define UAPIS_CACHE_INTEL_X64_H
 
 #include <bftypes.h>
+#include <bfbitmanip.h>
 
 // -----------------------------------------------------------------------------
-// Definitions
+// C Functions
 // -----------------------------------------------------------------------------
 
-namespace bfvmm::x64
+extern "C" void _invd(void) noexcept;
+extern "C" void _wbinvd(void) noexcept;
+extern "C" void _clflush(void *addr) noexcept;
+
+// -----------------------------------------------------------------------------
+// C++ Wrappers
+// -----------------------------------------------------------------------------
+
+// *INDENT-OFF*
+
+namespace intel_x64::cache
 {
 
-#pragma pack(push, 1)
+using pointer = void *;
+using integer_pointer = uint64_t;
 
-/* @cond */
+inline void invd() noexcept
+{ _invd(); }
 
-struct tss {
-    uint32_t reserved1{0};
-    uint64_t rsp0{0};
-    uint64_t rsp1{0};
-    uint64_t rsp2{0};
-    uint32_t reserved2{0};
-    uint32_t reserved3{0};
-    uint64_t ist1{0};
-    uint64_t ist2{0};
-    uint64_t ist3{0};
-    uint64_t ist4{0};
-    uint64_t ist5{0};
-    uint64_t ist6{0};
-    uint64_t ist7{0};
-    uint32_t reserved4{0};
-    uint32_t reserved5{0};
-    uint16_t reserved6{0};
-    uint16_t iomap{0};
+inline void wbinvd() noexcept
+{ _wbinvd(); }
 
-    uint8_t pad[3992];
-};
+inline void clflush(pointer addr) noexcept
+{ _clflush(addr); }
 
-static_assert(sizeof(tss) == 0x1000, "TSS is not a page in size");
-
-/* @endcond */
-
-#pragma pack(pop)
+inline void clflush(integer_pointer addr) noexcept
+{ _clflush(reinterpret_cast<pointer>(addr)); }
 
 }
+
+// *INDENT-ON*
 
 #endif

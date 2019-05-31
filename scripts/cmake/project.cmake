@@ -29,7 +29,6 @@ include_directories(
     ${SOURCE_ROOT_DIR}/bfdriver/include
     ${SOURCE_ROOT_DIR}/bfdummy/include
     ${SOURCE_ROOT_DIR}/bfelf_loader/include
-    ${SOURCE_ROOT_DIR}/bfintrinsics/include
     ${SOURCE_ROOT_DIR}/bfm/include
     ${SOURCE_ROOT_DIR}/bfruntime/include
     ${SOURCE_ROOT_DIR}/bfsdk/include

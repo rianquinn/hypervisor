@@ -19,16 +19,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <thread>
+#include <memory>
 
 #include <implementation/vcpu_t.h>
 #include <implementation/arch/intel_x64/vmx.h>
+
+#include <uapis/arch/intel_x64/intrinsics/crs.h>
+#include <uapis/arch/intel_x64/intrinsics/msrs.h>
+
+namespace bfvmm::implementation::intel_x64
+{
 
 // -----------------------------------------------------------------------------
 // Global State
 // -----------------------------------------------------------------------------
 
-static std::once_flag g_once_flag{};
+static std::unique_ptr<hpt> g_hpt{};
+static std::unique_ptr<gdt> g_gdt{};
+static std::unique_ptr<idt> g_idt{};
+static std::unique_ptr<tss> g_tss{};
+
+static std::unique_ptr<gsl::byte[]> m_ist;
+static std::unique_ptr<gsl::byte[]> m_stack;
+
 static ::intel_x64::cr0::value_type g_host_cr0{};
 static ::intel_x64::cr3::value_type g_host_cr3{};
 static ::intel_x64::cr4::value_type g_host_cr4{};
@@ -36,23 +49,32 @@ static ::intel_x64::msrs::value_type g_host_ia32_pat_msr{};
 static ::intel_x64::msrs::value_type g_host_ia32_efer_msr{};
 
 // -----------------------------------------------------------------------------
-// Private Functions
+// Implementation
 // -----------------------------------------------------------------------------
 
-static inline void
-setup()
+void
+global_init()
 {
     using namespace ::intel_x64;
-    using namespace ::intel_x64::cpuid;
-    using attr_type = bfvmm::x64::cr3::mmap::attr_type;
+
+    g_hpt = std::make_unique<hpt>();
+    g_gdt = std::make_unique<gdt>(512);
+    g_idt = std::make_unique<idt>(256);
+    g_tss = std::make_unique<tss>();
+
+    // g_gdt->set(1, nullptr, 0xFFFFFFFF, ring0_cs_descriptor);
+    // g_gdt->set(2, nullptr, 0xFFFFFFFF, ring0_ss_descriptor);
+    // g_gdt->set(3, nullptr, 0xFFFFFFFF, ring0_fs_descriptor);
+    // g_gdt->set(4, nullptr, 0xFFFFFFFF, ring0_gs_descriptor);
+    // g_gdt->set(5, &m_host_tss, sizeof(m_host_tss), ring0_tr_descriptor);
 
     for (const auto &md : g_mm->descriptors()) {
         if (md.type == (MEMORY_TYPE_R | MEMORY_TYPE_E)) {
-            g_cr3->map_4k(md.virt, md.phys, attr_type::read_execute);
+            g_hpt->map_4k(md.virt, md.phys, hpt::attr_type::read_execute);
             continue;
         }
 
-        g_cr3->map_4k(md.virt, md.phys, attr_type::read_write);
+        g_hpt->map_4k(md.virt, md.phys, hpt::attr_type::read_write);
     }
 
     g_host_ia32_efer_msr |= msrs::ia32_efer::lme::mask;
@@ -66,8 +88,8 @@ setup()
     g_host_cr0 |= cr0::write_protect::mask;
     g_host_cr0 |= cr0::paging::mask;
 
-    g_host_cr3 = g_cr3->cr3();
-    g_host_ia32_pat_msr = g_cr3->pat();
+    g_host_cr3 = g_hpt->cr3();
+    g_host_ia32_pat_msr = 0x0606060606060600;
 
     g_host_cr4 |= cr4::v8086_mode_extensions::mask;
     g_host_cr4 |= cr4::protected_mode_virtual_interrupts::mask;
@@ -82,16 +104,16 @@ setup()
     g_host_cr4 |= cr4::osxmmexcpt::mask;
     g_host_cr4 |= cr4::vmx_enable_bit::mask;
 
-    if (feature_information::ecx::xsave::is_enabled()) {
-        g_host_cr4 |= ::intel_x64::cr4::osxsave::mask;
+    if (cpuid::feature_information::ecx::xsave::is_enabled()) {
+        g_host_cr4 |= cr4::osxsave::mask;
     }
 
-    if (extended_feature_flags::subleaf0::ebx::smep::is_enabled()) {
-        g_host_cr4 |= ::intel_x64::cr4::smep_enable_bit::mask;
+    if (cpuid::extended_feature_flags::subleaf0::ebx::smep::is_enabled()) {
+        g_host_cr4 |= cr4::smep_enable_bit::mask;
     }
 
-    if (extended_feature_flags::subleaf0::ebx::smap::is_enabled()) {
-        g_host_cr4 |= ::intel_x64::cr4::smap_enable_bit::mask;
+    if (cpuid::extended_feature_flags::subleaf0::ebx::smap::is_enabled()) {
+        g_host_cr4 |= cr4::smap_enable_bit::mask;
     }
 }
 
@@ -104,12 +126,6 @@ write_host_state(vcpu_t *vcpu)
 {
     using namespace ::intel_x64::vmcs;
     using namespace ::x64::access_rights;
-
-    m_host_gdt.set(1, nullptr, 0xFFFFFFFF, ring0_cs_descriptor);
-    m_host_gdt.set(2, nullptr, 0xFFFFFFFF, ring0_ss_descriptor);
-    m_host_gdt.set(3, nullptr, 0xFFFFFFFF, ring0_fs_descriptor);
-    m_host_gdt.set(4, nullptr, 0xFFFFFFFF, ring0_gs_descriptor);
-    m_host_gdt.set(5, &m_host_tss, sizeof(m_host_tss), ring0_tr_descriptor);
 
     host_cs_selector::set(1 << 3);
     host_ss_selector::set(2 << 3);

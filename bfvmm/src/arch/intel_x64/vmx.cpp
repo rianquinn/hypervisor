@@ -19,11 +19,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <arch/x64/misc.h>
-#include <arch/intel_x64/vmx.h>
-#include <arch/intel_x64/crs.h>
-#include <arch/intel_x64/msrs.h>
-#include <arch/intel_x64/cpuid.h>
+#include <uapis/arch/intel_x64/intrinsics/misc.h>
+#include <uapis/arch/intel_x64/intrinsics/vmx.h>
+#include <uapis/arch/intel_x64/intrinsics/crs.h>
+#include <uapis/arch/intel_x64/intrinsics/msrs.h>
+#include <uapis/arch/intel_x64/intrinsics/cpuid.h>
 
 #include <bfexception.h>
 #include <implementation/arch/intel_x64/vmx.h>
@@ -66,7 +66,7 @@ vmx::check_vmx_capabilities_msr()
         throw std::runtime_error("invalid physical addr width");
     }
 
-    if (memory_type::get() != ::x64::memory_type::write_back) {
+    if (memory_type::get() != ::intel_x64::memory_type::write_back) {
         throw std::runtime_error("invalid memory type");
     }
 

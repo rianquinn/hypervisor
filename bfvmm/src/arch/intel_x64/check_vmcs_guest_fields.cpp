@@ -19,15 +19,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <arch/intel_x64/vmcs/16bit_guest_state_fields.h>
-#include <arch/intel_x64/vmcs/32bit_control_fields.h>
-#include <arch/intel_x64/vmcs/32bit_guest_state_fields.h>
-#include <arch/intel_x64/vmcs/64bit_guest_state_fields.h>
-#include <arch/intel_x64/vmcs/natural_width_guest_state_fields.h>
+#include <uapis/arch/intel_x64/intrinsics/vmcs/16bit_guest_state_fields.h>
+#include <uapis/arch/intel_x64/intrinsics/vmcs/32bit_control_fields.h>
+#include <uapis/arch/intel_x64/intrinsics/vmcs/32bit_guest_state_fields.h>
+#include <uapis/arch/intel_x64/intrinsics/vmcs/64bit_guest_state_fields.h>
+#include <uapis/arch/intel_x64/intrinsics/vmcs/natural_width_guest_state_fields.h>
 
-#include <arch/x64/gdt.h>
-#include <arch/intel_x64/cpuid.h>
-#include <arch/intel_x64/crs.h>
+#include <uapis/arch/intel_x64/intrinsics/gdt.h>
+#include <uapis/arch/intel_x64/intrinsics/cpuid.h>
+#include <uapis/arch/intel_x64/intrinsics/crs.h>
 
 namespace bfvmm::implementation::intel_x64::check
 {
@@ -129,7 +129,7 @@ guest_verify_ia_32e_mode_disabled()
 void
 guest_cr3_for_unsupported_bits()
 {
-    if (!::x64::is_physical_addr_valid(::intel_x64::vmcs::guest_cr3::get())) {
+    if (!::intel_x64::is_physical_addr_valid(::intel_x64::vmcs::guest_cr3::get())) {
         throw std::logic_error("guest cr3 too large");
     }
 }
@@ -151,7 +151,7 @@ guest_load_debug_ctls_verify_dr7()
 void
 guest_ia32_sysenter_esp_canonical_addr()
 {
-    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_ia32_sysenter_esp::get())) {
+    if (!::intel_x64::is_addr_canonical(::intel_x64::vmcs::guest_ia32_sysenter_esp::get())) {
         throw std::logic_error("guest sysenter esp must be canonical");
     }
 }
@@ -159,7 +159,7 @@ guest_ia32_sysenter_esp_canonical_addr()
 void
 guest_ia32_sysenter_eip_canonical_addr()
 {
-    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_ia32_sysenter_eip::get())) {
+    if (!::intel_x64::is_addr_canonical(::intel_x64::vmcs::guest_ia32_sysenter_eip::get())) {
         throw std::logic_error("guest sysenter eip must be canonical");
     }
 }
@@ -268,7 +268,7 @@ guest_verify_load_ia32_bndcfgs()
 
     auto bound_addr = bndcfgs & 0xFFFFFFFFFFFFF000;
 
-    if (!::x64::is_addr_canonical(bound_addr)) {
+    if (!::intel_x64::is_addr_canonical(bound_addr)) {
         throw std::logic_error("bound addr in ia32 bndcfgs msr must be "
                                "canonical if load ia32 bndcfgs entry is enabled");
     }
@@ -400,7 +400,7 @@ guest_gs_base_is_shifted()
 void
 guest_tr_base_is_canonical()
 {
-    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_tr_base::get())) {
+    if (!::intel_x64::is_addr_canonical(::intel_x64::vmcs::guest_tr_base::get())) {
         throw std::logic_error("guest tr base non-canonical");
     }
 }
@@ -408,7 +408,7 @@ guest_tr_base_is_canonical()
 void
 guest_fs_base_is_canonical()
 {
-    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_fs_base::get())) {
+    if (!::intel_x64::is_addr_canonical(::intel_x64::vmcs::guest_fs_base::get())) {
         throw std::logic_error("guest fs base non-canonical");
     }
 }
@@ -416,7 +416,7 @@ guest_fs_base_is_canonical()
 void
 guest_gs_base_is_canonical()
 {
-    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_gs_base::get())) {
+    if (!::intel_x64::is_addr_canonical(::intel_x64::vmcs::guest_gs_base::get())) {
         throw std::logic_error("guest gs base non-canonical");
     }
 }
@@ -428,7 +428,7 @@ guest_ldtr_base_is_canonical()
         return;
     }
 
-    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_ldtr_base::get())) {
+    if (!::intel_x64::is_addr_canonical(::intel_x64::vmcs::guest_ldtr_base::get())) {
         throw std::logic_error("guest ldtr base non-canonical");
     }
 }
@@ -644,7 +644,7 @@ guest_cs_access_rights_type()
     }
 
     switch (::intel_x64::vmcs::guest_cs_access_rights::type::get()) {
-        case ::x64::access_rights::type::read_write_accessed:
+        case ::intel_x64::access_rights::type::read_write_accessed:
             if (activate_secondary_ctls::is_disabled()) {
                 break;
             }
@@ -653,10 +653,10 @@ guest_cs_access_rights_type()
                 break;
             }
 
-        case ::x64::access_rights::type::execute_only_accessed:
-        case ::x64::access_rights::type::read_execute_accessed:
-        case ::x64::access_rights::type::execute_only_conforming_accessed:
-        case ::x64::access_rights::type::read_execute_conforming_accessed:
+        case ::intel_x64::access_rights::type::execute_only_accessed:
+        case ::intel_x64::access_rights::type::read_execute_accessed:
+        case ::intel_x64::access_rights::type::execute_only_conforming_accessed:
+        case ::intel_x64::access_rights::type::read_execute_conforming_accessed:
             return;
 
         default:
@@ -679,8 +679,8 @@ guest_ss_access_rights_type()
     }
 
     switch (::intel_x64::vmcs::guest_ss_access_rights::type::get()) {
-        case ::x64::access_rights::type::read_write_accessed:
-        case ::x64::access_rights::type::read_write_expand_down_accessed:
+        case ::intel_x64::access_rights::type::read_write_accessed:
+        case ::intel_x64::access_rights::type::read_write_expand_down_accessed:
             return;
 
         default:
@@ -702,12 +702,12 @@ guest_ds_access_rights_type()
     }
 
     switch (::intel_x64::vmcs::guest_ds_access_rights::type::get()) {
-        case ::x64::access_rights::type::read_only_accessed:
-        case ::x64::access_rights::type::read_write_accessed:
-        case ::x64::access_rights::type::read_only_expand_down_accessed:
-        case ::x64::access_rights::type::read_write_expand_down_accessed:
-        case ::x64::access_rights::type::read_execute_accessed:
-        case ::x64::access_rights::type::read_execute_conforming_accessed:
+        case ::intel_x64::access_rights::type::read_only_accessed:
+        case ::intel_x64::access_rights::type::read_write_accessed:
+        case ::intel_x64::access_rights::type::read_only_expand_down_accessed:
+        case ::intel_x64::access_rights::type::read_write_expand_down_accessed:
+        case ::intel_x64::access_rights::type::read_execute_accessed:
+        case ::intel_x64::access_rights::type::read_execute_conforming_accessed:
             return;
 
         default:
@@ -729,12 +729,12 @@ guest_es_access_rights_type()
     }
 
     switch (::intel_x64::vmcs::guest_es_access_rights::type::get()) {
-        case ::x64::access_rights::type::read_only_accessed:
-        case ::x64::access_rights::type::read_write_accessed:
-        case ::x64::access_rights::type::read_only_expand_down_accessed:
-        case ::x64::access_rights::type::read_write_expand_down_accessed:
-        case ::x64::access_rights::type::read_execute_accessed:
-        case ::x64::access_rights::type::read_execute_conforming_accessed:
+        case ::intel_x64::access_rights::type::read_only_accessed:
+        case ::intel_x64::access_rights::type::read_write_accessed:
+        case ::intel_x64::access_rights::type::read_only_expand_down_accessed:
+        case ::intel_x64::access_rights::type::read_write_expand_down_accessed:
+        case ::intel_x64::access_rights::type::read_execute_accessed:
+        case ::intel_x64::access_rights::type::read_execute_conforming_accessed:
             return;
 
         default:
@@ -756,12 +756,12 @@ guest_fs_access_rights_type()
     }
 
     switch (::intel_x64::vmcs::guest_fs_access_rights::type::get()) {
-        case ::x64::access_rights::type::read_only_accessed:
-        case ::x64::access_rights::type::read_write_accessed:
-        case ::x64::access_rights::type::read_only_expand_down_accessed:
-        case ::x64::access_rights::type::read_write_expand_down_accessed:
-        case ::x64::access_rights::type::read_execute_accessed:
-        case ::x64::access_rights::type::read_execute_conforming_accessed:
+        case ::intel_x64::access_rights::type::read_only_accessed:
+        case ::intel_x64::access_rights::type::read_write_accessed:
+        case ::intel_x64::access_rights::type::read_only_expand_down_accessed:
+        case ::intel_x64::access_rights::type::read_write_expand_down_accessed:
+        case ::intel_x64::access_rights::type::read_execute_accessed:
+        case ::intel_x64::access_rights::type::read_execute_conforming_accessed:
             return;
 
         default:
@@ -783,12 +783,12 @@ guest_gs_access_rights_type()
     }
 
     switch (::intel_x64::vmcs::guest_gs_access_rights::type::get()) {
-        case ::x64::access_rights::type::read_only_accessed:
-        case ::x64::access_rights::type::read_write_accessed:
-        case ::x64::access_rights::type::read_only_expand_down_accessed:
-        case ::x64::access_rights::type::read_write_expand_down_accessed:
-        case ::x64::access_rights::type::read_execute_accessed:
-        case ::x64::access_rights::type::read_execute_conforming_accessed:
+        case ::intel_x64::access_rights::type::read_only_accessed:
+        case ::intel_x64::access_rights::type::read_write_accessed:
+        case ::intel_x64::access_rights::type::read_only_expand_down_accessed:
+        case ::intel_x64::access_rights::type::read_write_expand_down_accessed:
+        case ::intel_x64::access_rights::type::read_execute_accessed:
+        case ::intel_x64::access_rights::type::read_execute_conforming_accessed:
             return;
 
         default:
@@ -898,7 +898,7 @@ guest_cs_type_not_equal_3()
     }
 
     switch (::intel_x64::vmcs::guest_cs_access_rights::type::get()) {
-        case ::x64::access_rights::type::read_write_accessed:
+        case ::intel_x64::access_rights::type::read_write_accessed:
             break;
 
         default:
@@ -918,8 +918,8 @@ guest_cs_dpl_adheres_to_ss_dpl()
     }
 
     switch (::intel_x64::vmcs::guest_cs_access_rights::type::get()) {
-        case ::x64::access_rights::type::execute_only_accessed:
-        case ::x64::access_rights::type::read_execute_accessed: {
+        case ::intel_x64::access_rights::type::execute_only_accessed:
+        case ::intel_x64::access_rights::type::read_execute_accessed: {
             auto cs_dpl = ::intel_x64::vmcs::guest_cs_access_rights::dpl::get();
             auto ss_dpl = ::intel_x64::vmcs::guest_ss_access_rights::dpl::get();
 
@@ -930,8 +930,8 @@ guest_cs_dpl_adheres_to_ss_dpl()
             break;
         }
 
-        case ::x64::access_rights::type::execute_only_conforming_accessed:
-        case ::x64::access_rights::type::read_execute_conforming_accessed: {
+        case ::intel_x64::access_rights::type::execute_only_conforming_accessed:
+        case ::intel_x64::access_rights::type::read_execute_conforming_accessed: {
             auto cs_dpl = ::intel_x64::vmcs::guest_cs_access_rights::dpl::get();
             auto ss_dpl = ::intel_x64::vmcs::guest_ss_access_rights::dpl::get();
 
@@ -977,7 +977,7 @@ guest_ss_dpl_must_equal_zero()
     }
 
     switch (::intel_x64::vmcs::guest_cs_access_rights::type::get()) {
-        case ::x64::access_rights::type::read_write_accessed:
+        case ::intel_x64::access_rights::type::read_write_accessed:
             break;
 
         default:
@@ -1010,10 +1010,10 @@ guest_ds_dpl()
     }
 
     switch (::intel_x64::vmcs::guest_ds_access_rights::type::get()) {
-        case ::x64::access_rights::type::execute_only_conforming:
-        case ::x64::access_rights::type::execute_only_conforming_accessed:
-        case ::x64::access_rights::type::read_execute_conforming:
-        case ::x64::access_rights::type::read_execute_conforming_accessed:
+        case ::intel_x64::access_rights::type::execute_only_conforming:
+        case ::intel_x64::access_rights::type::execute_only_conforming_accessed:
+        case ::intel_x64::access_rights::type::read_execute_conforming:
+        case ::intel_x64::access_rights::type::read_execute_conforming_accessed:
             return;
 
         default:
@@ -1050,10 +1050,10 @@ guest_es_dpl()
     }
 
     switch (::intel_x64::vmcs::guest_es_access_rights::type::get()) {
-        case ::x64::access_rights::type::execute_only_conforming:
-        case ::x64::access_rights::type::execute_only_conforming_accessed:
-        case ::x64::access_rights::type::read_execute_conforming:
-        case ::x64::access_rights::type::read_execute_conforming_accessed:
+        case ::intel_x64::access_rights::type::execute_only_conforming:
+        case ::intel_x64::access_rights::type::execute_only_conforming_accessed:
+        case ::intel_x64::access_rights::type::read_execute_conforming:
+        case ::intel_x64::access_rights::type::read_execute_conforming_accessed:
             return;
 
         default:
@@ -1090,10 +1090,10 @@ guest_fs_dpl()
     }
 
     switch (::intel_x64::vmcs::guest_fs_access_rights::type::get()) {
-        case ::x64::access_rights::type::execute_only_conforming:
-        case ::x64::access_rights::type::execute_only_conforming_accessed:
-        case ::x64::access_rights::type::read_execute_conforming:
-        case ::x64::access_rights::type::read_execute_conforming_accessed:
+        case ::intel_x64::access_rights::type::execute_only_conforming:
+        case ::intel_x64::access_rights::type::execute_only_conforming_accessed:
+        case ::intel_x64::access_rights::type::read_execute_conforming:
+        case ::intel_x64::access_rights::type::read_execute_conforming_accessed:
             return;
 
         default:
@@ -1130,10 +1130,10 @@ guest_gs_dpl()
     }
 
     switch (::intel_x64::vmcs::guest_gs_access_rights::type::get()) {
-        case ::x64::access_rights::type::execute_only_conforming:
-        case ::x64::access_rights::type::execute_only_conforming_accessed:
-        case ::x64::access_rights::type::read_execute_conforming:
-        case ::x64::access_rights::type::read_execute_conforming_accessed:
+        case ::intel_x64::access_rights::type::execute_only_conforming:
+        case ::intel_x64::access_rights::type::execute_only_conforming_accessed:
+        case ::intel_x64::access_rights::type::read_execute_conforming:
+        case ::intel_x64::access_rights::type::read_execute_conforming_accessed:
             return;
 
         default:
@@ -1586,14 +1586,14 @@ guest_tr_type_must_be_11()
 {
     const auto rights = ::intel_x64::vmcs::guest_tr_access_rights::type::get();
     switch (rights) {
-        case ::x64::access_rights::type::read_write_accessed:
+        case ::intel_x64::access_rights::type::read_write_accessed:
             if (::intel_x64::vmcs::vmentry_ctls::ia_32e_mode_guest::is_enabled()) {
                 throw std::logic_error("tr type cannot be 3 if ia_32e_mode_guest is enabled");
             }
 
             return;
 
-        case ::x64::access_rights::type::read_execute_accessed:
+        case ::intel_x64::access_rights::type::read_execute_accessed:
             return;
 
         default:
@@ -1665,7 +1665,7 @@ guest_ldtr_type_must_be_2()
     }
 
     switch (::intel_x64::vmcs::guest_ldtr_access_rights::type::get()) {
-        case ::x64::access_rights::type::read_write:
+        case ::intel_x64::access_rights::type::read_write:
             break;
 
         default:
@@ -1745,7 +1745,7 @@ guest_ldtr_access_rights_remaining_reserved_bit_0()
 void
 guest_gdtr_base_must_be_canonical()
 {
-    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_gdtr_base::get())) {
+    if (!::intel_x64::is_addr_canonical(::intel_x64::vmcs::guest_gdtr_base::get())) {
         throw std::logic_error("gdtr base is non-canonical");
     }
 }
@@ -1753,7 +1753,7 @@ guest_gdtr_base_must_be_canonical()
 void
 guest_idtr_base_must_be_canonical()
 {
-    if (!::x64::is_addr_canonical(::intel_x64::vmcs::guest_idtr_base::get())) {
+    if (!::intel_x64::is_addr_canonical(::intel_x64::vmcs::guest_idtr_base::get())) {
         throw std::logic_error("idtr base is non-canonical");
     }
 }
@@ -1805,7 +1805,7 @@ guest_rip_valid_addr()
         return;
     }
 
-    if (!::x64::is_linear_addr_valid(::intel_x64::vmcs::guest_rip::get())) {
+    if (!::intel_x64::is_linear_addr_valid(::intel_x64::vmcs::guest_rip::get())) {
         throw std::logic_error("rip bits must be canonical");
     }
 }
@@ -1913,18 +1913,18 @@ guest_hlt_valid_ints()
             return;
 
         case interruption_type::hardware_exception:
-            if (vector == ::x64::exception::debug_exception) {
+            if (vector == ::intel_x64::exception::debug_exception) {
                 return;
             }
 
-            if (vector == ::x64::exception::machine_check) {
+            if (vector == ::intel_x64::exception::machine_check) {
                 return;
             }
 
             break;
 
         case interruption_type::other_event:
-            if (vector == ::x64::exception::divide_error) {
+            if (vector == ::intel_x64::exception::divide_error) {
                 return;
             }
 
@@ -1958,7 +1958,7 @@ guest_shutdown_valid_ints()
             return;
 
         case interruption_type::hardware_exception:
-            if (vector == ::x64::exception::machine_check) {
+            if (vector == ::intel_x64::exception::machine_check) {
                 return;
             }
 
@@ -2236,7 +2236,7 @@ guest_vmcs_link_ptr_valid_addr()
         return;
     }
 
-    if (!::x64::is_physical_addr_valid(vmcs_link_ptr)) {
+    if (!::intel_x64::is_physical_addr_valid(vmcs_link_ptr)) {
         throw std::logic_error("vmcs link ptr invalid physical addr");
     }
 }

@@ -20,7 +20,7 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(bfack CXX)
+project(bfack CXX ASM)
 
 find_package(bareflank_userspace)
 
@@ -30,6 +30,7 @@ find_package(bareflank_userspace)
 
 add_executable(bfack
     src/ack.cpp
+    $<${LINUX}:src/platform/linux/cpuid.S>
 )
 
 target_link_libraries(bfack PRIVATE bareflank_userspace)

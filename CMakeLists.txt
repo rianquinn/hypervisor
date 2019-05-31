@@ -65,24 +65,23 @@ setup_interfaces()
 # ------------------------------------------------------------------------------
 
 add_subproject(bfsdk vmm DEPENDS gsl json libcxx PRIVATE NOINSTALL)
-add_subproject(bfintrinsics vmm DEPENDS bfsdk PRIVATE)
 add_subproject(bfruntime vmm DEPENDS bfsdk PRIVATE)
 add_subproject(bfunwind vmm DEPENDS bfsdk PRIVATE)
-add_subproject(bfvmm vmm DEPENDS bfruntime bfunwind bfintrinsics PRIVATE)
+add_subproject(bfvmm vmm DEPENDS bfruntime bfunwind PRIVATE)
 
 # ------------------------------------------------------------------------------
 # Userspace Components
 # ------------------------------------------------------------------------------
 
 add_subproject(bfsdk userspace DEPENDS gsl json argparse PRIVATE NOINSTALL)
-add_subproject(bfm userspace DEPENDS bfintrinsics PRIVATE)
-# add_subproject(bfack userspace DEPENDS bfintrinsics PRIVATE)
+add_subproject(bfm userspace DEPENDS bfsdk PRIVATE)
+add_subproject(bfack userspace DEPENDS bfsdk PRIVATE)
 
 # ------------------------------------------------------------------------------
 # Unit Tests
 # ------------------------------------------------------------------------------
 
-add_subproject(bfsdk test DEPENDS gsl json catch hippomocks PRIVATE NOINSTALL)
+add_subproject(bfsdk test DEPENDS gsl json argparse catch hippomocks PRIVATE NOINSTALL)
 add_subproject(bfm test DEPENDS bfsdk PRIVATE NOINSTALL)
 
 # ------------------------------------------------------------------------------

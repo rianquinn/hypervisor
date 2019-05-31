@@ -29,10 +29,6 @@ vcpu::vcpu(id_t id) :
     implementation::vcpu_base{id}
 { }
 
-void
-vcpu::global_init()
-{ bfdebug_info(0, "global init"); }
-
 MOCK_FUNCTION(vcpu, {
 })
 

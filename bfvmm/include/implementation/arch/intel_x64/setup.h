@@ -36,6 +36,9 @@ class setup
 PUBLIC:
     explicit setup();
     ~setup() = default;
+
+PRIVATE:
+    static void global_init();
 };
 
 }

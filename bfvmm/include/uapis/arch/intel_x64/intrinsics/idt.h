@@ -19,63 +19,102 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IMPLMENETATION_VCPU_INTEL_X64_H
-#define IMPLMENETATION_VCPU_INTEL_X64_H
+#ifndef UAPIS_IDT_INTEL_X64_H
+#define UAPIS_IDT_INTEL_X64_H
+
+#include <bftypes.h>
+#include <bfbitmanip.h>
+
+#pragma pack(push, 1)
 
 // -----------------------------------------------------------------------------
-// vCPU Type
+// C Functions
 // -----------------------------------------------------------------------------
 
-namespace bfvmm::implementation::intel_x64
-{ class vcpu; }
-
-#ifndef VCPU_T
-#define VCPU_T
-using vcpu_t = bfvmm::implementation::intel_x64::vcpu;
-#endif
+extern "C" void _read_idt(void *idt_reg) noexcept;
+extern "C" void _write_idt(void *idt_reg) noexcept;
 
 // -----------------------------------------------------------------------------
-// Includes
+// C++ Wrappers
 // -----------------------------------------------------------------------------
 
-#include "../../vcpu_base.h"
+// *INDENT-OFF*
 
-// #include "uapis/cpuid.h"
-// #include "uapis/exit_handler.h"
-// #include "uapis/state.h"
-// #include "uapis/vmcs.h"
-
-// #include "cpuid.h"
-// #include "exit_handler.h"
-#include "state.h"
-#include "vmcs.h"
-#include "vmx.h"
-
-// -----------------------------------------------------------------------------
-// Defintion
-// -----------------------------------------------------------------------------
-
-namespace bfvmm::implementation::intel_x64
+namespace intel_x64
 {
 
-class vcpu :
-    public implementation::vcpu_base,
-    public implementation::intel_x64::vmx,
-    public implementation::intel_x64::state,
-    public implementation::intel_x64::vmcs
+namespace idt_reg
 {
-public:
-    explicit vcpu(id_t id);
-    VIRTUAL ~vcpu() = default;
 
-private:
-    static inline auto make(id_t id)
-    { return std::make_unique<vcpu>(id); }
-
-private:
-    FRIEND_DEFINITIONS(vcpu)
+struct reg_t {
+    uint16_t limit{0};
+    uint64_t base{0};
 };
 
+inline auto get() noexcept
+{
+    reg_t reg;
+    _read_idt(&reg);
+
+    return reg;
 }
+
+inline void set(uint64_t base, uint16_t limit) noexcept
+{
+    reg_t reg;
+
+    reg.base = base;
+    reg.limit = limit;
+
+    _write_idt(&reg);
+}
+
+namespace base
+{
+    inline auto get() noexcept
+    {
+        reg_t reg;
+        _read_idt(&reg);
+
+        return reg.base;
+    }
+
+    inline void set(uint64_t base) noexcept
+    {
+        reg_t reg;
+        _read_idt(&reg);
+
+        reg.base = base;
+        _write_idt(&reg);
+    }
+}
+
+namespace limit
+{
+    inline auto get() noexcept
+    {
+        reg_t reg;
+        _read_idt(&reg);
+
+        return reg.limit;
+    }
+
+    inline void set(uint16_t limit) noexcept
+    {
+        reg_t reg;
+        _read_idt(&reg);
+
+        reg.limit = limit;
+        _write_idt(&reg);
+    }
+}
+
+}
+
+}
+
+// *INDENT-ON*
+
+#pragma pack(pop)
 
 #endif

@@ -756,7 +756,6 @@ function(setup_interfaces)
             ${VMM_PREFIX_PATH}/lib/libbfcrt.a
             ${VMM_PREFIX_PATH}/lib/libbfdso.a
             --no-whole-archive
-            ${VMM_PREFIX_PATH}/lib/libbfintrinsics.a
             ${VMM_PREFIX_PATH}/lib/libc++.a
             ${VMM_PREFIX_PATH}/lib/libc++abi.a
             ${VMM_PREFIX_PATH}/lib/libbfpthread.a
@@ -772,7 +771,6 @@ function(setup_interfaces)
             ${VMM_PREFIX_PATH}/lib/libbfdso.a
             --no-whole-archive
             ${VMM_PREFIX_PATH}/lib/libbfvmm.a
-            ${VMM_PREFIX_PATH}/lib/libbfintrinsics.a
             ${VMM_PREFIX_PATH}/lib/libc++.a
             ${VMM_PREFIX_PATH}/lib/libc++abi.a
             ${VMM_PREFIX_PATH}/lib/libbfpthread.a
@@ -792,7 +790,6 @@ function(setup_interfaces)
         add_library(bareflank_userspace INTERFACE)
 
         target_link_libraries(bareflank_userspace INTERFACE
-            ${USERSPACE_PREFIX_PATH}/lib/libbfintrinsics.a
             $<$<OR:$<BOOL:${CYGWIN}>,$<BOOL:${WIN32}>>:setupapi>
         )
 

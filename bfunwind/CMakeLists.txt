@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 cmake_minimum_required(VERSION 3.13)
-project(bfunwind CXX)
+project(bfunwind CXX ASM)
 
 # -----------------------------------------------------------------------------
 # bfunwind
@@ -25,9 +25,9 @@ project(bfunwind CXX)
 
 add_library(bfunwind
     src/dwarf4.cpp
-    $<${X64}:src/eh_frame.cpp>
-    $<${X64}:src/ia64_cxx_abi.cpp>
-    $<${X64}:src/registers_intel_x64.asm>
+    $<${INTEL_X64}:src/eh_frame.cpp>
+    $<${INTEL_X64}:src/ia64_cxx_abi.cpp>
+    $<${INTEL_X64}:src/arch/intel_x64/registers_intel_x64.S>
 )
 
 # -----------------------------------------------------------------------------

@@ -19,7 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <arch/intel_x64/msrs.h>
+#include <uapis/arch/intel_x64/intrinsics/msrs.h>
 
 #include <implementation/vcpu_t.h>
 #include <implementation/arch/intel_x64/state.h>

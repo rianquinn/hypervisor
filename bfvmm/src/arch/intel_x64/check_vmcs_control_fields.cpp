@@ -19,18 +19,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <arch/intel_x64/vmcs/16bit_control_fields.h>
-#include <arch/intel_x64/vmcs/32bit_control_fields.h>
-#include <arch/intel_x64/vmcs/64bit_control_fields.h>
-#include <arch/intel_x64/vmcs/natural_width_control_fields.h>
-#include <arch/intel_x64/vmcs/natural_width_guest_state_fields.h>
+#include <uapis/arch/intel_x64/intrinsics/vmcs/16bit_control_fields.h>
+#include <uapis/arch/intel_x64/intrinsics/vmcs/32bit_control_fields.h>
+#include <uapis/arch/intel_x64/intrinsics/vmcs/64bit_control_fields.h>
+#include <uapis/arch/intel_x64/intrinsics/vmcs/natural_width_control_fields.h>
+#include <uapis/arch/intel_x64/intrinsics/vmcs/natural_width_guest_state_fields.h>
 
 namespace bfvmm::implementation::intel_x64::check
 {
 
 void
 ctl_reserved_properly_set(
-    ::x64::msrs::field_type addr, ::x64::msrs::value_type ctls, const char *name)
+    ::intel_x64::msrs::field_type addr, ::intel_x64::msrs::value_type ctls, const char *name)
 {
     using namespace ::intel_x64::vmcs::processor_based_vm_execution_ctls;
 
@@ -127,11 +127,11 @@ ctl_io_bitmap_addr_bits()
         throw std::logic_error("io bitmap b addr not page aligned");
     }
 
-    if (!::x64::is_physical_addr_valid(addr_a)) {
+    if (!::intel_x64::is_physical_addr_valid(addr_a)) {
         throw std::logic_error("io bitmap a addr too large");
     }
 
-    if (!::x64::is_physical_addr_valid(addr_b)) {
+    if (!::intel_x64::is_physical_addr_valid(addr_b)) {
         throw std::logic_error("io bitmap b addr too large");
     }
 }
@@ -149,7 +149,7 @@ ctl_msr_bitmaps_addr_bits()
         throw std::logic_error("msr bitmap addr not page aligned");
     }
 
-    if (!::x64::is_physical_addr_valid(addr)) {
+    if (!::intel_x64::is_physical_addr_valid(addr)) {
         throw std::logic_error("msr bitmap addr too large");
     }
 }
@@ -174,7 +174,7 @@ ctl_tpr_shadow_and_virtual_apic()
             throw std::logic_error("virtual apic addr not 4k aligned");
         }
 
-        if (!::x64::is_physical_addr_valid(phys_addr)) {
+        if (!::intel_x64::is_physical_addr_valid(phys_addr)) {
             throw std::logic_error("virtual apic addr too large");
         }
 
@@ -263,7 +263,7 @@ ctl_virtual_apic_addr_bits()
         throw std::logic_error("apic access addr not 4k aligned");
     }
 
-    if (!::x64::is_physical_addr_valid(phys_addr)) {
+    if (!::intel_x64::is_physical_addr_valid(phys_addr)) {
         throw std::logic_error("apic access addr too large");
     }
 }
@@ -337,7 +337,7 @@ ctl_process_posted_int_checks()
                                "must be 0 if posted ints is 1");
     }
 
-    if (!::x64::is_physical_addr_valid(addr)) {
+    if (!::intel_x64::is_physical_addr_valid(addr)) {
         throw std::logic_error("int descriptor addr too large");
     }
 }
@@ -416,7 +416,7 @@ ctl_enable_pml_checks()
         throw std::logic_error("ept must be enabled if pml is enabled");
     }
 
-    if (!::x64::is_physical_addr_valid(pml_addr)) {
+    if (!::intel_x64::is_physical_addr_valid(pml_addr)) {
         throw std::logic_error("pml addr must be a valid physical addr");
     }
 
@@ -474,7 +474,7 @@ ctl_enable_vm_functions()
         throw std::logic_error("bits 11:0 must be 0 for eptp list addr");
     }
 
-    if (!::x64::is_physical_addr_valid(eptp_list)) {
+    if (!::intel_x64::is_physical_addr_valid(eptp_list)) {
         throw std::logic_error("eptp list addr addr too large");
     }
 }
@@ -501,11 +501,11 @@ ctl_enable_vmcs_shadowing()
         throw std::logic_error("bits 11:0 must be 0 for the vmcs write bitmap addr");
     }
 
-    if (!::x64::is_physical_addr_valid(vmcs_vmread_bitmap_addr)) {
+    if (!::intel_x64::is_physical_addr_valid(vmcs_vmread_bitmap_addr)) {
         throw std::logic_error("vmcs read bitmap addr addr too large");
     }
 
-    if (!::x64::is_physical_addr_valid(vmcs_vmwrite_bitmap_addr)) {
+    if (!::intel_x64::is_physical_addr_valid(vmcs_vmwrite_bitmap_addr)) {
         throw std::logic_error("vmcs write bitmap addr addr too large");
     }
 }
@@ -528,7 +528,7 @@ ctl_enable_ept_violation_checks()
         throw std::logic_error("bits 11:0 must be 0 for the vmcs virt except info addr");
     }
 
-    if (!::x64::is_physical_addr_valid(vmcs_virt_except_info_addr)) {
+    if (!::intel_x64::is_physical_addr_valid(vmcs_virt_except_info_addr)) {
         throw std::logic_error("vmcs virt except info addr addr too large");
     }
 }
@@ -571,13 +571,13 @@ ctl_exit_msr_store_addr()
         throw std::logic_error("bits 3:0 must be 0 for the exit msr store addr");
     }
 
-    if (!::x64::is_physical_addr_valid(msr_store_addr)) {
+    if (!::intel_x64::is_physical_addr_valid(msr_store_addr)) {
         throw std::logic_error("exit msr store addr too large");
     }
 
     auto msr_store_addr_end = msr_store_addr + (msr_store_count * 16) - 1;
 
-    if (!::x64::is_physical_addr_valid(msr_store_addr_end)) {
+    if (!::intel_x64::is_physical_addr_valid(msr_store_addr_end)) {
         throw std::logic_error("end of exit msr store area too large");
     }
 }
@@ -597,13 +597,13 @@ ctl_exit_msr_load_addr()
         throw std::logic_error("bits 3:0 must be 0 for the exit msr load addr");
     }
 
-    if (!::x64::is_physical_addr_valid(msr_load_addr)) {
+    if (!::intel_x64::is_physical_addr_valid(msr_load_addr)) {
         throw std::logic_error("exit msr load addr too large");
     }
 
     auto msr_load_addr_end = msr_load_addr + (msr_load_count * 16) - 1;
 
-    if (!::x64::is_physical_addr_valid(msr_load_addr_end)) {
+    if (!::intel_x64::is_physical_addr_valid(msr_load_addr_end)) {
         throw std::logic_error("end of exit msr load area too large");
     }
 }
@@ -780,13 +780,13 @@ ctl_entry_msr_load_addr()
         throw std::logic_error("bits 3:0 must be 0 for the entry msr load addr");
     }
 
-    if (!::x64::is_physical_addr_valid(msr_load_addr)) {
+    if (!::intel_x64::is_physical_addr_valid(msr_load_addr)) {
         throw std::logic_error("entry msr load addr too large");
     }
 
     auto msr_load_addr_end = msr_load_addr + (msr_load_count * 16) - 1;
 
-    if (!::x64::is_physical_addr_valid(msr_load_addr_end)) {
+    if (!::intel_x64::is_physical_addr_valid(msr_load_addr_end)) {
         throw std::logic_error("end of entry msr load area too large");
     }
 }

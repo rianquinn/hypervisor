@@ -19,8 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef BFVMM_IDT_X64_H
-#define BFVMM_IDT_X64_H
+#ifndef IMPLEMENTATION_IDT_INTEL_X64_H
+#define IMPLEMENTATION_IDT_INTEL_X64_H
 
 #include <vector>
 #include <algorithm>
@@ -29,8 +29,6 @@
 #include <bftypes.h>
 #include <bfexception.h>
 #include <bfupperlower.h>
-
-#include <intrinsics.h>
 
 // -----------------------------------------------------------------------------
 // Interrupt Descriptor Table

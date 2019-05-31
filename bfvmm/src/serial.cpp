@@ -19,7 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <arch/x64/portio.h>
+#include <uapis/arch/intel_x64/intrinsics/portio.h>
 
 #include <bfconstants.h>
 #include <implementation/serial.h>
@@ -32,10 +32,10 @@ constexpr uint16_t line_control_reg = 3U;
 constexpr uint16_t line__status_reg = 5U;
 
 inline uint8_t inb(uint16_t addr) noexcept
-{ return ::x64::portio::inb(static_cast<uint16_t>(addr + DEFAULT_COM_PORT)); }
+{ return ::intel_x64::portio::inb(static_cast<uint16_t>(addr + DEFAULT_COM_PORT)); }
 
 inline void outb(uint16_t addr, uint8_t data) noexcept
-{ ::x64::portio::outb(static_cast<uint16_t>(addr + DEFAULT_COM_PORT), data); }
+{ ::intel_x64::portio::outb(static_cast<uint16_t>(addr + DEFAULT_COM_PORT), data); }
 
 inline bool is_transmit_empty() noexcept
 { return (inb(line__status_reg) & (1U << 5)) != 0; }
