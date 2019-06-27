@@ -26,8 +26,6 @@
 #include "check_vmcs_guest_fields.h"
 #include "check_vmcs_host_fields.h"
 
-// *INDENT-OFF*
-
 namespace bfvmm::implementation::intel_x64::check
 {
 
@@ -233,7 +231,5 @@ void all()
 }
 
 }
-
-// *INDENT-ON*
 
 #endif

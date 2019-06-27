@@ -39,6 +39,9 @@ PUBLIC:
 
 PRIVATE:
     static void global_init();
+
+PRIVATE:
+    COPY_MOVE_SEMANTICS(gdt)
 };
 
 }

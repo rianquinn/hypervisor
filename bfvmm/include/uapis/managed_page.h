@@ -19,61 +19,68 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef UAPIS_UNIQUE_PAGE_H
-#define UAPIS_UNIQUE_PAGE_H
+#ifndef UAPIS_MANAGED_PAGE_H
+#define UAPIS_MANAGED_PAGE_H
 
-#include <memory>
-
-#include <bfgsl.h>
-#include "../implementation/memory_manager.h"
+#include "managed_ptr.h"
 
 // -----------------------------------------------------------------------------
 // Definition
 // -----------------------------------------------------------------------------
 
-template<typename T>
-using __unique_ptr_page = std::unique_ptr<T, void(*)(void *)>;
-
-/// Unique Page
+/// Managed Page
 ///
-/// A unique_page is nothing more than a wrapper around a std::unique_ptr with
-/// a couple of added functions. Specifically, it provides an hva() and hpa()
-/// function that returns an integer version of the host virtual and host
-/// physical address associated with the page. It also returns a span that can
-/// be used to access the page. Note that we do not support the custom deleter
-/// types as the page needs to be handled specifically.
+/// This is the same thing as a managed_ptr with the exception that all
+/// allocations are a page in size.
 ///
-template<typename T>
-class unique_page :
-    public __unique_ptr_page<T>
+template<typename T, typename D = std::default_delete<T>>
+class managed_ptr :
+    public std::unique_ptr<T, D>
 {
-    uint64_t m_hpa{};
+public:
 
-    static constexpr auto count() noexcept
+
+    constexpr managed_ptr() noexcept :
+        std::unique_ptr<T, D>{},
+        m_
     {
-        static_assert(sizeof(T) <= BFPAGE_SIZE);
-        return BFPAGE_SIZE / sizeof(T);
+
     }
 
-public:
+constexpr managed_ptr( nullptr_t ) noexcept;
+	(1)
+explicit managed_ptr( pointer p ) noexcept;
+	(2)
+managed_ptr( pointer p, /* see below */ d1 ) noexcept;
+	(3)
+managed_ptr( pointer p, /* see below */ d2 ) noexcept;
+	(4)
+managed_ptr( managed_ptr&& u ) noexcept;
+	(5)
 
-    /// @cond
 
-    using pointer = typename std::unique_ptr<T>::pointer;
-    using element_type = typename std::unique_ptr<T>::element_type;
-    using integer_pointer = uint64_t;
-    using span_type = gsl::span<T, count()>;
 
-    /// @endcond
 
-public:
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /// Default Constructor
     ///
-    /// Creates a unique_page with a given type.
+    /// Creates a managed_ptr with a given type.
     ///
-    constexpr unique_page() :
-        __unique_ptr_page<T>{alloc_page<T>(), free_page},
+    constexpr managed_ptr() :
+        __managed_ptr<T>{alloc_page<T>(), free_page},
         m_hpa{g_mm->hva_to_hpa(this->hva())}
     { }
 
@@ -83,23 +90,33 @@ public:
     /// It should be noted that this creates a non-valid pointer
     /// so checks should be made if using this constructor
     ///
-    constexpr unique_page(nullptr_t) noexcept :
-        __unique_ptr_page<T>{nullptr}
+    constexpr managed_ptr(nullptr_t) noexcept :
+        __managed_ptr<T>{nullptr}
+    { }
+
+    /// Nullptr Constructor
+    ///
+    /// This creates an empty version of a page given a type.
+    /// It should be noted that this creates a non-valid pointer
+    /// so checks should be made if using this constructor
+    ///
+    constexpr managed_ptr(nullptr_t) noexcept :
+        __managed_ptr<T>{nullptr}
     { }
 
     /// Move Constructor
     ///
-    /// @param u the unique_page to move from.
+    /// @param u the managed_ptr to move from.
     ///
-    unique_page(unique_page &&u) noexcept :
-        __unique_ptr_page<T>{u}
+    managed_ptr(managed_ptr &&u) noexcept :
+        __managed_ptr<T>{u}
     { *this = std::move(u); }
 
     /// Move Operator
     ///
-    /// @param u the unique_page to move from.
+    /// @param u the managed_ptr to move from.
     ///
-    unique_page &operator=(unique_page &&u)
+    managed_ptr &operator=(managed_ptr &&u)
     {
         m_hpa = std::move(u.m_hpa);
         u.m_hpa = 0;
@@ -121,10 +138,14 @@ public:
 
     /// View
     ///
-    /// @return returns a gsl::span for the unique_page;
+    /// @return returns a gsl::span for the managed_ptr;
     ///
     constexpr span_type view() const noexcept
     { return span_type{this->get(), count()}; }
+
+private:
+    integer_pointer m_hpa{};
+    size_type m_size{};
 };
 
 #endif

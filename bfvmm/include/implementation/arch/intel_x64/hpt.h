@@ -24,11 +24,10 @@
 
 #include <mutex>
 
-#include <bfgsl.h>
-#include <bftypes.h>
+#include "../../macros.h"
 
 // -----------------------------------------------------------------------------
-// Definition (Host Page Tables)
+// Defintion
 // -----------------------------------------------------------------------------
 
 namespace bfvmm::implementation::intel_x64
@@ -110,10 +109,7 @@ PRIVATE:
     mutable std::mutex m_mutex;
 
 PRIVATE:
-    hpt(hpt &&) = default;
-    hpt &operator=(hpt &&) = default;
-    hpt(const hpt &) = delete;
-    hpt &operator=(const hpt &) = delete;
+    COPY_MOVE_SEMANTICS(hpt)
 
 PRIVATE:
     friend class implementation::setup;

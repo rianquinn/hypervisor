@@ -42,6 +42,7 @@ add_library(bfvmm
     $<${INTEL_X64}:src/arch/intel_x64/check_vmcs_control_fields.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/check_vmcs_guest_fields.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/check_vmcs_host_fields.cpp>
+    $<${INTEL_X64}:src/arch/intel_x64/gdt.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/hpt.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/state.cpp>
     $<${INTEL_X64}:src/arch/intel_x64/vcpu.cpp>
