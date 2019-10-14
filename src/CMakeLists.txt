@@ -19,28 +19,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.13)
-project(hypervisor NONE)
-
 # ------------------------------------------------------------------------------
-# Initial Setup
+# Interfaces
 # ------------------------------------------------------------------------------
 
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/macros.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/config.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/target.cmake)
-
-print_init_banner()
+setup_interfaces()
 
 # ------------------------------------------------------------------------------
-# Sources
+# Dependencies
 # ------------------------------------------------------------------------------
 
-add_subdirectory(src)
-#add_subdirectory(examples)
+include_dependency(standalone_cxx)
+include_dependency(argparse)
+include_dependency(gsl)
+include_dependency(hippomocks)
 
 # ------------------------------------------------------------------------------
-# Complete
+# Userspace Components
 # ------------------------------------------------------------------------------
 
-print_fini_banner()
+add_subproject(
+    bfm         host
+    SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/bfm
+    DEPENDS     standalone_cxx gsl_host argparse_host
+)

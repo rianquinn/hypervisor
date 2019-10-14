@@ -19,28 +19,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.13)
-project(hypervisor NONE)
+message(STATUS "Including dependency: gsl")
 
-# ------------------------------------------------------------------------------
-# Initial Setup
-# ------------------------------------------------------------------------------
+download_dependency(
+    gsl
+    ${BAREFLANK_GSL_URL}
+    ${BAREFLANK_GSL_URL_MD5}
+)
 
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/macros.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/config.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/target.cmake)
+list(APPEND BAREFLANK_GSL_CONFIGURE_FLAGS
+    -DGSL_TEST=OFF
+)
 
-print_init_banner()
+add_dependency(
+    gsl         host
+    CMAKE_ARGS  ${BAREFLANK_GSL_CONFIGURE_FLAGS}
+)
 
-# ------------------------------------------------------------------------------
-# Sources
-# ------------------------------------------------------------------------------
-
-add_subdirectory(src)
-#add_subdirectory(examples)
-
-# ------------------------------------------------------------------------------
-# Complete
-# ------------------------------------------------------------------------------
-
-print_fini_banner()
+add_dependency(
+    gsl         target
+    CMAKE_ARGS  ${BAREFLANK_GSL_CONFIGURE_FLAGS}
+)

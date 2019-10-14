@@ -19,28 +19,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.13)
-project(hypervisor NONE)
+if(BAREFLANK_HOST_BUILD_TYPE MATCHES "Debug")
+    message(STATUS "Including dependency: hippomocks")
 
-# ------------------------------------------------------------------------------
-# Initial Setup
-# ------------------------------------------------------------------------------
+    download_dependency(
+        hippomocks
+        ${BAREFLANK_HIPPOMOCKS_URL}
+        ${BAREFLANK_HIPPOMOCKS_URL_MD5}
+    )
 
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/macros.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/config.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/target.cmake)
-
-print_init_banner()
-
-# ------------------------------------------------------------------------------
-# Sources
-# ------------------------------------------------------------------------------
-
-add_subdirectory(src)
-#add_subdirectory(examples)
-
-# ------------------------------------------------------------------------------
-# Complete
-# ------------------------------------------------------------------------------
-
-print_fini_banner()
+    add_dependency(
+        hippomocks  host
+    )
+endif()

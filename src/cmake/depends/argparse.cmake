@@ -19,28 +19,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.13)
-project(hypervisor NONE)
+message(STATUS "Including dependency: argparse")
 
-# ------------------------------------------------------------------------------
-# Initial Setup
-# ------------------------------------------------------------------------------
+download_dependency(
+    argparse
+    ${BAREFLANK_ARGPARSE_URL}
+    ${BAREFLANK_ARGPARSE_URL_MD5}
+)
 
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/macros.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/config.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/src/cmake/target.cmake)
+add_dependency(
+    argparse    host
+)
 
-print_init_banner()
-
-# ------------------------------------------------------------------------------
-# Sources
-# ------------------------------------------------------------------------------
-
-add_subdirectory(src)
-#add_subdirectory(examples)
-
-# ------------------------------------------------------------------------------
-# Complete
-# ------------------------------------------------------------------------------
-
-print_fini_banner()
+add_dependency_step(
+    argparse    host
+    COMMAND     ${CMAKE_COMMAND} -E remove_directory ${BAREFLANK_PREFIX_DIR}/host/lib64
+)
