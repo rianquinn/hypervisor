@@ -127,8 +127,8 @@ string(CONCAT BAREFLANK_TARGET_CXX_FLAGS
 set(BAREFLANK_ARGPARSE_URL "https://github.com/Bareflank/argparse/archive/v1.1.zip")
 set(BAREFLANK_ARGPARSE_URL_MD5 "cf9f7cd53e10f78f798d8eba7b25dbcc")
 
-set(BAREFLANK_STANDALONE_URL "https://github.com/Bareflank/standalone_cxx/archive/v0.1.zip")
-set(BAREFLANK_STANDALONE_URL_MD5 "f4cea71dadfcc00843d74eeb8105366f")
+set(BAREFLANK_STANDALONE_URL "https://github.com/Bareflank/standalone_cxx/archive/v0.2.zip")
+set(BAREFLANK_STANDALONE_URL_MD5 "36863d33a945a47a7503be00484b6b30")
 
 set(BAREFLANK_GSL_URL "https://github.com/Bareflank/gsl/archive/v2.0.zip")
 set(BAREFLANK_GSL_URL_MD5 "0cc95192658d10e43162ef7b2892e37a")
