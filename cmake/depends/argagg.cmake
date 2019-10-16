@@ -19,8 +19,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-add_subproject(
-    bfm         host
-    SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/bfm
-    DEPENDS     standalone_cxx gsl_host argagg_host
+message(STATUS "Including dependency: argagg")
+
+download_dependency(
+    argagg
+    ${BAREFLANK_ARGAGG_URL}
+    ${BAREFLANK_ARGAGG_URL_MD5}
 )
+
+list(APPEND BAREFLANK_ARGAGG_CONFIGURE_FLAGS
+    -DARGAGG_BUILD_EXAMPLES=OFF
+    -DARGAGG_BUILD_TESTS=OFF
+    -DARGAGG_BUILD_DOCS=OFF
+)
+
+add_dependency(
+    argagg      host
+    CMAKE_ARGS  ${BAREFLANK_ARGAGG_CONFIGURE_FLAGS}
+)
+
+
+

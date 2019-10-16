@@ -8,8 +8,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -30,22 +30,30 @@
 /* Common                                                                     */
 /* -------------------------------------------------------------------------- */
 
-#define IOCTL_DUMP_VMM_CMD 0x811
+#define IOCTL_DUMP_VMM_CMD 0x811    // NOLINT
 
 /* -------------------------------------------------------------------------- */
 /* Linux Interfaces                                                           */
 /* -------------------------------------------------------------------------- */
 
+/* clang-format off */
+
 #ifdef __linux__
-#define IOCTL_DUMP_VMM _IOR(BAREFLANK_MAJOR, IOCTL_DUMP_VMM_CMD, struct debug_ring_resources_t *)
+#define IOCTL_DUMP_VMM _IOR(BAREFLANK_MAJOR, IOCTL_DUMP_VMM_CMD, struct debug_ring_resources_t *)               // NOLINT
 #endif
+
+/* clang-format on */
 
 /* -------------------------------------------------------------------------- */
 /* Windows Interfaces                                                         */
 /* -------------------------------------------------------------------------- */
 
+/* clang-format off */
+
 #if defined(_WIN32) || defined(__CYGWIN__)
-#define IOCTL_DUMP_VMM CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_DUMP_VMM_CMD, METHOD_OUT_DIRECT, FILE_READ_DATA)
+#define IOCTL_DUMP_VMM CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_DUMP_VMM_CMD, METHOD_OUT_DIRECT, FILE_READ_DATA)    // NOLINT
 #endif
+
+/* clang-format on */
 
 #endif

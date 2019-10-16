@@ -8,8 +8,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -25,6 +25,21 @@
 #include <bfgsl.h>
 #include <bftypes.h>
 
+/// Adheres To
+///
+/// This macro can be used to ensure that a given object adheres to a specific
+/// interface. This is only needed when a class is responsible for
+/// instantiating an instance of a class while only including the interface to
+/// that class. In this specific case, we need to verify that the provided
+/// class adheres to the expected interface.
+///
+/// @param o the object to verify
+/// @param i the interface the object "o" should adhere to
+///
+#define adheres_to(o, i)                                                       \
+    static_assert(                                                             \
+        std::is_base_of_v<i<o>, o>, #o " doesn't adhere to " #i);    // NOLINT
+
 /// Pair
 ///
 /// Creates a concrete type by pairing an interface with the details that
@@ -35,24 +50,24 @@
 /// For more information, please see:
 /// https://github.com/Bareflank/static_interface_pattern
 ///
-template<
-    template<typename> typename INTERFACE,
-    typename DETAILS
-    >
-class bfpair :
-    public INTERFACE<bfpair<INTERFACE, DETAILS>>
+template<template<typename> typename INTERFACE, typename DETAILS>
+class bfpair : public INTERFACE<bfpair<INTERFACE, DETAILS>>
 {
     using details_type = DETAILS;
     using interface_type = INTERFACE<bfpair<INTERFACE, DETAILS>>;
 
 private:
-    constexpr static auto details(interface_type *i)
-    -> DETAILS &
-    { return static_cast<bfpair<INTERFACE, DETAILS> *>(i)->d; }
+    constexpr static auto
+    details(interface_type *i) -> DETAILS &
+    {
+        return static_cast<bfpair<INTERFACE, DETAILS> *>(i)->d;
+    }
 
-    constexpr static auto details(const interface_type *i)
-    -> const DETAILS &
-    { return static_cast<const bfpair<INTERFACE, DETAILS> *>(i)->d; }
+    constexpr static auto
+    details(const interface_type *i) -> const DETAILS &
+    {
+        return static_cast<const bfpair<INTERFACE, DETAILS> *>(i)->d;
+    }
 
 private:
     DETAILS d;

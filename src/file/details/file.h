@@ -8,8 +8,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,33 +23,33 @@
 #define FILE_DETAILS_FILE_H
 
 #include <file/file.h>
+
 #include <fstream>
+#include <filesystem>
 
 namespace host::details
 {
-
-class file
-{
-public:
-    static auto read(
-        const std::string &filename)
-    -> std::string
+    class file
     {
-        std::string file;
+    public:
+        static auto
+        read(const std::string &filename) -> std::vector<char>
+        {
+            std::vector<char> data;
 
-        if (auto strm = std::ifstream(filename, std::fstream::binary)) {
-            auto size = std::filesystem::file_size(filename);
-            file.reserve(size);
-            strm.read(file.data(), size);
+            if (auto strm = std::ifstream(filename, std::fstream::binary)) {
+                data.resize(std::filesystem::file_size(filename));
+                strm.read(data.data(), data.size());
+            }
+            else {
+                throw std::runtime_error(
+                    "failed to open file \"" + filename + "\"");
+            }
+
+            return data;
         }
-        else {
-            throw std::runtime_error("failed to open file: " + filename);
-        }
+    };
 
-        return file;
-    }
-};
-
-}
+}    // namespace host::details
 
 #endif

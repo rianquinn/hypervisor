@@ -8,8 +8,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -24,41 +24,36 @@
 
 #include "../bfpair.h"
 
+#include <vector>
 #include <string>
-#include <filesystem>
 
 namespace host::interface
 {
-
-/// File
-///
-/// This class provides APIs for common file operations including:
-/// - reading a file into a std::string
-///
-template<typename T>
-struct file
-{
-    /// Read
+    /// File
     ///
-    /// Reads the contents of a file given a "filename" and outputs the
-    /// contents to a std::string.
+    /// This class provides APIs for common file operations including:
+    /// - reading a file into a std::vector<char>
     ///
-    /// @param filename the name of the file to read
-    /// @return a std::string containing the contents of the file read
-    ///
-    constexpr static auto read(
-        const std::string &filename)
-    -> std::string
+    template<typename T>
+    struct file
     {
-        expects(!filename.empty());
-        expects(std::filesystem::exists(filename));
-        expects(std::filesystem::is_regular_file(filename));
+        /// Read
+        ///
+        /// Reads the contents of a file given a "filename" and outputs the
+        /// contents to a std::vector<char>.
+        ///
+        /// @param filename the name of the file to read
+        /// @return a std::vector<char> containing the contents of the file read
+        ///
+        static auto
+        read(const std::string &filename) -> std::vector<char>
+        {
+            expects(!filename.empty());
+            return T::details_type::read(filename);
+        }
+    };
 
-        return T::details_type::read(filename);
-    }
-};
-
-}
+}    // namespace host::interface
 
 namespace host
 {

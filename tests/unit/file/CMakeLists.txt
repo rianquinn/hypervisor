@@ -19,19 +19,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-message(STATUS "Including dependency: argparse")
-
-download_dependency(
-    argparse
-    ${BAREFLANK_ARGPARSE_URL}
-    ${BAREFLANK_ARGPARSE_URL_MD5}
-)
-
-add_dependency(
-    argparse    host
-)
-
-add_dependency_step(
-    argparse    host
-    COMMAND     ${CMAKE_COMMAND} -E remove_directory ${BAREFLANK_PREFIX_DIR}/host/lib64
-)
+add_unittest(test_file)
+target_link_libraries(test_file PRIVATE stdc++fs)

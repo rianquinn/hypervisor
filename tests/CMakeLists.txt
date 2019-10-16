@@ -19,16 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if(BAREFLANK_HOST_BUILD_TYPE MATCHES "Debug")
-    message(STATUS "Including dependency: hippomocks")
-
-    download_dependency(
-        hippomocks
-        ${BAREFLANK_HIPPOMOCKS_URL}
-        ${BAREFLANK_HIPPOMOCKS_URL_MD5}
-    )
-
-    add_dependency(
-        hippomocks  host
-    )
-endif()
+add_subproject(
+    unit        host
+    SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/unit
+    DEPENDS     standalone_cxx gsl_host argagg_host
+)

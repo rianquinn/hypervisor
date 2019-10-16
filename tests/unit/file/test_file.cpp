@@ -8,8 +8,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -19,18 +19,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IOCTL_DETAILS_COMMON_IOCTL_VMCALL_H
-#define IOCTL_DETAILS_COMMON_IOCTL_VMCALL_H
+#include <catch2/catch.hpp>
 
-#include <ioctl/ioctl_vmcall.h>
-#include <common/details/ioctl_vmcall.h>
+#include <file/details/file.h>
+using namespace host;
 
-namespace host::details::common
+TEST_CASE("empty filename")
 {
-
-class ioctl_vmcall
-{ };
-
+    CHECK_THROWS(file<details::file>::read({}));
 }
 
-#endif
+TEST_CASE("file doesn't exist")
+{
+    CHECK_THROWS(file<details::file>::read("not_a_real_file"));
+}
+
+TEST_CASE("Read succeeds")
+{
+    std::string msg = "The answer is: 42";
+    if (auto strm = std::ofstream("test.txt")) {
+        strm << msg;
+    }
+
+    auto res = file<details::file>::read("test.txt");
+    for (size_t i = 0; i < res.size(); i++) {
+        CHECK(res.at(i) == msg.at(i));
+    }
+}

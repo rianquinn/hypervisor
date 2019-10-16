@@ -20,41 +20,37 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(hypervisor NONE)
+project(unit CXX)
+
+enable_testing()
+
+set(CMAKE_CXX_STANDARD 17)
+find_package(standalone_cxx_sdk)
 
 # ------------------------------------------------------------------------------
-# Initial Setup
+# Test Macro
 # ------------------------------------------------------------------------------
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/macros.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/config.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/target.cmake)
-
-print_init_banner()
-
-# ------------------------------------------------------------------------------
-# Interfaces
-# ------------------------------------------------------------------------------
-
-setup_interfaces()
+macro(add_unittest NAME)
+    add_executable(${NAME} ${NAME}.cpp)
+    target_link_libraries(${NAME} PRIVATE standalone_cxx_sdk catch2_main)
+    target_include_directories(${NAME} PRIVATE ${CMAKE_SOURCE_DIR}/../../include)
+    target_include_directories(${NAME} PRIVATE ${CMAKE_SOURCE_DIR}/../../src)
+    target_compile_definitions(${NAME} PRIVATE GSL_THROW_ON_CONTRACT_VIOLATION)
+    add_test(${NAME} ${NAME})
+endmacro(add_unittest)
 
 # ------------------------------------------------------------------------------
-# Dependencies
+# Directories
 # ------------------------------------------------------------------------------
 
-include_dependency(argagg)
-include_dependency(gsl)
-include_dependency(standalone_cxx)
+add_subdirectory(bfm)
+add_subdirectory(common)
+add_subdirectory(file)
 
 # ------------------------------------------------------------------------------
-# Sources
+# Quiet Install Command
 # ------------------------------------------------------------------------------
 
-add_subdirectory(src)
-add_subdirectory(tests)
-
-# ------------------------------------------------------------------------------
-# Complete
-# ------------------------------------------------------------------------------
-
-print_fini_banner()
+set(IGNOREME "${CMAKE_INSTALL_MESSAGE}")
+install(CODE "MESSAGE(\"Nothing to install\")")

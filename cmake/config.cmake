@@ -104,10 +104,6 @@ set(BAREFLANK_TARGET x86_64-vmm-elf)
 # Definitions
 # ------------------------------------------------------------------------------
 
-# ------------------------------------------------------------------------------
-# Definitions
-# ------------------------------------------------------------------------------
-
 if(NOT BAREFLANK_DEBUGRING_SIZE)
     set(BAREFLANK_DEBUGRING_SIZE 32768)
 endif()
@@ -121,20 +117,25 @@ string(CONCAT BAREFLANK_TARGET_CXX_FLAGS
 )
 
 # ------------------------------------------------------------------------------
+# Clang Tidy
+# ------------------------------------------------------------------------------
+
+if(NOT CMAKE_CXX_CLANG_TIDY)
+    set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
+endif()
+
+# ------------------------------------------------------------------------------
 # Links
 # ------------------------------------------------------------------------------
 
-set(BAREFLANK_ARGPARSE_URL "https://github.com/Bareflank/argparse/archive/v1.1.zip")
-set(BAREFLANK_ARGPARSE_URL_MD5 "cf9f7cd53e10f78f798d8eba7b25dbcc")
-
-set(BAREFLANK_STANDALONE_URL "https://github.com/Bareflank/standalone_cxx/archive/v0.2.zip")
-set(BAREFLANK_STANDALONE_URL_MD5 "36863d33a945a47a7503be00484b6b30")
+set(BAREFLANK_ARGAGG_URL "https://github.com/Bareflank/argagg/archive/v2.0.zip")
+set(BAREFLANK_ARGAGG_URL_MD5 "aa737d49c8534dafece949539fe59f92")
 
 set(BAREFLANK_GSL_URL "https://github.com/Bareflank/gsl/archive/v2.0.zip")
 set(BAREFLANK_GSL_URL_MD5 "0cc95192658d10e43162ef7b2892e37a")
 
-set(BAREFLANK_HIPPOMOCKS_URL "https://github.com/Bareflank/hippomocks/archive/v1.2.zip")
-set(BAREFLANK_HIPPOMOCKS_URL_MD5 "6a0928dfee03fbf4c12c36219c696bae")
+set(BAREFLANK_STANDALONE_URL "https://github.com/Bareflank/standalone_cxx/archive/v0.3.zip")
+set(BAREFLANK_STANDALONE_URL_MD5 "463539784655a29ee1a6626c060a379a")
 
 # ------------------------------------------------------------------------------
 # Colors

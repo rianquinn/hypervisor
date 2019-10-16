@@ -8,8 +8,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -46,14 +46,53 @@
  * @var debug_ring_t::tag2
  *     used to identify the debug ring from a memory dump
  */
-struct debug_ring_t {
+struct debug_ring_t
+{
     int64_t epos;
     int64_t spos;
 
     uint64_t tag1;
-    char buf[BAREFLANK_DEBUGRING_SIZE];
+    char buf[BAREFLANK_DEBUGRING_SIZE];    // NOLINT
     uint64_t tag2;
 };
+
+#ifdef __cplusplus
+
+#include <string>
+#include <bfgsl.h>
+
+/// Debug Ring to String
+///
+/// Converts a debug ring to a string.
+///
+/// @param dr the debug ring to convert
+/// @return a string contaning the contents of the debug ring.
+///
+inline auto
+debugring_to_string(const debug_ring_t &dr) -> std::string
+{
+    if (dr.spos == dr.epos) {
+        return {};
+    }
+
+    std::string str;
+
+    auto view = gsl::span(dr.buf);
+    auto spos = dr.spos;
+    auto epos = dr.epos;
+
+    while (spos != epos) {
+        str += view[spos++];
+
+        if (spos >= view.size()) {
+            spos = 0;
+        }
+    }
+
+    return str;
+}
+
+#endif
 
 #pragma pack(pop)
 

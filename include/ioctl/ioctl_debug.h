@@ -8,8 +8,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -27,27 +27,29 @@
 
 namespace host::interface
 {
+    /// IOCTL Debug
+    ///
+    /// This class is responsible for aiding in the debugging of the VMM
+    /// including:
+    /// - dumpping the VMM's debug ring
+    ///
+    template<typename T>
+    struct ioctl_debug
+    {
+        /// Dump VMM
+        ///
+        /// Returns the contents of the VMM's debug ring in a std::string
+        ///
+        /// @return the contents of the VMM's debug ring
+        ///
+        auto
+        dump_vmm() -> std::string
+        {
+            return T::details(this).dump_vmm();
+        }
+    };
 
-/// IOCTL Debug
-///
-/// This class is responsible for aiding in the debugging of the VMM including:
-/// - dumpping the VMM's debug ring
-///
-template<typename T>
-struct ioctl_debug
-{
-    /// Dump VMM
-    ///
-    /// Returns the contents of the VMM's debug ring in a std::string
-    ///
-    /// @return the contents of the VMM's debug ring
-    ///
-    constexpr auto dump_vmm()
-    -> std::string
-    { return T::details(this).dump_vmm(); }
-};
-
-}
+}    // namespace host::interface
 
 namespace host
 {

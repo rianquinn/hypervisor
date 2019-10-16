@@ -8,8 +8,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -29,21 +29,18 @@
 #include <ioctl/details/ioctl_debug.h>
 
 #include <bfm/details/main.h>
+using namespace host;
 
-auto main(
-    int argc, const char *argv[])
--> int
+auto
+main(int argc, char *argv[]) -> int
 {
-    using namespace host;
+    using main_t = details::main<
+        file<details::file>,
+        ioctl_controller<details::ioctl_controller>,
+        ioctl_debug<details::ioctl_debug>>;
 
     try {
-        details::main<
-            file<details::file>,
-            ioctl_controller<details::ioctl_controller>,
-            ioctl_debug<details::ioctl_debug>
-        > m;
-
-        return m.execute(argc, argv);
+        return main_t().execute(argc, argv);
     }
     catch (const std::exception &e) {
         std::cout << "error: " << e.what() << '\n';

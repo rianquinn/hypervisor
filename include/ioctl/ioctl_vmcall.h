@@ -8,8 +8,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -26,35 +26,36 @@
 
 namespace host::interface
 {
+    /// IOCTL VMCall
+    ///
+    /// This class is responsible for talking to the VMM including
+    /// - calling the VMM
+    ///
+    template<typename T>
+    struct ioctl_vmcall
+    {
+        /// Call
+        ///
+        /// Performs a VMCall to the VMM. This is used to communicate with
+        /// the VMM from userspace. Note that this is the safer approach
+        /// than trying to VMCall directly as this call ensures the VMM is
+        /// loaded and running.
+        ///
+        /// @param reg1 depends on the call being made
+        /// @param reg2 depends on the call being made
+        /// @param reg3 depends on the call being made
+        /// @param reg4 depends on the call being made
+        /// @return depends on the call being made
+        ///
+        constexpr auto
+        call(uint64_t reg1, uint64_t reg2, uint64_t reg3, uint64_t reg4)
+            -> uint64_t
+        {
+            return T::details(this).call(reg1, reg2, reg3, reg4);
+        }
+    };
 
-/// IOCTL VMCall
-///
-/// This class is responsible for talking to the VMM including
-/// - calling the VMM
-///
-template<typename T>
-struct ioctl_vmcall
-{
-    /// Call
-    ///
-    /// Performs a VMCall to the VMM. This is used to communicate with
-    /// the VMM from userspace. Note that this is the safer approach
-    /// than trying to VMCall directly as this call ensures the VMM is
-    /// loaded and running.
-    ///
-    /// @param reg1 depends on the call being made
-    /// @param reg2 depends on the call being made
-    /// @param reg3 depends on the call being made
-    /// @param reg4 depends on the call being made
-    /// @return depends on the call being made
-    ///
-    constexpr auto call(
-        uint64_t reg1, uint64_t reg2, uint64_t reg3, uint64_t reg4)
-    -> uint64_t
-    { return T::details(this).call(reg1, reg2, reg3, reg4); }
-};
-
-}
+}    // namespace host::interface
 
 namespace host
 {

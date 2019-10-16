@@ -8,8 +8,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -26,106 +26,106 @@
 #include <ioctl/ioctl_controller.h>
 #include <ioctl/ioctl_debug.h>
 
-#include <argparse/argparse.hpp>
+#include <memory>
+#include <iostream>
+#include <argagg/argagg.hpp>
 
 namespace host::details
 {
+    constexpr auto default_heap_size = 64ULL;
 
-template<
-    typename FILE,
-    typename IOCTL_CONTROLLER,
-    typename IOCTL_DEBUG
-    >
-class main
-{
-    interface::ioctl_controller<IOCTL_CONTROLLER> m_ioctl_controller{};
-    interface::ioctl_debug<IOCTL_DEBUG> m_ioctl_debug{};
-
-    argparse::ArgumentParser m_bfm{};
-
-public:
-    auto execute(
-        int argc, const char *argv[])
-    -> int
+    template<typename FILE, typename IOCTL_CONTROLLER, typename IOCTL_DEBUG>
+    class main
     {
-        this->parse_args(argc, argv);
-        this->dispatch();
+        adheres_to(FILE, interface::file);
+        adheres_to(IOCTL_CONTROLLER, interface::ioctl_controller);
+        adheres_to(IOCTL_DEBUG, interface::ioctl_debug);
 
-        return EXIT_SUCCESS;
-    }
+        argagg::parser m_parser{{
+            {"help", {"-h", "--help"}, "shows this help message", 0},
+            {"heap", {"-m", "--heap"}, "MB of heap memory to give the VMM", 1},
+        }};
 
-private:
-    auto parse_args(
-        int argc, const char *argv[])
-    -> void
-    {
-        m_bfm = {"bfm"};
-
-        m_bfm.add_argument("-l","--load")
-            .help("load a VMM into the kernel");
-
-        m_bfm.add_argument("-u", "--unload")
-            .default_value(false)
-            .implicit_value(true)
-            .help("unload a previously loaded VMM");
-
-        m_bfm.add_argument("-x", "--start")
-            .default_value(false)
-            .implicit_value(true)
-            .help("start a previously loaded VMM");
-
-        m_bfm.add_argument("-s", "--stop")
-            .default_value(false)
-            .implicit_value(true)
-            .help("stop a previously started VMM");
-
-        m_bfm.add_argument("-d", "--dump")
-            .default_value(false)
-            .implicit_value(true)
-            .help("output the contents of the VMM's debug buffer");
-
-        m_bfm.add_argument("-m", "--mem")
-            .default_value(64ULL)
-            .action([](const std::string& val) { return std::stoull(val); })
-            .help("memory in MB to give the VMM when loading");
-
-        m_bfm.parse_args(argc, const_cast<char**>(argv));
-    }
-
-    auto dispatch()
-    -> void
-    {
-        if (!m_bfm.get<std::string>("--load").empty()) {
-            m_ioctl_controller.load_vmm(
-                FILE::read(m_bfm.get<std::string>("--load")),
-                m_bfm.get<unsigned long long>("--mem")
-            );
-
-            return;
+    public:
+        auto
+        execute(int argc, char **argv) -> int
+        {
+            this->dispatch(m_parser.parse(argc, argv));
+            return EXIT_SUCCESS;
         }
 
-        if (m_bfm.get<bool>("--unload")) {
-            m_ioctl_controller.unload_vmm();
-            return;
+        auto
+        execute(int argc, const char **argv) -> int
+        {
+            return this->execute(argc, const_cast<char **>(argv));    // NOLINT
         }
 
-        if (m_bfm.get<bool>("--start")) {
-            m_ioctl_controller.start_vmm();
-            return;
+    private:
+        auto
+        dispatch(const argagg::parser_results &args) -> void
+        {
+            if (args["help"]) {
+                return this->help();
+            }
+
+            if (args.pos.empty()) {
+                throw std::runtime_error("missing argument \"command\"");
+            }
+
+            auto cmd = args.as<std::string>(0);
+
+            if (cmd == "load") {
+                if (args.pos.size() != 2) {
+                    throw std::runtime_error("invalid arguments for \"load\"");
+                }
+
+                auto file = FILE::read(args.as<std::string>(1));
+                auto heap = args["heap"].as<uint64_t>(default_heap_size);
+
+                std::make_unique<IOCTL_CONTROLLER>()->load_vmm(file, heap);
+                return;
+            }
+
+            if (cmd == "unload") {
+                std::make_unique<IOCTL_CONTROLLER>()->unload_vmm();
+                return;
+            }
+
+            if (cmd == "start") {
+                std::make_unique<IOCTL_CONTROLLER>()->start_vmm();
+                return;
+            }
+
+            if (cmd == "stop") {
+                std::make_unique<IOCTL_CONTROLLER>()->stop_vmm();
+                return;
+            }
+
+            if (cmd == "dump") {
+                std::cout << std::make_unique<IOCTL_DEBUG>()->dump_vmm();
+                std::cout << '\n';
+
+                return;
+            }
+
+            throw std::runtime_error("unknown command \"" + cmd + "\"");
         }
 
-        if (m_bfm.get<bool>("--stop")) {
-            m_ioctl_controller.stop_vmm();
-            return;
+        auto
+        help() -> void
+        {
+            std::cout << "Usage: bfm [OPTION]... load <filename>" << '\n';
+            std::cout << "  or:  bfm unload" << '\n';
+            std::cout << "  or:  bfm start" << '\n';
+            std::cout << "  or:  bfm stop" << '\n';
+            std::cout << "  or:  bfm dump" << '\n';
+            std::cout << "Controls/Debugs the Bareflank(TM) Hypervisor" << '\n';
+            std::cout << '\n';
+            std::cout << "Options:" << '\n';
+            std::cout << m_parser;
         }
+    };
 
-        if (m_bfm.get<bool>("--dump")) {
-            std::cout << m_ioctl_debug.dump_vmm() << '\n';
-            return;
-        }
-    }
-};
-
-}
+}    // namespace host::details
 
 #endif

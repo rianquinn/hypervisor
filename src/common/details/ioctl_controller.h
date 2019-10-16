@@ -8,8 +8,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -29,10 +29,10 @@
 /* Common                                                                     */
 /* -------------------------------------------------------------------------- */
 
-#define IOCTL_LOAD_VMM_CMD 0x801
-#define IOCTL_UNLOAD_VMM_CMD 0x802
-#define IOCTL_START_VMM_CMD 0x803
-#define IOCTL_STOP_VMM_CMD 0x804
+#define IOCTL_LOAD_VMM_CMD 0x801      // NOLINT
+#define IOCTL_UNLOAD_VMM_CMD 0x802    // NOLINT
+#define IOCTL_START_VMM_CMD 0x803     // NOLINT
+#define IOCTL_STOP_VMM_CMD 0x804      // NOLINT
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -50,7 +50,8 @@
  * @var ioctl_load_args_t::mem
  *     the size in bytes of the memory to give the VMM
  */
-struct ioctl_load_args_t {
+struct ioctl_load_args_t
+{
     const void *file_addr;
     uint64_t file_size;
     uint64_t mem;
@@ -60,22 +61,30 @@ struct ioctl_load_args_t {
 /* Linux Interfaces                                                           */
 /* -------------------------------------------------------------------------- */
 
+/* clang-format off */
+
 #ifdef __linux__
-#define IOCTL_LOAD_VMM _IOW(BAREFLANK_MAJOR, IOCTL_LOAD_VMM_CMD, struct ioctl_load_args_t *)
-#define IOCTL_UNLOAD_VMM _IO(BAREFLANK_MAJOR, IOCTL_UNLOAD_VMM_CMD)
-#define IOCTL_START_VMM _IO(BAREFLANK_MAJOR, IOCTL_START_VMM_CMD)
-#define IOCTL_STOP_VMM _IO(BAREFLANK_MAJOR, IOCTL_STOP_VMM_CMD)
+#define IOCTL_LOAD_VMM _IOW(BAREFLANK_MAJOR, IOCTL_LOAD_VMM_CMD, struct ioctl_load_args_t *)                    // NOLINT
+#define IOCTL_UNLOAD_VMM _IO(BAREFLANK_MAJOR, IOCTL_UNLOAD_VMM_CMD)                                             // NOLINT
+#define IOCTL_START_VMM _IO(BAREFLANK_MAJOR, IOCTL_START_VMM_CMD)                                               // NOLINT
+#define IOCTL_STOP_VMM _IO(BAREFLANK_MAJOR, IOCTL_STOP_VMM_CMD)                                                 // NOLINT
 #endif
+
+/* clang-format on */
 
 /* -------------------------------------------------------------------------- */
 /* Windows Interfaces                                                         */
 /* -------------------------------------------------------------------------- */
 
+/* clang-format off */
+
 #if defined(_WIN32) || defined(__CYGWIN__)
-#define IOCTL_LOAD_VMM CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_LOAD_VMM_CMD, METHOD_BUFFERED, FILE_WRITE_DATA)
-#define IOCTL_UNLOAD_VMM CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_UNLOAD_VMM_CMD, METHOD_BUFFERED, 0)
-#define IOCTL_START_VMM CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_START_VMM_CMD, METHOD_BUFFERED, 0)
-#define IOCTL_STOP_VMM CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_STOP_VMM_CMD, METHOD_BUFFERED, 0)
+#define IOCTL_LOAD_VMM CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_LOAD_VMM_CMD, METHOD_BUFFERED, FILE_WRITE_DATA)     // NOLINT
+#define IOCTL_UNLOAD_VMM CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_UNLOAD_VMM_CMD, METHOD_BUFFERED, 0)               // NOLINT
+#define IOCTL_START_VMM CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_START_VMM_CMD, METHOD_BUFFERED, 0)                 // NOLINT
+#define IOCTL_STOP_VMM CTL_CODE(BAREFLANK_DEVICETYPE, IOCTL_STOP_VMM_CMD, METHOD_BUFFERED, 0)                   // NOLINT
 #endif
+
+/* clang-format on */
 
 #endif

@@ -19,8 +19,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-add_subproject(
-    bfm         host
-    SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/bfm
-    DEPENDS     standalone_cxx gsl_host argagg_host
-)
+add_unittest(test_debugring)

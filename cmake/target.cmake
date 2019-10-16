@@ -19,42 +19,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.13)
-project(hypervisor NONE)
-
 # ------------------------------------------------------------------------------
-# Initial Setup
+# Targets
 # ------------------------------------------------------------------------------
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/macros.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/config.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/target.cmake)
-
-print_init_banner()
-
-# ------------------------------------------------------------------------------
-# Interfaces
-# ------------------------------------------------------------------------------
-
-setup_interfaces()
-
-# ------------------------------------------------------------------------------
-# Dependencies
-# ------------------------------------------------------------------------------
-
-include_dependency(argagg)
-include_dependency(gsl)
-include_dependency(standalone_cxx)
+add_custom_target(
+    clean-all
+    COMMAND ${CMAKE_COMMAND} --build . --target clean
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BAREFLANK_DEPENDS_DIR}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BAREFLANK_SUBPROJECT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory src
+    COMMAND ${CMAKE_COMMAND} -E remove_directory tests
+    COMMAND ${CMAKE_COMMAND} -E remove bareflank_hostConfig.cmake
+    COMMAND ${CMAKE_COMMAND} -E remove bareflank_targetConfig.cmake
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BAREFLANK_PREFIX_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${BAREFLANK_PREFIX_DIR}
+)
 
 # ------------------------------------------------------------------------------
-# Sources
+# Targets
 # ------------------------------------------------------------------------------
 
-add_subdirectory(src)
-add_subdirectory(tests)
+add_custom_target(
+    format
+    COMMAND find ${CMAKE_SOURCE_DIR} -iname *.h -o -iname *.cpp | xargs clang-format -i
+)
 
-# ------------------------------------------------------------------------------
-# Complete
-# ------------------------------------------------------------------------------
-
-print_fini_banner()
+add_custom_target(
+    unittest
+    COMMAND ${CMAKE_COMMAND} -E chdir ${BAREFLANK_SUBPROJECT_DIR}/unit_host/build ctest --output-on-failure
+)

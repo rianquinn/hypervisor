@@ -264,6 +264,20 @@ function(add_subproject NAME PREFIX)
         endif()
     endif()
 
+    if(PREFIX MATCHES "target")
+        if(BAREFLANK_TARGET_BUILD_TYPE MATCHES "Debug")
+            list(APPEND ARGN
+                CMAKE_ARGS -DCMAKE_CXX_CLANG_TIDY=${CMAKE_CXX_CLANG_TIDY}
+            )
+        endif()
+    else()
+        if(BAREFLANK_HOST_BUILD_TYPE MATCHES "Debug")
+            list(APPEND ARGN
+                CMAKE_ARGS -DCMAKE_CXX_CLANG_TIDY=${CMAKE_CXX_CLANG_TIDY}
+            )
+        endif()
+    endif()
+
     ExternalProject_Add(
         ${NAME}_${PREFIX}
         ${ARGN}

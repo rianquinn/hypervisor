@@ -24,8 +24,6 @@ project(bfm CXX)
 # -----------------------------------------------------------------------------
 
 set(CMAKE_CXX_STANDARD 17)
-
-find_package(bareflank_host)
 find_package(standalone_cxx_sdk)
 
 # -----------------------------------------------------------------------------
@@ -36,9 +34,14 @@ add_executable(bfm
     src/main.cpp
 )
 
+target_include_directories(bfm PRIVATE
+    ../../include
+    ../../src
+)
+
 target_link_libraries(bfm PRIVATE
-    bareflank_host
     standalone_cxx_sdk
+    stdc++fs
 )
 
 # -----------------------------------------------------------------------------
