@@ -61,7 +61,7 @@ jobs:
   # - script: |
   #     cd working/build
   #     make quick
-    displayName: 'Test'
+    # displayName: 'Test'
 
 
 
