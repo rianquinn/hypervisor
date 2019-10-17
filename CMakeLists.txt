@@ -26,6 +26,12 @@ project(hypervisor NONE)
 # Initial Setup
 # ------------------------------------------------------------------------------
 
+option(BUILD_TESTS "Build test programs" OFF)
+
+# ------------------------------------------------------------------------------
+# Initial Setup
+# ------------------------------------------------------------------------------
+
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/macros.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/config.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/target.cmake)

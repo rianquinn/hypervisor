@@ -19,8 +19,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-add_subproject(
-    unit        host
-    SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/unit
-    DEPENDS     standalone_cxx gsl_host argagg_host
-)
+if(BUILD_TESTS)
+    add_subproject(
+        unit        host
+        SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/unit
+        DEPENDS     standalone_cxx gsl_host argagg_host
+    )
+endif()

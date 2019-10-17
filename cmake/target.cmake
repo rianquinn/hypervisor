@@ -20,7 +20,7 @@
 # SOFTWARE.
 
 # ------------------------------------------------------------------------------
-# Targets
+# Clean Targets
 # ------------------------------------------------------------------------------
 
 add_custom_target(
@@ -37,7 +37,7 @@ add_custom_target(
 )
 
 # ------------------------------------------------------------------------------
-# Targets
+# Development Targets
 # ------------------------------------------------------------------------------
 
 add_custom_target(
@@ -45,7 +45,9 @@ add_custom_target(
     COMMAND find ${CMAKE_SOURCE_DIR} -iname *.h -o -iname *.cpp | xargs clang-format -i
 )
 
-add_custom_target(
-    unittest
-    COMMAND ${CMAKE_COMMAND} -E chdir ${BAREFLANK_SUBPROJECT_DIR}/unit_host/build ctest --output-on-failure
-)
+if(BUILD_TESTS)
+    add_custom_target(
+        unittest
+        COMMAND ${CMAKE_COMMAND} -E chdir ${BAREFLANK_SUBPROJECT_DIR}/unit_host/build ctest --output-on-failure
+    )
+endif()
