@@ -19,14 +19,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IOCTL_DETAILS_IOCTL_CONTROLLER_H
-#define IOCTL_DETAILS_IOCTL_CONTROLLER_H
+#ifndef VMMCTL_DETAILS_VMM_CONTROLLER_H
+#define VMMCTL_DETAILS_VMM_CONTROLLER_H
 
 #ifdef __linux__
 #include "linux/ioctl_controller.h"
-namespace host::details
+namespace vmmctl::details
 {
-    using ioctl_controller = linux_platform::ioctl_controller;
+    using vmm_controller = linux_platform::vmm_controller;
 }
 #endif
 

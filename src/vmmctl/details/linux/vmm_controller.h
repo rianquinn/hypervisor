@@ -19,31 +19,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IOCTL_DETAILS_LINUX_IOCTL_CONTROLLER_H
-#define IOCTL_DETAILS_LINUX_IOCTL_CONTROLLER_H
+#ifndef VMMCTL_LINUX_VMM_CONTROLLER_H
+#define VMMCTL_LINUX_VMM_CONTROLLER_H
 
-#include <ioctl/ioctl_controller.h>
+#include <vmmctl/vmm_controller.h>
 #include <common/details/ioctl_controller.h>
 
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-namespace host::details::linux_platform
+namespace vmmctl::linux_platform
 {
-    class ioctl_controller
+    class vmm_controller
     {
         int m_fd{};
 
     public:
-        ioctl_controller()
+        vmm_controller()
         {
             if (m_fd = open("/dev/bareflank", O_RDWR); m_fd < 0) {    // NOLINT
                 throw std::runtime_error("failed to open to bfdriver");
             }
         }
 
-        ~ioctl_controller()
+        ~vmm_controller()
         {
             if (m_fd >= 0) {
                 close(m_fd);
@@ -54,7 +54,7 @@ namespace host::details::linux_platform
         auto
         load_vmm(const std::vector<char> &file, size_t heap_size) -> void
         {
-            ioctl_load_args_t args = {file.data(), file.size(), heap_size};
+            vmmctl_load_args_t args = {file.data(), file.size(), heap_size};
 
             if (::ioctl(m_fd, IOCTL_LOAD_VMM, &args) < 0) {    // NOLINT
                 throw std::runtime_error("ioctl IOCTL_LOAD_VMM failed");
@@ -88,15 +88,15 @@ namespace host::details::linux_platform
     public:
         // clang-format off
 
-        ioctl_controller(ioctl_controller &&) noexcept = default;
-        ioctl_controller &operator=(ioctl_controller &&) noexcept = default;
+        vmm_controller(vmm_controller &&) noexcept = default;
+        vmm_controller &operator=(vmm_controller &&) noexcept = default;
 
-        ioctl_controller(const ioctl_controller &) = delete;
-        ioctl_controller &operator=(const ioctl_controller &) = delete;
+        vmm_controller(const vmm_controller &) = delete;
+        vmm_controller &operator=(const vmm_controller &) = delete;
 
         // clang-format on
     };
 
-}    // namespace host::details::linux_platform
+}
 
 #endif

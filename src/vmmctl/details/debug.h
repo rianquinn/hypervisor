@@ -19,32 +19,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <file/file.h>
-#include <file/details/file.h>
+#ifndef VMMCTL_DETAILS_DEBUG_H
+#define VMMCTL_DETAILS_DEBUG_H
 
-#include <vmmctl/vmm_controller.h>
-#include <vmmctl/details/vmm_controller.h>
-
-#include <vmmctl/debug.h>
-#include <vmmctl/details/debug.h>
-
-#include <bfm/details/main.h>
-using namespace vmmctl;
-
-auto
-main(int argc, char *argv[]) -> int
+#ifdef __linux__
+#include "linux/debug.h"
+namespace vmmctl::details
 {
-    using main_t = details::main<
-        file<details::file>,
-        vmm_controller<details::vmm_controller>,
-        debug<details::debug>>;
-
-    try {
-        return main_t().execute(argc, argv);
-    }
-    catch (const std::exception &e) {
-        std::cout << "error: " << e.what() << '\n';
-    }
-
-    return EXIT_FAILURE;
+    using debug = linux_platform::debug;
 }
+#endif
+
+#endif

@@ -23,23 +23,23 @@
 #define BFM_DETAILS_PARSE_H
 
 #include <file/file.h>
-#include <ioctl/ioctl_controller.h>
-#include <ioctl/ioctl_debug.h>
+#include <vmmctl/vmm_controller.h>
+#include <vmmctl/debug.h>
 
 #include <memory>
 #include <iostream>
 #include <argagg/argagg.hpp>
 
-namespace host::details
+namespace vmmctl::details
 {
     constexpr auto default_heap_size = 64ULL;
 
-    template<typename FILE, typename IOCTL_CONTROLLER, typename IOCTL_DEBUG>
+    template<typename FILE, typename VMM_CONTROLLER, typename DEBUG>
     class main
     {
         adheres_to(FILE, interface::file);
-        adheres_to(IOCTL_CONTROLLER, interface::ioctl_controller);
-        adheres_to(IOCTL_DEBUG, interface::ioctl_debug);
+        adheres_to(VMM_CONTROLLER, interface::vmm_controller);
+        adheres_to(DEBUG, interface::debug);
 
         argagg::parser m_parser{{
             {"help", {"-h", "--help"}, "shows this help message", 0},
@@ -82,27 +82,27 @@ namespace host::details
                 auto file = FILE::read(args.as<std::string>(1));
                 auto heap = args["heap"].as<uint64_t>(default_heap_size);
 
-                std::make_unique<IOCTL_CONTROLLER>()->load_vmm(file, heap);
+                std::make_unique<VMM_CONTROLLER>()->load_vmm(file, heap);
                 return;
             }
 
             if (cmd == "unload") {
-                std::make_unique<IOCTL_CONTROLLER>()->unload_vmm();
+                std::make_unique<VMM_CONTROLLER>()->unload_vmm();
                 return;
             }
 
             if (cmd == "start") {
-                std::make_unique<IOCTL_CONTROLLER>()->start_vmm();
+                std::make_unique<VMM_CONTROLLER>()->start_vmm();
                 return;
             }
 
             if (cmd == "stop") {
-                std::make_unique<IOCTL_CONTROLLER>()->stop_vmm();
+                std::make_unique<VMM_CONTROLLER>()->stop_vmm();
                 return;
             }
 
             if (cmd == "dump") {
-                std::cout << std::make_unique<IOCTL_DEBUG>()->dump_vmm();
+                std::cout << std::make_unique<DEBUG>()->dump_vmm();
                 std::cout << '\n';
 
                 return;
@@ -126,6 +126,6 @@ namespace host::details
         }
     };
 
-}    // namespace host::details
+}
 
 #endif

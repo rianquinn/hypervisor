@@ -19,15 +19,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IOCTL_IOCTL_CONTROLLER_H
-#define IOCTL_IOCTL_CONTROLLER_H
+#ifndef VMMCTL_VMM_CONTROLLER_CONTROLLER_H
+#define VMMCTL_VMM_CONTROLLER_CONTROLLER_H
 
 #include "../bfpair.h"
 #include <vector>
 
-namespace host::interface
+namespace vmmctl
 {
-    /// IOCTL Controller
+    /// VMM Controller
     ///
     /// This class is responsible for controlling the VMM including:
     /// - loading the VMM
@@ -36,7 +36,7 @@ namespace host::interface
     /// - stopping the VMM
     ///
     template<typename T>
-    struct ioctl_controller
+    struct vmm_controller
     {
         /// Load VMM
         ///
@@ -56,7 +56,7 @@ namespace host::interface
 
         /// Unload VMM
         ///
-        /// Tells the kernel driver to unload a previously loaded VMM
+        /// Unload a previously loaded VMM
         ///
         constexpr auto
         unload_vmm() -> void
@@ -66,7 +66,7 @@ namespace host::interface
 
         /// Start VMM
         ///
-        /// Tells the kernel driver to start a previously loaded VMM.
+        /// Start a previously loaded VMM.
         ///
         constexpr auto
         start_vmm() -> void
@@ -76,7 +76,7 @@ namespace host::interface
 
         /// Stop VMM
         ///
-        /// Tells the kernel driver to stop a previously started VMM.
+        /// Stop a previously started VMM.
         ///
         constexpr auto
         stop_vmm() -> void
@@ -85,12 +85,12 @@ namespace host::interface
         }
     };
 
-}    // namespace host::interface
+}
 
-namespace host
+namespace vmmctl
 {
     template<typename D>
-    using ioctl_controller = bfpair<interface::ioctl_controller, D>;
+    using vmm_controller = bfpair<vmm_controller, D>;
 }
 
 #endif

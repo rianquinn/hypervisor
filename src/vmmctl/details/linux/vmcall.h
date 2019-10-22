@@ -19,48 +19,63 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IOCTL_IOCTL_VMCALL_H
-#define IOCTL_IOCTL_VMCALL_H
+#ifndef VMMCTL_LINUX_VMCALL_H
+#define VMMCTL_LINUX_VMCALL_H
 
-#include "../bfpair.h"
+#include <vmmctl/vmcall.h>
+#include <common/details/ioctl_vmcall.h>
 
-namespace host::interface
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+
+namespace vmmctl::linux_platform
 {
-    /// IOCTL VMCall
-    ///
-    /// This class is responsible for talking to the VMM including
-    /// - calling the VMM
-    ///
-    template<typename T>
-    struct ioctl_vmcall
+    class vmcall : public common::ioctl_vmcall
     {
-        /// Call
-        ///
-        /// Performs a VMCall to the VMM. This is used to communicate with
-        /// the VMM from userspace. Note that this is the safer approach
-        /// than trying to VMCall directly as this call ensures the VMM is
-        /// loaded and running.
-        ///
-        /// @param reg1 depends on the call being made
-        /// @param reg2 depends on the call being made
-        /// @param reg3 depends on the call being made
-        /// @param reg4 depends on the call being made
-        /// @return depends on the call being made
-        ///
-        constexpr auto
+        int m_fd{};
+
+    public:
+        vmcall()
+        {
+            if (m_fd = open("/dev/bareflank", O_RDWR); m_fd < 0) {    // NOLINT
+                throw std::runtime_error("failed to open to bfdriver");
+            }
+        }
+
+        ~vmcall()
+        {
+            if (m_fd >= 0) {
+                close(m_fd);
+            }
+        }
+
+    public:
+        auto
         call(uint64_t reg1, uint64_t reg2, uint64_t reg3, uint64_t reg4)
             -> uint64_t
         {
-            return T::details(this).call(reg1, reg2, reg3, reg4);
+            ioctl_vmcall_args_t args = {reg1, reg2, reg3, reg4};
+
+            if (::ioctl(m_fd, IOCTL_VMCALL_CMD, &args) < 0) {    // NOLINT
+                throw std::runtime_error("ioctl IOCTL_VMCALL_CMD failed");
+            }
+
+            return args.reg1;
         }
+
+    public:
+        // clang-format off
+
+        vmcall(vmcall &&) noexcept = default;
+        vmcall &operator=(vmcall &&) noexcept = default;
+
+        vmcall(const vmcall &) = delete;
+        vmcall &operator=(const vmcall &) = delete;
+
+        // clang-format on
     };
 
-}    // namespace host::interface
-
-namespace host
-{
-    template<typename D>
-    using ioctl_vmcall = bfpair<interface::ioctl_vmcall, D>;
 }
 
 #endif
