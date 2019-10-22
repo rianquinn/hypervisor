@@ -19,32 +19,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IOCTL_DETAILS_LINUX_IOCTL_DEBUG_H
-#define IOCTL_DETAILS_LINUX_IOCTL_DEBUG_H
+#ifndef VMMCTL_LINUX_DEBUG_H
+#define VMMCTL_LINUX_DEBUG_H
 
-#include <ioctl/ioctl_debug.h>
+#include <vmmctl/debug.h>
 #include <common/details/ioctl_debug.h>
 
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-namespace host::details::linux_platform
+namespace vmmctl::linux_platform
 {
-    class ioctl_debug
+    class debug
     {
         int m_fd{};
         debug_ring_t m_dr{};
 
     public:
-        ioctl_debug()
+        debug()
         {
             if (m_fd = open("/dev/bareflank", O_RDWR); m_fd < 0) {    // NOLINT
                 throw std::runtime_error("failed to open to bfdriver");
             }
         }
 
-        ~ioctl_debug()
+        ~debug()
         {
             if (m_fd >= 0) {
                 close(m_fd);
@@ -67,15 +67,15 @@ namespace host::details::linux_platform
     public:
         // clang-format off
 
-        ioctl_debug(ioctl_debug &&) noexcept = default;
-        ioctl_debug &operator=(ioctl_debug &&) noexcept = default;
+        debug(debug &&) noexcept = default;
+        debug &operator=(debug &&) noexcept = default;
 
-        ioctl_debug(const ioctl_debug &) = delete;
-        ioctl_debug &operator=(const ioctl_debug &) = delete;
+        debug(const debug &) = delete;
+        debug &operator=(const debug &) = delete;
 
         // clang-format on
     };
 
-}    // namespace host::details::linux_platform
+}
 
 #endif

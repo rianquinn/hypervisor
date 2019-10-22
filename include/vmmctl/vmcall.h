@@ -19,15 +19,48 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IOCTL_DETAILS_IOCTL_VMCALL_H
-#define IOCTL_DETAILS_IOCTL_VMCALL_H
+#ifndef VMMCTL_VMCALL_H
+#define VMMCTL_VMCALL_H
 
-#ifdef __linux__
-#include "linux/ioctl_vmcall.h"
-namespace host::details
+#include "../bfpair.h"
+
+namespace vmmctl
 {
-    using ioctl_vmcall = linux_platform::ioctl_vmcall;
+    /// VMCall
+    ///
+    /// This class is responsible for talking to the VMM including
+    /// - calling the VMM
+    ///
+    template<typename T>
+    struct vmcall
+    {
+        /// Call
+        ///
+        /// Performs a VMCall to the VMM. This is used to communicate with
+        /// the VMM from userspace. Note that this is the safer approach
+        /// than trying to VMCall directly as this call ensures the VMM is
+        /// loaded and running.
+        ///
+        /// @param reg1 depends on the call being made
+        /// @param reg2 depends on the call being made
+        /// @param reg3 depends on the call being made
+        /// @param reg4 depends on the call being made
+        /// @return depends on the call being made
+        ///
+        constexpr auto
+        call(uint64_t reg1, uint64_t reg2, uint64_t reg3, uint64_t reg4)
+            -> uint64_t
+        {
+            return T::details(this).call(reg1, reg2, reg3, reg4);
+        }
+    };
+
 }
-#endif
+
+namespace vmmctl
+{
+    template<typename D>
+    using vmcall = bfpair<vmcall, D>;
+}
 
 #endif

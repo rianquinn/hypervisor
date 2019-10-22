@@ -19,15 +19,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef IOCTL_DETAILS_IOCTL_DEBUG_H
-#define IOCTL_DETAILS_IOCTL_DEBUG_H
+#ifndef VMMCTL_DEBUG_H
+#define VMMCTL_DEBUG_H
 
-#ifdef __linux__
-#include "linux/ioctl_debug.h"
-namespace host::details
+#include "../bfpair.h"
+#include <string>
+
+namespace vmmctl
 {
-    using ioctl_debug = linux_platform::ioctl_debug;
+    /// Debug
+    ///
+    /// This class is responsible for aiding in the debugging of the VMM
+    /// including:
+    /// - dumpping the VMM's debug ring
+    ///
+    template<typename T>
+    struct debug
+    {
+        /// Dump VMM
+        ///
+        /// Returns the contents of the VMM's debug ring in a std::string
+        ///
+        /// @return the contents of the VMM's debug ring
+        ///
+        auto
+        dump_vmm() -> std::string
+        {
+            return T::details(this).dump_vmm();
+        }
+    };
+
 }
-#endif
+
+namespace vmmctl
+{
+    template<typename D>
+    using debug = bfpair<debug, D>;
+}
 
 #endif
