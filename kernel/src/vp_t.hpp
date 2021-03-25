@@ -49,6 +49,8 @@ namespace mk
     {
         /// @brief stores true if initialized() has been executed
         bool m_initialized{};
+        /// @brief stores true if initialized() has been executed
+        bool m_allocated{};
         /// @brief stores a reference to the page pool to use
         PAGE_POOL_CONCEPT *m_page_pool{};
         /// @brief stores the ID associated with this vp_t
@@ -115,6 +117,51 @@ namespace mk
             m_id = bsl::safe_uint16::zero(true);
             m_page_pool = {};
             m_initialized = {};
+        }
+
+        /// <!-- description -->
+        ///   @brief Allocates this vp_t
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        allocate() &noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::error() << "vp_t not initialized\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(m_allocated)) {
+                bsl::error() << "vp_t already allocated\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            m_allocated = true;
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Deallocates this vp_t
+        ///
+        constexpr void
+        deallocate() &noexcept
+        {
+            m_allocated = {};
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if this vp_t is allocated, false otherwise
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns true if this vp_t is allocated, false otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        is_allocated() const &noexcept -> bool
+        {
+            return m_allocated;
         }
 
         /// <!-- description -->

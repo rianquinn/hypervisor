@@ -158,7 +158,7 @@ start_vmm_per_cpu(uint32_t const cpu)
     g_mk_args[cpu]->rpt = g_mk_root_page_table;
     g_mk_args[cpu]->rpt_phys = platform_virt_to_phys(g_mk_root_page_table);
 
-    ret = get_mk_page_pool_addr(&g_mk_page_pool, HYPERVISOR_DIRECT_MAP_ADDR, &addr);
+    ret = get_mk_page_pool_addr(&g_mk_page_pool, HYPERVISOR_MK_PAGE_POOL_ADDR, &addr);
     if (ret) {
         bferror("get_mk_page_pool_addr failed");
         goto get_mk_page_pool_addr_failed;
@@ -166,9 +166,8 @@ start_vmm_per_cpu(uint32_t const cpu)
 
     g_mk_args[cpu]->page_pool.addr = addr;
     g_mk_args[cpu]->page_pool.size = g_mk_page_pool.size;
-    g_mk_args[cpu]->page_pool_base_virt = HYPERVISOR_DIRECT_MAP_ADDR;
 
-    ret = get_mk_huge_pool_addr(&g_mk_huge_pool, HYPERVISOR_DIRECT_MAP_ADDR, &addr);
+    ret = get_mk_huge_pool_addr(&g_mk_huge_pool, HYPERVISOR_MK_HUGE_POOL_ADDR, &addr);
     if (ret) {
         bferror("get_mk_huge_pool_addr failed");
         goto get_mk_huge_pool_addr_failed;
@@ -176,7 +175,6 @@ start_vmm_per_cpu(uint32_t const cpu)
 
     g_mk_args[cpu]->huge_pool.addr = addr;
     g_mk_args[cpu]->huge_pool.size = g_mk_huge_pool.size;
-    g_mk_args[cpu]->huge_pool_base_virt = HYPERVISOR_DIRECT_MAP_ADDR;
 
 #ifdef DEBUG_LOADER
     dump_mk_stack(&g_mk_stack[cpu], cpu);

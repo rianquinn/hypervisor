@@ -45,6 +45,7 @@ namespace mk
     ///   @tparam EXT_CONCEPT the type of ext_t that this class manages.
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
+    ///   @tparam HUGE_POOL_CONCEPT defines the type of huge pool to use
     ///   @tparam ROOT_PAGE_TABLE_CONCEPT defines the type of RPT pool to use
     ///   @tparam MAX_EXTENSIONS the max number of extensions supported
     ///
@@ -52,6 +53,7 @@ namespace mk
         typename EXT_CONCEPT,
         typename INTRINSIC_CONCEPT,
         typename PAGE_POOL_CONCEPT,
+        typename HUGE_POOL_CONCEPT,
         typename ROOT_PAGE_TABLE_CONCEPT,
         bsl::uintmax MAX_EXTENSIONS>
     class ext_pool_t final
@@ -60,6 +62,8 @@ namespace mk
         INTRINSIC_CONCEPT &m_intrinsic;
         /// @brief stores a reference to the page pool to use
         PAGE_POOL_CONCEPT &m_page_pool;
+        /// @brief stores a reference to the huge pool to use
+        HUGE_POOL_CONCEPT &m_huge_pool;
         /// @brief stores system RPT provided by the loader
         ROOT_PAGE_TABLE_CONCEPT &m_system_rpt;
         /// @brief stores all of the extensions.
@@ -72,6 +76,8 @@ namespace mk
         using intrinsic_type = INTRINSIC_CONCEPT;
         /// @brief an alias for PAGE_POOL_CONCEPT
         using page_pool_type = PAGE_POOL_CONCEPT;
+        /// @brief an alias for HUGE_POOL_CONCEPT
+        using huge_pool_type = HUGE_POOL_CONCEPT;
         /// @brief an alias for ROOT_PAGE_TABLE_CONCEPT
         using root_page_table_type = ROOT_PAGE_TABLE_CONCEPT;
 
@@ -81,13 +87,19 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param intrinsic the intrinsics to use
         ///   @param page_pool the page pool to use
+        ///   @param huge_pool the huge pool to use
         ///   @param system_rpt the system RPT provided by the loader
         ///
         explicit constexpr ext_pool_t(
             INTRINSIC_CONCEPT &intrinsic,
             PAGE_POOL_CONCEPT &page_pool,
+            HUGE_POOL_CONCEPT &huge_pool,
             ROOT_PAGE_TABLE_CONCEPT &system_rpt) noexcept
-            : m_intrinsic{intrinsic}, m_page_pool{page_pool}, m_system_rpt{system_rpt}, m_ext_pool{}
+            : m_intrinsic{intrinsic}
+            , m_page_pool{page_pool}
+            , m_huge_pool{huge_pool}
+            , m_system_rpt{system_rpt}
+            , m_ext_pool{}
         {}
 
         /// <!-- description -->
@@ -125,6 +137,7 @@ namespace mk
                 ret = ext.data->initialize(
                     &m_intrinsic,
                     &m_page_pool,
+                    &m_huge_pool,
                     bsl::to_u16(ext.index),
                     *ext_elf_files.at_if(ext.index),
                     online_pps,
@@ -193,6 +206,82 @@ namespace mk
         ///
         [[maybe_unused]] constexpr auto operator=(ext_pool_t &&o) &noexcept
             -> ext_pool_t & = default;
+
+        /// <!-- description -->
+        ///   @brief Tells each extension that a VM was created so that it
+        ///     can initialize it's VM specific resources.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vmid the VMID of the VM that was created.
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        signal_vm_created(bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+        {
+            for (auto const ext : m_ext_pool) {
+                if (bsl::unlikely(!ext.data->signal_vm_created(vmid))) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Tells each extension that a VM was destroyed so that it
+        ///     can release it's VM specific resources.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vmid the VMID of the VM that was destroyed.
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        signal_vm_destroyed(bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+        {
+            for (auto const ext : m_ext_pool) {
+                if (bsl::unlikely(!ext.data->signal_vm_destroyed(vmid))) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the active VM for each extension. This will cause
+        ///     the extension to set VM specific resources up including the
+        ///     direct map.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param vmid the VMID of the VM to set as active
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        set_active_vm(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+        {
+            for (auto const ext : m_ext_pool) {
+                if (bsl::unlikely(!ext.data->set_active_vm(tls, vmid))) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
+            }
+
+            return bsl::errc_success;
+        }
 
         /// <!-- description -->
         ///   @brief Starts this ext_pool_t by calling all of the

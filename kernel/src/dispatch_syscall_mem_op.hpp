@@ -63,6 +63,105 @@ namespace mk
         }
 
         /// <!-- description -->
+        ///   @brief Implements the bf_mem_op_free_page syscall
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam EXT_CONCEPT defines the type of ext_t to use
+        ///   @param tls the current TLS block
+        ///   @param ext the extension that made the syscall
+        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+        ///     code on failure.
+        ///
+        template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+        [[nodiscard]] constexpr auto
+        syscall_mem_op_free_page(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+        {
+            auto const ret{ext.free_page(bsl::to_umax(tls.ext_reg1))};
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+
+            return syscall::BF_STATUS_SUCCESS;
+        }
+
+        /// <!-- description -->
+        ///   @brief Implements the bf_mem_op_alloc_huge syscall
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam EXT_CONCEPT defines the type of ext_t to use
+        ///   @param tls the current TLS block
+        ///   @param ext the extension that made the syscall
+        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+        ///     code on failure.
+        ///
+        template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+        [[nodiscard]] constexpr auto
+        syscall_mem_op_alloc_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+        {
+            auto const huge{ext.alloc_huge(bsl::to_umax(tls.ext_reg1))};
+            if (bsl::unlikely(!huge.virt)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+
+            tls.ext_reg0 = huge.virt.get();
+            tls.ext_reg1 = huge.phys.get();
+            return syscall::BF_STATUS_SUCCESS;
+        }
+
+        /// <!-- description -->
+        ///   @brief Implements the bf_mem_op_free_huge syscall
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam EXT_CONCEPT defines the type of ext_t to use
+        ///   @param tls the current TLS block
+        ///   @param ext the extension that made the syscall
+        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+        ///     code on failure.
+        ///
+        template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+        [[nodiscard]] constexpr auto
+        syscall_mem_op_free_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+        {
+            auto const ret{ext.free_huge(bsl::to_umax(tls.ext_reg1))};
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+
+            return syscall::BF_STATUS_SUCCESS;
+        }
+
+        /// <!-- description -->
+        ///   @brief Implements the bf_mem_op_alloc_heap syscall
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam EXT_CONCEPT defines the type of ext_t to use
+        ///   @param tls the current TLS block
+        ///   @param ext the extension that made the syscall
+        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+        ///     code on failure.
+        ///
+        template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+        [[nodiscard]] constexpr auto
+        syscall_mem_op_alloc_heap(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+        {
+            auto const previous_heap_virt{ext.alloc_heap(bsl::to_umax(tls.ext_reg1))};
+            if (bsl::unlikely(!previous_heap_virt)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+
+            tls.ext_reg0 = previous_heap_virt.get();
+            return syscall::BF_STATUS_SUCCESS;
+        }
+
+        /// <!-- description -->
         ///   @brief Implements the bf_mem_op_virt_to_phys syscall
         ///
         /// <!-- inputs/outputs -->
@@ -125,6 +224,46 @@ namespace mk
                 return ret;
             }
 
+            case syscall::BF_MEM_OP_FREE_PAGE_IDX_VAL.get(): {
+                ret = details::syscall_mem_op_free_page(tls, ext);
+                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return ret;
+                }
+
+                return ret;
+            }
+
+            case syscall::BF_MEM_OP_ALLOC_HUGE_IDX_VAL.get(): {
+                ret = details::syscall_mem_op_alloc_huge(tls, ext);
+                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return ret;
+                }
+
+                return ret;
+            }
+
+            case syscall::BF_MEM_OP_FREE_HUGE_IDX_VAL.get(): {
+                ret = details::syscall_mem_op_free_huge(tls, ext);
+                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return ret;
+                }
+
+                return ret;
+            }
+
+            case syscall::BF_MEM_OP_ALLOC_HEAP_IDX_VAL.get(): {
+                ret = details::syscall_mem_op_alloc_heap(tls, ext);
+                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return ret;
+                }
+
+                return ret;
+            }
+
             case syscall::BF_MEM_OP_VIRT_TO_PHYS_IDX_VAL.get(): {
                 ret = details::syscall_mem_op_virt_to_phys(tls, ext);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
@@ -141,9 +280,11 @@ namespace mk
                              << bsl::endl                    //--
                              << bsl::here();                 //--
 
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+                break;
             }
         }
+
+        return syscall::BF_STATUS_FAILURE_UNKNOWN;
     }
 }
 

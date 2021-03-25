@@ -30,7 +30,10 @@
 #include <bsl/cstdint.hpp>
 #include <bsl/cstr_type.hpp>
 #include <bsl/discard.hpp>
+#include <bsl/errc_type.hpp>
+#include <bsl/likely.hpp>
 #include <bsl/safe_integral.hpp>
+#include <bsl/unlikely.hpp>
 
 namespace syscall
 {
@@ -49,7 +52,9 @@ namespace syscall
     /// @brief Defines an unsigned 64bit integer
     using bf_uint64_t = bsl::uint64;
     /// @brief Defines a raw pointer type
-    using bf_ptr_t = void const *;
+    using bf_ptr_t = void *;
+    /// @brief Defines a raw const pointer type
+    using bf_cptr_t = void const *;
 
     // -------------------------------------------------------------------------
     // Handle Type
@@ -271,6 +276,14 @@ namespace syscall
     constexpr bsl::safe_uintmax TLS_OFFSET_R14{bsl::to_umax(0x868U)};
     /// @brief stores the offset in the TLS block for r15
     constexpr bsl::safe_uintmax TLS_OFFSET_R15{bsl::to_umax(0x870U)};
+    /// @brief stores the offset in the TLS block for the active vps
+    constexpr bsl::safe_uint16 TLS_OFFSET_ACTIVE_VPS{bsl::to_u16(0xFF0U)};
+    /// @brief stores the offset in the TLS block for reserved
+    constexpr bsl::safe_uint16 TLS_OFFSET_RESERVED1{bsl::to_u16(0xFF2U)};
+    /// @brief stores the offset in the TLS block for reserved
+    constexpr bsl::safe_uint16 TLS_OFFSET_RESERVED2{bsl::to_u16(0xFF4U)};
+    /// @brief stores the offset in the TLS block for reserved
+    constexpr bsl::safe_uint16 TLS_OFFSET_RESERVED3{bsl::to_u16(0xFF6U)};
     /// @brief stores the offset in the TLS block for the thread id
     constexpr bsl::safe_uintmax TLS_OFFSET_THREAD_ID{bsl::to_umax(0xFF8U)};
 
@@ -754,7 +767,18 @@ namespace syscall
         bf_uint16_t const reg1_in) noexcept;
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_intrinsic_op_read_msr.
+    ///   @brief Implements the ABI for bf_vps_op_clear_vps.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///
+    extern "C" void bf_vps_op_clear_vps_impl(    // --
+        bf_uint64_t const reg0_in,             // --
+        bf_uint16_t const reg1_in) noexcept;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_intrinsic_op_rdmsr.
     ///
     /// <!-- inputs/outputs -->
     ///   @param reg0_in n/a
@@ -762,13 +786,13 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_intrinsic_op_read_msr_impl(    // --
-        bf_uint64_t const reg0_in,                                  // --
-        bf_uint32_t const reg1_in,                                  // --
+    extern "C" [[nodiscard]] auto bf_intrinsic_op_rdmsr_impl(    // --
+        bf_uint64_t const reg0_in,                               // --
+        bf_uint32_t const reg1_in,                               // --
         bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_intrinsic_op_write_msr.
+    ///   @brief Implements the ABI for bf_intrinsic_op_wrmsr.
     ///
     /// <!-- inputs/outputs -->
     ///   @param reg0_in n/a
@@ -776,10 +800,54 @@ namespace syscall
     ///   @param reg2_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_intrinsic_op_write_msr_impl(    // --
-        bf_uint64_t const reg0_in,                                   // --
-        bf_uint32_t const reg1_in,                                   // --
+    extern "C" [[nodiscard]] auto bf_intrinsic_op_wrmsr_impl(    // --
+        bf_uint64_t const reg0_in,                               // --
+        bf_uint32_t const reg1_in,                               // --
         bf_uint64_t const reg2_in) noexcept -> bf_status_t::value_type;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_intrinsic_op_invlpga.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_intrinsic_op_invlpga_impl(    // --
+        bf_uint64_t const reg0_in,                                 // --
+        bf_uint64_t const reg1_in,                                 // --
+        bf_uint64_t const reg2_in) noexcept -> bf_status_t::value_type;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_intrinsic_op_invept.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_intrinsic_op_invept_impl(    // --
+        bf_uint64_t const reg0_in,                                // --
+        bf_uint64_t const reg1_in,                                // --
+        bf_uint64_t const reg2_in) noexcept -> bf_status_t::value_type;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_intrinsic_op_invvpid.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg3_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_intrinsic_op_invvpid_impl(    // --
+        bf_uint64_t const reg0_in,                                 // --
+        bf_uint64_t const reg1_in,                                 // --
+        bf_uint16_t const reg2_in,                                 // --
+        bf_uint64_t const reg3_in) noexcept -> bf_status_t::value_type;
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_mem_op_alloc_page.
@@ -792,8 +860,62 @@ namespace syscall
     ///
     extern "C" [[nodiscard]] auto bf_mem_op_alloc_page_impl(    // --
         bf_uint64_t const reg0_in,                              // --
-        bf_ptr_t *const reg0_out,
+        bf_ptr_t *const reg0_out,                               // --
         bf_uint64_t *const reg1_out) noexcept -> bf_status_t::value_type;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_mem_op_free_page.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_mem_op_free_page_impl(    // --
+        bf_uint64_t const reg0_in,                             // --
+        bf_ptr_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_mem_op_alloc_huge.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg0_out n/a
+    ///   @param reg1_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_mem_op_alloc_huge_impl(    // --
+        bf_uint64_t const reg0_in,                              // --
+        bf_uint64_t const reg1_in,                              // --
+        bf_ptr_t *const reg0_out,                               // --
+        bf_uint64_t *const reg1_out) noexcept -> bf_status_t::value_type;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_mem_op_free_huge.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_mem_op_free_huge_impl(    // --
+        bf_uint64_t const reg0_in,                             // --
+        bf_ptr_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_mem_op_alloc_heap.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_mem_op_alloc_heap_impl(    // --
+        bf_uint64_t const reg0_in,                              // --
+        bf_uint64_t const reg1_in,                              // --
+        bf_ptr_t *const reg0_out) noexcept -> bf_status_t::value_type;
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_mem_op_virt_to_phys.
@@ -1050,6 +1172,46 @@ namespace syscall
     extern "C" void bf_tls_set_r15_impl(bf_uint64_t const val) noexcept;
 
     /// <!-- description -->
+    ///   @brief Implements the ABI for bf_tls_ppid.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_tls_ppid_impl() noexcept -> bf_uint16_t;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_tls_vpsid.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_tls_vpsid_impl() noexcept -> bf_uint16_t;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_tls_vpid.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_tls_vpid_impl() noexcept -> bf_uint16_t;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_tls_vmid.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_tls_vmid_impl() noexcept -> bf_uint16_t;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_tls_extid.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_tls_extid_impl() noexcept -> bf_uint16_t;
+
+    /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_thread_id.
     ///
     /// <!-- inputs/outputs -->
@@ -1065,7 +1227,7 @@ namespace syscall
     ///   @brief Returns the value of tls.rax
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rax
     ///
     [[nodiscard]] inline auto
@@ -1079,7 +1241,7 @@ namespace syscall
     ///   @brief Sets the value of tls.rax
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rax to
     ///
     inline void
@@ -1093,7 +1255,7 @@ namespace syscall
     ///   @brief Returns the value of tls.rbx
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rbx
     ///
     [[nodiscard]] inline auto
@@ -1107,7 +1269,7 @@ namespace syscall
     ///   @brief Sets the value of tls.rbx
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rbx to
     ///
     inline void
@@ -1121,7 +1283,7 @@ namespace syscall
     ///   @brief Returns the value of tls.rcx
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rcx
     ///
     [[nodiscard]] inline auto
@@ -1135,7 +1297,7 @@ namespace syscall
     ///   @brief Sets the value of tls.rcx
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rcx to
     ///
     inline void
@@ -1149,7 +1311,7 @@ namespace syscall
     ///   @brief Returns the value of tls.rdx
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rdx
     ///
     [[nodiscard]] inline auto
@@ -1163,7 +1325,7 @@ namespace syscall
     ///   @brief Sets the value of tls.rdx
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rdx to
     ///
     inline void
@@ -1177,7 +1339,7 @@ namespace syscall
     ///   @brief Returns the value of tls.rbp
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rbp
     ///
     [[nodiscard]] inline auto
@@ -1191,7 +1353,7 @@ namespace syscall
     ///   @brief Sets the value of tls.rbp
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rbp to
     ///
     inline void
@@ -1205,7 +1367,7 @@ namespace syscall
     ///   @brief Returns the value of tls.rsi
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rsi
     ///
     [[nodiscard]] inline auto
@@ -1219,7 +1381,7 @@ namespace syscall
     ///   @brief Sets the value of tls.rsi
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rsi to
     ///
     inline void
@@ -1233,7 +1395,7 @@ namespace syscall
     ///   @brief Returns the value of tls.rdi
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rdi
     ///
     [[nodiscard]] inline auto
@@ -1247,7 +1409,7 @@ namespace syscall
     ///   @brief Sets the value of tls.rdi
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rdi to
     ///
     inline void
@@ -1261,7 +1423,7 @@ namespace syscall
     ///   @brief Returns the value of tls.r8
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r8
     ///
     [[nodiscard]] inline auto
@@ -1275,7 +1437,7 @@ namespace syscall
     ///   @brief Sets the value of tls.r8
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r8 to
     ///
     inline void
@@ -1289,7 +1451,7 @@ namespace syscall
     ///   @brief Returns the value of tls.r9
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r9
     ///
     [[nodiscard]] inline auto
@@ -1303,7 +1465,7 @@ namespace syscall
     ///   @brief Sets the value of tls.r9
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r9 to
     ///
     inline void
@@ -1317,7 +1479,7 @@ namespace syscall
     ///   @brief Returns the value of tls.r10
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r10
     ///
     [[nodiscard]] inline auto
@@ -1331,7 +1493,7 @@ namespace syscall
     ///   @brief Sets the value of tls.r10
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r10 to
     ///
     inline void
@@ -1345,7 +1507,7 @@ namespace syscall
     ///   @brief Returns the value of tls.r11
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r11
     ///
     [[nodiscard]] inline auto
@@ -1359,7 +1521,7 @@ namespace syscall
     ///   @brief Sets the value of tls.r11
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r11 to
     ///
     inline void
@@ -1373,7 +1535,7 @@ namespace syscall
     ///   @brief Returns the value of tls.r12
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r12
     ///
     [[nodiscard]] inline auto
@@ -1387,7 +1549,7 @@ namespace syscall
     ///   @brief Sets the value of tls.r12
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r12 to
     ///
     inline void
@@ -1401,7 +1563,7 @@ namespace syscall
     ///   @brief Returns the value of tls.r13
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r13
     ///
     [[nodiscard]] inline auto
@@ -1415,7 +1577,7 @@ namespace syscall
     ///   @brief Sets the value of tls.r13
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r13 to
     ///
     inline void
@@ -1429,7 +1591,7 @@ namespace syscall
     ///   @brief Returns the value of tls.r14
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r14
     ///
     [[nodiscard]] inline auto
@@ -1443,7 +1605,7 @@ namespace syscall
     ///   @brief Sets the value of tls.r14
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r14 to
     ///
     inline void
@@ -1457,7 +1619,7 @@ namespace syscall
     ///   @brief Returns the value of tls.r15
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r15
     ///
     [[nodiscard]] inline auto
@@ -1471,7 +1633,7 @@ namespace syscall
     ///   @brief Sets the value of tls.r15
     ///
     /// <!-- inputs/outputs -->
-    ///   @param handle reserved for uint testing
+    ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r15 to
     ///
     inline void
@@ -1491,6 +1653,155 @@ namespace syscall
     bf_tls_thread_id() noexcept -> bsl::safe_uintmax
     {
         return {bf_tls_thread_id_impl()};
+    }
+
+    /// <!-- description -->
+    ///   @brief Returns the value of tls.extid
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return Returns the value of tls.extid
+    ///
+    [[nodiscard]] inline auto
+    bf_tls_extid() noexcept -> bsl::safe_uint16
+    {
+        return {bf_tls_extid_impl()};
+    }
+
+    /// <!-- description -->
+    ///   @brief Returns the value of tls.vmid
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return Returns the value of tls.vmid
+    ///
+    [[nodiscard]] inline auto
+    bf_tls_vmid() noexcept -> bsl::safe_uint16
+    {
+        return {bf_tls_vmid_impl()};
+    }
+
+    /// <!-- description -->
+    ///   @brief Returns the value of tls.vpid
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return Returns the value of tls.vpid
+    ///
+    [[nodiscard]] inline auto
+    bf_tls_vpid() noexcept -> bsl::safe_uint16
+    {
+        return {bf_tls_vpid_impl()};
+    }
+
+    /// <!-- description -->
+    ///   @brief Returns the value of tls.ppid
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return Returns the value of tls.ppid
+    ///
+    [[nodiscard]] inline auto
+    bf_tls_ppid() noexcept -> bsl::safe_uint16
+    {
+        return {bf_tls_ppid_impl()};
+    }
+
+    /// <!-- description -->
+    ///   @brief Returns the value of tls.vpsid
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return Returns the value of tls.vpsid
+    ///
+    [[nodiscard]] inline auto
+    bf_tls_vpsid() noexcept -> bsl::safe_uint16
+    {
+        return {bf_tls_vpsid_impl()};
+    }
+
+    // -------------------------------------------------------------------------
+    // Direct Map
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Returns the value at the provided physical address
+    ///     on success, or returns bsl::safe_integral<FIELD_TYPE>::zero(true)
+    ///     on failure.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam FIELD_TYPE the type of integral to read
+    ///   @tparam EXT_DIRECT_MAP_ADDR the address of the extension's direct map
+    ///   @tparam EXT_DIRECT_MAP_SIZE the size of the extension's direct map
+    ///   @param handle reserved for unit testing
+    ///   @param phys the physical address to read
+    ///   @return Returns the value at the provided physical address
+    ///     on success, or returns bsl::safe_integral<FIELD_TYPE>::zero(true)
+    ///     on failure.
+    ///
+    template<
+        typename FIELD_TYPE = bsl::uintmax,
+        bsl::uintmax EXT_DIRECT_MAP_ADDR,
+        bsl::uintmax EXT_DIRECT_MAP_SIZE>
+    [[nodiscard]] inline auto
+    bf_read_phys(bf_handle_t const &handle, bsl::safe_uintmax const &phys) noexcept
+        -> bsl::safe_integral<FIELD_TYPE>
+    {
+        bsl::discard(handle);
+
+        constexpr auto dm_addr{bsl::to_umax(EXT_DIRECT_MAP_ADDR)};
+        constexpr auto dm_size{bsl::to_umax(EXT_DIRECT_MAP_SIZE)};
+
+        if (bsl::unlikely(!phys)) {
+            return bsl::safe_integral<FIELD_TYPE>::zero(true);
+        }
+
+        if (bsl::likely(phys < dm_size)) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            return {*reinterpret_cast<FIELD_TYPE *>((dm_addr + phys).get())};
+        }
+
+        return bsl::safe_integral<FIELD_TYPE>::zero(true);
+    }
+
+    /// <!-- description -->
+    ///   @brief Writes the provided value at the provided physical address
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam FIELD_TYPE the type of integral to write
+    ///   @tparam EXT_DIRECT_MAP_ADDR the address of the extension's direct map
+    ///   @tparam EXT_DIRECT_MAP_SIZE the size of the extension's direct map
+    ///   @param handle reserved for unit testing
+    ///   @param phys the physical address to write
+    ///   @param val the value to write to the provided physical address
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    template<
+        typename FIELD_TYPE = bsl::uintmax,
+        bsl::uintmax EXT_DIRECT_MAP_ADDR,
+        bsl::uintmax EXT_DIRECT_MAP_SIZE>
+    [[nodiscard]] inline auto
+    bf_write_phys(
+        bf_handle_t const &handle,
+        bsl::safe_uintmax const &phys,
+        bsl::safe_integral<FIELD_TYPE> const &val) noexcept -> bsl::errc_type
+    {
+        bsl::discard(handle);
+
+        constexpr auto dm_addr{bsl::to_umax(EXT_DIRECT_MAP_ADDR)};
+        constexpr auto dm_size{bsl::to_umax(EXT_DIRECT_MAP_SIZE)};
+
+        if (bsl::unlikely(!phys)) {
+            return bsl::errc_failure;
+        }
+
+        if (bsl::unlikely(!val)) {
+            return bsl::errc_failure;
+        }
+
+        if (bsl::likely(phys < dm_size)) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            *reinterpret_cast<FIELD_TYPE *>((dm_addr + phys).get()) = val.get();
+            return bsl::errc_success;
+        }
+
+        return bsl::errc_failure;
     }
 
     // -------------------------------------------------------------------------
@@ -2720,11 +3031,39 @@ namespace syscall
     }
 
     // -------------------------------------------------------------------------
-    // bf_intrinsic_op_read_msr
+    // bf_vps_op_clear_vps
     // -------------------------------------------------------------------------
 
-    /// @brief Defines the syscall index for bf_intrinsic_op_read_msr
-    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_READ_MSR_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+    /// @brief Defines the syscall index for bf_vps_op_clear_vps
+    constexpr bsl::safe_uint64 BF_VPS_OP_CLEAR_VPS_IDX_VAL{bsl::to_u64(0x0000000000000012U)};
+
+    /// <!-- description -->
+    ///   @brief bf_vps_op_clear_vps tells the microkernel to clear the VPS's
+    ///     hardware cache, if one exists. How this is used depends entirely
+    ///     on the hardware and is associated with AMD's VMCB Clean Bits,
+    ///     and Intel's VMClear instruction. See the associated documentation
+    ///     for more details. On AMD, this ABI clears the entire VMCB. For more
+    ///     fine grained control, use the write ABIs to manually modify the
+    ///     VMCB.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to clear
+    ///
+    inline void
+    bf_vps_op_clear_vps(                // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 const &vpsid) noexcept
+    {
+        bf_vps_op_clear_vps_impl(handle.hndl, vpsid.get());
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_intrinsic_op_rdmsr
+    // -------------------------------------------------------------------------
+
+    /// @brief Defines the syscall index for bf_intrinsic_op_rdmsr
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_RDMSR_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
 
     /// <!-- description -->
     ///   @brief Reads an MSR directly from the CPU given the address of
@@ -2741,20 +3080,20 @@ namespace syscall
     ///     specification for more information about error codes.
     ///
     [[nodiscard]] inline auto
-    bf_intrinsic_op_read_msr(           // --
+    bf_intrinsic_op_rdmsr(              // --
         bf_handle_t const &handle,      // --
         bsl::safe_uint32 const &msr,    // --
         bsl::safe_uint64 &value) noexcept -> bf_status_t
     {
-        return {bf_intrinsic_op_read_msr_impl(handle.hndl, msr.get(), value.data())};
+        return {bf_intrinsic_op_rdmsr_impl(handle.hndl, msr.get(), value.data())};
     }
 
     // -------------------------------------------------------------------------
-    // bf_intrinsic_op_write_msr
+    // bf_intrinsic_op_wrmsr
     // -------------------------------------------------------------------------
 
-    /// @brief Defines the syscall index for bf_intrinsic_op_write_msr
-    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_WRITE_MSR_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+    /// @brief Defines the syscall index for bf_intrinsic_op_wrmsr
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_WRMSR_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
 
     /// <!-- description -->
     ///   @brief Writes to an MSR directly from the CPU given the address of
@@ -2772,12 +3111,97 @@ namespace syscall
     ///     specification for more information about error codes.
     ///
     [[nodiscard]] inline auto
-    bf_intrinsic_op_write_msr(          // --
+    bf_intrinsic_op_wrmsr(              // --
         bf_handle_t const &handle,      // --
         bsl::safe_uint32 const &msr,    // --
         bsl::safe_uint64 const &value) noexcept -> bf_status_t
     {
-        return {bf_intrinsic_op_write_msr_impl(handle.hndl, msr.get(), value.get())};
+        return {bf_intrinsic_op_wrmsr_impl(handle.hndl, msr.get(), value.get())};
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_intrinsic_op_invlpga
+    // -------------------------------------------------------------------------
+
+    /// @brief Defines the syscall index for bf_intrinsic_op_invlpga
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_INVLPGA_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+
+    /// <!-- description -->
+    ///   @brief Invalidates the TLB mapping for a given virtual page and a
+    ///     given ASID. Note that this is specific to AMD only.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param addr The address to invalidate
+    ///   @param asid The ASID to invalidate
+    ///   @return Returns the bf_status_t result of the syscall. See the
+    ///     specification for more information about error codes.
+    ///
+    [[nodiscard]] inline auto
+    bf_intrinsic_op_invlpga(             // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint64 const &addr,    // --
+        bsl::safe_uint64 const &asid) noexcept -> bf_status_t
+    {
+        return {bf_intrinsic_op_invlpga_impl(handle.hndl, addr.get(), asid.get())};
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_intrinsic_op_invept
+    // -------------------------------------------------------------------------
+
+    /// @brief Defines the syscall index for bf_intrinsic_op_invept
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_INVEPT_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
+
+    /// <!-- description -->
+    ///   @brief Invalidates mappings in the translation lookaside buffers
+    ///     (TLBs) and paging-structure caches that were derived from extended
+    ///     page tables (EPT). Note that this is specific to Intel only.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param eptp The EPTP to invalidate
+    ///   @param type The INVEPT type (see the Intel SDM for details)
+    ///   @return Returns the bf_status_t result of the syscall. See the
+    ///     specification for more information about error codes.
+    ///
+    [[nodiscard]] inline auto
+    bf_intrinsic_op_invept(              // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint64 const &eptp,    // --
+        bsl::safe_uint64 const &type) noexcept -> bf_status_t
+    {
+        return {bf_intrinsic_op_invept_impl(handle.hndl, eptp.get(), type.get())};
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_intrinsic_op_invvpid
+    // -------------------------------------------------------------------------
+
+    /// @brief Defines the syscall index for bf_intrinsic_op_invvpid
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_INVVPID_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
+
+    /// <!-- description -->
+    ///   @brief Invalidates mappings in the translation lookaside buffers
+    ///     (TLBs) and paging-structure caches based on virtual-processor
+    ///     identifier (VPID). Note that this is specific to Intel only.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param addr The address to invalidate
+    ///   @param vpid The VPID to invalidate
+    ///   @param type The INVVPID type (see the Intel SDM for details)
+    ///   @return Returns the bf_status_t result of the syscall. See the
+    ///     specification for more information about error codes.
+    ///
+    [[nodiscard]] inline auto
+    bf_intrinsic_op_invvpid(             // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint64 const &addr,    // --
+        bsl::safe_uint16 const &vpid,    // --
+        bsl::safe_uint64 const &type) noexcept -> bf_status_t
+    {
+        return {bf_intrinsic_op_invvpid_impl(handle.hndl, addr.get(), vpid.get(), type.get())};
     }
 
     // -------------------------------------------------------------------------
@@ -2788,28 +3212,181 @@ namespace syscall
     constexpr bsl::safe_uint64 BF_MEM_OP_ALLOC_PAGE_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
 
     /// <!-- description -->
-    ///   @brief Allocates a page. When a page is allocated, it is removed
-    ///     from the micorkernel's direct map, and placed into the extension's
-    ///     direct map. This ensures the extension is free to use an allocated
-    ///     page to store secrets, and extensions can also convert the virtual
-    ///     address of the page to a physical page and back without issue.
-    ///     Note that not all memory allocations (e.g., the heap) work this
-    ///     way. Extensions should use caution when storing secrets.
+    ///   @brief bf_mem_op_alloc_page allocates a page. When allocating a
+    ///     page, the extension should keep in mind the following:
+    ///     - Virtual address to physical address conversions require a page
+    ///       walk, so they are slow.
+    ///     - The microkernel does not support physical address to virtual
+    ///       address conversions.
+    ///     - bf_mem_op_free_page is optional and if implemented, may be slow.
     ///
     /// <!-- inputs/outputs -->
+    ///   @tparam T the type of memory to allocate
     ///   @param handle Set to the result of bf_handle_op_open_handle
     ///   @param virt The virtual address of the resulting page
     ///   @param phys The physical address of the resulting page
     ///   @return Returns the bf_status_t result of the syscall. See the
     ///     specification for more information about error codes.
     ///
+    template<typename T>
     [[nodiscard]] inline auto
     bf_mem_op_alloc_page(             // --
         bf_handle_t const &handle,    // --
-        bf_ptr_t &virt,               // --
+        T *&virt,                     // --
         bsl::safe_uint64 &phys) noexcept -> bf_status_t
     {
-        return {bf_mem_op_alloc_page_impl(handle.hndl, &virt, phys.data())};
+        return {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            bf_mem_op_alloc_page_impl(handle.hndl, reinterpret_cast<void **>(&virt), phys.data())};
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_mem_op_free_page
+    // -------------------------------------------------------------------------
+
+    /// @brief Defines the syscall index for bf_mem_op_free_page
+    constexpr bsl::safe_uint64 BF_MEM_OP_FREE_PAGE_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+
+    /// <!-- description -->
+    ///   @brief Frees a page previously allocated by bf_mem_op_alloc_page.
+    ///     This operation is optional and not all microkernels may implement
+    ///     it. For more information, please see bf_mem_op_alloc_page.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param virt The virtual address of the page to free
+    ///   @return Returns the bf_status_t result of the syscall. See the
+    ///     specification for more information about error codes.
+    ///
+    [[nodiscard]] inline auto
+    bf_mem_op_free_page(              // --
+        bf_handle_t const &handle,    // --
+        bf_ptr_t virt) noexcept -> bf_status_t
+    {
+        return {bf_mem_op_free_page_impl(handle.hndl, virt)};
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_mem_op_alloc_huge
+    // -------------------------------------------------------------------------
+
+    /// @brief Defines the syscall index for bf_mem_op_alloc_huge
+    constexpr bsl::safe_uint64 BF_MEM_OP_ALLOC_HUGE_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+
+    /// <!-- description -->
+    ///   @brief bf_mem_op_alloc_huge allocates a physically contiguous block
+    ///     of memory. When allocating a page, the extension should keep in
+    ///     mind the following:
+    ///       - The total memory available to allocate from this pool is
+    ///         extremely limited. This should only be used when absolutely
+    ///         needed, and you should not expect more than 1 MB (might be
+    ///         less) of total memory available.
+    ///       - Memory allocated from the huge pool might be allocated using
+    ///         different schemes. For example, the microkernel might allocate
+    ///         in increments of a page, or it might use a buddy allocator that
+    ///         would allocate in multiples of 2. If the allocation size
+    ///         doesn't match the algorithm, internal fragmentation could
+    ///         occur, further limiting the total number of allocations this
+    ///         pool can support. - Virtual address to physical address
+    ///         conversions require a page walk, so they are slow.
+    ///       - The microkernel does not support physical address to virtual
+    ///         address conversions.
+    ///       - bf_mem_op_free_huge is optional and if implemented, may be slow.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam T the type of memory to allocate
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param size The total number of bytes to allocate
+    ///   @param virt The virtual address of the resulting memory
+    ///   @param phys The physical address of the resulting memory
+    ///   @return Returns the bf_status_t result of the syscall. See the
+    ///     specification for more information about error codes.
+    ///
+    template<typename T>
+    [[nodiscard]] inline auto
+    bf_mem_op_alloc_huge(                // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint64 const &size,    // --
+        T *&virt,                        // --
+        bsl::safe_uint64 &phys) noexcept -> bf_status_t
+    {
+        return {bf_mem_op_alloc_huge_impl(
+            handle.hndl,
+            size.get(),
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            reinterpret_cast<void **>(&virt),
+            phys.data())};
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_mem_op_free_huge
+    // -------------------------------------------------------------------------
+
+    /// @brief Defines the syscall index for bf_mem_op_free_huge
+    constexpr bsl::safe_uint64 BF_MEM_OP_FREE_HUGE_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
+
+    /// <!-- description -->
+    ///   @brief Frees memory previously allocated by bf_mem_op_alloc_huge.
+    ///     This operation is optional and not all microkernels may implement
+    ///     it. For more information, please see bf_mem_op_alloc_huge.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param virt The virtual address of the memory to free
+    ///   @return Returns the bf_status_t result of the syscall. See the
+    ///     specification for more information about error codes.
+    ///
+    [[nodiscard]] inline auto
+    bf_mem_op_free_huge(              // --
+        bf_handle_t const &handle,    // --
+        bf_ptr_t virt) noexcept -> bf_status_t
+    {
+        return {bf_mem_op_free_huge_impl(handle.hndl, virt)};
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_mem_op_alloc_heap
+    // -------------------------------------------------------------------------
+
+    /// @brief Defines the syscall index for bf_mem_op_alloc_heap
+    constexpr bsl::safe_uint64 BF_MEM_OP_ALLOC_HEAP_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
+
+    /// <!-- description -->
+    ///   @brief bf_mem_op_alloc_heap allocates heap memory. When allocating
+    ///     heap memory, the extension should keep in mind the following:
+    ///       - This ABI is designed to work similar to sbrk() to support
+    ///         malloc/free implementations common with existing open source
+    ///         libraries.
+    ///       - Calling this ABI with with a size of 0 will return the current
+    ///         heap location.
+    ///       - Calling this ABI with a size (in bytes) will result in return
+    ///         the previous heap location. The current heap location will be
+    ///         set to the previous location, plus the provide size, rounded to
+    ///         the nearest page size.
+    ///       - The microkernel does not support
+    ///         virtual address to physical address conversions.
+    ///       - The microkernel does not support physical address to virtual
+    ///         address conversions.
+    ///       - There is no ability to free heap memory
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam T the type of memory to allocate
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param size The number of bytes to increase the heap by
+    ///   @param virt The virtual address of the previous heap location
+    ///   @return Returns the bf_status_t result of the syscall. See the
+    ///     specification for more information about error codes.
+    ///
+    template<typename T>
+    [[nodiscard]] inline auto
+    bf_mem_op_alloc_heap(                // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint64 const &size,    // --
+        T *&virt) noexcept -> bf_status_t
+    {
+        return {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            bf_mem_op_alloc_heap_impl(handle.hndl, size.get(), reinterpret_cast<void **>(&virt))};
     }
 
     // -------------------------------------------------------------------------
@@ -2817,13 +3394,12 @@ namespace syscall
     // -------------------------------------------------------------------------
 
     /// @brief Defines the syscall index for bf_mem_op_virt_to_phys
-    constexpr bsl::safe_uint64 BF_MEM_OP_VIRT_TO_PHYS_IDX_VAL{bsl::to_u64(0x0000000000000006U)};
+    constexpr bsl::safe_uint64 BF_MEM_OP_VIRT_TO_PHYS_IDX_VAL{bsl::to_u64(0x0000000000000005U)};
 
     /// <!-- description -->
-    ///   @brief bf_mem_op_virt_to_phys converts a provided virtual address
-    ///     to a physical address for any virtual address allocated using
-    ///     bf_mem_op_alloc_page, bf_mem_op_alloc_huge, bf_mem_op_alloc_heap
-    ///     or mapped using the direct map.
+    ///   @brief bf_mem_op_virt_to_phys converts a provided virtual address to
+    ///     a physical address for any virtual address allocated using
+    ///     bf_mem_op_alloc_page or bf_mem_op_alloc_huge.
     ///
     /// <!-- inputs/outputs -->
     ///   @param handle Set to the result of bf_handle_op_open_handle

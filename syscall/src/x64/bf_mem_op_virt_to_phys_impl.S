@@ -33,7 +33,7 @@
     .type   bf_mem_op_virt_to_phys_impl, @function
 bf_mem_op_virt_to_phys_impl:
 
-    mov rax, 0x6642000000080006
+    mov rax, 0x6642000000080005
     syscall
 
     mov [rdx], rdi

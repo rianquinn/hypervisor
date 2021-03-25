@@ -41,15 +41,19 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
         ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
         ///   @param tls the current TLS block
+        ///   @param ext_pool the extension pool to use
         ///   @param vm_pool the VM pool to use
         ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
         ///     code on failure.
         ///
-        template<typename TLS_CONCEPT, typename VM_POOL_CONCEPT>
+        template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        syscall_vm_op_create_vm(TLS_CONCEPT &tls, VM_POOL_CONCEPT &vm_pool) -> syscall::bf_status_t
+        syscall_vm_op_create_vm(
+            TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool)
+            -> syscall::bf_status_t
         {
             auto const vmid{vm_pool.allocate()};
             if (bsl::unlikely(!vmid)) {
@@ -57,7 +61,13 @@ namespace mk
                 return syscall::BF_STATUS_FAILURE_UNKNOWN;
             }
 
-            tls.ext_reg0 = bsl::to_umax(vmid).get();
+            if (bsl::unlikely(!ext_pool.signal_vm_created(vmid))) {
+                bsl::print<bsl::V>() << bsl::here();
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+
+            constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
+            tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vmid)).get();
             return syscall::BF_STATUS_SUCCESS;
         }
 
@@ -66,17 +76,37 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
         ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
         ///   @param tls the current TLS block
+        ///   @param ext_pool the extension pool to use
         ///   @param vm_pool the VM pool to use
         ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
         ///     code on failure.
         ///
-        template<typename TLS_CONCEPT, typename VM_POOL_CONCEPT>
+        template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        syscall_vm_op_destroy_vm(TLS_CONCEPT &tls, VM_POOL_CONCEPT &vm_pool) -> syscall::bf_status_t
+        syscall_vm_op_destroy_vm(
+            TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool)
+            -> syscall::bf_status_t
         {
-            if (bsl::unlikely(!vm_pool.deallocate(bsl::to_u16_unsafe(tls.ext_reg1)))) {
+            auto const vmid{bsl::to_u16_unsafe(tls.ext_reg1)};
+            if (bsl::unlikely(tls.vmid() == vmid)) {
+                bsl::error() << "cannot destory vm "            // --
+                             << bsl::hex(vmid)                  // --
+                             << " as it is currently active"    // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+
+            if (bsl::unlikely(!vm_pool.deallocate(vmid))) {
+                bsl::print<bsl::V>() << bsl::here();
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+
+            if (bsl::unlikely(!ext_pool.signal_vm_destroyed(vmid))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return syscall::BF_STATUS_FAILURE_UNKNOWN;
             }
@@ -90,18 +120,27 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @param tls the current TLS block
+    ///   @param ext_pool the extension pool to use
     ///   @param ext the extension that made the syscall
     ///   @param vm_pool the VM pool to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT, typename VM_POOL_CONCEPT>
+    template<
+        typename TLS_CONCEPT,
+        typename EXT_POOL_CONCEPT,
+        typename EXT_CONCEPT,
+        typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_vm_op(TLS_CONCEPT &tls, EXT_CONCEPT const &ext, VM_POOL_CONCEPT &vm_pool)
-        -> syscall::bf_status_t
+    dispatch_syscall_vm_op(
+        TLS_CONCEPT &tls,
+        EXT_POOL_CONCEPT &ext_pool,
+        EXT_CONCEPT const &ext,
+        VM_POOL_CONCEPT &vm_pool) -> syscall::bf_status_t
     {
         syscall::bf_status_t ret{};
 
@@ -126,7 +165,7 @@ namespace mk
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_VM_OP_CREATE_VM_IDX_VAL.get(): {
-                ret = details::syscall_vm_op_create_vm(tls, vm_pool);
+                ret = details::syscall_vm_op_create_vm(tls, ext_pool, vm_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -136,7 +175,7 @@ namespace mk
             }
 
             case syscall::BF_VM_OP_DESTROY_VM_IDX_VAL.get(): {
-                ret = details::syscall_vm_op_destroy_vm(tls, vm_pool);
+                ret = details::syscall_vm_op_destroy_vm(tls, ext_pool, vm_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -151,9 +190,11 @@ namespace mk
                              << bsl::endl                    //--
                              << bsl::here();                 //--
 
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+                break;
             }
         }
+
+        return syscall::BF_STATUS_FAILURE_UNKNOWN;
     }
 }
 

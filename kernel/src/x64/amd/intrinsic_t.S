@@ -245,6 +245,21 @@ intrinsic_wrmsr_unsafe:
 
 
 
+    .globl  intrinsic_invlpga
+    .type   intrinsic_invlpga, @function
+intrinsic_invlpga:
+
+    mov rax, rdi
+    mov rcx, rsi
+    invlpga rax, ecx
+
+    ret
+    int 3
+
+    .size intrinsic_invlpga, .-intrinsic_invlpga
+
+
+
     .globl  intrinsic_vmrun
     .type   intrinsic_vmrun, @function
 intrinsic_vmrun:

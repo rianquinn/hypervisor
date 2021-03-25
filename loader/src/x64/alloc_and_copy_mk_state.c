@@ -278,11 +278,14 @@ alloc_and_copy_mk_state(
      *   Windows and Linux use these same values, but UEFI doesn't. UEFI
      *   isn't going to generate an NMI, so we should be good during demote,
      *   but in general, this is not safe.
-     * - Note that UEFI so has CS and SS flipped. This means you cannot use
+     * - Note that UEFI has CS and SS flipped. This means you cannot use
      *   them in the microkernel as it needs fast syscalls which have the
      *   offsets hardcoded in hardware.
      * - UEFI also has the issue that TR is never set (it is left to 0),
      *   which means promote will fail if you attempt to set it back to 0.
+     * - This is not a trivial todo and should only be fixed if Windows/Linux
+     *   stop using the same CS/SS, or another operating system is added to
+     *   the support list that doesn't have the same CS/SS.
      */
 
     (*state)->cs_selector = MK_CS_SELECTOR;

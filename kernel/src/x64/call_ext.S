@@ -40,9 +40,11 @@ call_ext:
     mov gs:[0x020], r14
     mov gs:[0x028], r15
 
-    mov rax, gs:[0x208]
     stac
+    mov rax, gs:[0x208]
     mov fs:[0xFF8], rax
+    mov rax, gs:[0x238]
+    mov fs:[0xFF0], rax
     clac
 
     mov gs:[0x1A8], rsp

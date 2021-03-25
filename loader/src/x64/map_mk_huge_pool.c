@@ -47,7 +47,7 @@ map_mk_huge_pool(struct mutable_span_t const *const huge_pool, struct pml4t_t *c
 {
     uint64_t off;
     uint64_t base_phys;
-    uint64_t const base_virt = HYPERVISOR_DIRECT_MAP_ADDR;
+    uint64_t const base_virt = HYPERVISOR_MK_HUGE_POOL_ADDR;
 
     base_phys = platform_virt_to_phys(huge_pool->addr);
     if (((uint64_t)0) == base_phys) {

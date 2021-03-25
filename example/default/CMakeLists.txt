@@ -88,7 +88,6 @@ target_link_libraries(example_default PRIVATE
     runtime
     bsl
     loader
-    syscall
 )
 
 # NOTE:

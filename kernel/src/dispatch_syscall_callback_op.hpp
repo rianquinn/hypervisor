@@ -25,8 +25,9 @@
 #ifndef DISPATCH_SYSCALL_CALLBACK_OP_HPP
 #define DISPATCH_SYSCALL_CALLBACK_OP_HPP
 
+#include "return_to_mk.hpp"
+
 #include <mk_interface.hpp>
-#include <return_to_mk.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -179,7 +180,7 @@ namespace mk
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_CALLBACK_OP_WAIT_IDX_VAL.get(): {
-                return_to_mk(bsl::ZERO_UMAX.get());
+                return_to_mk(bsl::ZERO_I32.get());
                 return syscall::BF_STATUS_SUCCESS;
             }
 
@@ -219,9 +220,11 @@ namespace mk
                              << bsl::endl                    //--
                              << bsl::here();                 //--
 
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+                break;
             }
         }
+
+        return syscall::BF_STATUS_FAILURE_UNKNOWN;
     }
 }
 

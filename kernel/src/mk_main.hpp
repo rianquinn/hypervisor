@@ -210,7 +210,12 @@ namespace mk
             bsl::errc_type ret{};
 
             if (m_initialized) {
-                m_system_rpt.activate();
+                ret = m_system_rpt.activate();
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
                 return bsl::errc_success;
             }
 
@@ -230,13 +235,13 @@ namespace mk
             bsl::print() << "\n";
             bsl::print() << "\n";
 
-            ret = m_page_pool.initialize(args->page_pool, args->page_pool_base_virt);
+            ret = m_page_pool.initialize(args->page_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_huge_pool.initialize(args->huge_pool, args->huge_pool_base_virt);
+            ret = m_huge_pool.initialize(args->huge_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -254,7 +259,11 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            m_system_rpt.activate();
+            ret = m_system_rpt.activate();
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
 
             ret = m_vps_pool.initialize();
             if (bsl::unlikely(!ret)) {
@@ -339,114 +348,20 @@ namespace mk
 
             return bsl::exit_success;
 
-            // Tasks:
-            // [x] implement page_pool_t
-            // [x] implement page_t
-            // [x] implement tls_t
-            // [x] implement thread_id for debugging in BSL
-            // [x] implement dump_vmm
-            // [x] implement ELF loader in C++
-            // [x] implement vps_pool_t
-            // [x] implement vps_t
-            // [x] implement vp_pool_t
-            // [x] implement vp_t
-            // [x] implement vm_pool_t
-            // [x] implement vm_t
-            // [x] implement root_page_table_t
-            // [x] implement configurable constants from CMake
-            // [x] implement clang-format to reorder headers
-            // [x] implement smep/smap lock
-            // [x] implement mk stack for syscalls
-            // [x] implement bsl::hex
-            // [x] implement _start for extensions
-            // [x] implement bsl platform logic for extensions
-            // [x] implement simple debug ops
-            // [x] implement control ops
-            // [x] implement handle ops
-            // [x] implement ext_pool_t
-            // [x] implement ext_t
-            // [x] implement exception handlers
-            // [x] implement syscall exception safety
-            // [x] implement extension failure reporting to call_ext
-            // [x] implement esr error code logic
-            // [x] implement esr.hpp
-            // [x] implement extension ELF TLS support
-            // [x] implement some refactoring on the ext_t class
-            // [x] implement unwind routines for all functions as needed
-            // [x] implement ELF verification for sanity checking
-            // [x] implement TLS blocks for each PP
-            // [x] implement intrinsic class
-            // [x] implement system_rpt
-            // [x] implement extension call back for bootstrapping
-            // [x] implement extension call back wait for events
-            // [x] implement extension call back for  vmexit
-            // [x] implement creation of VMs
-            // [x] implement creation of VPs
-            // [x] implement creation of VPs
-            // [x] implement creation of VPSs
-            // [x] implement init VPS as root
-            // [x] implement read/write VPS state
-            // [x] implement continued execution with no exits
-            // [x] implement vps_run / vmexit handler
-            // [x] implement stopping the hypervisor
-            // [x] implement fast fail for extension failing before vmrun
-            // [x] implement fast fail for extension failing after vmrun
-            // [x] implement fast fail for extension not calling bf_vps_run_op
-            // [x] implement fast fail callback for extensions
-            // [x] implement __stack_chk_fail
-            // [x] implement dump_cpu_state for exception handler
-            // [x] implement per-PP extension stacks
-            // [x] implement multicore
-            // [x] implement removal of extra IDs in syscall interface
-            // [x] implement active VM
-            // [x] implement active VP
-            // [x] implement active VPS
-            // [x] implement nmi support during demote
-            // [x] implement per-PP extension TLS blocks
-            // [x] implement intrinsics syscalls
-            // [x] implement filtering of GPs for invalid MSR read/write
-            // [x] implement nmi ESR with an rex64.IRET in the loader
-            // [x] implement Intel support
-            // [x] implement nmi support during microkernel execution for Intel
-            // [x] implement version information using main() args.
-            // [x] implement fs:xxx for extensions for register/exit data.
-            // [x] implement run with an error code
-            // [x] implement simplify the example as much as possible
-            // [x] implement error on VMX instructions on Intel
-            // [x] implement error on SVM instructions on AMD
-            // [x] implement fix for vmexit first crash (vmxoff and check state)
-            // [x] implement fix for 128 cores on Windows
-            // [x] implement alloc page
-            // [ ] implement free page
-            // [ ] implement TLS functions for ext_id, vmid, vpid and vpsid
-            // [x] implement virt_to_phys
-            // [ ] implement debugging mutex/transaction support
-            // [x] implement Windows support
-            // [x] implement UEFI support
-            // [ ] implement huge_pool
-            // [ ] implement huge
-            // [ ] implement alloc physically contiguous page
-            // [ ] implement free physically contiguous page
-            // [ ] implement per-VM direct maps
-            // [x] implement reduce the size of the TLS block
+            // Remaining Tasks (besides todos):
+            // [ ] implement -bsl-template-generic-param properly
             // [ ] implement optimizations for release builds
+            // [ ] implement validate the input of all syscalls
+            // [ ] implement policy for which MSRs can be read/written
+            // [ ] implement policy for VMCS fields can be read/written
             // [ ] implement dump function for AMD vps
             // [ ] implement dump functions for all types
             // [ ] implement contants for all of the asm logic
             // [ ] implement all debug ops
             // [ ] implement some basic unit tests
             // [ ] implement some basic syscall tests
-
             // [ ] implement configuration validation
-            // [ ] implement lock down which MSRs can be read/written
             // [ ] implement reproduceable builds
-            // [ ] implement complete unit tests
-            // [ ] implement complete syscall tests
-            // [ ] implement heap support
-            // [ ] implement IPC support
-            // [ ] implement nmi support during promote
-            // [ ] implement remaining todos
-            // [ ] implement c extension example
             // [ ] implement mitigations for transient execution vulnerabilities
         }
     };

@@ -24,11 +24,18 @@ include(${CMAKE_CURRENT_LIST_DIR}/../cmake/function/hypervisor_add_header_depend
 add_executable(kernel)
 
 target_include_directories(kernel PRIVATE
+    include
     src
 )
 
 list(APPEND HEADERS
-    ${CMAKE_CURRENT_LIST_DIR}/src/call_ext.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/call_ext.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/get_current_tls.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/map_page_flags.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/promote.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/return_to_mk.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/return_to_vmexit_loop.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/vmexit_loop_entry.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/debug_ring_write.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_callback_op.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_control_op.hpp
@@ -42,16 +49,11 @@ list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/src/ext_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ext_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/fast_fail.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/get_current_tls.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/global_resources.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/huge_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/mk_main.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/page_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/page_t.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/promote.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/return_to_mk.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/return_to_vmexit_loop.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/vmexit_loop_entry.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vmexit_loop.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vm_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vm_t.hpp
@@ -68,42 +70,46 @@ list(APPEND HEADERS
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     target_include_directories(kernel PRIVATE
+        include/x64
         src/x64
     )
 
     list(APPEND HEADERS
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/pdpt_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/pdt_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/pml4t_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/pt_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/serial_write.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/tls_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/dispatch_esr.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/x64/dispatch_syscall_intrinsic_op.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/x64/pdpt_t.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/x64/pdt_t.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/x64/pml4t_t.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/x64/pt_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/root_page_table_t.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/x64/serial_write.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/smap_guard_t.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/x64/tls_t.hpp
     )
 endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
     target_include_directories(kernel PRIVATE
+        include/x64/amd
         src/x64/amd
     )
     list(APPEND HEADERS
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/amd/vmcb_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/amd/dispatch_esr_nmi.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/x64/amd/dispatch_syscall_intrinsic_op.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/amd/intrinsic_t.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/x64/amd/vmcb_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/amd/vps_t.hpp
     )
 elseif(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     target_include_directories(kernel PRIVATE
+        include/x64/intel
         src/x64/intel
     )
     list(APPEND HEADERS
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/intel/vmcs_missing_registers_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/intel/vmcs_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/dispatch_esr_nmi.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/dispatch_syscall_intrinsic_op.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/intrinsic_t.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/vmcs_missing_registers_t.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/vmcs_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/vps_t.hpp
     )
 else()

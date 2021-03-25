@@ -41,10 +41,19 @@ if (NOT CMAKE_PROJECT_NAME STREQUAL "hypervisor_microkernel")
         src/x64/bf_debug_op_write_str_impl.S
         src/x64/bf_handle_op_close_handle_impl.S
         src/x64/bf_handle_op_open_handle_impl.S
-        src/x64/bf_intrinsic_op_read_msr_impl.S
-        src/x64/bf_intrinsic_op_write_msr_impl.S
+        src/x64/bf_intrinsic_op_invept_impl.S
+        src/x64/bf_intrinsic_op_invlpga_impl.S
+        src/x64/bf_intrinsic_op_invvpid_impl.S
+        src/x64/bf_intrinsic_op_rdmsr_impl.S
+        src/x64/bf_intrinsic_op_wrmsr_impl.S
+        src/x64/bf_mem_op_alloc_heap_impl.S
+        src/x64/bf_mem_op_alloc_huge_impl.S
         src/x64/bf_mem_op_alloc_page_impl.S
+        src/x64/bf_mem_op_free_huge_impl.S
+        src/x64/bf_mem_op_free_page_impl.S
         src/x64/bf_mem_op_virt_to_phys_impl.S
+        src/x64/bf_tls_extid_impl.S
+        src/x64/bf_tls_ppid_impl.S
         src/x64/bf_tls_rax_impl.S
         src/x64/bf_tls_rbx_impl.S
         src/x64/bf_tls_rcx_impl.S
@@ -76,12 +85,16 @@ if (NOT CMAKE_PROJECT_NAME STREQUAL "hypervisor_microkernel")
         src/x64/bf_tls_set_r14_impl.S
         src/x64/bf_tls_set_r15_impl.S
         src/x64/bf_tls_thread_id_impl.S
+        src/x64/bf_tls_vmid_impl.S
+        src/x64/bf_tls_vpid_impl.S
+        src/x64/bf_tls_vpsid_impl.S
         src/x64/bf_vm_op_create_vm_impl.S
         src/x64/bf_vm_op_destroy_vm_impl.S
         src/x64/bf_vp_op_create_vp_impl.S
         src/x64/bf_vp_op_destroy_vp_impl.S
         src/x64/bf_vps_op_advance_ip_and_run_current_impl.S
         src/x64/bf_vps_op_advance_ip_impl.S
+        src/x64/bf_vps_op_clear_vps_impl.S
         src/x64/bf_vps_op_create_vps_impl.S
         src/x64/bf_vps_op_destroy_vps_impl.S
         src/x64/bf_vps_op_init_as_root_impl.S
@@ -102,6 +115,7 @@ if (NOT CMAKE_PROJECT_NAME STREQUAL "hypervisor_microkernel")
 
     target_link_libraries(syscall PUBLIC
         bsl
+        hypervisor
     )
 else()
     add_library(syscall INTERFACE)
@@ -112,5 +126,6 @@ else()
 
     target_link_libraries(syscall INTERFACE
         bsl
+        hypervisor
     )
 endif()

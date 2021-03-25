@@ -322,7 +322,7 @@ namespace example
         /// - Configure the pin based controls
         ///
 
-        status = syscall::bf_intrinsic_op_read_msr(handle, ia32_vmx_true_pinbased_ctls, ctls);
+        status = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_pinbased_ctls, ctls);
         if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
@@ -341,7 +341,7 @@ namespace example
         constexpr bsl::safe_uintmax enable_msr_bitmaps{bsl::to_umax(0x10000000U)};
         constexpr bsl::safe_uintmax enable_procbased_ctls2{bsl::to_umax(0x80000000U)};
 
-        status = syscall::bf_intrinsic_op_read_msr(handle, ia32_vmx_true_procbased_ctls, ctls);
+        status = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_procbased_ctls, ctls);
         if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
@@ -360,7 +360,7 @@ namespace example
         /// - Configure the exit controls
         ///
 
-        status = syscall::bf_intrinsic_op_read_msr(handle, ia32_vmx_true_exit_ctls, ctls);
+        status = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_exit_ctls, ctls);
         if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
@@ -376,7 +376,7 @@ namespace example
         /// - Configure the entry controls
         ///
 
-        status = syscall::bf_intrinsic_op_read_msr(handle, ia32_vmx_true_entry_ctls, ctls);
+        status = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_entry_ctls, ctls);
         if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
@@ -398,7 +398,7 @@ namespace example
         constexpr bsl::safe_uintmax enable_xsave{bsl::to_umax(0x00100000U)};
         constexpr bsl::safe_uintmax enable_uwait{bsl::to_umax(0x04000000U)};
 
-        status = syscall::bf_intrinsic_op_read_msr(handle, ia32_vmx_true_procbased_ctls2, ctls);
+        status = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_procbased_ctls2, ctls);
         if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;

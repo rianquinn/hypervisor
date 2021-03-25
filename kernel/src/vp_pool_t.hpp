@@ -29,6 +29,8 @@
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
+#include <bsl/lock_guard.hpp>
+#include <bsl/spinlock.hpp>
 #include <bsl/unlikely.hpp>
 
 namespace mk
@@ -54,6 +56,8 @@ namespace mk
         VP_CONCEPT *m_head;
         /// @brief stores the VP_CONCEPTs in the VP_CONCEPT linked list
         bsl::array<VP_CONCEPT, MAX_VPS> m_pool;
+        /// @brief safe guards operations on the pool.
+        mutable bsl::spinlock m_pool_lock;
 
     public:
         /// @brief an alias for VP_CONCEPT
@@ -68,7 +72,7 @@ namespace mk
         ///   @param page_pool the page pool to use
         ///
         explicit constexpr vp_pool_t(PAGE_POOL_CONCEPT &page_pool) noexcept
-            : m_initialized{}, m_page_pool{page_pool}, m_head{}, m_pool{}
+            : m_initialized{}, m_page_pool{page_pool}, m_head{}, m_pool{}, m_pool_lock{}
         {}
 
         /// <!-- description -->
@@ -181,6 +185,8 @@ namespace mk
         [[nodiscard]] constexpr auto
         allocate() &noexcept -> bsl::safe_uint16
         {
+            bsl::lock_guard lock{m_pool_lock};
+
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "vp_pool_t not initialized\n" << bsl::here();
                 return bsl::safe_uint16::zero(true);
@@ -188,6 +194,11 @@ namespace mk
 
             if (bsl::unlikely(nullptr == m_head)) {
                 bsl::error() << "vp pool out of vps\n" << bsl::here();
+                return bsl::safe_uint16::zero(true);
+            }
+
+            if (bsl::unlikely(!m_head->allocate())) {
+                bsl::print<bsl::V>() << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }
 
@@ -210,6 +221,8 @@ namespace mk
         [[nodiscard]] constexpr auto
         deallocate(bsl::safe_uint16 const &vpid) &noexcept -> bsl::errc_type
         {
+            bsl::lock_guard lock{m_pool_lock};
+
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "vp_pool_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
@@ -235,10 +248,43 @@ namespace mk
                 return bsl::errc_failure;
             }
 
+            vp->deallocate();
             vp->set_next(m_head);
             m_head = vp;
 
             return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if the requested vp_t is allocated, false
+        ///     if the provided VPID is invalid, or if the vp_t is not
+        ///     allocated.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpid the ID of the vp_t to query
+        ///   @return Returns true if the requested vp_t is allocated, false
+        ///     if the provided VPID is invalid, or if the vp_t is not
+        ///     allocated.
+        ///
+        [[nodiscard]] constexpr auto
+        is_allocated(bsl::safe_uint16 const &vpid) &noexcept -> bool
+        {
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::error() << "vp_pool_t not initialized\n" << bsl::here();
+                return false;
+            }
+
+            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            if (bsl::unlikely(nullptr == vp)) {
+                bsl::error() << "invalid vpid: "    // --
+                             << bsl::hex(vpid)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
+                return false;
+            }
+
+            return vp->is_allocated();
         }
     };
 }

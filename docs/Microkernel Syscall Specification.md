@@ -83,8 +83,8 @@
     - [2.15.1. bf_vps_op_run, OP=0x5, IDX=0xD](#2151-bf_vps_op_run-op0x5-idx0xd)
     - [2.15.1. bf_vps_op_advance_ip, OP=0x5, IDX=0xE](#2151-bf_vps_op_advance_ip-op0x5-idx0xe)
     - [2.15.1. bf_vps_op_promote, OP=0x5, IDX=0xF](#2151-bf_vps_op_promote-op0x5-idx0xf)
-    - [2.16.1. bf_intrinsic_op_read_msr, OP=0x7, IDX=0x0](#2161-bf_intrinsic_op_read_msr-op0x7-idx0x0)
-    - [2.16.1. bf_intrinsic_op_write_msr, OP=0x7, IDX=0x1](#2161-bf_intrinsic_op_write_msr-op0x7-idx0x1)
+    - [2.16.1. bf_intrinsic_op_rdmsr, OP=0x7, IDX=0x0](#2161-bf_intrinsic_op_rdmsr-op0x7-idx0x0)
+    - [2.16.1. bf_intrinsic_op_wrmsr, OP=0x7, IDX=0x1](#2161-bf_intrinsic_op_wrmsr-op0x7-idx0x1)
 
 # 1. Introduction
 
@@ -1281,11 +1281,27 @@ bf_vps_op_promote tells the microkernel to promote the requested VPS. bf_vps_op_
 | :---- | :---------- |
 | 0x0000000000000011 | Defines the syscall index for bf_vps_op_promote |
 
+### 2.15.1. bf_vps_op_clear_vps, OP=0x5, IDX=0x11
+
+bf_vps_op_clear_vps tells the microkernel to clear the VPS's hardware cache, if one exists. How this is used depends entirely on the hardware and is associated with AMD's VMCB Clean Bits, and Intel's VMClear instruction. See the associated documentation for more details. On AMD, this ABI clears the entire VMCB. For more fine grained control, use the write ABIs to manually modify the VMCB.
+
+**Input:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+| REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
+| REG1 | 15:0 | The VPSID of the VPS to clear |
+| REG1 | 63:16 | REVI |
+
+**const, bf_uint64_t: BF_VPS_OP_CLEAR_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000012 | Defines the syscall index for bf_vps_op_clear_vps |
+
 ## 2.16. Intrinsic Syscalls
 
-### 2.16.1. bf_intrinsic_op_read_msr, OP=0x7, IDX=0x0
+### 2.16.1. bf_intrinsic_op_rdmsr, OP=0x7, IDX=0x0
 
-Reads an MSR directly from the CPU given the address of the MSR to read. Note that this is specific to Intel/AMD only.
+Reads an MSR directly from the CPU given the address of the MSR to read. Note that this is specific to Intel/AMD only. Also note that not all MSRs can be written to, and which MSRs that can be written to is up to the microkernel's internal policy as well as which architecture the hypervisor is running on.
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1299,14 +1315,14 @@ Reads an MSR directly from the CPU given the address of the MSR to read. Note th
 | :------------ | :--- | :---------- |
 | REG0 | 63:0 | The resulting value |
 
-**const, bf_uint64_t: BF_INTRINSIC_OP_READ_MSR_IDX_VAL**
+**const, bf_uint64_t: BF_INTRINSIC_OP_RDMSR_IDX_VAL**
 | Value | Description |
 | :---- | :---------- |
-| 0x0000000000000000 | Defines the syscall index for bf_intrinsic_op_read_msr |
+| 0x0000000000000000 | Defines the syscall index for bf_intrinsic_op_rdmsr |
 
-### 2.16.1. bf_intrinsic_op_write_msr, OP=0x7, IDX=0x1
+### 2.16.1. bf_intrinsic_op_wrmsr, OP=0x7, IDX=0x1
 
-Writes to an MSR directly from the CPU given the address of the MSR to write and the value to write. Note that this is specific to Intel/AMD only.
+Writes to an MSR directly from the CPU given the address of the MSR to write and the value to write. Note that this is specific to Intel/AMD only. Also note that not all MSRs can be written to, and which MSRs that can be written to is up to the microkernel's internal policy as well as which architecture the hypervisor is running on.
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1316,10 +1332,60 @@ Writes to an MSR directly from the CPU given the address of the MSR to write and
 | REG1 | 63:32 | REVI |
 | REG2 | 63:0 | The value to write to the requested MSR |
 
-**const, bf_uint64_t: BF_INTRINSIC_OP_WRITE_MSR_IDX_VAL**
+**const, bf_uint64_t: BF_INTRINSIC_OP_WRMSR_IDX_VAL**
 | Value | Description |
 | :---- | :---------- |
-| 0x0000000000000001 | Defines the syscall index for bf_intrinsic_op_write_msr |
+| 0x0000000000000001 | Defines the syscall index for bf_intrinsic_op_wrmsr |
+
+### 2.16.1. bf_intrinsic_op_invlpga, OP=0x7, IDX=0x2
+
+Invalidates the TLB mapping for a given virtual page and a given ASID. Note that this is specific to AMD only.
+
+**Input:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+| REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
+| REG1 | 63:0 | The address to invalidate |
+| REG2 | 63:0 | The ASID to invalidate |
+
+**const, bf_uint64_t: BF_INTRINSIC_OP_INVLPGA_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000002 | Defines the syscall index for bf_intrinsic_op_invlpga |
+
+### 2.16.1. bf_intrinsic_op_invept, OP=0x7, IDX=0x3
+
+Invalidates mappings in the translation lookaside buffers (TLBs) and paging-structure caches that were derived from extended page tables (EPT). Note that this is specific to Intel only.
+
+**Input:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+| REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
+| REG1 | 63:0 | The EPTP to invalidate |
+| REG2 | 63:0 | The INVEPT type (see the Intel SDM for details) |
+
+**const, bf_uint64_t: BF_INTRINSIC_OP_INVEPT_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000003 | Defines the syscall index for bf_intrinsic_op_invept |
+
+### 2.16.1. bf_intrinsic_op_invvpid, OP=0x7, IDX=0x4
+
+Invalidates mappings in the translation lookaside buffers (TLBs) and paging-structure caches based on virtual-processor identifier (VPID). Note that this is specific to Intel only.
+
+**Input:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+| REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
+| REG1 | 63:0 | The address to invalidate |
+| REG2 | 15:0 | The VPID to invalidate |
+| REG2 | 63:16 | REVI |
+| REG3 | 63:0 | The INVVPID type (see the Intel SDM for details) |
+
+**const, bf_uint64_t: BF_INTRINSIC_OP_INVVPID_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000004 | Defines the syscall index for bf_intrinsic_op_invvpid |
 
 ## 2.16. Mem Syscalls
 
@@ -1330,26 +1396,25 @@ Each extension has access to several different memory pools:
 - TLS (used for thread-local storage)
 - The direct map
 
-The page pool provides a means to allocate a page. Allocated pages are **not** mapped into the microkernel, and therefore are safe for storing secrets if needed (at least as safe as it is going to get). Page allocation (and freeing) is a slow process as several different page walks are involved.
+The page pool provides a means to allocate a page. It should be noted that some microkernels may choose not to implement bf_mem_op_free_page which is optional.
 
 The huge pool provides a method for allocating physically contiguous memory. This pool is small and platform-dependent (as in less than a megabyte total).
+It should be noted that some microkernels may choose not to implement bf_mem_op_free_huge which is optional.
 
-The heap pool provides memory that can only be grown or shrunk, meaning the memory must always remain contiguous. An extension is free to use heap memory or the page pool. Both unmap any allocated pages from the microkernel, and both are slow. The only difference between these two pools is the page pool can only allocate a single page at a time and may or may not be fragmented (depends on the implementation). The heap pool can allocate memory of any size (must be a multiple of a page) and never fragments. Freeing memory is also different. An extension can free any page from the page pool (although the virtual address associated with the page may remain allocated, meaning the memory is reusable, but the virtual address is not, leading to potential exhaustion of the virtual memory space). The heap pool can only be grown or shrunk, meaning the free operation reduces the heap pool's size.
+The heap pool provides memory that can only be grown, meaning the memory must always remain virtually contiguous. An extension is free to use heap memory or the page pool. The only difference between these two pools is the page pool can only allocate a single page at a time and may or may not be fragmented (depends on the implementation). The heap pool can allocate memory of any size (must be a multiple of a page) and never fragments. Freeing memory is also different. An extension can free any page from the page pool if the microkernel implements bf_mem_op_free_page. The heap pool can only be grown, meaning there is no ability to free heap memory.
 
-Allocations must all occur during the bootstrap phase of the extension. Once an extension has executed bf_vps_op_run, allocations are no longer allowed.
+Allocations must all occur during the bootstrap phase of the extension. Once an extension has executed bf_vps_op_run, allocations are no longer allowed on that physical processor.
 
-Thread-Local Storage (TLS) memory (typically allocated using `thread_local`) provides per-thread storage. The amount of TLS available to an extension depends on the configuration of the hypervisor.
+Thread-Local Storage (TLS) memory (typically allocated using `thread_local`) provides per-physical processor storage. The amount of TLS available to an extension is 1 page per physical processor.
 
-The direct map provides an extension with a means to access any physical address by accessing the direct map region of the virtual address space (depends on the hypervisor's configuration). By default, on Intel/AMD with 4-level paging, this region starts at 0x0000400000000000. An extension can access any physical address by simply adding 0x0000400000000000 to the physical address and dereferencing the resulting value. Note that not all extensions can access the direct map (depends on the microkernel's security policy), and not all physical addresses are accessible. For example, any physical address mapped into the microkernel or another extension cannot be mapped (meaning a physical address can only be mapped once by the entire hypervisor). The microkernel also provides a per-VM direct map to provide additional mitigations for transient execution attacks. This feature is seamless to an extension, meaning, so long as an extension has the right to map a physical address, any attempt to access a legal, physical address will successfully map.
+The direct map provides an extension with a means to access any physical address by accessing the direct map region of the virtual address space (depends on the hypervisor's configuration). By default, on Intel/AMD with 4-level paging, this region starts at 0xFFFFC00000000000. An extension can access any physical address by simply adding 0xFFFFC00000000000 to the physical address and dereferencing the resulting value. When a VM is destroyed, all physical memory maps associated with that VM will be removed.
 
 ### 2.16.1. bf_mem_op_alloc_page, OP=0x7, IDX=0x0
 
 bf_mem_op_alloc_page allocates a page. When allocating a page, the extension should keep in mind the following:
-- The microkernel removes the page from its address space, which requires a page walk, which means that this operation is slow.
 - Virtual address to physical address conversions require a page walk, so they are slow.
 - The microkernel does not support physical address to virtual address conversions.
-- Whether or not bf_mem_op_free_page frees the allocated virtual address is implementation-specific and not known to the extension, which could lead to the virtual address space's exhaustion.
-- The execution of bf_mem_op_free_page is also slow, as a page walk is also needed.
+- bf_mem_op_free_page is optional and if implemented, may be slow.
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1369,7 +1434,7 @@ bf_mem_op_alloc_page allocates a page. When allocating a page, the extension sho
 
 ### 2.16.1. bf_mem_op_free_page, OP=0x7, IDX=0x1
 
-Frees a page previously allocated by bf_mem_op_alloc_page. For more information, please see bf_mem_op_alloc_page.
+Frees a page previously allocated by bf_mem_op_alloc_page. This operation is optional and not all microkernels may implement it. For more information, please see bf_mem_op_alloc_page.
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1389,23 +1454,78 @@ Frees a page previously allocated by bf_mem_op_alloc_page. For more information,
 
 ### 2.16.1. bf_mem_op_alloc_huge, OP=0x7, IDX=0x2
 
-TBD
+bf_mem_op_alloc_huge allocates a physically contiguous block of memory. When allocating a page, the extension should keep in mind the following:
+- The total memory available to allocate from this pool is extremely limited. This should only be used when absolutely needed, and you should not expect more than 1 MB (might be less) of total memory available.
+- Memory allocated from the huge pool might be allocated using different schemes. For example, the microkernel might allocate in increments of a page, or it might use a buddy allocator that would allocate in multiples of 2. If the allocation size doesn't match the algorithm, internal fragmentation could occur, further limiting the total number of allocations this pool can support.
+- Virtual address to physical address conversions require a page walk, so they are slow.
+- The microkernel does not support physical address to virtual address conversions.
+- bf_mem_op_free_huge is optional and if implemented, may be slow.
+
+**Input:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+| REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
+| REG1 | 63:0 | The total number of bytes to allocate |
+
+**Output:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+| REG0 | 63:0 | The virtual address of the resulting memory |
+| REG1 | 63:0 | The physical address of the resulting memory |
+
+**const, bf_uint64_t: BF_MEM_OP_ALLOC_HUGE_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000002 | Defines the syscall index for bf_mem_op_alloc_huge |
 
 ### 2.16.1. bf_mem_op_free_huge, OP=0x7, IDX=0x3
 
-TBD
+Frees memory previously allocated by bf_mem_op_alloc_huge. This operation is optional and not all microkernels may implement it. For more information, please see bf_mem_op_alloc_huge.
+
+**Input:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+| REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
+| REG1 | 63:0 | The virtual address of the memory to free |
+
+**Output:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+
+**const, bf_uint64_t: BF_MEM_OP_FREE_HUGE_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000003 | Defines the syscall index for bf_mem_op_free_huge |
 
 ### 2.16.1. bf_mem_op_alloc_heap, OP=0x7, IDX=0x4
 
-TBD
+bf_mem_op_alloc_heap allocates heap memory. When allocating heap memory, the extension should keep in mind the following:
+- This ABI is designed to work similar to sbrk() to support malloc/free implementations common with existing open source libraries.
+- Calling this ABI with with a size of 0 will return the current heap location.
+- Calling this ABI with a size (in bytes) will result in return the previous heap location. The current heap location will be set to the previous location, plus the provide size, rounded to the nearest page size.
+- The microkernel does not support virtual address to physical address conversions.
+- The microkernel does not support physical address to virtual address conversions.
+- There is no ability to free heap memory
 
-### 2.16.1. bf_mem_op_free_heap, OP=0x7, IDX=0x5
+**Input:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+| REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
+| REG1 | 63:0 | The number of bytes to increase the heap by |
 
-TBD
+**Output:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+| REG0 | 63:0 | The virtual address of the previous heap location |
 
-### 2.16.1. bf_mem_op_virt_to_phys, OP=0x7, IDX=0x6
+**const, bf_uint64_t: BF_MEM_OP_ALLOC_HEAP_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000004 | Defines the syscall index for bf_mem_op_alloc_heap |
 
-bf_mem_op_virt_to_phys converts a provided virtual address to a physical address for any virtual address allocated using bf_mem_op_alloc_page, bf_mem_op_alloc_huge, bf_mem_op_alloc_heap or mapped using the direct map.
+### 2.16.1. bf_mem_op_virt_to_phys, OP=0x7, IDX=0x5
+
+bf_mem_op_virt_to_phys converts a provided virtual address to a physical address for any virtual address allocated using bf_mem_op_alloc_page or bf_mem_op_alloc_huge. It should also be noted that the virtual address of the page to convert must be page aligned.
 
 **Input:**
 | Register Name | Bits | Description |

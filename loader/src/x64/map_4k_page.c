@@ -68,22 +68,6 @@ map_4k_page(uint64_t const virt, uint64_t phys, uint32_t const flags, struct pml
     struct pt_t *pt = ((void *)0);
     struct pte_t *pte = ((void *)0);
 
-    /**
-     * TODO:
-     * - We need to map in any page tables that we allocate. The problem is,
-     *   we cannot use a recursive function to do this as it could result
-     *   in a stack overflow in the kernel. Likely, the best option would
-     *   be to convert this function into a private _impl, and provide it
-     *   with a queue that we can push allocated pages to so that the wrapper
-     *   can map any pages that are pushed. This way, as we map, we can
-     *   continue to push pages until the process finally stops. Since this
-     *   code is common between Windows/Linux/UEFI, we will need to implement
-     *   this queue from scratch. For now, we seem to be ok without this
-     *   additional logic, but it is possible that the microkernel could end
-     *   up with a page fault while it is trying to walk page tables as it
-     *   wouldn't have all of the memory properly mapped.
-     */
-
     if (((uint64_t)0) == virt) {
         bferror_x64("virt is NULL", virt);
         return LOADER_FAILURE;

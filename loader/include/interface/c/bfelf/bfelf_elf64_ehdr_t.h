@@ -198,15 +198,6 @@ validate_elf64_ehdr(uint8_t const *const file)
         return BFELF_INVALID_OSABI;
     }
 
-    /**
-     * TODO:
-     * - Eventually we can remove this requirement. For now, this ELF
-     *   loader only supports statically linked, non-PIE executables.
-     *   Once this ELF loader is capable of support relocations likes
-     *   its previous version, we can remove this requirement as we
-     *   will then be able to handle both dynamic libraries and binaries.
-     */
-
     if (to_ehdr(file)->e_type != bfelf_et_exec) {
         bferror_x64("invalid e_type", to_ehdr(file)->e_type);
         return BFELF_INVALID_TYPE;

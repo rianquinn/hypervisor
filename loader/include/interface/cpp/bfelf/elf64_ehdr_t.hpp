@@ -213,14 +213,6 @@ namespace bfelf
             return bsl::errc_failure;
         }
 
-        /// TODO:
-        /// - Eventually we can remove this requirement. For now, this ELF
-        ///   loader only supports statically linked, non-PIE executables.
-        ///   Once this ELF loader is capable of support relocations likes
-        ///   its previous version, we can remove this requirement as we
-        ///   will then be able to handle both dynamic libraries and binaries.
-        ///
-
         if (ehdr->e_type != ET_EXEC) {
             bsl::error() << "invalid ELF type\n" << bsl::here();
             return bsl::errc_failure;

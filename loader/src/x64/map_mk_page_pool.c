@@ -59,7 +59,7 @@ map_mk_page_pool(struct mutable_span_t const *const page_pool, struct pml4t_t *c
 {
     uint64_t off;
     uint64_t *prev = ((void *)0);
-    uint64_t const base_virt = HYPERVISOR_DIRECT_MAP_ADDR;
+    uint64_t const base_virt = HYPERVISOR_MK_PAGE_POOL_ADDR;
 
     for (off = ((uint64_t)0); off < page_pool->size; off += HYPERVISOR_PAGE_SIZE) {
 

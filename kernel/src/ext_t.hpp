@@ -25,13 +25,17 @@
 #ifndef EXT_T_HPP
 #define EXT_T_HPP
 
+#include "huge_t.hpp"
+#include "page_t.hpp"
+
 #include <call_ext.hpp>
 #include <elf64_ehdr_t.hpp>
 #include <elf64_phdr_t.hpp>
+#include <map_page_flags.hpp>
 #include <mk_interface.hpp>
-#include <page_t.hpp>
-#include <smap_guard_t.hpp>
 
+#include <bsl/array.hpp>
+#include <bsl/discard.hpp>
 #include <bsl/finally.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
@@ -49,9 +53,13 @@ namespace mk
     /// <!-- template parameters -->
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
+    ///   @tparam HUGE_POOL_CONCEPT defines the type of huge pool to use
     ///   @tparam ROOT_PAGE_TABLE_CONCEPT defines the type of RPT pool to use
     ///   @tparam PAGE_SIZE defines the size of a page
     ///   @tparam MAX_PPS the max number of PPs supported
+    ///   @tparam MAX_VMS the max number of VMs supported
+    ///   @tparam EXT_DIRECT_MAP_ADDR the address of the extension's direct map
+    ///   @tparam EXT_DIRECT_MAP_SIZE the size of the extension's direct map
     ///   @tparam EXT_STACK_ADDR the address of the extension's stack
     ///   @tparam EXT_STACK_SIZE the size of the extension's stack
     ///   @tparam EXT_CODE_ADDR the address of the extension's code
@@ -60,15 +68,21 @@ namespace mk
     ///   @tparam EXT_TLS_SIZE the size of the extension's TLS block
     ///   @tparam EXT_PAGE_POOL_ADDR the address of the extension's page pool
     ///   @tparam EXT_PAGE_POOL_SIZE the size of the extension's page pool
+    ///   @tparam EXT_HUGE_POOL_ADDR the address of the extension's huge pool
+    ///   @tparam EXT_HUGE_POOL_SIZE the size of the extension's huge pool
     ///   @tparam EXT_HEAP_POOL_ADDR the address of the extension's heap pool
     ///   @tparam EXT_HEAP_POOL_SIZE the size of the extension's heap pool
     ///
     template<
         typename INTRINSIC_CONCEPT,
         typename PAGE_POOL_CONCEPT,
+        typename HUGE_POOL_CONCEPT,
         typename ROOT_PAGE_TABLE_CONCEPT,
         bsl::uintmax PAGE_SIZE,
         bsl::uintmax MAX_PPS,
+        bsl::uintmax MAX_VMS,
+        bsl::uintmax EXT_DIRECT_MAP_ADDR,
+        bsl::uintmax EXT_DIRECT_MAP_SIZE,
         bsl::uintmax EXT_STACK_ADDR,
         bsl::uintmax EXT_STACK_SIZE,
         bsl::uintmax EXT_CODE_ADDR,
@@ -77,6 +91,8 @@ namespace mk
         bsl::uintmax EXT_TLS_SIZE,
         bsl::uintmax EXT_PAGE_POOL_ADDR,
         bsl::uintmax EXT_PAGE_POOL_SIZE,
+        bsl::uintmax EXT_HUGE_POOL_ADDR,
+        bsl::uintmax EXT_HUGE_POOL_SIZE,
         bsl::uintmax EXT_HEAP_POOL_ADDR,
         bsl::uintmax EXT_HEAP_POOL_SIZE>
     class ext_t final
@@ -85,12 +101,12 @@ namespace mk
         bool m_initialized{};
         /// @brief stores true if start() has been executed
         bool m_started{};
-        /// @brief stores true if bootstrap() has been executed
-        bool m_bootstrapped{};
         /// @brief stores a reference to the intrinsics to use
         INTRINSIC_CONCEPT *m_intrinsic{};
         /// @brief stores a reference to the page pool to use
         PAGE_POOL_CONCEPT *m_page_pool{};
+        /// @brief stores a reference to the huge pool to use
+        HUGE_POOL_CONCEPT *m_huge_pool{};
         /// @brief stores the ID associated with this ext_t
         bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
         /// @brief stores an extension's ELF file
@@ -100,8 +116,12 @@ namespace mk
         /// @brief stores the root page table for the microkernel.
         ROOT_PAGE_TABLE_CONCEPT const *m_system_rpt{};
 
-        /// @brief stores rpt used by main() and bootstrap_ip
+        /// @brief stores the main rpt
         ROOT_PAGE_TABLE_CONCEPT m_main_rpt{};
+        /// @brief stores the direct map rpts
+        bsl::array<ROOT_PAGE_TABLE_CONCEPT, MAX_VMS> m_direct_map_rpts{};
+        /// @brief stores a pointer to the current direct map rpt
+        ROOT_PAGE_TABLE_CONCEPT *m_current_direct_map_rpt{};
         /// @brief stores the main IP registered by the extension
         bsl::safe_uintmax m_main_ip{bsl::safe_uintmax::zero(true)};
         /// @brief stores the bootstrap IP registered by the extension
@@ -113,9 +133,11 @@ namespace mk
         /// @brief stores the extension's handle
         bsl::safe_uintmax m_handle{bsl::safe_uintmax::zero(true)};
         /// @brief stores the extension's page pool cursor
-        bsl::safe_uintmax m_page_pool_cursor{bsl::to_umax(EXT_PAGE_POOL_ADDR)};
+        bsl::safe_uintmax m_page_pool_crsr{};
+        /// @brief stores the extension's huge pool cursor
+        bsl::safe_uintmax m_huge_pool_crsr{};
         /// @brief stores the extension's heap pool cursor
-        bsl::safe_uintmax m_heap_pool_cursor{bsl::to_umax(EXT_HEAP_POOL_ADDR)};
+        bsl::safe_uintmax m_heap_pool_crsr{};
 
         /// <!-- description -->
         ///   @brief Validates the provided pt_load segment.
@@ -369,17 +391,19 @@ namespace mk
                     if (bytes_to_next_page == PAGE_SIZE) {
                         if ((phdr->p_flags & bfelf::PF_X).is_pos()) {
                             page = bsl::as_writable_t<bsl::byte>(
-                                rpt.allocate_rx(phdr->p_vaddr + bytes), PAGE_SIZE);
+                                rpt.allocate_page_rx(phdr->p_vaddr + bytes), PAGE_SIZE);
                         }
                         else {
                             page = bsl::as_writable_t<bsl::byte>(
-                                rpt.allocate_rw(phdr->p_vaddr + bytes), PAGE_SIZE);
+                                rpt.allocate_page_rw(phdr->p_vaddr + bytes), PAGE_SIZE);
                         }
 
                         if (bsl::unlikely(!page)) {
                             bsl::print<bsl::V>() << bsl::here();
                             return bsl::errc_failure;
                         }
+
+                        bsl::touch();
                     }
                     else {
                         if (bsl::unlikely(!page)) {
@@ -442,7 +466,7 @@ namespace mk
             -> bsl::errc_type
         {
             for (bsl::safe_uintmax bytes{}; bytes < EXT_STACK_SIZE; bytes += PAGE_SIZE) {
-                void *page{rpt.allocate_rw(addr + bytes)};
+                void *page{rpt.allocate_page_rw(addr + bytes)};
                 if (bsl::unlikely(nullptr == page)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -474,6 +498,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -499,13 +525,13 @@ namespace mk
             bsl::span<bsl::uint8> page_usr{};
             bsl::span<bsl::uintmax> page_abi{};
 
-            page_usr = bsl::as_writable_t<bsl::uint8>(rpt.allocate_rw(addr_usr), PAGE_SIZE);
+            page_usr = bsl::as_writable_t<bsl::uint8>(rpt.allocate_page_rw(addr_usr), PAGE_SIZE);
             if (bsl::unlikely(!page_usr)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            page_abi = bsl::as_writable_t<bsl::uintmax>(rpt.allocate_rw(addr_abi), PAGE_SIZE);
+            page_abi = bsl::as_writable_t<bsl::uintmax>(rpt.allocate_page_rw(addr_abi), PAGE_SIZE);
             if (bsl::unlikely(!page_abi)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -551,6 +577,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -602,6 +630,37 @@ namespace mk
         }
 
         /// <!-- description -->
+        ///   @brief Initializes a direct map root page table to support the
+        ///     execution of this extension (with the inclusion of a direct
+        ///     map).
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param rpt the root page table to initialize
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        initialize_direct_map_rpt(ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!rpt.initialize(m_intrinsic, m_page_pool))) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            bsl::finally release_on_error{[&rpt]() noexcept -> void {
+                rpt.release();
+            }};
+
+            if (bsl::unlikely(!rpt.add_tables(m_main_rpt))) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            release_on_error.ignore();
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
         ///   @brief Executes the extension given an instruction pointer to
         ///     execute the extension at, a stack pointer to execute the
         ///     extension with, and a root page table defining the memory
@@ -639,12 +698,19 @@ namespace mk
             }
 
             if (tls.ext != this) {
+                if (bsl::unlikely(!rpt.activate())) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
                 tls.ext = this;
                 tls.set_extid(m_id);
-                rpt.activate();
+            }
+            else {
+                bsl::touch();
             }
 
-            auto const ret{call_ext(ip.get(), tls.sp, arg0.get(), arg1.get())};
+            bsl::exit_code const ret{call_ext(ip.get(), tls.sp, arg0.get(), arg1.get())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -658,6 +724,8 @@ namespace mk
         using intrinsic_type = INTRINSIC_CONCEPT;
         /// @brief an alias for PAGE_POOL_CONCEPT
         using page_pool_type = PAGE_POOL_CONCEPT;
+        /// @brief an alias for HUGE_POOL_CONCEPT
+        using huge_pool_type = HUGE_POOL_CONCEPT;
         /// @brief an alias for ROOT_PAGE_TABLE_CONCEPT
         using root_page_table_type = ROOT_PAGE_TABLE_CONCEPT;
 
@@ -672,6 +740,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param intrinsic the intrinsics to use
         ///   @param page_pool the page pool to use
+        ///   @param huge_pool the huge pool to use
         ///   @param i the ID for this ext_t
         ///   @param ext_elf_file the ELF file for this ext_t
         ///   @param online_pps the total number of PPs that are online
@@ -683,6 +752,7 @@ namespace mk
         initialize(
             INTRINSIC_CONCEPT *const intrinsic,
             PAGE_POOL_CONCEPT *const page_pool,
+            HUGE_POOL_CONCEPT *const huge_pool,
             bsl::safe_uint16 const &i,
             bsl::span<bsl::byte const> const &ext_elf_file,
             bsl::safe_uint16 const &online_pps,
@@ -706,6 +776,12 @@ namespace mk
             m_page_pool = page_pool;
             if (bsl::unlikely(nullptr == page_pool)) {
                 bsl::error() << "invalid page_pool\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            m_huge_pool = huge_pool;
+            if (bsl::unlikely(nullptr == huge_pool)) {
+                bsl::error() << "invalid huge_pool\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
@@ -747,21 +823,28 @@ namespace mk
         constexpr void
         release() &noexcept
         {
-            m_heap_pool_cursor = bsl::to_umax(EXT_HEAP_POOL_ADDR);
-            m_page_pool_cursor = bsl::to_umax(EXT_PAGE_POOL_ADDR);
+            m_heap_pool_crsr = bsl::safe_uintmax::zero(true);
+            m_huge_pool_crsr = bsl::safe_uintmax::zero(true);
+            m_page_pool_crsr = bsl::safe_uintmax::zero(true);
             m_handle = bsl::safe_uintmax::zero(true);
             m_fail_ip = bsl::safe_uintmax::zero(true);
             m_vmexit_ip = bsl::safe_uintmax::zero(true);
             m_bootstrap_ip = bsl::safe_uintmax::zero(true);
             m_main_ip = bsl::safe_uintmax::zero(true);
+            m_current_direct_map_rpt = {};
+
+            for (auto const rpt : m_direct_map_rpts) {
+                rpt.data->release();
+            }
+
             m_main_rpt.release();
             m_system_rpt = {};
             m_online_pps = bsl::safe_uint16::zero(true);
             m_elf_file = {};
             m_id = bsl::safe_uint16::zero(true);
+            m_huge_pool = {};
             m_page_pool = {};
             m_intrinsic = {};
-            m_bootstrapped = {};
             m_started = {};
             m_initialized = {};
         }
@@ -940,10 +1023,7 @@ namespace mk
 
         /// <!-- description -->
         ///   @brief Allocates a page and maps it into the extension's
-        ///     address space. The resulting page is not accessible by the
-        ///     microkernel, even though the virtual address is the same
-        ///     for both the microkernel and the extension. This is to ensure
-        ///     protections against transient execution attacks.
+        ///     address space.
         ///
         /// <!-- inputs/outputs -->
         ///   @return Returns a page_t containing the virtual address and
@@ -953,41 +1033,244 @@ namespace mk
         [[nodiscard]] constexpr auto
         alloc_page() &noexcept -> page_t
         {
+            constexpr auto pool_addr{bsl::to_umax(EXT_PAGE_POOL_ADDR)};
+            constexpr auto pool_size{bsl::to_umax(EXT_PAGE_POOL_SIZE)};
+
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
-            if (bsl::unlikely(m_bootstrapped)) {
-                bsl::error() << "allocations not supported after initialization\n" << bsl::here();
+            if (bsl::unlikely((m_page_pool_crsr + PAGE_SIZE) > pool_size)) {
+                bsl::error() << "the extension's page pool is out of memory"    // --
+                             << bsl::endl                                       // --
+                             << bsl::here();                                    // --
+
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
-            if (!(m_page_pool_cursor < EXT_PAGE_POOL_ADDR + EXT_PAGE_POOL_SIZE)) {
-                bsl::error() << "ext_t page pool at max capacity\n" << bsl::here();
-                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
-            }
-
-            auto *const ptr{m_main_rpt.allocate_rw(m_page_pool_cursor)};
-            if (bsl::unlikely(nullptr == ptr)) {
+            auto const *const page{m_page_pool->template allocate<void>()};
+            if (bsl::unlikely(nullptr == page)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
-            auto const phys{m_page_pool->virt_to_phys(ptr)};
-            if (bsl::unlikely(!phys)) {
+            auto const page_phys{m_page_pool->virt_to_phys(page)};
+            if (bsl::unlikely(!page_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
-            /// TODO:
-            /// - Unmap the page from the microkernel's page tables. Note that
-            ///   this should 0 the 4k PTE (and not simply change its present
-            ///   bit), and it should also
-            ///
+            auto const page_virt{m_page_pool_crsr + pool_addr};
+            if (bsl::unlikely(!page_virt)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+            }
 
-            m_page_pool_cursor += PAGE_SIZE;
-            return {bsl::to_umax(ptr), phys};
+            auto const ret{m_main_rpt.map_page(
+                page_virt, page_phys, MAP_PAGE_FLAG_READ | MAP_PAGE_FLAG_WRITE)};
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+            }
+
+            m_page_pool_crsr += PAGE_SIZE;
+            return {page_virt, page_phys};
+        }
+
+        /// <!-- description -->
+        ///   @brief Frees a page that was mapped it into the extension's
+        ///     address space.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param page_virt the virtual address to free
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        free_page(bsl::safe_uintmax const &page_virt) &noexcept -> bsl::errc_type
+        {
+            bsl::discard(page_virt);
+
+            bsl::error() << "free_page is currently unsupported\n" << bsl::here();
+            return bsl::errc_failure;
+        }
+
+        /// <!-- description -->
+        ///   @brief Allocates a physically contiguous block of memory and maps
+        ///     it into the extension's address space.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param size the total number of bytes to allocate
+        ///   @return Returns a huge_t containing the virtual address and
+        ///     physical address of the memory block. If an error occurs, this
+        ///     function will return an invalid virtual and physical address.
+        ///
+        [[nodiscard]] constexpr auto
+        alloc_huge(bsl::safe_uintmax const &size) &noexcept -> huge_t
+        {
+            constexpr auto pool_addr{bsl::to_umax(EXT_HUGE_POOL_ADDR)};
+            constexpr auto pool_size{bsl::to_umax(EXT_HUGE_POOL_SIZE)};
+
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::error() << "ext_t not initialized\n" << bsl::here();
+                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+            }
+
+            if (bsl::unlikely((m_huge_pool_crsr + size) > pool_size)) {
+                bsl::error() << "the extension's huge pool is out of memory"    // --
+                             << bsl::endl                                       // --
+                             << bsl::here();                                    // --
+
+                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+            }
+
+            auto const *const huge{m_huge_pool->template allocate<void>(size)};
+            if (bsl::unlikely(nullptr == huge)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+            }
+
+            auto const heap_virt_to_return{m_heap_pool_crsr + pool_addr};
+            if (bsl::unlikely(!heap_virt_to_return)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+            }
+
+            auto const huge_phys_to_return{m_huge_pool->virt_to_phys(huge)};
+            if (bsl::unlikely(!huge_phys_to_return)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+            }
+
+            auto const huge_view{bsl::as_bytes(huge, size)};
+            for (bsl::safe_uintmax i{}; i < size; i += PAGE_SIZE) {
+                auto const huge_phys{m_huge_pool->virt_to_phys(huge_view.at_if(i))};
+                if (bsl::unlikely(!huge_phys)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                }
+
+                auto const huge_virt{m_huge_pool_crsr + pool_addr};
+                if (bsl::unlikely(!huge_virt)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                }
+
+                auto const ret{m_main_rpt.map_page(
+                    huge_virt, huge_phys, MAP_PAGE_FLAG_READ | MAP_PAGE_FLAG_WRITE)};
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                }
+
+                m_huge_pool_crsr += PAGE_SIZE;
+            }
+
+            return {heap_virt_to_return, huge_phys_to_return};
+        }
+
+        /// <!-- description -->
+        ///   @brief Frees a physically contiguous block of memory that was
+        ///     mapped it into the extension's address space.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param huge_virt the virtual address to free
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        free_huge(bsl::safe_uintmax const &huge_virt) &noexcept -> bsl::errc_type
+        {
+            bsl::discard(huge_virt);
+
+            bsl::error() << "free_huge is currently unsupported\n" << bsl::here();
+            return bsl::errc_failure;
+        }
+
+        /// <!-- description -->
+        ///   @brief Allocates heap memory and maps it into the extension's
+        ///     address space.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param size the total number of bytes to allocate and add
+        ///     to the heap.
+        ///   @return On success, alloc_heap returns the previous address
+        ///     virtual address of the heap. If an error occurs, this
+        ///     function returns bsl::safe_uintmax::zero(true).
+        ///
+        [[nodiscard]] constexpr auto
+        alloc_heap(bsl::safe_uintmax const &size) &noexcept -> bsl::safe_uintmax
+        {
+            constexpr auto pool_addr{bsl::to_umax(EXT_HEAP_POOL_ADDR)};
+            constexpr auto pool_size{bsl::to_umax(EXT_HEAP_POOL_SIZE)};
+
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::error() << "ext_t not initialized\n" << bsl::here();
+                return bsl::safe_uintmax::zero(true);
+            }
+
+            if (bsl::unlikely(!size)) {
+                bsl::error() << "invalid size: "    // --
+                             << bsl::hex(size)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
+                return bsl::safe_uintmax::zero(true);
+            }
+
+            auto pages{size / PAGE_SIZE};
+            if ((size % PAGE_SIZE) != bsl::ZERO_UMAX) {
+                ++pages;
+            }
+            else {
+                bsl::touch();
+            }
+
+            if (bsl::unlikely((m_heap_pool_crsr + (pages * PAGE_SIZE)) > pool_size)) {
+                bsl::error() << "the extension's heap pool is out of memory"    // --
+                             << bsl::endl                                       // --
+                             << bsl::here();                                    // --
+
+                return bsl::safe_uintmax::zero(true);
+            }
+
+            auto const previous_heap_virt{m_heap_pool_crsr + pool_addr};
+            if (bsl::unlikely(!previous_heap_virt)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::safe_uintmax::zero(true);
+            }
+
+            for (bsl::safe_uintmax i{}; i < pages; ++i) {
+                auto const *const page{m_page_pool->template allocate<void>()};
+                if (bsl::unlikely(nullptr == page)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::safe_uintmax::zero(true);
+                }
+
+                auto const page_phys{m_page_pool->virt_to_phys(page)};
+                if (bsl::unlikely(!page_phys)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::safe_uintmax::zero(true);
+                }
+
+                auto const page_virt{m_heap_pool_crsr + pool_addr};
+                if (bsl::unlikely(!page_virt)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::safe_uintmax::zero(true);
+                }
+
+                auto const ret{m_main_rpt.map_page(
+                    page_virt, page_phys, MAP_PAGE_FLAG_READ | MAP_PAGE_FLAG_WRITE)};
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::safe_uintmax::zero(true);
+                }
+
+                m_heap_pool_crsr += PAGE_SIZE;
+            }
+
+            return previous_heap_virt;
         }
 
         /// <!-- description -->
@@ -995,13 +1278,38 @@ namespace mk
         ///     the current set of page tables used by the extension.
         ///
         /// <!-- inputs/outputs -->
+        ///   @param virt the virtual address to convert
         ///   @return Returns the physical address of the page.
         ///
         [[nodiscard]] constexpr auto
         virt_to_phys(bsl::safe_uintmax const &virt) &noexcept -> bsl::safe_uintmax
         {
+            constexpr auto pool_addr{bsl::to_umax(EXT_PAGE_POOL_ADDR)};
+            constexpr auto pool_size{bsl::to_umax(EXT_PAGE_POOL_SIZE)};
+
+            constexpr auto min_pool_addr{pool_addr};
+            constexpr auto max_pool_addr{pool_addr + (pool_size - bsl::ONE_UMAX)};
+
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
+                return bsl::safe_uintmax::zero(true);
+            }
+
+            if (bsl::unlikely(virt < min_pool_addr)) {
+                bsl::error() << "invalid virt: "    // --
+                             << bsl::hex(virt)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
+                return bsl::safe_uintmax::zero(true);
+            }
+
+            if (bsl::unlikely(virt > max_pool_addr)) {
+                bsl::error() << "invalid virt: "    // --
+                             << bsl::hex(virt)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
                 return bsl::safe_uintmax::zero(true);
             }
 
@@ -1012,6 +1320,182 @@ namespace mk
             }
 
             return phys;
+        }
+
+        /// <!-- description -->
+        ///   @brief Maps a page into the direct map portion of the current
+        ///     direct map root page table that is active.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param page_virt the virtual address to map the physical address too
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        map_page_direct(bsl::safe_uintmax const &page_virt) &noexcept -> bsl::errc_type
+        {
+            constexpr auto dm_addr{bsl::to_umax(EXT_DIRECT_MAP_ADDR)};
+            constexpr auto dm_size{bsl::to_umax(EXT_DIRECT_MAP_SIZE)};
+
+            constexpr auto min_dm_addr{dm_addr};
+            constexpr auto max_dm_addr{dm_addr + (dm_size - bsl::ONE_UMAX)};
+
+            /// TODO:
+            /// - It is possible that 2 physical processors could attempt to
+            ///   map the same physical address at the same time. Both would
+            ///   generate a page fault. One would succeed at mapping the
+            ///   address, and the other would fail. We should create our
+            ///   own errc_type for the RPT so that it can tell this code
+            ///   that the address is already mapped, as in this case, that
+            ///   would not actually be an error.
+            ///
+
+            if (bsl::unlikely(page_virt < min_dm_addr)) {
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(page_virt > max_dm_addr)) {
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(nullptr == m_current_direct_map_rpt)) {
+                bsl::error() << "map_page_direct only supported after bootstrapping"    // --
+                             << bsl::endl                                               // --
+                             << bsl::here();                                            // --
+
+                return bsl::errc_failure;
+            }
+
+            auto const ret{m_current_direct_map_rpt->map_page_unaligned(
+                page_virt, page_virt - min_dm_addr, MAP_PAGE_FLAG_READ | MAP_PAGE_FLAG_WRITE)};
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            return ret;
+        }
+
+        /// <!-- description -->
+        ///   @brief Tells the extension that a VM was created so that it
+        ///     can initialize it's VM specific resources.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vmid the VMID of the VM that was created.
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        signal_vm_created(bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!m_started)) {
+                bsl::error() << "ext_t not started\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(vmid))};
+            if (bsl::unlikely(nullptr == rpt)) {
+                bsl::error() << "invalid vmid: "    // --
+                             << bsl::hex(vmid)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!this->initialize_direct_map_rpt(*rpt))) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Tells the extension that a VM was destroyed so that it
+        ///     can release it's VM specific resources.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vmid the VMID of the VM that was destroyed.
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        signal_vm_destroyed(bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!m_started)) {
+                bsl::error() << "ext_t not started\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(vmid))};
+            if (bsl::unlikely(nullptr == rpt)) {
+                bsl::error() << "invalid vmid: "    // --
+                             << bsl::hex(vmid)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(m_current_direct_map_rpt == rpt)) {
+                bsl::error() << "attempt to destory the active VM was blocked"    // --
+                             << bsl::hex(vmid)                                    // --
+                             << bsl::endl                                         // --
+                             << bsl::here();                                      // --
+
+                return bsl::errc_failure;
+            }
+
+            rpt->release();
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the active VM for this extension. This will cause
+        ///     the extension to set VM specific resources up including the
+        ///     direct map.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param vmid the VMID of the VM to set as active
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        set_active_vm(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!m_started)) {
+                bsl::error() << "ext_t not started\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(vmid))};
+            if (bsl::unlikely(nullptr == rpt)) {
+                bsl::error() << "invalid vmid: "    // --
+                             << bsl::hex(vmid)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
+                return bsl::errc_failure;
+            }
+
+            if (tls.ext == this) {
+                if (bsl::unlikely(!rpt->activate())) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
+            }
+            else {
+                bsl::touch();
+            }
+
+            m_current_direct_map_rpt = rpt;
+            return bsl::errc_success;
         }
 
         /// <!-- description -->
@@ -1062,7 +1546,6 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            m_bootstrapped = true;
             return bsl::errc_success;
         }
 
@@ -1074,6 +1557,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
+        ///   @param exit_reason the exit reason associated with the VMExit
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
@@ -1084,7 +1568,15 @@ namespace mk
             bsl::safe_uintmax arg0{bsl::to_umax(tls.active_vpsid)};
             bsl::safe_uintmax arg1{exit_reason};
 
-            auto const ret{this->execute(tls, m_vmexit_ip, m_main_rpt, arg0, arg1)};
+            if (bsl::unlikely(nullptr == m_current_direct_map_rpt)) {
+                bsl::error() << "an active VM was never set"    // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
+            }
+
+            auto const ret{this->execute(tls, m_vmexit_ip, *m_current_direct_map_rpt, arg0, arg1)};
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
@@ -1110,7 +1602,17 @@ namespace mk
         {
             bsl::safe_uintmax arg0{syscall::BF_STATUS_FAILURE_UNKNOWN};
 
-            auto const ret{this->execute(tls, m_fail_ip, m_main_rpt, arg0)};
+            if (nullptr == m_current_direct_map_rpt) {
+                auto const ret{this->execute(tls, m_fail_ip, m_main_rpt, arg0)};
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return ret;
+                }
+
+                return ret;
+            }
+
+            auto const ret{this->execute(tls, m_fail_ip, *m_current_direct_map_rpt, arg0)};
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;

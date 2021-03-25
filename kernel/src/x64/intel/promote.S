@@ -121,7 +121,7 @@ promote:
 
     /**
      * TODO:
-     * - There is a third was an NMI could be recorded. If an extension
+     * - There is a third way an NMI could be recorded. If an extension
      *   injects an NMI and then promotes without ever allowing the
      *   injection to process. For now we don't handle this case as it
      *   is extremely unlikely.

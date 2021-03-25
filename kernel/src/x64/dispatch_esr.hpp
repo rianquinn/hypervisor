@@ -26,6 +26,7 @@
 #define DISPATCH_ESR_HPP
 
 #include <dispatch_esr_nmi.hpp>
+#include <dispatch_esr_page_fault.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
@@ -151,9 +152,11 @@ namespace mk
             }
 
             default: {
-                return "unknown";
+                break;
             }
         }
+
+        return "unknown";
     }
 
     /// <!-- description -->
@@ -242,18 +245,39 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
+    ///   @param ext the extension that made the syscall
     ///   @param intrinsic the intrinsics to use
     ///   @return Returns bsl::exit_success if the exception was handled,
     ///     bsl::exit_failure otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
+    template<typename TLS_CONCEPT, typename EXT_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_esr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) noexcept -> bsl::exit_code
+    dispatch_esr(TLS_CONCEPT &tls, EXT_CONCEPT *const ext, INTRINSIC_CONCEPT &intrinsic) noexcept
+        -> bsl::exit_code
     {
-        if (tls.esr_vector == EXCEPTION_VECTOR_2) {
-            return dispatch_esr_nmi(tls, intrinsic);
+        bsl::exit_code ret{bsl::exit_failure};
+
+        switch (tls.esr_vector) {
+            case EXCEPTION_VECTOR_2.get(): {
+                ret = dispatch_esr_nmi(tls, intrinsic);
+                break;
+            }
+
+            case EXCEPTION_VECTOR_14.get(): {
+                ret = dispatch_esr_page_fault(tls, ext);
+                break;
+            }
+
+            default: {
+                break;
+            }
+        }
+
+        if (bsl::exit_success == ret) {
+            return bsl::exit_success;
         }
 
         bsl::print() << bsl::bold_red                                                          // --

@@ -45,6 +45,7 @@ namespace example
     ///   @param exit_reason the exit reason associated with the VMExit
     ///
     void
+    // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
     vmexit_entry(bsl::uint16 const vpsid, bsl::uint64 const exit_reason) noexcept
     {
         vmexit(g_handle, vpsid, exit_reason);
@@ -67,6 +68,7 @@ namespace example
     ///   @param fail_reason the exit reason associated with the fail
     ///
     void
+    // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
     fail_entry(syscall::bf_status_t::value_type const fail_reason) noexcept
     {
         bsl::discard(fail_reason);
@@ -100,6 +102,8 @@ namespace example
         syscall::bf_control_op_exit();
     }
 
+    extern "C" bsl::uint32 rdtsc_yourmom(void) noexcept;
+
     /// <!-- description -->
     ///   @brief Implements the bootstrap entry function. The main function is
     ///     called on PP #0, and is only used to register the bootstrap entry
@@ -112,6 +116,7 @@ namespace example
     ///   @param ppid the physical process to bootstrap
     ///
     void
+    // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
     bootstrap_entry(bsl::uint16 const ppid) noexcept
     {
         bsl::safe_uint16 vmid{};
@@ -128,16 +133,22 @@ namespace example
         ///   happens.
         ///
 
-        status = syscall::bf_callback_op_register_vmexit(g_handle, vmexit_entry);
+        status = syscall::bf_callback_op_register_vmexit(g_handle, &vmexit_entry);
         if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
         }
+        else {
+            bsl::touch();
+        }
 
-        status = syscall::bf_callback_op_register_fail(g_handle, fail_entry);
+        status = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
         if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
+        }
+        else {
+            bsl::touch();
         }
 
         /// NOTE:
@@ -160,6 +171,12 @@ namespace example
                 bsl::print<bsl::V>() << bsl::here();
                 syscall::bf_control_op_exit();
             }
+            else {
+                bsl::touch();
+            }
+        }
+        else {
+            bsl::touch();
         }
 
         status = syscall::bf_vp_op_create_vp(g_handle, vpid);
@@ -167,11 +184,17 @@ namespace example
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
         }
+        else {
+            bsl::touch();
+        }
 
         status = syscall::bf_vps_op_create_vps(g_handle, vpsid);
         if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
+        }
+        else {
+            bsl::touch();
         }
 
         /// NOTE:
@@ -187,6 +210,9 @@ namespace example
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
         }
+        else {
+            bsl::touch();
+        }
 
         /// NOTE:
         /// - Initialize architecture specific logic in the VPS.
@@ -195,6 +221,9 @@ namespace example
         if (bsl::unlikely(!init_vps(g_handle, vpsid))) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
+        }
+        else {
+            bsl::touch();
         }
 
         /// NOTE:
@@ -229,7 +258,7 @@ namespace example
     extern "C" void
     ext_main_entry(bsl::safe_uint32 const &version) noexcept
     {
-        syscall::bf_status_t status;
+        syscall::bf_status_t status{};
 
         /// NOTE:
         /// - Check to see if the microkernel speaks the same version as we
@@ -243,6 +272,9 @@ namespace example
             bsl::error() << "unsupported microkernel\n" << bsl::here();
             syscall::bf_control_op_exit();
         }
+        else {
+            bsl::touch();
+        }
 
         /// NOTE:
         /// - Open a handle with the microkernel which will be used for the
@@ -254,16 +286,22 @@ namespace example
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
         }
+        else {
+            bsl::touch();
+        }
 
         /// NOTE:
         /// - Register the bootstrap entry function so that we can bootstrap
         ///   each PP
         ///
 
-        status = syscall::bf_callback_op_register_bootstrap(g_handle, bootstrap_entry);
+        status = syscall::bf_callback_op_register_bootstrap(g_handle, &bootstrap_entry);
         if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
+        }
+        else {
+            bsl::touch();
         }
 
         /// NOTE:

@@ -54,7 +54,7 @@ namespace example
         bsl::safe_uint64 const &exit_reason) noexcept
     {
         bsl::errc_type ret{};
-        constexpr bsl::safe_uintmax EXIT_REASON_CPUID{bsl::to_umax(0x72U)};
+        constexpr bsl::safe_uintmax exit_reason_cpuid{bsl::to_umax(0x72U)};
 
         /// NOTE:
         /// - At a minimum, we need to handle CPUID on AMD. Note that the
@@ -66,7 +66,7 @@ namespace example
         ///
 
         switch (exit_reason.get()) {
-            case EXIT_REASON_CPUID.get(): {
+            case exit_reason_cpuid.get(): {
                 ret = handle_vmexit_cpuid(handle, vpsid);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();

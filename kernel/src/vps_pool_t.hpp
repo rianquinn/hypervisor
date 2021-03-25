@@ -25,10 +25,14 @@
 #ifndef VPS_POOL_T_HPP
 #define VPS_POOL_T_HPP
 
+#include <mk_interface.hpp>
+
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
+#include <bsl/lock_guard.hpp>
+#include <bsl/spinlock.hpp>
 #include <bsl/unlikely.hpp>
 
 namespace mk
@@ -61,6 +65,8 @@ namespace mk
         VPS_CONCEPT *m_head;
         /// @brief stores the VPS_CONCEPTs in the VPS_CONCEPT linked list
         bsl::array<VPS_CONCEPT, MAX_VPSS> m_pool;
+        /// @brief safe guards operations on the pool.
+        mutable bsl::spinlock m_pool_lock;
 
     public:
         /// @brief an alias for VPS_CONCEPT
@@ -79,7 +85,12 @@ namespace mk
         ///
         explicit constexpr vps_pool_t(
             INTRINSIC_CONCEPT &intrinsic, PAGE_POOL_CONCEPT &page_pool) noexcept
-            : m_initialized{}, m_intrinsic{intrinsic}, m_page_pool{page_pool}, m_head{}, m_pool{}
+            : m_initialized{}
+            , m_intrinsic{intrinsic}
+            , m_page_pool{page_pool}
+            , m_head{}
+            , m_pool{}
+            , m_pool_lock{}
         {}
 
         /// <!-- description -->
@@ -196,6 +207,8 @@ namespace mk
         [[nodiscard]] constexpr auto
         allocate(TLS_CONCEPT &tls) &noexcept -> bsl::safe_uint16
         {
+            bsl::lock_guard lock{m_pool_lock};
+
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "vps_pool_t not initialized\n" << bsl::here();
                 return bsl::safe_uint16::zero(true);
@@ -230,6 +243,8 @@ namespace mk
         [[nodiscard]] constexpr auto
         deallocate(bsl::safe_uint16 const &vpsid) &noexcept -> bsl::errc_type
         {
+            bsl::lock_guard lock{m_pool_lock};
+
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "vps_pool_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
@@ -260,6 +275,38 @@ namespace mk
             m_head = vps;
 
             return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if the requested vps_t is allocated, false
+        ///     if the provided VPSID is invalid, or if the vps_t is not
+        ///     allocated.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid the ID of the vps_t to query
+        ///   @return Returns true if the requested vps_t is allocated, false
+        ///     if the provided VPSID is invalid, or if the vps_t is not
+        ///     allocated.
+        ///
+        [[nodiscard]] constexpr auto
+        is_allocated(bsl::safe_uint16 const &vpsid) &noexcept -> bool
+        {
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::error() << "vps_pool_t not initialized\n" << bsl::here();
+                return false;
+            }
+
+            auto *const vps{m_pool.at_if(bsl::to_umax(vpsid))};
+            if (bsl::unlikely(nullptr == vps)) {
+                bsl::error() << "invalid vpsid: "    // --
+                             << bsl::hex(vpsid)      // --
+                             << bsl::endl            // --
+                             << bsl::here();         // --
+
+                return false;
+            }
+
+            return vps->is_allocated();
         }
 
         /// <!-- description -->
@@ -512,6 +559,32 @@ namespace mk
             }
 
             return vps->advance_ip(tls);
+        }
+
+        /// <!-- description -->
+        ///   @brief Clears the requested VPS's internal cache. Note that this
+        ///     is a hardware specific function and doesn't change the actual
+        ///     values stored in the VPS.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid the ID of the VPS to clear
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        clear(bsl::safe_uint16 const &vpsid) &noexcept -> bsl::errc_type
+        {
+            auto *const vps{m_pool.at_if(bsl::to_umax(vpsid))};
+            if (bsl::unlikely(nullptr == vps)) {
+                bsl::error() << "invalid vpsid: "    // --
+                             << bsl::hex(vpsid)      // --
+                             << bsl::endl            // --
+                             << bsl::here();         // --
+
+                return bsl::errc_failure;
+            }
+
+            return vps->clear();
         }
 
         /// <!-- description -->

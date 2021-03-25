@@ -28,6 +28,7 @@
 #include <bsl/cstdint.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
+#include <bsl/exit_code.hpp>
 #include <bsl/is_constant_evaluated.hpp>
 #include <bsl/safe_integral.hpp>
 
@@ -105,6 +106,7 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param msr n/a
+        ///   @param val n/a
         ///   @return n/a
         ///
         extern "C" [[nodiscard]] auto
@@ -116,9 +118,19 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param msr n/a
         ///   @param val n/a
+        ///   @return n/a
         ///
         extern "C" [[nodiscard]] auto
         intrinsic_wrmsr(bsl::uint32 msr, bsl::uint64 const val) noexcept -> bsl::exit_code;
+
+        /// <!-- description -->
+        ///   @brief Implements intrinsic_t::invlpga
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param addr n/a
+        ///   @param asid n/a
+        ///
+        extern "C" void intrinsic_invlpga(bsl::uint64 addr, bsl::uint64 const asid) noexcept;
 
         /// <!-- description -->
         ///   @brief Executes the VMRun instruction. When this function returns
@@ -129,6 +141,7 @@ namespace mk
         ///   @param guest_vmcb_phys the physical address of the guest VMCB to use
         ///   @param host_vmcb a pointer to the host VMCB to use
         ///   @param host_vmcb_phys the physical address of the host VMCB to use
+        ///   @return Returns the exit reason associated with the VMExit
         ///
         extern "C" [[nodiscard]] auto intrinsic_vmrun(
             void *const guest_vmcb,
@@ -461,6 +474,46 @@ namespace mk
                 return bsl::errc_failure;
             }
 
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Invalidates the TLB mapping for a given virtual page and
+        ///     a given ASID
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param addr The address to invalidate
+        ///   @param asid The ASID to invalidate
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] static constexpr auto
+        invlpga(bsl::safe_uint64 const &addr, bsl::safe_uint64 const &asid) noexcept
+            -> bsl::errc_type
+        {
+            if (bsl::is_constant_evaluated()) {
+                return bsl::errc_success;
+            }
+
+            if (bsl::unlikely(!addr)) {
+                bsl::error() << "invalid addr: "    // --
+                             << bsl::hex(addr)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!asid)) {
+                bsl::error() << "invalid asid: "    // --
+                             << bsl::hex(asid)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
+                return bsl::errc_failure;
+            }
+
+            details::intrinsic_invlpga(addr.get(), asid.get());
             return bsl::errc_success;
         }
     };

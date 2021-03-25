@@ -49,6 +49,7 @@ namespace mk
     extern "C" [[nodiscard]] auto
     dispatch_esr_trampoline(tls_t *const tls) noexcept -> bsl::exit_code
     {
-        return dispatch_esr(*tls, g_intrinsic);
+        return dispatch_esr<tls_t, mk_ext_type, mk_intrinsic_type>(
+            *tls, static_cast<mk_ext_type *>(tls->ext), g_intrinsic);
     }
 }

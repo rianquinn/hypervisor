@@ -369,6 +369,32 @@ intrinsic_wrmsr_unsafe:
 
 
 
+    .globl  intrinsic_invept
+    .type   intrinsic_invept, @function
+intrinsic_invept:
+
+    invept rsi, [rdi]
+
+    ret
+    int 3
+
+    .size intrinsic_invept, .-intrinsic_invept
+
+
+
+    .globl  intrinsic_invvpid
+    .type   intrinsic_invvpid, @function
+intrinsic_invvpid:
+
+    invept rsi, [rdi]
+
+    ret
+    int 3
+
+    .size intrinsic_invvpid, .-intrinsic_invvpid
+
+
+
     .globl  intrinsic_vmload
     .type   intrinsic_vmload, @function
 intrinsic_vmload:
@@ -387,6 +413,26 @@ intrinsic_vmload_failure:
 
     .size intrinsic_vmload, .-intrinsic_vmload
 
+
+
+
+    .globl  intrinsic_vmclear
+    .type   intrinsic_vmclear, @function
+intrinsic_vmclear:
+
+    vmclear [rdi]
+    jbe intrinsic_vmclear_failure
+
+    xor rax, rax
+    ret
+    int 3
+
+intrinsic_vmclear_failure:
+    mov rax, 0x1
+    ret
+    int 3
+
+    .size intrinsic_vmclear, .-intrinsic_vmclear
 
 
 

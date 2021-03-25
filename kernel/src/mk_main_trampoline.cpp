@@ -35,7 +35,7 @@
 extern "C"
 {
     /// @brief stores the TLS blocks used by the microkernel.
-    constinit bsl::array<mk::tls_t, HYPERVISOR_MAX_PPS> g_tls_blocks{};
+    constinit bsl::array<mk::tls_t, bsl::to_umax(HYPERVISOR_MAX_PPS).get()> g_tls_blocks{};
 
     /// @brief provides the stack guard
     constinit bsl::uintmax __stack_chk_guard{0xDEADBEEFDEADBEEF};    // NOLINT
@@ -86,6 +86,8 @@ namespace mk
     /// <!-- inputs/outputs -->
     ///   @param args the loader provided arguments to the microkernel.
     ///   @param tls the current TLS block
+    ///   @return Returns bsl::exit_success on success, bsl::exit_failure
+    ///     otherwise
     ///
     [[nodiscard]] extern "C" auto
     mk_main_trampoline(loader::mk_args_t *const args, tls_t *const tls) noexcept -> bsl::exit_code

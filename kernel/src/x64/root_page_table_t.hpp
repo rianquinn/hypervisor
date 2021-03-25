@@ -25,6 +25,7 @@
 #ifndef ROOT_PAGE_TABLE_T_HPP
 #define ROOT_PAGE_TABLE_T_HPP
 
+#include <map_page_flags.hpp>
 #include <pdpt_t.hpp>
 #include <pdpte_t.hpp>
 #include <pdt_t.hpp>
@@ -39,12 +40,17 @@
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
 #include <bsl/fmt.hpp>
+#include <bsl/is_pointer.hpp>
+#include <bsl/lock_guard.hpp>
+#include <bsl/remove_cvref.hpp>
 #include <bsl/safe_integral.hpp>
+#include <bsl/spinlock.hpp>
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
 
 namespace mk
 {
+
     /// @class mk::root_page_table_t
     ///
     /// <!-- description -->
@@ -73,6 +79,8 @@ namespace mk
         pml4t_t *m_pml4t{};
         /// @brief stores the CR3 value used to activate this RPT
         bsl::safe_uintmax m_pml4t_phys;
+        /// @brief safe guards operations on the RPT.
+        mutable bsl::spinlock m_rpt_lock{};
 
         /// <!-- description -->
         ///   @brief Returns the index of the last entry present in a page
@@ -265,6 +273,21 @@ namespace mk
         }
 
         /// <!-- description -->
+        ///   @brief Returns the page-map level-4 (PML4T) address given an
+        ///     offset.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param offset the offset to get the PML4T address from.
+        ///   @return the PML4T address from the offset
+        ///
+        [[nodiscard]] constexpr auto
+        pml4ta(bsl::safe_uintmax const &offset) const noexcept -> bsl::safe_uintmax
+        {
+            constexpr bsl::safe_uintmax shift{bsl::to_umax(39)};
+            return (offset << shift);
+        }
+
+        /// <!-- description -->
         ///   @brief Dumps the provided pml4t_t
         ///
         /// <!-- inputs/outputs -->
@@ -313,13 +336,11 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param pml4te the pml4te_t to add a pdpt_t too
-        ///   @param us if true, this function will map the table with
-        ///     userspace privileges.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        add_pdpt(loader::pml4te_t *const pml4te, bool const us) noexcept -> bsl::errc_type
+        add_pdpt(loader::pml4te_t *const pml4te) noexcept -> bsl::errc_type
         {
             auto const *const table{m_page_pool->template allocate<void>()};
             if (bsl::unlikely(nullptr == table)) {
@@ -336,13 +357,7 @@ namespace mk
             pml4te->phys = (table_phys >> PAGE_SHIFT).get();
             pml4te->p = bsl::ONE_UMAX.get();
             pml4te->rw = bsl::ONE_UMAX.get();
-
-            if (us) {
-                pml4te->us = bsl::ONE_UMAX.get();
-            }
-            else {
-                pml4te->us = bsl::ZERO_UMAX.get();
-            }
+            pml4te->us = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -382,7 +397,7 @@ namespace mk
             bsl::safe_uintmax entry_phys{pml4te->phys};
             entry_phys <<= PAGE_SHIFT;
 
-            return m_page_pool->template phys_to_virt<pdpt_t *>(entry_phys);
+            return m_page_pool->template phys_to_virt<pdpt_t>(entry_phys);
         }
 
         /// <!-- description -->
@@ -399,7 +414,7 @@ namespace mk
             bsl::safe_uintmax entry_phys{pml4te->phys};
             entry_phys <<= PAGE_SHIFT;
 
-            return m_page_pool->template phys_to_virt<pdpt_t const *>(entry_phys);
+            return m_page_pool->template phys_to_virt<pdpt_t const>(entry_phys);
         }
 
         /// <!-- description -->
@@ -416,6 +431,21 @@ namespace mk
             constexpr bsl::safe_uintmax mask{bsl::to_umax(0x1FF)};
             constexpr bsl::safe_uintmax shift{bsl::to_umax(30)};
             return (virt >> shift) & mask;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the page-directory-pointer table (PDPT) address
+        ///     given an offset.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param offset the offset to get the PDPT address from.
+        ///   @return the PDPT address from the offset
+        ///
+        [[nodiscard]] constexpr auto
+        pdpta(bsl::safe_uintmax const &offset) const noexcept -> bsl::safe_uintmax
+        {
+            constexpr bsl::safe_uintmax shift{bsl::to_umax(30)};
+            return (offset << shift);
         }
 
         /// <!-- description -->
@@ -456,13 +486,11 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param pdpte the pdpte_t to add a pdt_t too
-        ///   @param us if true, this function will map the table with
-        ///     userspace privileges.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        add_pdt(loader::pdpte_t *const pdpte, bool const us) noexcept -> bsl::errc_type
+        add_pdt(loader::pdpte_t *const pdpte) noexcept -> bsl::errc_type
         {
             auto const *const table{m_page_pool->template allocate<void>()};
             if (bsl::unlikely(nullptr == table)) {
@@ -479,13 +507,7 @@ namespace mk
             pdpte->phys = (table_phys >> PAGE_SHIFT).get();
             pdpte->p = bsl::ONE_UMAX.get();
             pdpte->rw = bsl::ONE_UMAX.get();
-
-            if (us) {
-                pdpte->us = bsl::ONE_UMAX.get();
-            }
-            else {
-                pdpte->us = bsl::ZERO_UMAX.get();
-            }
+            pdpte->us = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -525,7 +547,7 @@ namespace mk
             bsl::safe_uintmax entry_phys{pdpte->phys};
             entry_phys <<= PAGE_SHIFT;
 
-            return m_page_pool->template phys_to_virt<pdt_t *>(entry_phys);
+            return m_page_pool->template phys_to_virt<pdt_t>(entry_phys);
         }
 
         /// <!-- description -->
@@ -542,7 +564,7 @@ namespace mk
             bsl::safe_uintmax entry_phys{pdpte->phys};
             entry_phys <<= PAGE_SHIFT;
 
-            return m_page_pool->template phys_to_virt<pdt_t const *>(entry_phys);
+            return m_page_pool->template phys_to_virt<pdt_t const>(entry_phys);
         }
 
         /// <!-- description -->
@@ -559,6 +581,21 @@ namespace mk
             constexpr bsl::safe_uintmax mask{bsl::to_umax(0x1FF)};
             constexpr bsl::safe_uintmax shift{bsl::to_umax(21)};
             return (virt >> shift) & mask;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the page-directory table (PDT) address
+        ///     given an offset.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param offset the offset to get the PDT address from.
+        ///   @return the PDT address from the offset
+        ///
+        [[nodiscard]] constexpr auto
+        pdta(bsl::safe_uintmax const &offset) const noexcept -> bsl::safe_uintmax
+        {
+            constexpr bsl::safe_uintmax shift{bsl::to_umax(21)};
+            return (offset << shift);
         }
 
         /// <!-- description -->
@@ -609,13 +646,11 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param pdte the pdte_t to add a pt_t too
-        ///   @param us if true, this function will map the table with
-        ///     userspace privileges.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        add_pt(loader::pdte_t *const pdte, bool const us) noexcept -> bsl::errc_type
+        add_pt(loader::pdte_t *const pdte) noexcept -> bsl::errc_type
         {
             auto const *const table{m_page_pool->template allocate<void>()};
             if (bsl::unlikely(nullptr == table)) {
@@ -632,13 +667,7 @@ namespace mk
             pdte->phys = (table_phys >> PAGE_SHIFT).get();
             pdte->p = bsl::ONE_UMAX.get();
             pdte->rw = bsl::ONE_UMAX.get();
-
-            if (us) {
-                pdte->us = bsl::ONE_UMAX.get();
-            }
-            else {
-                pdte->us = bsl::ZERO_UMAX.get();
-            }
+            pdte->us = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -669,7 +698,7 @@ namespace mk
             bsl::safe_uintmax entry_phys{pdte->phys};
             entry_phys <<= PAGE_SHIFT;
 
-            return m_page_pool->template phys_to_virt<pt_t *>(entry_phys);
+            return m_page_pool->template phys_to_virt<pt_t>(entry_phys);
         }
 
         /// <!-- description -->
@@ -686,7 +715,7 @@ namespace mk
             bsl::safe_uintmax entry_phys{pdte->phys};
             entry_phys <<= PAGE_SHIFT;
 
-            return m_page_pool->template phys_to_virt<pt_t const *>(entry_phys);
+            return m_page_pool->template phys_to_virt<pt_t const>(entry_phys);
         }
 
         /// <!-- description -->
@@ -703,6 +732,21 @@ namespace mk
             constexpr bsl::safe_uintmax mask{bsl::to_umax(0x1FF)};
             constexpr bsl::safe_uintmax shift{bsl::to_umax(12)};
             return (virt >> shift) & mask;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the page-table (PT) address
+        ///     given an offset.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param offset the offset to get the PT address from.
+        ///   @return the PT address from the offset
+        ///
+        [[nodiscard]] constexpr auto
+        pta(bsl::safe_uintmax const &offset) const noexcept -> bsl::safe_uintmax
+        {
+            constexpr bsl::safe_uintmax shift{bsl::to_umax(12)};
+            return (offset << shift);
         }
 
         /// <!-- description -->
@@ -769,242 +813,6 @@ namespace mk
         is_page_aligned(bsl::safe_uintmax const &addr) const noexcept -> bool
         {
             return (addr & (PAGE_SIZE - bsl::ONE_UMAX)) == bsl::ZERO_UMAX;
-        }
-
-        /// <!-- description -->
-        ///   @brief Maps a page into the root page table being managed
-        ///     by this class.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param page_virt the virtual address to map the physical address
-        ///     too
-        ///   @param page_phys the physical address to map
-        ///   @param executable if true, the page is mapped as read/execute,
-        ///     otherwise the page is mapped as read/write
-        ///   @param us if true, map_page will map the page with userspace
-        ///     privileges.
-        ///   @param auto_release if true, the page is mapped as auto_release
-        ///     meaning the page will be deallocated when the root page table
-        ///     loses scope.
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        [[nodiscard]] constexpr auto
-        map_page(
-            bsl::safe_uintmax const &page_virt,
-            bsl::safe_uintmax const &page_phys,
-            bool const executable,
-            bool const us,
-            bool const auto_release) noexcept -> bsl::errc_type
-        {
-            auto *const pml4te{m_pml4t->entries.at_if(this->pml4to(page_virt))};
-            if (pml4te->p == bsl::ZERO_UMAX) {
-                if (bsl::unlikely(!this->add_pdpt(pml4te, us))) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
-                }
-
-                bsl::touch();
-            }
-            else {
-                if (us) {
-                    if (pml4te->us == bsl::ZERO_UMAX) {
-                        bsl::error() << "attempt to map the userspace address "              // --
-                                     << bsl::hex(page_virt)                                  // --
-                                     << " in an address range owned by the kernel failed"    // --
-                                     << bsl::endl                                            // --
-                                     << bsl::here();                                         // --
-
-                        return bsl::errc_failure;
-                    }
-
-                    bsl::touch();
-                }
-                else {
-                    if (pml4te->us == bsl::ONE_UMAX) {
-                        bsl::error() << "attempt to map the kernel address "                // --
-                                     << bsl::hex(page_virt)                                 // --
-                                     << " in an address range owned by userspace failed"    // --
-                                     << bsl::endl                                           // --
-                                     << bsl::here();                                        // --
-
-                        return bsl::errc_failure;
-                    }
-
-                    bsl::touch();
-                }
-            }
-
-            auto *const pdpt{this->get_pdpt(pml4te)};
-            auto *const pdpte{pdpt->entries.at_if(this->pdpto(page_virt))};
-            if (pdpte->p == bsl::ZERO_UMAX) {
-                if (bsl::unlikely(!this->add_pdt(pdpte, us))) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
-                }
-
-                bsl::touch();
-            }
-            else {
-                bsl::touch();
-            }
-
-            auto *const pdt{this->get_pdt(pdpte)};
-            auto *const pdte{pdt->entries.at_if(this->pdto(page_virt))};
-            if (pdte->p == bsl::ZERO_UMAX) {
-                if (bsl::unlikely(!this->add_pt(pdte, us))) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
-                }
-
-                bsl::touch();
-            }
-            else {
-                bsl::touch();
-            }
-
-            auto *const pt{this->get_pt(pdte)};
-            auto *const pte{pt->entries.at_if(this->pto(page_virt))};
-            if (bsl::unlikely(pte->p != bsl::ZERO_UMAX)) {
-                bsl::error() << "virtual address "     // --
-                             << bsl::hex(page_virt)    // --
-                             << " already mapped"      // --
-                             << bsl::endl              // --
-                             << bsl::here();           // --
-
-                return bsl::errc_failure;
-            }
-
-            pte->phys = (page_phys >> PAGE_SHIFT).get();
-            pte->p = bsl::ONE_UMAX.get();
-
-            if (executable) {
-                pte->rw = bsl::ZERO_UMAX.get();
-                pte->nx = bsl::ZERO_UMAX.get();
-            }
-            else {
-                pte->rw = bsl::ONE_UMAX.get();
-                pte->nx = bsl::ONE_UMAX.get();
-            }
-
-            if (us) {
-                pte->us = bsl::ONE_UMAX.get();
-            }
-            else {
-                pte->us = bsl::ZERO_UMAX.get();
-            }
-
-            if (auto_release) {
-                pte->auto_release = bsl::ONE_UMAX.get();
-            }
-            else {
-                pte->auto_release = bsl::ZERO_UMAX.get();
-            }
-
-            return bsl::errc_success;
-        }
-
-        /// <!-- description -->
-        ///   @brief Unmaps a previously mapped page.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param page_virt the virtual address to unmap
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        [[nodiscard]] constexpr auto
-        unmap_page(bsl::safe_uintmax const &page_virt) noexcept -> bsl::errc_type
-        {
-            auto *const pml4te{m_pml4t->entries.at_if(this->pml4to(page_virt))};
-            if (bsl::unlikely(pml4te->p == bsl::ZERO_UMAX)) {
-                bsl::error() << "virtual address "     // --
-                             << bsl::hex(page_virt)    // --
-                             << " not mapped"          // --
-                             << bsl::endl              // --
-                             << bsl::here();           // --
-
-                return bsl::errc_failure;
-            }
-
-            auto *const pdpt{this->get_pdpt(pml4te)};
-            auto *const pdpte{pdpt->entries.at_if(this->pdpto(page_virt))};
-            if (bsl::unlikely(pdpte->p == bsl::ZERO_UMAX)) {
-                bsl::error() << "virtual address "     // --
-                             << bsl::hex(page_virt)    // --
-                             << " not mapped"          // --
-                             << bsl::endl              // --
-                             << bsl::here();           // --
-
-                return bsl::errc_failure;
-            }
-
-            auto *const pdt{this->get_pdt(pdpte)};
-            auto *const pdte{pdt->entries.at_if(this->pdto(page_virt))};
-            if (bsl::unlikely(pdte->p == bsl::ZERO_UMAX)) {
-                bsl::error() << "virtual address "     // --
-                             << bsl::hex(page_virt)    // --
-                             << " not mapped"          // --
-                             << bsl::endl              // --
-                             << bsl::here();           // --
-
-                return bsl::errc_failure;
-            }
-
-            auto *const pt{this->get_pt(pdte)};
-            auto *const pte{pt->entries.at_if(this->pto(page_virt))};
-            if (bsl::unlikely(pte->p == bsl::ZERO_UMAX)) {
-                bsl::error() << "virtual address "     // --
-                             << bsl::hex(page_virt)    // --
-                             << " not mapped"          // --
-                             << bsl::endl              // --
-                             << bsl::here();           // --
-
-                return bsl::errc_failure;
-            }
-
-            *pte = {};
-
-            bool remove_pt{true};
-            for (auto const elem : pt->entries) {
-                if (elem.data->p != bsl::ZERO_UMAX) {
-                    remove_pt = false;
-                    break;
-                }
-            }
-
-            if (remove_pt) {
-                m_page_pool->deallocate(pt);
-                *pdte = {};
-            }
-
-            bool remove_pdt{true};
-            for (auto const elem : pdt->entries) {
-                if (elem.data->p != bsl::ZERO_UMAX) {
-                    remove_pdt = false;
-                    break;
-                }
-            }
-
-            if (remove_pdt) {
-                m_page_pool->deallocate(pdt);
-                *pdpte = {};
-            }
-
-            bool remove_pdpt{true};
-            for (auto const elem : pdpt->entries) {
-                if (elem.data->p != bsl::ZERO_UMAX) {
-                    remove_pdpt = false;
-                    break;
-                }
-            }
-
-            if (remove_pdpt) {
-                m_page_pool->deallocate(pdpt);
-                *pml4te = {};
-            }
-
-            m_intrinsic->invlpg(page_virt);
-            return bsl::errc_success;
         }
 
     public:
@@ -1150,10 +958,20 @@ namespace mk
         /// <!-- description -->
         ///   @brief Sets the current root page table to this root page table.
         ///
-        constexpr void
-        activate() const noexcept
+        /// <!-- inputs/outputs -->
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        activate() const &noexcept -> bsl::errc_type
         {
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
             m_intrinsic->set_cr3(m_pml4t_phys);
+            return bsl::errc_success;
         }
 
         /// <!-- description -->
@@ -1165,7 +983,7 @@ namespace mk
         ///     page table.
         ///
         [[nodiscard]] constexpr auto
-        is_active() const noexcept -> bool
+        is_active() const &noexcept -> bool
         {
             return (m_intrinsic->cr3() == m_pml4t_phys);
         }
@@ -1186,6 +1004,8 @@ namespace mk
         [[nodiscard]] constexpr auto
         add_tables(void const *const rpt) &noexcept -> bsl::errc_type
         {
+            bsl::lock_guard lock{m_rpt_lock};
+
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
@@ -1232,33 +1052,42 @@ namespace mk
         [[nodiscard]] constexpr auto
         add_tables(root_page_table_t const &rpt) &noexcept -> bsl::errc_type
         {
+            /// TODO:
+            /// - Can this be a pointer instead?
+            ///
+
             return this->add_tables(rpt.m_pml4t);
         }
 
         /// <!-- description -->
         ///   @brief Maps a page into the root page table being managed
-        ///     by this class using read/write permissions.
+        ///     by this class.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T defines the type of virtual address being mapped
         ///   @param page_virt the virtual address to map the physical address
-        ///     too
+        ///     too.
+        ///   @param page_phys the physical address to map. If the physical
+        ///     address is set to 0, map_page will use the page pool to
+        ///     determine the physical address.
+        ///   @param page_flags defines how memory should be mapped
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
-        template<typename T>
         [[nodiscard]] constexpr auto
-        map_page_rw(T const page_virt) &noexcept -> bsl::errc_type
+        map_page(
+            bsl::safe_uintmax const &page_virt,
+            bsl::safe_uintmax const &page_phys,
+            bsl::safe_uintmax const &page_flags) &noexcept -> bsl::errc_type
         {
-            static_assert(bsl::is_pointer<T>::value);
-            static_assert(bsl::is_standard_layout<T>::value);
+            bsl::lock_guard lock{m_rpt_lock};
+            bsl::safe_uintmax phys{page_phys};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!page_virt)) {
+            if (bsl::unlikely(page_virt.is_zero())) {
                 bsl::error() << "virtual address is invalid: "    // --
                              << bsl::hex(page_virt)               // --
                              << bsl::endl                         // --
@@ -1276,226 +1105,197 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            auto const page_phys{m_page_pool->virt_to_phys(page_virt)};
-            if (bsl::unlikely(!page_phys)) {
+            if (bsl::unlikely(!phys)) {
                 bsl::error() << "physical address is invalid: "    // --
-                             << bsl::hex(page_phys)                // --
+                             << bsl::hex(phys)                     // --
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 
                 return bsl::errc_failure;
             }
 
-            return this->map_page(bsl::to_umax(page_virt), page_phys, false, true, false);
-        }
+            if (phys.is_zero()) {
+                phys = m_page_pool->virt_to_phys(bsl::to_ptr<void *>(page_virt));
+                if (bsl::unlikely(!phys)) {
+                    bsl::error() << "physical address is invalid: "    // --
+                                 << bsl::hex(phys)                     // --
+                                 << bsl::endl                          // --
+                                 << bsl::here();                       // --
 
-        /// <!-- description -->
-        ///   @brief Maps a page into the root page table being managed
-        ///     by this class using read/write permissions.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param page_virt the virtual address to map the physical address too
-        ///   @param page_phys the physical address to map
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        [[nodiscard]] constexpr auto
-        map_page_rw(
-            bsl::safe_uintmax const &page_virt, bsl::safe_uintmax const &page_phys) &noexcept
-            -> bsl::errc_type
-        {
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
+            }
+            else {
+                bsl::touch();
             }
 
-            if (bsl::unlikely(!page_virt)) {
-                bsl::error() << "virtual address is invalid: "    // --
-                             << bsl::hex(page_virt)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!this->is_page_aligned(page_virt))) {
-                bsl::error() << "virtual address is not page aligned: "    // --
-                             << bsl::hex(page_virt)                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!page_phys)) {
-                bsl::error() << "physical address is invalid: "    // --
-                             << bsl::hex(page_phys)                // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!this->is_page_aligned(page_phys))) {
+            if (bsl::unlikely(!this->is_page_aligned(phys))) {
                 bsl::error() << "physical address is not page aligned: "    // --
-                             << bsl::hex(page_phys)                         // --
+                             << bsl::hex(phys)                              // --
                              << bsl::endl                                   // --
                              << bsl::here();                                // --
 
                 return bsl::errc_failure;
             }
 
-            return this->map_page(page_virt, page_phys, false, true, false);
+            auto *const pml4te{m_pml4t->entries.at_if(this->pml4to(page_virt))};
+            if (pml4te->p == bsl::ZERO_UMAX) {
+                if (bsl::unlikely(!this->add_pdpt(pml4te))) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
+            }
+            else {
+
+                /// NOTE:
+                /// - The loader doesn't map in the memory associated with
+                ///   the microkernel's page tables. This means this code
+                ///   cannot walk any pages mapped to the microkernel, it
+                ///   can only alias these pages. For this reason, mapping
+                ///   must always take place on userspace specific memory
+                ///   and the address spaces must be distinct.
+                /// - This is one of the reasons (not the only reason) why
+                ///   userspace sits in the other half of the canonical
+                ///   address space, and why it has it's own direct map
+                ///   region. This ensures userspace and the kernel do not
+                ///   share the same pml4 entries.
+                ///
+
+                if (pml4te->us == bsl::ZERO_UMAX) {
+                    bsl::error() << "attempt to map the userspace address "              // --
+                                 << bsl::hex(page_virt)                                  // --
+                                 << " in an address range owned by the kernel failed"    // --
+                                 << bsl::endl                                            // --
+                                 << bsl::here();                                         // --
+
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
+            }
+
+            auto *const pdpt{this->get_pdpt(pml4te)};
+            auto *const pdpte{pdpt->entries.at_if(this->pdpto(page_virt))};
+            if (pdpte->p == bsl::ZERO_UMAX) {
+                if (bsl::unlikely(!this->add_pdt(pdpte))) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
+            }
+            else {
+                bsl::touch();
+            }
+
+            auto *const pdt{this->get_pdt(pdpte)};
+            auto *const pdte{pdt->entries.at_if(this->pdto(page_virt))};
+            if (pdte->p == bsl::ZERO_UMAX) {
+                if (bsl::unlikely(!this->add_pt(pdte))) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
+            }
+            else {
+                bsl::touch();
+            }
+
+            auto *const pt{this->get_pt(pdte)};
+            auto *const pte{pt->entries.at_if(this->pto(page_virt))};
+            if (bsl::unlikely(pte->p != bsl::ZERO_UMAX)) {
+                bsl::error() << "virtual address "     // --
+                             << bsl::hex(page_virt)    // --
+                             << " already mapped"      // --
+                             << bsl::endl              // --
+                             << bsl::here();           // --
+
+                return bsl::errc_failure;
+            }
+
+            pte->phys = (phys >> PAGE_SHIFT).get();
+            pte->p = bsl::ONE_UMAX.get();
+            pte->us = bsl::ONE_UMAX.get();
+
+            if (!(page_flags & MAP_PAGE_FLAG_WRITE).is_zero()) {
+                pte->rw = bsl::ONE_UMAX.get();
+            }
+            else {
+                pte->rw = bsl::ZERO_UMAX.get();
+            }
+
+            if (!(page_flags & MAP_PAGE_FLAG_EXECUTE).is_zero()) {
+                pte->nx = bsl::ZERO_UMAX.get();
+            }
+            else {
+                pte->nx = bsl::ONE_UMAX.get();
+            }
+
+            if (!(page_flags & MAP_PAGE_FLAG_NO_AUTO_RELEASE).is_zero()) {
+                pte->auto_release = bsl::ZERO_UMAX.get();
+            }
+            else {
+                pte->auto_release = bsl::ONE_UMAX.get();
+            }
+
+            return bsl::errc_success;
         }
 
         /// <!-- description -->
         ///   @brief Maps a page into the root page table being managed
-        ///     by this class using read/execute permissions.
+        ///     by this class. This version allows for unaligned virtual and
+        ///     physical addresses and will perform the alignment for you.
+        ///     Note that you should only use this function if you actually
+        ///     need unaligned support to ensure alignment mistakes are not
+        ///     accidentally introduced.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T defines the type of virtual address being mapped
-        ///   @param page_virt the virtual address to map the physical address too
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        template<typename T>
-        [[nodiscard]] constexpr auto
-        map_page_rx(T const page_virt) &noexcept -> bsl::errc_type
-        {
-            static_assert(bsl::is_pointer<T>::value);
-            static_assert(bsl::is_standard_layout<T>::value);
-
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!page_virt)) {
-                bsl::error() << "virtual address is invalid: "    // --
-                             << bsl::hex(page_virt)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!this->is_page_aligned(page_virt))) {
-                bsl::error() << "virtual address is not page aligned: "    // --
-                             << bsl::hex(page_virt)                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
-
-                return bsl::errc_failure;
-            }
-
-            auto const page_phys{m_page_pool->virt_to_phys(page_virt)};
-            if (bsl::unlikely(!page_phys)) {
-                bsl::error() << "physical address is invalid: "    // --
-                             << bsl::hex(page_phys)                // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
-
-                return bsl::errc_failure;
-            }
-
-            return this->map_page(bsl::to_umax(page_virt), page_phys, true, true, false);
-        }
-
-        /// <!-- description -->
-        ///   @brief Maps a page into the root page table being managed
-        ///     by this class using read/execute permissions.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param page_virt the virtual address to map the physical address too
-        ///   @param page_phys the physical address to map
+        ///   @param page_virt the virtual address to map the physical address
+        ///     too.
+        ///   @param page_phys the physical address to map. If the physical
+        ///     address is set to 0, map_page will use the page pool to
+        ///     determine the physical address.
+        ///   @param page_flags defines how memory should be mapped
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        map_page_rx(
-            bsl::safe_uintmax const &page_virt, bsl::safe_uintmax const &page_phys) &noexcept
-            -> bsl::errc_type
+        map_page_unaligned(
+            bsl::safe_uintmax const &page_virt,
+            bsl::safe_uintmax const &page_phys,
+            bsl::safe_uintmax const &page_flags) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!page_virt)) {
-                bsl::error() << "virtual address is invalid: "    // --
-                             << bsl::hex(page_virt)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!this->is_page_aligned(page_virt))) {
-                bsl::error() << "virtual address is not page aligned: "    // --
-                             << bsl::hex(page_virt)                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!page_phys)) {
-                bsl::error() << "physical address is invalid: "    // --
-                             << bsl::hex(page_phys)                // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!this->is_page_aligned(page_phys))) {
-                bsl::error() << "physical address is not page aligned: "    // --
-                             << bsl::hex(page_phys)                         // --
-                             << bsl::endl                                   // --
-                             << bsl::here();                                // --
-
-                return bsl::errc_failure;
-            }
-
-            return this->map_page(page_virt, page_phys, true, true, false);
+            return this->map_page(
+                this->page_aligned(page_virt), this->page_aligned(page_phys), page_flags);
         }
 
         /// <!-- description -->
         ///   @brief Allocates a page from the provided page pool and maps it
-        ///     into the root page table being managed by this class using
-        ///     read/write permissions. The page is marked as "auto release",
-        ///     meaning when this root page table is released, the pages
-        ///     allocated by this function will automatically be deallocated
-        ///     and put back into the provided page pool.
+        ///     into the root page table being managed by this class The page
+        ///     is marked as "auto release", meaning when this root page table
+        ///     is released, the pages allocated by this function will
+        ///     automatically be deallocated and put back into the provided
+        ///     page pool.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param page_virt the virtual address to map the page too
-        ///   @return Returns a pointer to the allocated page, or a nullptr
-        ///     on failure.
+        ///   @param page_virt the virtual address to map the allocated
+        ///     page to
+        ///   @param page_flags defines how memory should be mapped
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        allocate_rw(bsl::safe_uintmax const &page_virt) &noexcept -> void *
+        allocate_page(
+            bsl::safe_uintmax const &page_virt, bsl::safe_uintmax const &page_flags) &noexcept
+            -> void *
         {
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
-                return nullptr;
-            }
-
-            if (bsl::unlikely(!page_virt)) {
-                bsl::error() << "virtual address is invalid: "    // --
-                             << bsl::hex(page_virt)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
-
-                return nullptr;
-            }
-
-            if (bsl::unlikely(!this->is_page_aligned(page_virt))) {
-                bsl::error() << "virtual address is not page aligned: "    // --
-                             << bsl::hex(page_virt)                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
-
                 return nullptr;
             }
 
@@ -1515,7 +1315,8 @@ namespace mk
                 return nullptr;
             }
 
-            if (bsl::unlikely(!this->map_page(page_virt, page_phys, false, true, true))) {
+            auto const ret{this->map_page(page_virt, page_phys, page_flags)};
+            if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return nullptr;
             }
@@ -1525,65 +1326,44 @@ namespace mk
 
         /// <!-- description -->
         ///   @brief Allocates a page from the provided page pool and maps it
-        ///     into the root page table being managed by this class using
-        ///     read/execute permissions. The page is marked as "auto release",
-        ///     meaning when this root page table is released, the pages
-        ///     allocated by this function will automatically be deallocated
-        ///     and put back into the provided page pool.
+        ///     into the root page table being managed by this class The page
+        ///     is marked as "auto release", meaning when this root page table
+        ///     is released, the pages allocated by this function will
+        ///     automatically be deallocated and put back into the provided
+        ///     page pool. Note that this version maps the memory in as
+        ///     read/write.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param page_virt the virtual address to map the page too
-        ///   @return Returns a pointer to the allocated page, or a nullptr
-        ///     on failure.
+        ///   @param page_virt the virtual address to map the allocated
+        ///     page to
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        allocate_rx(bsl::safe_uintmax const &page_virt) &noexcept -> void *
+        allocate_page_rw(bsl::safe_uintmax const &page_virt) &noexcept -> void *
         {
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
-                return nullptr;
-            }
+            return this->allocate_page(page_virt, MAP_PAGE_FLAG_READ | MAP_PAGE_FLAG_WRITE);
+        }
 
-            if (bsl::unlikely(!page_virt)) {
-                bsl::error() << "virtual address is invalid: "    // --
-                             << bsl::hex(page_virt)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
-
-                return nullptr;
-            }
-
-            if (bsl::unlikely(!this->is_page_aligned(page_virt))) {
-                bsl::error() << "virtual address is not page aligned: "    // --
-                             << bsl::hex(page_virt)                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
-
-                return nullptr;
-            }
-
-            auto *const page{m_page_pool->template allocate<void>()};
-            if (bsl::unlikely(nullptr == page)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return nullptr;
-            }
-
-            auto const page_phys{m_page_pool->virt_to_phys(page)};
-            if (bsl::unlikely(!page_phys)) {
-                bsl::error() << "physical address is invalid: "    // --
-                             << bsl::hex(page_phys)                // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
-
-                return nullptr;
-            }
-
-            if (bsl::unlikely(!this->map_page(page_virt, page_phys, true, true, true))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return nullptr;
-            }
-
-            return page;
+        /// <!-- description -->
+        ///   @brief Allocates a page from the provided page pool and maps it
+        ///     into the root page table being managed by this class The page
+        ///     is marked as "auto release", meaning when this root page table
+        ///     is released, the pages allocated by this function will
+        ///     automatically be deallocated and put back into the provided
+        ///     page pool. Note that this version maps the memory in as
+        ///     read/execute.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param page_virt the virtual address to map the allocated
+        ///     page to
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        allocate_page_rx(bsl::safe_uintmax const &page_virt) &noexcept -> void *
+        {
+            return this->allocate_page(page_virt, MAP_PAGE_FLAG_READ | MAP_PAGE_FLAG_EXECUTE);
         }
 
         /// <!-- description -->
@@ -1599,6 +1379,8 @@ namespace mk
         [[nodiscard]] constexpr auto
         virt_to_phys(bsl::safe_uintmax const &page_virt) &noexcept -> bsl::safe_uintmax
         {
+            bsl::lock_guard lock{m_rpt_lock};
+
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
                 return bsl::safe_uintmax::zero(true);
@@ -1623,7 +1405,7 @@ namespace mk
             }
 
             auto *const pml4te{m_pml4t->entries.at_if(this->pml4to(page_virt))};
-            if (pml4te->p == bsl::ZERO_UMAX) {
+            if (bsl::unlikely(pml4te->p == bsl::ZERO_UMAX)) {
                 bsl::error() << "virtual address "     // --
                              << bsl::hex(page_virt)    // --
                              << " was never mapped"    // --
@@ -1633,7 +1415,7 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
-            if (pml4te->us == bsl::ZERO_UMAX) {
+            if (bsl::unlikely(pml4te->us == bsl::ZERO_UMAX)) {
                 bsl::error() << "unable to convert the kernel virtual address: "    // --
                              << bsl::hex(page_virt)                                 // --
                              << bsl::endl                                           // --
@@ -1643,7 +1425,7 @@ namespace mk
             }
 
             auto *const pdpte{this->get_pdpt(pml4te)->entries.at_if(this->pdpto(page_virt))};
-            if (pdpte->p == bsl::ZERO_UMAX) {
+            if (bsl::unlikely(pdpte->p == bsl::ZERO_UMAX)) {
                 bsl::error() << "virtual address "     // --
                              << bsl::hex(page_virt)    // --
                              << " was never mapped"    // --
@@ -1654,7 +1436,7 @@ namespace mk
             }
 
             auto *const pdte{this->get_pdt(pdpte)->entries.at_if(this->pdto(page_virt))};
-            if (pdte->p == bsl::ZERO_UMAX) {
+            if (bsl::unlikely(pdte->p == bsl::ZERO_UMAX)) {
                 bsl::error() << "virtual address "     // --
                              << bsl::hex(page_virt)    // --
                              << " was never mapped"    // --
@@ -1665,7 +1447,7 @@ namespace mk
             }
 
             auto *const pte{this->get_pt(pdte)->entries.at_if(this->pto(page_virt))};
-            if (bsl::unlikely(pte->p != bsl::ZERO_UMAX)) {
+            if (bsl::unlikely(pte->p == bsl::ZERO_UMAX)) {
                 bsl::error() << "virtual address "     // --
                              << bsl::hex(page_virt)    // --
                              << " was never mapped"    // --
@@ -1687,7 +1469,7 @@ namespace mk
         ///
         template<typename T>
         constexpr void
-        dump(bsl::out<T> const o) const noexcept
+        dump(bsl::out<T> const o) const &noexcept
         {
             if (bsl::unlikely(!m_initialized)) {
                 o << "[error]" << bsl::endl;

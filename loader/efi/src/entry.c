@@ -271,13 +271,6 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     serial_init();
 
-    /**
-     * TODO:
-     * - Need to process the command line arguments so that we can load
-     *   an image that the user provides.
-     * - Also need to add a CMAKE var for where to load the UEFI stuff.
-     */
-
     if (loader_init()) {
         bferror("loader_init failed");
         return EFI_LOAD_ERROR;

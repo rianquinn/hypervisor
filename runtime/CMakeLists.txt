@@ -52,4 +52,5 @@ hypervisor_add_header_depends(src/_start.cpp ${HEADERS})
 
 target_link_libraries(runtime PUBLIC
     bsl
+    syscall
 )

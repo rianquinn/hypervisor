@@ -63,19 +63,16 @@ namespace loader
         /// @brief stores the location of the microkernel's ELF file
         bsl::span<bsl::byte const> mk_elf_file;
         /// @brief stores the location of the extension's ELF files
-        bsl::array<bsl::span<bsl::byte const>, HYPERVISOR_MAX_EXTENSIONS> ext_elf_files;
+        bsl::array<bsl::span<bsl::byte const>, bsl::to_umax(HYPERVISOR_MAX_EXTENSIONS).get()>
+            ext_elf_files;
         /// @brief stores the virtual address of the MK's RPT for this CPU
         void *rpt;
         /// @brief stores the physical address of the MK's RPT for this CPU
         bsl::uint64 rpt_phys;
         /// @brief stores the location of the microkernel's page pool
         bsl::span<bsl::byte> page_pool;
-        /// @brief stores the starting location of the page pool's direct map
-        bsl::uint64 page_pool_base_virt;
         /// @brief stores the location of the microkernel's huge pool
         bsl::span<bsl::byte> huge_pool;
-        /// @brief stores the starting location of the huge pool's direct map
-        bsl::uint64 huge_pool_base_virt;
     };
 
     namespace details

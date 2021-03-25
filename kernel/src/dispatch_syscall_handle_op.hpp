@@ -141,9 +141,11 @@ namespace mk
                              << bsl::endl                    //--
                              << bsl::here();                 //--
 
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+                break;
             }
         }
+
+        return syscall::BF_STATUS_FAILURE_UNKNOWN;
     }
 }
 

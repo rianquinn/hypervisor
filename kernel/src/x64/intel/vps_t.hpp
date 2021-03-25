@@ -89,6 +89,8 @@ namespace mk
     {
         /// @brief stores true if initialized() has been executed
         bool m_initialized{};
+        /// @brief stores true if initialized() has been executed
+        bool m_allocated{};
         /// @brief stores a reference to the intrinsics to use
         INTRINSIC_CONCEPT *m_intrinsic{};
         /// @brief stores a reference to the page pool to use
@@ -98,8 +100,6 @@ namespace mk
         /// @brief stores the next vps_t in the vp_pool_t linked list
         vps_t *m_next{};
 
-        /// @brief stores true if initialized() has been executed
-        bool m_allocated{};
         /// @brief stores a pointer to the guest vmcs being managed by this VPS
         vmcs_t *m_vmcs{};
         /// @brief stores the physical address of the guest vmcs
@@ -1170,11 +1170,11 @@ namespace mk
             ret = m_intrinsic->vmload(&m_vmcs_phys);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             tls.loaded_vps = this;
-            return bsl::errc_success;
+            return ret;
         }
 
         /// <!-- description -->
@@ -1519,8 +1519,13 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::finally release_on_error{[this]() noexcept -> void {
-                this->release();
+            if (bsl::unlikely(m_allocated)) {
+                bsl::error() << "vps_t already allocated\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            bsl::finally deallocate_on_error{[this]() noexcept -> void {
+                this->deallocate();
             }};
 
             m_vmcs = m_page_pool->template allocate<vmcs_t>();
@@ -1544,7 +1549,7 @@ namespace mk
             /// - Extensions should not be able to touch host state fields.
             ///
 
-            release_on_error.ignore();
+            deallocate_on_error.ignore();
             m_allocated = true;
 
             return bsl::errc_success;
@@ -1568,6 +1573,18 @@ namespace mk
             }
 
             m_allocated = {};
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if this vps_t is allocated, false otherwise
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns true if this vps_t is allocated, false otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        is_allocated() const &noexcept -> bool
+        {
+            return m_allocated;
         }
 
         /// <!-- description -->
@@ -3108,6 +3125,34 @@ namespace mk
             }
 
             ret = m_intrinsic->vmwrite64(VMCS_GUEST_RIP, rip + len);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            return ret;
+        }
+
+        /// <!-- description -->
+        ///   @brief Clears the VPS's internal cache. Note that this is a
+        ///     hardware specific function and doesn't change the actual
+        ///     values stored in the VPS.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        clear() &noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+
+            if (bsl::unlikely(!m_allocated)) {
+                bsl::error() << "invalid vps\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            ret = m_intrinsic->vmclear(&m_vmcs_phys);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;

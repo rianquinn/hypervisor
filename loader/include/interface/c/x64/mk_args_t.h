@@ -71,12 +71,8 @@ struct mk_args_t
     uint64_t rpt_phys;
     /** @brief stores the location of the microkernel's page pool */
     struct mutable_span_t page_pool;
-    /** @brief stores the starting location of the page pool's direct map */
-    uint64_t page_pool_base_virt;
     /** @brief stores the location of the microkernel's huge pool */
     struct mutable_span_t huge_pool;
-    /** @brief stores the starting location of the huge pool's direct map */
-    uint64_t huge_pool_base_virt;
 };
 
 /** @brief Check to make sure the mk_args_t is the right size. */

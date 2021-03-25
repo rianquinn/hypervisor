@@ -49,12 +49,14 @@ namespace mk
     /// <!-- inputs/outputs -->
     ///   @tparam SMAP_GUARD_CONCEPT defines the type of smap guard to use
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
+    ///   @param ext_pool the extension pool to use
     ///   @param ext the extension that made the syscall
     ///   @param intrinsic the intrinsics to use
     ///   @param vm_pool the VM pool to use
@@ -66,6 +68,7 @@ namespace mk
     template<
         typename SMAP_GUARD_CONCEPT,
         typename TLS_CONCEPT,
+        typename EXT_POOL_CONCEPT,
         typename EXT_CONCEPT,
         typename INTRINSIC_CONCEPT,
         typename VM_POOL_CONCEPT,
@@ -74,6 +77,7 @@ namespace mk
     [[nodiscard]] constexpr auto
     dispatch_syscall(
         TLS_CONCEPT &tls,
+        EXT_POOL_CONCEPT &ext_pool,
         EXT_CONCEPT &ext,
         INTRINSIC_CONCEPT &intrinsic,
         VM_POOL_CONCEPT &vm_pool,
@@ -125,7 +129,7 @@ namespace mk
             }
 
             case syscall::BF_VM_OP_VAL.get(): {
-                ret = dispatch_syscall_vm_op(tls, ext, vm_pool);
+                ret = dispatch_syscall_vm_op(tls, ext_pool, ext, vm_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -145,7 +149,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_VAL.get(): {
-                ret = dispatch_syscall_vps_op(tls, ext, vps_pool);
+                ret = dispatch_syscall_vps_op(tls, ext_pool, ext, vm_pool, vp_pool, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -180,9 +184,11 @@ namespace mk
                              << bsl::endl                               //--
                              << bsl::here();                            //--
 
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+                break;
             }
         }
+
+        return syscall::BF_STATUS_FAILURE_UNKNOWN;
     }
 }
 

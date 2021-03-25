@@ -57,7 +57,8 @@ namespace mk
                 return syscall::BF_STATUS_FAILURE_UNKNOWN;
             }
 
-            tls.ext_reg0 = bsl::to_umax(vpid).get();
+            constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
+            tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vpid)).get();
             return syscall::BF_STATUS_SUCCESS;
         }
 
@@ -76,7 +77,18 @@ namespace mk
         [[nodiscard]] constexpr auto
         syscall_vp_op_destroy_vp(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) -> syscall::bf_status_t
         {
-            if (bsl::unlikely(!vp_pool.deallocate(bsl::to_u16_unsafe(tls.ext_reg1)))) {
+            auto const vpid{bsl::to_u16_unsafe(tls.ext_reg1)};
+            if (bsl::unlikely(tls.vpid() == vpid)) {
+                bsl::error() << "cannot destory vm "            // --
+                             << bsl::hex(vpid)                  // --
+                             << " as it is currently active"    // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+
+            if (bsl::unlikely(!vp_pool.deallocate(vpid))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return syscall::BF_STATUS_FAILURE_UNKNOWN;
             }
@@ -151,9 +163,11 @@ namespace mk
                              << bsl::endl                    //--
                              << bsl::here();                 //--
 
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+                break;
             }
         }
+
+        return syscall::BF_STATUS_FAILURE_UNKNOWN;
     }
 }
 
