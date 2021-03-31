@@ -130,6 +130,10 @@ namespace example
                 return bsl::errc_failure;
             }
 
+            bsl::print() << "adding range:" << bsl::endl;
+            bsl::print() << "  - addr: " << bsl::hex(r.addr) << bsl::endl;
+            bsl::print() << "  - size: " << bsl::hex(r.size) << bsl::endl;
+
             *ptr = r;
             ++m_ranges_count;
 
@@ -184,6 +188,12 @@ namespace example
                     }
 
                     r2->addr = r1.addr + r1.size;
+
+                    bsl::print() << "r2 is (equal path):" << bsl::endl;
+                    bsl::print() << "  - addr: " << bsl::hex(r2->addr) << bsl::endl;
+                    bsl::print() << "  - size: " << bsl::hex(r2->size) << bsl::endl;
+
+                    bsl::sort(m_ranges, &details::range_t_sort_cmp);
                     return bsl::errc_success;
                 }
 
@@ -201,6 +211,12 @@ namespace example
                     }
 
                     r2->addr = r1.addr + r1.size;
+
+                    bsl::print() << "r2 is (less than path):" << bsl::endl;
+                    bsl::print() << "  - addr: " << bsl::hex(r2->addr) << bsl::endl;
+                    bsl::print() << "  - size: " << bsl::hex(r2->size) << bsl::endl;
+
+                    bsl::sort(m_ranges, &details::range_t_sort_cmp);
                     return bsl::errc_success;
                 }
 
@@ -218,6 +234,14 @@ namespace example
 
                 r1.addr = r1_new_addr;
                 r1.size = r1_new_size;
+
+                bsl::print() << "r1 is (last path):" << bsl::endl;
+                bsl::print() << "  - addr: " << bsl::hex(r1.addr) << bsl::endl;
+                bsl::print() << "  - size: " << bsl::hex(r1.size) << bsl::endl;
+
+                bsl::print() << "r2 is (last path):" << bsl::endl;
+                bsl::print() << "  - addr: " << bsl::hex(r2->addr) << bsl::endl;
+                bsl::print() << "  - size: " << bsl::hex(r2->size) << bsl::endl;
 
                 bsl::sort(m_ranges, &details::range_t_sort_cmp);
             }
@@ -251,7 +275,11 @@ namespace example
             ///
 
             for (auto const elem : m_ranges) {
-                *elem.data = {};
+                *elem.data = {
+                    bsl::safe_uintmax::zero(true),
+                    bsl::safe_uintmax::zero(true),
+                    bsl::safe_uintmax::zero(true),
+                    false};
             }
 
             m_ranges_count = {};
@@ -319,8 +347,9 @@ namespace example
             ///   physical memory space, we must first start with the default
             ///
 
-            ret = this->add_range(
-                {details::MIN_PHYSICAL_ADDR, bsl::to_umax(0x2000), MEMORY_TYPE_WB, true});
+            ret = this->add_range(bsl::to_umax(0x0000), bsl::to_umax(0x2000), MEMORY_TYPE_WB);
+
+            ret = this->add_range(bsl::to_umax(0x1000), bsl::to_umax(0x2000), MEMORY_TYPE_WB);
 
             for (bsl::safe_uintmax i{}; i < m_ranges_count; ++i) {
                 bsl::print() << "[" << i << "] MTRR range:" << bsl::endl;
