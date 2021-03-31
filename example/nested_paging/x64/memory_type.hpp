@@ -22,24 +22,24 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef MEMORY_TYPE_T_HPP
-#define MEMORY_TYPE_T_HPP
+#ifndef MEMORY_TYPE_HPP
+#define MEMORY_TYPE_HPP
 
-#include <bsl/cstdint.hpp>
+#include <bsl/convert.hpp>
+#include <bsl/safe_integral.hpp>
 
 namespace example
 {
-    /// <!-- description -->
-    ///   @brief Defines the different memory types that x86 supports
-    ///
-    enum class memory_type_t : bsl::uint64
-    {
-        un = static_cast<bsl::uint64>(0),
-        wc = static_cast<bsl::uint64>(1),
-        wt = static_cast<bsl::uint64>(4),
-        wp = static_cast<bsl::uint64>(5),
-        wb = static_cast<bsl::uint64>(6)
-    };
+    /// @brief defines the uncacheable memory type
+    constexpr bsl::safe_uintmax MEMORY_TYPE_UN{bsl::to_umax(0)};
+    /// @brief defines the write-combine memory type
+    constexpr bsl::safe_uintmax MEMORY_TYPE_WC{bsl::to_umax(1)};
+    /// @brief defines the write-through memory type
+    constexpr bsl::safe_uintmax MEMORY_TYPE_WT{bsl::to_umax(4)};
+    /// @brief defines the write-protect memory type
+    constexpr bsl::safe_uintmax MEMORY_TYPE_WP{bsl::to_umax(5)};
+    /// @brief defines the write-back memory type
+    constexpr bsl::safe_uintmax MEMORY_TYPE_WB{bsl::to_umax(6)};
 }
 
 #endif

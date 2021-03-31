@@ -25,8 +25,6 @@
 #ifndef RANGE_T_HPP
 #define RANGE_T_HPP
 
-#include "memory_type_t.hpp"
-
 #include <bsl/cstdint.hpp>
 
 namespace example
@@ -38,12 +36,14 @@ namespace example
     ///
     struct range_t
     {
-        /// @brief Defines the range's memory type
-        memory_type_t type;
         /// @brief Defines the range's address
-        bsl::uintmax addr;
+        bsl::safe_uintmax addr;
         /// @brief Defines the range's size in bytes
-        bsl::uintmax size;
+        bsl::safe_uintmax size;
+        /// @brief Defines the range's memory type
+        bsl::safe_uintmax type;
+        /// @brief Defines if the range is the default range
+        bool is_default;
     };
 }
 

@@ -71,23 +71,23 @@ namespace example
         constexpr bsl::safe_uint32 vmcs_set_nmi_window_exiting{bsl::to_u32(0x400000U)};
 
         bsl::safe_uint32 val;
-        syscall::bf_status_t status{};
+        bsl::errc_type ret{};
 
-        status = syscall::bf_vps_op_read32(handle, vpsid, vmcs_procbased_ctls_idx, val);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_read32(handle, vpsid, vmcs_procbased_ctls_idx, val);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         val |= vmcs_set_nmi_window_exiting;
 
-        status = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls_idx, val);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls_idx, val);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
-        return bsl::errc_success;
+        return ret;
     }
 
     /// <!-- description -->
@@ -119,20 +119,20 @@ namespace example
         constexpr bsl::safe_uint32 vmcs_clear_nmi_window_exiting{bsl::to_u32(0xFFBFFFFFU)};
 
         bsl::safe_uint32 val;
-        syscall::bf_status_t status{};
+        bsl::errc_type ret{};
 
-        status = syscall::bf_vps_op_read32(handle, vpsid, vmcs_procbased_ctls_idx, val);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_read32(handle, vpsid, vmcs_procbased_ctls_idx, val);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         val &= vmcs_clear_nmi_window_exiting;
 
-        status = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls_idx, val);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls_idx, val);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         /// NOTE:
@@ -145,14 +145,14 @@ namespace example
         constexpr bsl::safe_uintmax vmcs_entry_interrupt_info_idx{bsl::to_umax(0x4016U)};
         constexpr bsl::safe_uint32 vmcs_entry_interrupt_info_val{bsl::to_u32(0x80000202U)};
 
-        status = syscall::bf_vps_op_write32(
+        ret = syscall::bf_vps_op_write32(
             handle, vpsid, vmcs_entry_interrupt_info_idx, vmcs_entry_interrupt_info_val);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
-        return bsl::errc_success;
+        return ret;
     }
 
     /// <!-- description -->
@@ -247,7 +247,7 @@ namespace example
     [[nodiscard]] constexpr auto
     init_vps(HANDLE_CONCEPT &handle, bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
-        syscall::bf_status_t status{};
+        bsl::errc_type ret{};
 
         /// NOTE:
         /// - Set up VPID
@@ -256,10 +256,10 @@ namespace example
         constexpr bsl::safe_uintmax vmcs_vpid_idx{bsl::to_umax(0x0000U)};
         constexpr bsl::safe_uint16 vmcs_vpid_val{bsl::to_u16(0x1)};
 
-        status = syscall::bf_vps_op_write16(handle, vpsid, vmcs_vpid_idx, vmcs_vpid_val);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_write16(handle, vpsid, vmcs_vpid_idx, vmcs_vpid_val);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         /// NOTE:
@@ -269,10 +269,10 @@ namespace example
         constexpr bsl::safe_uintmax vmcs_link_ptr_idx{bsl::to_umax(0x2800U)};
         constexpr bsl::safe_uintmax vmcs_link_ptr_val{bsl::to_umax(0xFFFFFFFFFFFFFFFFU)};
 
-        status = syscall::bf_vps_op_write64(handle, vpsid, vmcs_link_ptr_idx, vmcs_link_ptr_val);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_write64(handle, vpsid, vmcs_link_ptr_idx, vmcs_link_ptr_val);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         /// NOTE:
@@ -322,16 +322,16 @@ namespace example
         /// - Configure the pin based controls
         ///
 
-        status = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_pinbased_ctls, ctls);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_pinbased_ctls, ctls);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
-        status = syscall::bf_vps_op_write32(handle, vpsid, vmcs_pinbased_ctls_idx, mask(ctls));
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_pinbased_ctls_idx, mask(ctls));
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         /// NOTE:
@@ -341,51 +341,51 @@ namespace example
         constexpr bsl::safe_uintmax enable_msr_bitmaps{bsl::to_umax(0x10000000U)};
         constexpr bsl::safe_uintmax enable_procbased_ctls2{bsl::to_umax(0x80000000U)};
 
-        status = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_procbased_ctls, ctls);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_procbased_ctls, ctls);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         ctls |= enable_msr_bitmaps;
         ctls |= enable_procbased_ctls2;
 
-        status = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls_idx, mask(ctls));
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls_idx, mask(ctls));
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         /// NOTE:
         /// - Configure the exit controls
         ///
 
-        status = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_exit_ctls, ctls);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_exit_ctls, ctls);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
-        status = syscall::bf_vps_op_write32(handle, vpsid, vmcs_exit_ctls_idx, mask(ctls));
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_exit_ctls_idx, mask(ctls));
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         /// NOTE:
         /// - Configure the entry controls
         ///
 
-        status = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_entry_ctls, ctls);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_entry_ctls, ctls);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
-        status = syscall::bf_vps_op_write32(handle, vpsid, vmcs_entry_ctls_idx, mask(ctls));
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_entry_ctls_idx, mask(ctls));
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         /// NOTE:
@@ -398,10 +398,10 @@ namespace example
         constexpr bsl::safe_uintmax enable_xsave{bsl::to_umax(0x00100000U)};
         constexpr bsl::safe_uintmax enable_uwait{bsl::to_umax(0x04000000U)};
 
-        status = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_procbased_ctls2, ctls);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_procbased_ctls2, ctls);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         ctls |= enable_vpid;
@@ -410,10 +410,10 @@ namespace example
         ctls |= enable_xsave;
         ctls |= enable_uwait;
 
-        status = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls2_idx, mask(ctls));
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls2_idx, mask(ctls));
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         /// NOTE:
@@ -426,17 +426,17 @@ namespace example
         constexpr bsl::safe_uintmax vmcs_msr_bitmaps{bsl::to_umax(0x2004U)};
 
         if (nullptr == g_msr_bitmaps) {
-            status = syscall::bf_mem_op_alloc_page(handle, g_msr_bitmaps, g_msr_bitmaps_phys);
-            if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+            ret = syscall::bf_mem_op_alloc_page(handle, g_msr_bitmaps, g_msr_bitmaps_phys);
+            if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
         }
 
-        status = syscall::bf_vps_op_write64(handle, vpsid, vmcs_msr_bitmaps, g_msr_bitmaps_phys);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_write64(handle, vpsid, vmcs_msr_bitmaps, g_msr_bitmaps_phys);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         /// NOTE:
@@ -446,7 +446,7 @@ namespace example
         ///
 
         syscall::bf_tls_set_rax(handle, bsl::ZERO_UMAX);
-        return bsl::errc_success;
+        return ret;
     }
 }
 

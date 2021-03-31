@@ -119,10 +119,11 @@ namespace example
     // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
     bootstrap_entry(bsl::uint16 const ppid) noexcept
     {
+        bsl::errc_type ret{};
+
         bsl::safe_uint16 vmid{};
         bsl::safe_uint16 vpid{};
         bsl::safe_uint16 vpsid{};
-        syscall::bf_status_t status{};
 
         /// NOTE:
         /// - Before we can create a VM, VP and VPS, we must first register
@@ -133,8 +134,8 @@ namespace example
         ///   happens.
         ///
 
-        status = syscall::bf_callback_op_register_vmexit(g_handle, &vmexit_entry);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_callback_op_register_vmexit(g_handle, &vmexit_entry);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
         }
@@ -142,8 +143,8 @@ namespace example
             bsl::touch();
         }
 
-        status = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
         }
@@ -166,8 +167,8 @@ namespace example
         ///
 
         if (bsl::ZERO_U16 == ppid) {
-            status = syscall::bf_vm_op_create_vm(g_handle, vmid);
-            if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+            ret = syscall::bf_vm_op_create_vm(g_handle, vmid);
+            if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 syscall::bf_control_op_exit();
             }
@@ -179,8 +180,8 @@ namespace example
             bsl::touch();
         }
 
-        status = syscall::bf_vp_op_create_vp(g_handle, vpid);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vp_op_create_vp(g_handle, vpid);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
         }
@@ -188,8 +189,8 @@ namespace example
             bsl::touch();
         }
 
-        status = syscall::bf_vps_op_create_vps(g_handle, vpsid);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_create_vps(g_handle, vpsid);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
         }
@@ -205,8 +206,8 @@ namespace example
         ///   just before the microkernel was started.
         ///
 
-        status = syscall::bf_vps_op_init_as_root(g_handle, vpsid);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_init_as_root(g_handle, vpsid);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
         }
@@ -258,7 +259,7 @@ namespace example
     extern "C" void
     ext_main_entry(bsl::safe_uint32 const &version) noexcept
     {
-        syscall::bf_status_t status{};
+        bsl::errc_type ret{};
 
         /// NOTE:
         /// - Check to see if the microkernel speaks the same version as we
@@ -281,8 +282,8 @@ namespace example
         ///   remaining syscalls.
         ///
 
-        status = syscall::bf_handle_op_open_handle(syscall::BF_SPEC_ID1_VAL, g_handle);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_handle_op_open_handle(syscall::BF_SPEC_ID1_VAL, g_handle);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
         }
@@ -295,8 +296,8 @@ namespace example
         ///   each PP
         ///
 
-        status = syscall::bf_callback_op_register_bootstrap(g_handle, &bootstrap_entry);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_callback_op_register_bootstrap(g_handle, &bootstrap_entry);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             syscall::bf_control_op_exit();
         }

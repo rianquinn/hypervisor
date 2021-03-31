@@ -55,6 +55,8 @@ namespace example
     handle_vmexit_cpuid(HANDLE_CONCEPT &handle, bsl::safe_uint16 const &vpsid) noexcept
         -> bsl::errc_type
     {
+        bsl::errc_type ret{};
+
         bsl::safe_uintmax rax{syscall::bf_tls_rax(handle)};
         bsl::safe_uintmax rbx{syscall::bf_tls_rbx(handle)};
         bsl::safe_uintmax rcx{syscall::bf_tls_rcx(handle)};
@@ -82,14 +84,20 @@ namespace example
 
                     syscall::bf_tls_set_rax(handle, bsl::ZERO_UMAX);
 
-                    auto const status{syscall::bf_vps_op_advance_ip(handle, vpsid)};
-                    if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+                    ret = syscall::bf_vps_op_advance_ip(handle, vpsid);
+                    if (bsl::unlikely(!ret)) {
                         bsl::print<bsl::V>() << bsl::here();
-                        return bsl::errc_failure;
+                        return ret;
                     }
 
-                    syscall::bf_vps_op_promote(handle, vpsid);
-                    return bsl::errc_failure;
+                    ret = syscall::bf_vps_op_promote(handle, vpsid);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return ret;
+                    }
+
+                    // Unreachable
+                    return bsl::errc_success;
                 }
 
                 case loader::CPUID_COMMAND_ECX_REPORT_ON.get(): {

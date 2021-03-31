@@ -234,7 +234,8 @@ namespace mk
         ///   @param phys n/a
         ///   @return n/a
         ///
-        extern "C" [[nodiscard]] auto intrinsic_vmclear(void *const phys) noexcept -> bsl::exit_code;
+        extern "C" [[nodiscard]] auto intrinsic_vmclear(void *const phys) noexcept
+            -> bsl::exit_code;
 
         /// <!-- description -->
         ///   @brief Implements intrinsic_t::vmread16
@@ -956,9 +957,9 @@ namespace mk
             bsl::exit_code const ret{details::intrinsic_vmclear(phys)};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmclear failed for "    // --
-                             << phys                    // --
-                             << bsl::endl               // --
-                             << bsl::here();            // --
+                             << phys                     // --
+                             << bsl::endl                // --
+                             << bsl::here();             // --
 
                 return bsl::errc_failure;
             }

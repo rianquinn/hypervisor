@@ -243,51 +243,6 @@ namespace syscall
     };
 
     // -------------------------------------------------------------------------
-    // TLS Page Offsets
-    // -------------------------------------------------------------------------
-
-    /// @brief stores the offset in the TLS block for rax
-    constexpr bsl::safe_uintmax TLS_OFFSET_RAX{bsl::to_umax(0x800U)};
-    /// @brief stores the offset in the TLS block for rbx
-    constexpr bsl::safe_uintmax TLS_OFFSET_RBX{bsl::to_umax(0x808U)};
-    /// @brief stores the offset in the TLS block for rcx
-    constexpr bsl::safe_uintmax TLS_OFFSET_RCX{bsl::to_umax(0x810U)};
-    /// @brief stores the offset in the TLS block for rdx
-    constexpr bsl::safe_uintmax TLS_OFFSET_RDX{bsl::to_umax(0x818U)};
-    /// @brief stores the offset in the TLS block for rbp
-    constexpr bsl::safe_uintmax TLS_OFFSET_RBP{bsl::to_umax(0x820U)};
-    /// @brief stores the offset in the TLS block for rsi
-    constexpr bsl::safe_uintmax TLS_OFFSET_RSI{bsl::to_umax(0x828U)};
-    /// @brief stores the offset in the TLS block for rdi
-    constexpr bsl::safe_uintmax TLS_OFFSET_RDI{bsl::to_umax(0x830U)};
-    /// @brief stores the offset in the TLS block for r8
-    constexpr bsl::safe_uintmax TLS_OFFSET_R8{bsl::to_umax(0x838U)};
-    /// @brief stores the offset in the TLS block for r9
-    constexpr bsl::safe_uintmax TLS_OFFSET_R9{bsl::to_umax(0x840U)};
-    /// @brief stores the offset in the TLS block for r10
-    constexpr bsl::safe_uintmax TLS_OFFSET_R10{bsl::to_umax(0x848U)};
-    /// @brief stores the offset in the TLS block for r11
-    constexpr bsl::safe_uintmax TLS_OFFSET_R11{bsl::to_umax(0x850U)};
-    /// @brief stores the offset in the TLS block for r12
-    constexpr bsl::safe_uintmax TLS_OFFSET_R12{bsl::to_umax(0x858U)};
-    /// @brief stores the offset in the TLS block for r13
-    constexpr bsl::safe_uintmax TLS_OFFSET_R13{bsl::to_umax(0x860U)};
-    /// @brief stores the offset in the TLS block for r14
-    constexpr bsl::safe_uintmax TLS_OFFSET_R14{bsl::to_umax(0x868U)};
-    /// @brief stores the offset in the TLS block for r15
-    constexpr bsl::safe_uintmax TLS_OFFSET_R15{bsl::to_umax(0x870U)};
-    /// @brief stores the offset in the TLS block for the active vps
-    constexpr bsl::safe_uint16 TLS_OFFSET_ACTIVE_VPS{bsl::to_u16(0xFF0U)};
-    /// @brief stores the offset in the TLS block for reserved
-    constexpr bsl::safe_uint16 TLS_OFFSET_RESERVED1{bsl::to_u16(0xFF2U)};
-    /// @brief stores the offset in the TLS block for reserved
-    constexpr bsl::safe_uint16 TLS_OFFSET_RESERVED2{bsl::to_u16(0xFF4U)};
-    /// @brief stores the offset in the TLS block for reserved
-    constexpr bsl::safe_uint16 TLS_OFFSET_RESERVED3{bsl::to_u16(0xFF6U)};
-    /// @brief stores the offset in the TLS block for the thread id
-    constexpr bsl::safe_uintmax TLS_OFFSET_THREAD_ID{bsl::to_umax(0xFF8U)};
-
-    // -------------------------------------------------------------------------
     // Exit Type
     // -------------------------------------------------------------------------
 
@@ -331,605 +286,307 @@ namespace syscall
     using bf_callback_handler_fail_t = void (*)(bf_status_t::value_type);
 
     // -------------------------------------------------------------------------
-    // Prototypes
+    // Syscall Status Codes
     // -------------------------------------------------------------------------
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_control_op_exit.
-    ///
-    extern "C" void bf_control_op_exit_impl() noexcept;
+    /// @brief Defines a mask for BF_STATUS_SIG
+    constexpr bsl::safe_uint64 BF_STATUS_SIG_MASK{bsl::to_u64(0xFFFF000000000000U)};
+    /// @brief Defines a mask for BF_STATUS_FLAGS
+    constexpr bsl::safe_uint64 BF_STATUS_FLAGS_MASK{bsl::to_u64(0x0000FFFFFFFF0000U)};
+    /// @brief Defines a mask for BF_STATUS_VALUE
+    constexpr bsl::safe_uint64 BF_STATUS_VALUE_MASK{bsl::to_u64(0x000000000000FFFFU)};
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_handle_op_open_handle.
+    ///   @brief n/a
     ///
     /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg0_out n/a
+    ///   @param status n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_handle_op_open_handle_impl(    // --
-        bf_uint32_t const reg0_in,                                  // --
-        bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
+    [[nodiscard]] inline auto
+    bf_status_sig(bsl::safe_uint64 const &status) noexcept -> bsl::safe_uint64
+    {
+        return status & BF_STATUS_SIG_MASK;
+    }
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_handle_op_close_handle.
+    ///   @brief n/a
     ///
     /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void bf_handle_op_close_handle_impl(    // --
-        bf_uint64_t const reg0_in) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_out.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///
-    extern "C" void bf_debug_op_out_impl(    // --
-        bf_uint64_t const reg0_in,           // --
-        bf_uint64_t const reg1_in) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_dump_vm.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void bf_debug_op_dump_vm_impl(    // --
-        bf_uint16_t const reg0_in) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_dump_vp.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void bf_debug_op_dump_vp_impl(    // --
-        bf_uint16_t const reg0_in) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_dump_vps.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void bf_debug_op_dump_vps_impl(    // --
-        bf_uint16_t const reg0_in) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_dump_vmexit_log.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void bf_debug_op_dump_vmexit_log_impl(    // --
-        bf_uint16_t const reg0_in) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_write_c.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void bf_debug_op_write_c_impl(    // --
-        bsl::char_type const reg0_in) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_write_str.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void bf_debug_op_write_str_impl(    // --
-        bsl::char_type const *const reg0_in) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_callback_op_wait.
-    ///
-    extern "C" void bf_callback_op_wait_impl() noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_callback_op_register_bootstrap.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
+    ///   @param status n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_callback_op_register_bootstrap_impl(    // --
-        bf_uint64_t const reg0_in,                                           // --
-        bf_callback_handler_bootstrap_t const reg1_in) noexcept -> bf_status_t::value_type;
+    [[nodiscard]] inline auto
+    bf_status_flags(bsl::safe_uint64 const &status) noexcept -> bsl::safe_uint64
+    {
+        return status & BF_STATUS_FLAGS_MASK;
+    }
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_callback_op_register_vmexit.
+    ///   @brief n/a
     ///
     /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
+    ///   @param status n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_callback_op_register_vmexit_impl(    // --
-        bf_uint64_t const reg0_in,                                        // --
-        bf_callback_handler_vmexit_t const reg1_in) noexcept -> bf_status_t::value_type;
+    [[nodiscard]] inline auto
+    bf_status_value(bsl::safe_uint64 const &status) noexcept -> bsl::safe_uint64
+    {
+        return status & BF_STATUS_VALUE_MASK;
+    }
+
+    /// @brief Used to indicated that the syscall returned successfully
+    constexpr bsl::safe_uint64 BF_STATUS_SUCCESS{bsl::to_u64(0x0000000000000000U)};
+    /// @brief Indicates an unknown error occurred
+    constexpr bsl::safe_uint64 BF_STATUS_FAILURE_UNKNOWN{bsl::to_u64(0xDEAD000000010001U)};
+    /// @brief Indicates the syscall is unsupported
+    constexpr bsl::safe_uint64 BF_STATUS_FAILURE_INVALID_HANDLE{bsl::to_u64(0xDEAD000000020001U)};
+    /// @brief Indicates the provided handle is invalid
+    constexpr bsl::safe_uint64 BF_STATUS_FAILURE_UNSUPPORTED{bsl::to_u64(0xDEAD000000040001U)};
+    /// @brief Indicates the extension is not allowed to execute this syscall
+    constexpr bsl::safe_uint64 BF_STATUS_INVALID_PERM_EXT{bsl::to_u64(0xDEAD000000010002U)};
+    /// @brief Indicates the policy engine denied the syscall
+    constexpr bsl::safe_uint64 BF_STATUS_INVALID_PERM_DENIED{bsl::to_u64(0xDEAD000000020002U)};
+    /// @brief Indicates param 0 is invalid
+    constexpr bsl::safe_uint64 BF_STATUS_INVALID_PARAMS0{bsl::to_u64(0xDEAD000000010003U)};
+    /// @brief Indicates param 1 is invalid
+    constexpr bsl::safe_uint64 BF_STATUS_INVALID_PARAMS1{bsl::to_u64(0xDEAD000000020003U)};
+    /// @brief Indicates param 2 is invalid
+    constexpr bsl::safe_uint64 BF_STATUS_INVALID_PARAMS2{bsl::to_u64(0xDEAD000000040003U)};
+    /// @brief Indicates param 3 is invalid
+    constexpr bsl::safe_uint64 BF_STATUS_INVALID_PARAMS3{bsl::to_u64(0xDEAD000000080003U)};
+    /// @brief Indicates param 4 is invalid
+    constexpr bsl::safe_uint64 BF_STATUS_INVALID_PARAMS4{bsl::to_u64(0xDEAD000000100003U)};
+    /// @brief Indicates param 5 is invalid
+    constexpr bsl::safe_uint64 BF_STATUS_INVALID_PARAMS5{bsl::to_u64(0xDEAD000000200003U)};
+
+    // -------------------------------------------------------------------------
+    // Syscall Inputs
+    // -------------------------------------------------------------------------
+
+    /// @brief Defines the BF_SYSCALL_SIG field for RAX
+    constexpr bsl::safe_uint64 BF_HYPERCALL_SIG_VAL{bsl::to_u64(0x6642000000000000U)};
+    /// @brief Defines a mask for BF_SYSCALL_SIG
+    constexpr bsl::safe_uint64 BF_HYPERCALL_SIG_MASK{bsl::to_u64(0xFFFF000000000000U)};
+    /// @brief Defines a mask for BF_SYSCALL_FLAGS
+    constexpr bsl::safe_uint64 BF_HYPERCALL_FLAGS_MASK{bsl::to_u64(0x0000FFFF00000000U)};
+    /// @brief Defines a mask for BF_SYSCALL_OP
+    constexpr bsl::safe_uint64 BF_HYPERCALL_OPCODE_MASK{bsl::to_u64(0xFFFF0000FFFF0000U)};
+    /// @brief Defines a mask for BF_SYSCALL_OP (with no signature added)
+    constexpr bsl::safe_uint64 BF_HYPERCALL_OPCODE_NOSIG_MASK{bsl::to_u64(0x00000000FFFF0000U)};
+    /// @brief Defines a mask for BF_SYSCALL_IDX
+    constexpr bsl::safe_uint64 BF_HYPERCALL_INDEX_MASK{bsl::to_u64(0x000000000000FFFFU)};
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_callback_op_register_fail.
+    ///   @brief n/a
     ///
     /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
+    ///   @param rax n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_callback_op_register_fail_impl(    // --
-        bf_uint64_t const reg0_in,                                      // --
-        bf_callback_handler_fail_t const reg1_in) noexcept -> bf_status_t::value_type;
+    [[nodiscard]] constexpr auto
+    bf_syscall_sig(bsl::safe_uint64 const &rax) noexcept -> bsl::safe_uint64
+    {
+        return rax & BF_HYPERCALL_SIG_MASK;
+    }
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vm_op_create_vm.
+    ///   @brief n/a
     ///
     /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg0_out n/a
+    ///   @param rax n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_vm_op_create_vm_impl(    // --
-        bf_uint64_t const reg0_in,                            // --
-        bf_uint16_t *const reg0_out) noexcept -> bf_status_t::value_type;
+    [[nodiscard]] constexpr auto
+    bf_syscall_flags(bsl::safe_uint64 const &rax) noexcept -> bsl::safe_uint64
+    {
+        return rax & BF_HYPERCALL_FLAGS_MASK;
+    }
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vm_op_destroy_vm.
+    ///   @brief n/a
     ///
     /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///
-    extern "C" void bf_vm_op_destroy_vm_impl(    // --
-        bf_uint64_t const reg0_in,               // --
-        bf_uint16_t const reg1_in) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vp_op_create_vp.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg0_out n/a
+    ///   @param rax n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_vp_op_create_vp_impl(    // --
-        bf_uint64_t const reg0_in,                            // --
-        bf_uint16_t *const reg0_out) noexcept -> bf_status_t::value_type;
+    [[nodiscard]] constexpr auto
+    bf_syscall_opcode(bsl::safe_uint64 const &rax) noexcept -> bsl::safe_uint64
+    {
+        return rax & BF_HYPERCALL_OPCODE_MASK;
+    }
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vp_op_destroy_vp.
+    ///   @brief n/a
     ///
     /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///
-    extern "C" void bf_vp_op_destroy_vp_impl(    // --
-        bf_uint64_t const reg0_in,               // --
-        bf_uint16_t const reg1_in) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_create_vps.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg0_out n/a
+    ///   @param rax n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_vps_op_create_vps_impl(    // --
-        bf_uint64_t const reg0_in,                              // --
-        bf_uint16_t *const reg0_out) noexcept -> bf_status_t::value_type;
+    [[nodiscard]] constexpr auto
+    bf_syscall_opcode_nosig(bsl::safe_uint64 const &rax) noexcept -> bsl::safe_uint64
+    {
+        return rax & BF_HYPERCALL_OPCODE_NOSIG_MASK;
+    }
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_destroy_vps.
+    ///   @brief n/a
     ///
     /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///
-    extern "C" void bf_vps_op_destroy_vps_impl(    // --
-        bf_uint64_t const reg0_in,                 // --
-        bf_uint16_t const reg1_in) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_init_as_root.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
+    ///   @param rax n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_vps_op_init_as_root_impl(    // --
-        bf_uint64_t const reg0_in,                                // --
-        bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
+    [[nodiscard]] constexpr auto
+    bf_syscall_index(bsl::safe_uint64 const &rax) noexcept -> bsl::safe_uint64
+    {
+        return rax & BF_HYPERCALL_INDEX_MASK;
+    }
+
+    // -------------------------------------------------------------------------
+    // Specification IDs
+    // -------------------------------------------------------------------------
+
+    /// @brief Defines the ID for version #1 of this spec
+    constexpr bsl::safe_uint32 BF_SPEC_ID1_VAL{bsl::to_u32(0x31236642)};
+
+    /// @brief Defines the mask for checking support for version #1 of this spec
+    constexpr bsl::safe_uint32 BF_SPEC_ID1_MASK{bsl::to_u32(0x2)};
+
+    /// @brief Defines the value likely returned by bf_handle_op_version
+    constexpr bsl::safe_uint32 BF_ALL_SPECS_SUPPORTED_VAL{bsl::to_u32(0x2)};
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_read8.
+    ///   @brief n/a
     ///
     /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg0_out n/a
+    ///   @param version n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_vps_op_read8_impl(    // --
-        bf_uint64_t const reg0_in,                         // --
-        bf_uint16_t const reg1_in,                         // --
-        bf_uint64_t const reg2_in,                         // --
-        bf_uint8_t *const reg0_out) noexcept -> bf_status_t::value_type;
+    [[nodiscard]] constexpr auto
+    bf_is_spec1_supported(bsl::safe_uint32 const &version) noexcept -> bool
+    {
+        return ((version & BF_SPEC_ID1_MASK) != bsl::ZERO_U32);
+    }
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_read16.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg0_out n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_read16_impl(    // --
-        bf_uint64_t const reg0_in,                          // --
-        bf_uint16_t const reg1_in,                          // --
-        bf_uint64_t const reg2_in,                          // --
-        bf_uint16_t *const reg0_out) noexcept -> bf_status_t::value_type;
+    // -------------------------------------------------------------------------
+    // Syscall Opcodes - Control Support
+    // -------------------------------------------------------------------------
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_read32.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg0_out n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_read32_impl(    // --
-        bf_uint64_t const reg0_in,                          // --
-        bf_uint16_t const reg1_in,                          // --
-        bf_uint64_t const reg2_in,                          // --
-        bf_uint32_t *const reg0_out) noexcept -> bf_status_t::value_type;
+    /// @brief Defines the syscall opcode for bf_control_op
+    constexpr bsl::safe_uint64 BF_CONTROL_OP_VAL{bsl::to_u64(0x6642000000000000U)};
+    /// @brief Defines the syscall opcode for bf_control_op (nosig)
+    constexpr bsl::safe_uint64 BF_CONTROL_OP_NOSIG_VAL{bsl::to_u64(0x0000000000000000U)};
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_read64.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg0_out n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_read64_impl(    // --
-        bf_uint64_t const reg0_in,                          // --
-        bf_uint16_t const reg1_in,                          // --
-        bf_uint64_t const reg2_in,                          // --
-        bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
+    // -------------------------------------------------------------------------
+    // Syscall Opcodes - Handle Support
+    // -------------------------------------------------------------------------
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_write8.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg3_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_write8_impl(    // --
-        bf_uint64_t const reg0_in,                          // --
-        bf_uint16_t const reg1_in,                          // --
-        bf_uint64_t const reg2_in,                          // --
-        bf_uint8_t const reg3_in) noexcept -> bf_status_t::value_type;
+    /// @brief Defines the syscall opcode for bf_handle_op
+    constexpr bsl::safe_uint64 BF_HANDLE_OP_VAL{bsl::to_u64(0x6642000000010000U)};
+    /// @brief Defines the syscall opcode for bf_handle_op (nosig)
+    constexpr bsl::safe_uint64 BF_HANDLE_OP_NOSIG_VAL{bsl::to_u64(0x0000000000010000U)};
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_write16.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg3_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_write16_impl(    // --
-        bf_uint64_t const reg0_in,                           // --
-        bf_uint16_t const reg1_in,                           // --
-        bf_uint64_t const reg2_in,                           // --
-        bf_uint16_t const reg3_in) noexcept -> bf_status_t::value_type;
+    // -------------------------------------------------------------------------
+    // Syscall Opcodes - Debug Support
+    // -------------------------------------------------------------------------
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_write32.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg3_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_write32_impl(    // --
-        bf_uint64_t const reg0_in,                           // --
-        bf_uint16_t const reg1_in,                           // --
-        bf_uint64_t const reg2_in,                           // --
-        bf_uint32_t const reg3_in) noexcept -> bf_status_t::value_type;
+    /// @brief Defines the syscall opcode for bf_debug_op
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_VAL{bsl::to_u64(0x6642000000020000U)};
+    /// @brief Defines the syscall opcode for bf_debug_op (nosig)
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_NOSIG_VAL{bsl::to_u64(0x00000000000020000U)};
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_write64.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg3_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_write64_impl(    // --
-        bf_uint64_t const reg0_in,                           // --
-        bf_uint16_t const reg1_in,                           // --
-        bf_uint64_t const reg2_in,                           // --
-        bf_uint64_t const reg3_in) noexcept -> bf_status_t::value_type;
+    // -------------------------------------------------------------------------
+    // Syscall Opcodes - Callback Support
+    // -------------------------------------------------------------------------
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_read_reg_impl.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg0_out n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_read_reg_impl(    // --
-        bf_uint64_t const reg0_in,                            // --
-        bf_uint16_t const reg1_in,                            // --
-        bf_reg_t const reg2_in,                               // --
-        bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
+    /// @brief Defines the syscall opcode for bf_callback_op
+    constexpr bsl::safe_uint64 BF_CALLBACK_OP_VAL{bsl::to_u64(0x6642000000030000U)};
+    /// @brief Defines the syscall opcode for bf_callback_op (nosig)
+    constexpr bsl::safe_uint64 BF_CALLBACK_OP_NOSIG_VAL{bsl::to_u64(0x0000000000030000U)};
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_write_reg.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg3_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_write_reg_impl(    // --
-        bf_uint64_t const reg0_in,                             // --
-        bf_uint16_t const reg1_in,                             // --
-        bf_reg_t const reg2_in,                                // --
-        bf_uint64_t const reg3_in) noexcept -> bf_status_t::value_type;
+    // -------------------------------------------------------------------------
+    // Syscall Opcodes - VM Support
+    // -------------------------------------------------------------------------
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_run.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg3_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_run_impl(    // --
-        bf_uint64_t const reg0_in,                       // --
-        bf_uint16_t const reg1_in,                       // --
-        bf_uint16_t const reg2_in,                       // --
-        bf_uint16_t const reg3_in) noexcept -> bf_status_t::value_type;
+    /// @brief Defines the syscall opcode for bf_vm_op
+    constexpr bsl::safe_uint64 BF_VM_OP_VAL{bsl::to_u64(0x6642000000040000U)};
+    /// @brief Defines the syscall opcode for bf_vm_op (nosig)
+    constexpr bsl::safe_uint64 BF_VM_OP_NOSIG_VAL{bsl::to_u64(0x0000000000040000U)};
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_run_current.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_run_current_impl(    // --
-        bf_uint64_t const reg0_in) noexcept -> bf_status_t::value_type;
+    // -------------------------------------------------------------------------
+    // Syscall Opcodes - VP Support
+    // -------------------------------------------------------------------------
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_advance_ip.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_advance_ip_impl(    // --
-        bf_uint64_t const reg0_in,                              // --
-        bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
+    /// @brief Defines the syscall opcode for bf_vp_op
+    constexpr bsl::safe_uint64 BF_VP_OP_VAL{bsl::to_u64(0x6642000000050000U)};
+    /// @brief Defines the syscall opcode for bf_vp_op (nosig)
+    constexpr bsl::safe_uint64 BF_VP_OP_NOSIG_VAL{bsl::to_u64(0x0000000000050000U)};
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_advance_ip_and_run_current.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_vps_op_advance_ip_and_run_current_impl(    // --
-        bf_uint64_t const reg0_in) noexcept -> bf_status_t::value_type;
+    // -------------------------------------------------------------------------
+    // Syscall Opcodes - VPS Support
+    // -------------------------------------------------------------------------
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_promote.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///
-    extern "C" void bf_vps_op_promote_impl(    // --
-        bf_uint64_t const reg0_in,             // --
-        bf_uint16_t const reg1_in) noexcept;
+    /// @brief Defines the syscall opcode for bf_vps_op
+    constexpr bsl::safe_uint64 BF_VPS_OP_VAL{bsl::to_u64(0x6642000000060000U)};
+    /// @brief Defines the syscall opcode for bf_vps_op (nosig)
+    constexpr bsl::safe_uint64 BF_VPS_OP_NOSIG_VAL{bsl::to_u64(0x0000000000060000U)};
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_vps_op_clear_vps.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///
-    extern "C" void bf_vps_op_clear_vps_impl(    // --
-        bf_uint64_t const reg0_in,             // --
-        bf_uint16_t const reg1_in) noexcept;
+    // -------------------------------------------------------------------------
+    // Syscall Opcodes - Intrinsic Support
+    // -------------------------------------------------------------------------
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_intrinsic_op_rdmsr.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg0_out n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_intrinsic_op_rdmsr_impl(    // --
-        bf_uint64_t const reg0_in,                               // --
-        bf_uint32_t const reg1_in,                               // --
-        bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
+    /// @brief Defines the syscall opcode for bf_intrinsic_op
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_VAL{bsl::to_u64(0x6642000000070000U)};
+    /// @brief Defines the syscall opcode for bf_intrinsic_op (nosig)
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_NOSIG_VAL{bsl::to_u64(0x0000000000070000U)};
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_intrinsic_op_wrmsr.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_intrinsic_op_wrmsr_impl(    // --
-        bf_uint64_t const reg0_in,                               // --
-        bf_uint32_t const reg1_in,                               // --
-        bf_uint64_t const reg2_in) noexcept -> bf_status_t::value_type;
+    // -------------------------------------------------------------------------
+    // Syscall Opcodes - Mem Support
+    // -------------------------------------------------------------------------
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_intrinsic_op_invlpga.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_intrinsic_op_invlpga_impl(    // --
-        bf_uint64_t const reg0_in,                                 // --
-        bf_uint64_t const reg1_in,                                 // --
-        bf_uint64_t const reg2_in) noexcept -> bf_status_t::value_type;
+    /// @brief Defines the syscall opcode for bf_mem_op
+    constexpr bsl::safe_uint64 BF_MEM_OP_VAL{bsl::to_u64(0x6642000000080000U)};
+    /// @brief Defines the syscall opcode for bf_mem_op (nosig)
+    constexpr bsl::safe_uint64 BF_MEM_OP_NOSIG_VAL{bsl::to_u64(0x0000000000080000U)};
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_intrinsic_op_invept.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_intrinsic_op_invept_impl(    // --
-        bf_uint64_t const reg0_in,                                // --
-        bf_uint64_t const reg1_in,                                // --
-        bf_uint64_t const reg2_in) noexcept -> bf_status_t::value_type;
+    // -------------------------------------------------------------------------
+    // TLS Offsets
+    // -------------------------------------------------------------------------
 
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_intrinsic_op_invvpid.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg2_in n/a
-    ///   @param reg3_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_intrinsic_op_invvpid_impl(    // --
-        bf_uint64_t const reg0_in,                                 // --
-        bf_uint64_t const reg1_in,                                 // --
-        bf_uint16_t const reg2_in,                                 // --
-        bf_uint64_t const reg3_in) noexcept -> bf_status_t::value_type;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_mem_op_alloc_page.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg0_out n/a
-    ///   @param reg1_out n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_mem_op_alloc_page_impl(    // --
-        bf_uint64_t const reg0_in,                              // --
-        bf_ptr_t *const reg0_out,                               // --
-        bf_uint64_t *const reg1_out) noexcept -> bf_status_t::value_type;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_mem_op_free_page.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_mem_op_free_page_impl(    // --
-        bf_uint64_t const reg0_in,                             // --
-        bf_ptr_t const reg1_in) noexcept -> bf_status_t::value_type;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_mem_op_alloc_huge.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg0_out n/a
-    ///   @param reg1_out n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_mem_op_alloc_huge_impl(    // --
-        bf_uint64_t const reg0_in,                              // --
-        bf_uint64_t const reg1_in,                              // --
-        bf_ptr_t *const reg0_out,                               // --
-        bf_uint64_t *const reg1_out) noexcept -> bf_status_t::value_type;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_mem_op_free_huge.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_mem_op_free_huge_impl(    // --
-        bf_uint64_t const reg0_in,                             // --
-        bf_ptr_t const reg1_in) noexcept -> bf_status_t::value_type;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_mem_op_alloc_heap.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg0_out n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_mem_op_alloc_heap_impl(    // --
-        bf_uint64_t const reg0_in,                              // --
-        bf_uint64_t const reg1_in,                              // --
-        bf_ptr_t *const reg0_out) noexcept -> bf_status_t::value_type;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_mem_op_virt_to_phys.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg0_out n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_mem_op_virt_to_phys_impl(    // --
-        bf_uint64_t const reg0_in,                                // --
-        bf_ptr_t const reg1_in,                                   // --
-        bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
+    /// @brief stores the offset for rax
+    constexpr bsl::safe_uintmax TLS_OFFSET_RAX{bsl::to_umax(0x800U)};
+    /// @brief stores the offset for rbx
+    constexpr bsl::safe_uintmax TLS_OFFSET_RBX{bsl::to_umax(0x808U)};
+    /// @brief stores the offset for rcx
+    constexpr bsl::safe_uintmax TLS_OFFSET_RCX{bsl::to_umax(0x810U)};
+    /// @brief stores the offset for rdx
+    constexpr bsl::safe_uintmax TLS_OFFSET_RDX{bsl::to_umax(0x818U)};
+    /// @brief stores the offset for rbp
+    constexpr bsl::safe_uintmax TLS_OFFSET_RBP{bsl::to_umax(0x820U)};
+    /// @brief stores the offset for rsi
+    constexpr bsl::safe_uintmax TLS_OFFSET_RSI{bsl::to_umax(0x828U)};
+    /// @brief stores the offset for rdi
+    constexpr bsl::safe_uintmax TLS_OFFSET_RDI{bsl::to_umax(0x830U)};
+    /// @brief stores the offset for r8
+    constexpr bsl::safe_uintmax TLS_OFFSET_R8{bsl::to_umax(0x838U)};
+    /// @brief stores the offset for r9
+    constexpr bsl::safe_uintmax TLS_OFFSET_R9{bsl::to_umax(0x840U)};
+    /// @brief stores the offset for r10
+    constexpr bsl::safe_uintmax TLS_OFFSET_R10{bsl::to_umax(0x848U)};
+    /// @brief stores the offset for r11
+    constexpr bsl::safe_uintmax TLS_OFFSET_R11{bsl::to_umax(0x850U)};
+    /// @brief stores the offset for r12
+    constexpr bsl::safe_uintmax TLS_OFFSET_R12{bsl::to_umax(0x858U)};
+    /// @brief stores the offset for r13
+    constexpr bsl::safe_uintmax TLS_OFFSET_R13{bsl::to_umax(0x860U)};
+    /// @brief stores the offset for r14
+    constexpr bsl::safe_uintmax TLS_OFFSET_R14{bsl::to_umax(0x868U)};
+    /// @brief stores the offset for r15
+    constexpr bsl::safe_uintmax TLS_OFFSET_R15{bsl::to_umax(0x870U)};
+    /// @brief stores the offset for the active vpsid
+    constexpr bsl::safe_uintmax TLS_OFFSET_ACTIVE_VPSID{bsl::to_umax(0xFF0U)};
+    /// @brief stores the offset for the thread id
+    constexpr bsl::safe_uintmax TLS_OFFSET_THREAD_ID{bsl::to_umax(0xFF8U)};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_rax.
@@ -1716,6 +1373,2144 @@ namespace syscall
     }
 
     // -------------------------------------------------------------------------
+    // bf_control_op_exit
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_control_op_exit.
+    ///
+    extern "C" void bf_control_op_exit_impl() noexcept;
+
+    /// @brief Defines the syscall index for bf_control_op_exit
+    constexpr bsl::safe_uint64 BF_CONTROL_OP_EXIT_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to exit the execution
+    ///     of an extension, providing a means to fast fail.
+    ///
+    inline void
+    bf_control_op_exit() noexcept
+    {
+        bf_control_op_exit_impl();
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_handle_op_open_handle
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_handle_op_open_handle.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_handle_op_open_handle_impl(    // --
+        bf_uint32_t const reg0_in,                                  // --
+        bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_handle_op_open_handle
+    constexpr bsl::safe_uint64 BF_HANDLE_OP_OPEN_HANDLE_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall returns a handle which is required to execute
+    ///     the remaining syscalls. Some versions of Bareflank might provide
+    ///     a certain degree of backwards compatibility which can be queried
+    ///     using bf_handle_op_version. The version argument of this syscall
+    ///     provides software with means to tell the microkernel which version
+    ///     of this spec it is trying to use. If software provides a version
+    ///     that Bareflank doesn't support (i.e., a version that is not listed
+    ///     by bf_handle_op_version), this syscall will fail.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param version The version of this spec that software supports
+    ///   @param handle The value to set REG0 to for most other syscalls
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_handle_op_open_handle(               // --
+        bsl::safe_uint32 const &version,    // --
+        bf_handle_t &handle) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_handle_op_open_handle_impl(version.get(), &handle.hndl)};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_handle_op_close_handle
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_handle_op_close_handle.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @return n/a
+    ///
+    extern "C" auto bf_handle_op_close_handle_impl(    // --
+        bf_uint64_t const reg0_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_handle_op_close_handle
+    constexpr bsl::safe_uint64 BF_HANDLE_OP_CLOSE_HANDLE_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall closes a previously opened handle.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_handle_op_close_handle(    // --
+        bf_handle_t &handle) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_handle_op_close_handle_impl(handle.hndl)};
+        handle = {};
+
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_debug_op_out
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_debug_op_out.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///
+    extern "C" void bf_debug_op_out_impl(    // --
+        bf_uint64_t const reg0_in,           // --
+        bf_uint64_t const reg1_in) noexcept;
+
+    /// @brief Defines the syscall index for bf_debug_op_out
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_OUT_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to output RDI and RSI to
+    ///     the console device the microkernel is currently using for
+    ///     debugging.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param val1 The first value to output to the microkernel's console
+    ///   @param val2 The second value to output to the microkernel's console
+    ///
+    inline void
+    bf_debug_op_out(                     // --
+        bsl::safe_uint64 const &val1,    // --
+        bsl::safe_uint64 const &val2) noexcept
+    {
+        bf_debug_op_out_impl(val1.get(), val2.get());
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_debug_op_dump_vm
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_debug_op_dump_vm.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///
+    extern "C" void bf_debug_op_dump_vm_impl(    // --
+        bf_uint16_t const reg0_in) noexcept;
+
+    /// @brief Defines the syscall index for bf_debug_op_dump_vm
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_DUMP_VM_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to output the state of a
+    ///     VM to the console device the microkernel is currently using for
+    ///     debugging.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param vmid The VMID of the VM whose state is to be outputted
+    ///
+    inline void
+    bf_debug_op_dump_vm(    // --
+        bsl::safe_uint16 const &vmid) noexcept
+    {
+        bf_debug_op_dump_vm_impl(vmid.get());
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_debug_op_dump_vp
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_debug_op_dump_vp.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///
+    extern "C" void bf_debug_op_dump_vp_impl(    // --
+        bf_uint16_t const reg0_in) noexcept;
+
+    /// @brief Defines the syscall index for bf_debug_op_dump_vp
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_DUMP_VP_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to output the state of a
+    ///     VP to the console device the microkernel is currently using for
+    ///     debugging.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param vpid The VPID of the VP whose state is to be outputted
+    ///
+    inline void
+    bf_debug_op_dump_vp(    // --
+        bsl::safe_uint16 const &vpid) noexcept
+    {
+        bf_debug_op_dump_vp_impl(vpid.get());
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_debug_op_dump_vps
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_debug_op_dump_vps.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///
+    extern "C" void bf_debug_op_dump_vps_impl(    // --
+        bf_uint16_t const reg0_in) noexcept;
+
+    /// @brief Defines the syscall index for bf_debug_op_dump_vps
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_DUMP_VPS_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to output the state of a
+    ///     VPS to the console device the microkernel is currently using for
+    ///     debugging.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param vpsid The VPSID of the VPS whose state is to be outputted
+    ///
+    inline void
+    bf_debug_op_dump_vps(    // --
+        bsl::safe_uint16 const &vpsid) noexcept
+    {
+        bf_debug_op_dump_vps_impl(vpsid.get());
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_debug_op_dump_vmexit_log
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_debug_op_dump_vmexit_log.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///
+    extern "C" void bf_debug_op_dump_vmexit_log_impl(    // --
+        bf_uint16_t const reg0_in) noexcept;
+
+    /// @brief Defines the syscall index for bf_debug_op_dump_vmexit_log
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_DUMP_VMEXIT_LOG_IDX_VAL{
+        bsl::to_u64(0x0000000000000004U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to output the VMExit log.
+    ///     The VMExit log is a chronological log of the "X" number of exits
+    ///     that have occurred. The total number of "X" logs is
+    ///     implementation-defined and not under the control of software.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param vpsid The VPSID of the VPS to dump the log from
+    ///
+    inline void
+    bf_debug_op_dump_vmexit_log(    // --
+        bsl::safe_uint16 const &vpsid) noexcept
+    {
+        bf_debug_op_dump_vmexit_log_impl(vpsid.get());
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_debug_op_write_c
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_debug_op_write_c.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///
+    extern "C" void bf_debug_op_write_c_impl(    // --
+        bsl::char_type const reg0_in) noexcept;
+
+    /// @brief Defines the syscall index for bf_debug_op_write_c
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_WRITE_C_IDX_VAL{bsl::to_u64(0x0000000000000005U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to output a provided
+    ///     character to the microkernel's console.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param c The character to output
+    ///
+    inline void
+    bf_debug_op_write_c(    // --
+        bsl::char_type const c) noexcept
+    {
+        bf_debug_op_write_c_impl(c);
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_debug_op_write_str
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_debug_op_write_str.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///
+    extern "C" void bf_debug_op_write_str_impl(    // --
+        bsl::char_type const *const reg0_in) noexcept;
+
+    /// @brief Defines the syscall index for bf_debug_op_write_str
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_WRITE_STR_IDX_VAL{bsl::to_u64(0x0000000000000006U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to output a provided
+    ///     string to the microkernel's console.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param str The virtual address of a null terminated string to output
+    ///
+    inline void
+    bf_debug_op_write_str(    // --
+        bsl::cstr_type const str) noexcept
+    {
+        bf_debug_op_write_str_impl(str);
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_callback_op_wait
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_callback_op_wait.
+    ///
+    extern "C" void bf_callback_op_wait_impl() noexcept;
+
+    /// @brief Defines the syscall index for bf_callback_op_wait
+    constexpr bsl::safe_uint64 BF_CALLBACK_OP_WAIT_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel that the extension would
+    ///     like to wait for a callback. This is a blocking syscall that never
+    ///     returns and should be used to return from the successful execution
+    ///     of the _start function.
+    ///
+    inline void
+    bf_callback_op_wait() noexcept
+    {
+        bf_callback_op_wait_impl();
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_callback_op_register_bootstrap
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_callback_op_register_bootstrap.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_callback_op_register_bootstrap_impl(    // --
+        bf_uint64_t const reg0_in,                                           // --
+        bf_callback_handler_bootstrap_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_callback_op_register_bootstrap
+    constexpr bsl::safe_uint64 BF_CALLBACK_OP_REGISTER_BOOTSTRAP_IDX_VAL{
+        bsl::to_u64(0x0000000000000002U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel that the extension would
+    ///     like to receive callbacks for bootstrap events
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param handler Set to the virtual address of the callback
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_callback_op_register_bootstrap(    // --
+        bf_handle_t const &handle,        // --
+        bf_callback_handler_bootstrap_t const handler) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_callback_op_register_bootstrap_impl(handle.hndl, handler)};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_callback_op_register_vmexit
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_callback_op_register_vmexit.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_callback_op_register_vmexit_impl(    // --
+        bf_uint64_t const reg0_in,                                        // --
+        bf_callback_handler_vmexit_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_callback_op_register_vmexit
+    constexpr bsl::safe_uint64 BF_CALLBACK_OP_REGISTER_VMEXIT_IDX_VAL{
+        bsl::to_u64(0x0000000000000003U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel that the extension would
+    ///     like to receive callbacks for VM exits
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param handler Set to the virtual address of the callback
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_callback_op_register_vmexit(    // --
+        bf_handle_t const &handle,     // --
+        bf_callback_handler_vmexit_t const handler) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_callback_op_register_vmexit_impl(handle.hndl, handler)};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_callback_op_register_fail
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_callback_op_register_fail.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_callback_op_register_fail_impl(    // --
+        bf_uint64_t const reg0_in,                                      // --
+        bf_callback_handler_fail_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_callback_op_register_fail
+    constexpr bsl::safe_uint64 BF_CALLBACK_OP_REGISTER_FAIL_IDX_VAL{
+        bsl::to_u64(0x0000000000000004U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel that the extension would
+    ///     like to receive callbacks for fast fail events. If a fast fail
+    ///     event occurs, something really bad has happened, and action must
+    ///     be taken, or the physical processor will halt.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param handler Set to the virtual address of the callback
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_callback_op_register_fail(     // --
+        bf_handle_t const &handle,    // --
+        bf_callback_handler_fail_t const handler) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_callback_op_register_fail_impl(handle.hndl, handler)};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vm_op_create_vm
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vm_op_create_vm.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vm_op_create_vm_impl(    // --
+        bf_uint64_t const reg0_in,                            // --
+        bf_uint16_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vm_op_create_vm
+    constexpr bsl::safe_uint64 BF_VM_OP_CREATE_VM_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to create a VM
+    ///     and return it's ID.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vmid The resulting VMID of the newly created VM
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vm_op_create_vm(               // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 &vmid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vm_op_create_vm_impl(handle.hndl, vmid.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vm_op_destroy_vm
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vm_op_destroy_vm.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" auto bf_vm_op_destroy_vm_impl(    // --
+        bf_uint64_t const reg0_in,               // --
+        bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vm_op_destroy_vm
+    constexpr bsl::safe_uint64 BF_VM_OP_DESTROY_VM_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to destroy a VM
+    ///     given an ID.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vmid The VMID of the VM to destroy
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vm_op_destroy_vm(              // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vm_op_destroy_vm_impl(handle.hndl, vmid.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vp_op_create_vp
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vp_op_create_vp.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vp_op_create_vp_impl(    // --
+        bf_uint64_t const reg0_in,                            // --
+        bf_uint16_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vp_op_create_vp
+    constexpr bsl::safe_uint64 BF_VP_OP_CREATE_VP_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to create a VP
+    ///     and return it's ID.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpid The resulting VPID of the newly created VP
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vp_op_create_vp(               // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 &vpid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vp_op_create_vp_impl(handle.hndl, vpid.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vp_op_destroy_vp
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vp_op_destroy_vp.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" auto bf_vp_op_destroy_vp_impl(    // --
+        bf_uint64_t const reg0_in,               // --
+        bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vp_op_destroy_vp
+    constexpr bsl::safe_uint64 BF_VP_OP_DESTROY_VP_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to destroy a VP
+    ///     given an ID.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpid The VPID of the VP to destroy
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vp_op_destroy_vp(              // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 const &vpid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vp_op_destroy_vp_impl(handle.hndl, vpid.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_create_vps
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_create_vps.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_create_vps_impl(    // --
+        bf_uint64_t const reg0_in,                              // --
+        bf_uint16_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_create_vps
+    constexpr bsl::safe_uint64 BF_VPS_OP_CREATE_VPS_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to create a VPS
+    ///     and return it's ID.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The resulting VPSID of the newly created VPS
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_create_vps(             // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 &vpsid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vps_op_create_vps_impl(handle.hndl, vpsid.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_destroy_vps
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_destroy_vps.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" auto bf_vps_op_destroy_vps_impl(    // --
+        bf_uint64_t const reg0_in,                 // --
+        bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_destroy_vps
+    constexpr bsl::safe_uint64 BF_VPS_OP_DESTROY_VPS_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to destroy a VPS
+    ///     given an ID.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to destroy
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_destroy_vps(            // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vps_op_destroy_vps_impl(handle.hndl, vpsid.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_init_as_root
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_init_as_root.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_init_as_root_impl(    // --
+        bf_uint64_t const reg0_in,                                // --
+        bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_init_as_root
+    constexpr bsl::safe_uint64 BF_VPS_OP_INIT_AS_ROOT_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to initialize a VPS using
+    ///     the root VP state provided by the loader using the current PPID.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to initialize
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_init_as_root(           // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vps_op_init_as_root_impl(handle.hndl, vpsid.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_read8
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_read8.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_read8_impl(    // --
+        bf_uint64_t const reg0_in,                         // --
+        bf_uint16_t const reg1_in,                         // --
+        bf_uint64_t const reg2_in,                         // --
+        bf_uint8_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_read8
+    constexpr bsl::safe_uint64 BF_VPS_OP_READ8_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
+
+    /// <!-- description -->
+    ///   @brief Reads an 8bit field from the VPS and returns the value. The
+    ///     "index" is architecture-specific. For Intel, Appendix B, "Field
+    ///     Encoding in VMCS," defines the index (or encoding). For AMD,
+    ///     Appendix B, "Layout of VMCB," defines the index (or offset).
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to read from
+    ///   @param index The HVE specific index defining which field to read
+    ///   @param value The resulting value
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_read8(                      // --
+        bf_handle_t const &handle,        // --
+        bsl::safe_uint16 const &vpsid,    // --
+        bsl::safe_uint64 const &index,    // --
+        bsl::safe_uint8 &value) noexcept -> bsl::errc_type
+    {
+        auto const status{
+            bf_vps_op_read8_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_read16
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_read16.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_read16_impl(    // --
+        bf_uint64_t const reg0_in,                          // --
+        bf_uint16_t const reg1_in,                          // --
+        bf_uint64_t const reg2_in,                          // --
+        bf_uint16_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_read16
+    constexpr bsl::safe_uint64 BF_VPS_OP_READ16_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
+
+    /// <!-- description -->
+    ///   @brief Reads an 16bit field from the VPS and returns the value. The
+    ///     "index" is architecture-specific. For Intel, Appendix B, "Field
+    ///     Encoding in VMCS," defines the index (or encoding). For AMD,
+    ///     Appendix B, "Layout of VMCB," defines the index (or offset).
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to read from
+    ///   @param index The HVE specific index defining which field to read
+    ///   @param value The resulting value
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_read16(                     // --
+        bf_handle_t const &handle,        // --
+        bsl::safe_uint16 const &vpsid,    // --
+        bsl::safe_uint64 const &index,    // --
+        bsl::safe_uint16 &value) noexcept -> bsl::errc_type
+    {
+        auto const status{
+            bf_vps_op_read16_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_read32
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_read32.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_read32_impl(    // --
+        bf_uint64_t const reg0_in,                          // --
+        bf_uint16_t const reg1_in,                          // --
+        bf_uint64_t const reg2_in,                          // --
+        bf_uint32_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_read32
+    constexpr bsl::safe_uint64 BF_VPS_OP_READ32_IDX_VAL{bsl::to_u64(0x0000000000000005U)};
+
+    /// <!-- description -->
+    ///   @brief Reads an 32bit field from the VPS and returns the value. The
+    ///     "index" is architecture-specific. For Intel, Appendix B, "Field
+    ///     Encoding in VMCS," defines the index (or encoding). For AMD,
+    ///     Appendix B, "Layout of VMCB," defines the index (or offset).
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to read from
+    ///   @param index The HVE specific index defining which field to read
+    ///   @param value The resulting value
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_read32(                     // --
+        bf_handle_t const &handle,        // --
+        bsl::safe_uint16 const &vpsid,    // --
+        bsl::safe_uint64 const &index,    // --
+        bsl::safe_uint32 &value) noexcept -> bsl::errc_type
+    {
+        auto const status{
+            bf_vps_op_read32_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_read64
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_read64.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_read64_impl(    // --
+        bf_uint64_t const reg0_in,                          // --
+        bf_uint16_t const reg1_in,                          // --
+        bf_uint64_t const reg2_in,                          // --
+        bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_read64
+    constexpr bsl::safe_uint64 BF_VPS_OP_READ64_IDX_VAL{bsl::to_u64(0x0000000000000006U)};
+
+    /// <!-- description -->
+    ///   @brief Reads an 64bit field from the VPS and returns the value. The
+    ///     "index" is architecture-specific. For Intel, Appendix B, "Field
+    ///     Encoding in VMCS," defines the index (or encoding). For AMD,
+    ///     Appendix B, "Layout of VMCB," defines the index (or offset).
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to read from
+    ///   @param index The HVE specific index defining which field to read
+    ///   @param value The resulting value
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_read64(                     // --
+        bf_handle_t const &handle,        // --
+        bsl::safe_uint16 const &vpsid,    // --
+        bsl::safe_uint64 const &index,    // --
+        bsl::safe_uint64 &value) noexcept -> bsl::errc_type
+    {
+        auto const status{
+            bf_vps_op_read64_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_write8
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_write8.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg3_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_write8_impl(    // --
+        bf_uint64_t const reg0_in,                          // --
+        bf_uint16_t const reg1_in,                          // --
+        bf_uint64_t const reg2_in,                          // --
+        bf_uint8_t const reg3_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_write
+    constexpr bsl::safe_uint64 BF_VPS_OP_WRITE8_IDX_VAL{bsl::to_u64(0x0000000000000007U)};
+
+    /// <!-- description -->
+    ///   @brief Writes to an 8bit field in the VPS. The "index" is
+    ///     architecture-specific. For Intel, Appendix B, "Field Encoding in
+    ///     VMCS," defines the index (or encoding). For AMD, Appendix B,
+    ///     "Layout of VMCB," defines the index (or offset).
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to write to
+    ///   @param index The HVE specific index defining which field to write to
+    ///   @param value The value to write to the requested field
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_write8(                     // --
+        bf_handle_t const &handle,        // --
+        bsl::safe_uint16 const &vpsid,    // --
+        bsl::safe_uint64 const &index,    // --
+        bsl::safe_uint8 const &value) noexcept -> bsl::errc_type
+    {
+        auto const status{
+            bf_vps_op_write8_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_write16
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_write16.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg3_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_write16_impl(    // --
+        bf_uint64_t const reg0_in,                           // --
+        bf_uint16_t const reg1_in,                           // --
+        bf_uint64_t const reg2_in,                           // --
+        bf_uint16_t const reg3_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_write
+    constexpr bsl::safe_uint64 BF_VPS_OP_WRITE16_IDX_VAL{bsl::to_u64(0x0000000000000008U)};
+
+    /// <!-- description -->
+    ///   @brief Writes to an 16bit field in the VPS. The "index" is
+    ///     architecture-specific. For Intel, Appendix B, "Field Encoding in
+    ///     VMCS," defines the index (or encoding). For AMD, Appendix B,
+    ///     "Layout of VMCB," defines the index (or offset).
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to write to
+    ///   @param index The HVE specific index defining which field to write to
+    ///   @param value The value to write to the requested field
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_write16(                    // --
+        bf_handle_t const &handle,        // --
+        bsl::safe_uint16 const &vpsid,    // --
+        bsl::safe_uint64 const &index,    // --
+        bsl::safe_uint16 const &value) noexcept -> bsl::errc_type
+    {
+        auto const status{
+            bf_vps_op_write16_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_write32
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_write32.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg3_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_write32_impl(    // --
+        bf_uint64_t const reg0_in,                           // --
+        bf_uint16_t const reg1_in,                           // --
+        bf_uint64_t const reg2_in,                           // --
+        bf_uint32_t const reg3_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_write
+    constexpr bsl::safe_uint64 BF_VPS_OP_WRITE32_IDX_VAL{bsl::to_u64(0x0000000000000009U)};
+
+    /// <!-- description -->
+    ///   @brief Writes to an 32bit field in the VPS. The "index" is
+    ///     architecture-specific. For Intel, Appendix B, "Field Encoding in
+    ///     VMCS," defines the index (or encoding). For AMD, Appendix B,
+    ///     "Layout of VMCB," defines the index (or offset).
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to write to
+    ///   @param index The HVE specific index defining which field to write to
+    ///   @param value The value to write to the requested field
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_write32(                    // --
+        bf_handle_t const &handle,        // --
+        bsl::safe_uint16 const &vpsid,    // --
+        bsl::safe_uint64 const &index,    // --
+        bsl::safe_uint32 const &value) noexcept -> bsl::errc_type
+    {
+        auto const status{
+            bf_vps_op_write32_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_write64
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_write64.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg3_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_write64_impl(    // --
+        bf_uint64_t const reg0_in,                           // --
+        bf_uint16_t const reg1_in,                           // --
+        bf_uint64_t const reg2_in,                           // --
+        bf_uint64_t const reg3_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_write
+    constexpr bsl::safe_uint64 BF_VPS_OP_WRITE64_IDX_VAL{bsl::to_u64(0x000000000000000AU)};
+
+    /// <!-- description -->
+    ///   @brief Writes to an 64bit field in the VPS. The "index" is
+    ///     architecture-specific. For Intel, Appendix B, "Field Encoding in
+    ///     VMCS," defines the index (or encoding). For AMD, Appendix B,
+    ///     "Layout of VMCB," defines the index (or offset).
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to write to
+    ///   @param index The HVE specific index defining which field to write to
+    ///   @param value The value to write to the requested field
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_write64(                    // --
+        bf_handle_t const &handle,        // --
+        bsl::safe_uint16 const &vpsid,    // --
+        bsl::safe_uint64 const &index,    // --
+        bsl::safe_uint64 const &value) noexcept -> bsl::errc_type
+    {
+        auto const status{
+            bf_vps_op_write64_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_read_reg
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_read_reg_impl.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_read_reg_impl(    // --
+        bf_uint64_t const reg0_in,                            // --
+        bf_uint16_t const reg1_in,                            // --
+        bf_reg_t const reg2_in,                               // --
+        bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_read_reg
+    constexpr bsl::safe_uint64 BF_VPS_OP_READ_REG_IDX_VAL{bsl::to_u64(0x000000000000000BU)};
+
+    /// <!-- description -->
+    ///   @brief Reads a CPU register from the VPS given a bf_reg_t. Note
+    ///     that the bf_reg_t is architecture specific.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to read from
+    ///   @param reg A bf_reg_t defining which register to read
+    ///   @param value The resulting value
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_read_reg(                   // --
+        bf_handle_t const &handle,        // --
+        bsl::safe_uint16 const &vpsid,    // --
+        bf_reg_t const reg,               // --
+        bsl::safe_uint64 &value) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vps_op_read_reg_impl(handle.hndl, vpsid.get(), reg, value.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_write_reg
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_write_reg.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg3_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_write_reg_impl(    // --
+        bf_uint64_t const reg0_in,                             // --
+        bf_uint16_t const reg1_in,                             // --
+        bf_reg_t const reg2_in,                                // --
+        bf_uint64_t const reg3_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_write_reg
+    constexpr bsl::safe_uint64 BF_VPS_OP_WRITE_REG_IDX_VAL{bsl::to_u64(0x000000000000000CU)};
+
+    /// <!-- description -->
+    ///   @brief Writes to a CPU register in the VPS given a bf_reg_t and the
+    ///     value to write. Note that the bf_reg_t is architecture specific.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to write to
+    ///   @param reg A bf_reg_t defining which register to write to
+    ///   @param value The value to write to the requested register
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_write_reg(                  // --
+        bf_handle_t const &handle,        // --
+        bsl::safe_uint16 const &vpsid,    // --
+        bf_reg_t const reg,               // --
+        bsl::safe_uint64 const &value) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vps_op_write_reg_impl(handle.hndl, vpsid.get(), reg, value.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_run
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_run.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg3_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_run_impl(    // --
+        bf_uint64_t const reg0_in,                       // --
+        bf_uint16_t const reg1_in,                       // --
+        bf_uint16_t const reg2_in,                       // --
+        bf_uint16_t const reg3_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_run
+    constexpr bsl::safe_uint64 BF_VPS_OP_RUN_IDX_VAL{bsl::to_u64(0x000000000000000DU)};
+
+    /// <!-- description -->
+    ///   @brief bf_vps_op_run tells the microkernel to execute a given VPS on
+    ///     behalf of a given VP and VM. This system call only returns if an
+    ///     error occurs. On success, this system call will physically execute
+    ///     the requested VM and VP using the requested VPS, and the extension
+    ///     will only execute again on the next VMExit.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to run
+    ///   @param vpid The VPID of the VP to run
+    ///   @param vmid The VMID of the VM to run
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_run(                        // --
+        bf_handle_t const &handle,        // --
+        bsl::safe_uint16 const &vpsid,    // --
+        bsl::safe_uint16 const &vpid,     // --
+        bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vps_op_run_impl(handle.hndl, vpsid.get(), vpid.get(), vmid.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_run_current
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_run_current.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_run_current_impl(    // --
+        bf_uint64_t const reg0_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_run_current
+    constexpr bsl::safe_uint64 BF_VPS_OP_RUN_CURRENT_IDX_VAL{bsl::to_u64(0x000000000000000EU)};
+
+    /// <!-- description -->
+    ///   @brief bf_vps_op_run_current tells the microkernel to execute the
+    ///     currently active VPS, VP and VM.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_run_current(    // --
+        bf_handle_t const &handle) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vps_op_run_current_impl(handle.hndl)};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_advance_ip
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_advance_ip.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_advance_ip_impl(    // --
+        bf_uint64_t const reg0_in,                              // --
+        bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_advance_ip
+    constexpr bsl::safe_uint64 BF_VPS_OP_ADVANCE_IP_IDX_VAL{bsl::to_u64(0x000000000000000FU)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to advance the instruction
+    ///     pointer in the requested VPS.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS advance the IP in
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_advance_ip(             // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vps_op_advance_ip_impl(handle.hndl, vpsid.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_advance_ip_and_run_current
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_advance_ip_and_run_current.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vps_op_advance_ip_and_run_current_impl(    // --
+        bf_uint64_t const reg0_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_advance_ip_and_run_current
+    constexpr bsl::safe_uint64 BF_VPS_OP_ADVANCE_IP_AND_RUN_CURRENT_IDX_VAL{
+        bsl::to_u64(0x0000000000000010U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to advance the instruction
+    ///     pointer in the currently active VPS and run the currently active
+    ///     VPS, VP and VM (i.e., this combines bf_vps_op_advance_ip and
+    ///     bf_vps_op_advance_ip).
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_advance_ip_and_run_current(    // --
+        bf_handle_t const &handle) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vps_op_advance_ip_and_run_current_impl(handle.hndl)};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_promote
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_promote.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" auto bf_vps_op_promote_impl(    // --
+        bf_uint64_t const reg0_in,             // --
+        bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_promote
+    constexpr bsl::safe_uint64 BF_VPS_OP_PROMOTE_IDX_VAL{bsl::to_u64(0x0000000000000011U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to promote the requested
+    ///     VPS. This will stop the hypervisor complete on the physical
+    ///     processor that this syscall is executed on and replace it's state
+    ///     with the state in the VPS. Note that this syscall only returns
+    ///     on error.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to promote
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_promote(                // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vps_op_promote_impl(handle.hndl, vpsid.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_vps_op_clear_vps
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vps_op_clear_vps.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" auto bf_vps_op_clear_vps_impl(    // --
+        bf_uint64_t const reg0_in,               // --
+        bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vps_op_clear_vps
+    constexpr bsl::safe_uint64 BF_VPS_OP_CLEAR_VPS_IDX_VAL{bsl::to_u64(0x0000000000000012U)};
+
+    /// <!-- description -->
+    ///   @brief bf_vps_op_clear_vps tells the microkernel to clear the VPS's
+    ///     hardware cache, if one exists. How this is used depends entirely
+    ///     on the hardware and is associated with AMD's VMCB Clean Bits,
+    ///     and Intel's VMClear instruction. See the associated documentation
+    ///     for more details. On AMD, this ABI clears the entire VMCB. For more
+    ///     fine grained control, use the write ABIs to manually modify the
+    ///     VMCB.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpsid The VPSID of the VPS to clear
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vps_op_clear_vps(              // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_vps_op_clear_vps_impl(handle.hndl, vpsid.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_intrinsic_op_rdmsr
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_intrinsic_op_rdmsr.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_intrinsic_op_rdmsr_impl(    // --
+        bf_uint64_t const reg0_in,                               // --
+        bf_uint32_t const reg1_in,                               // --
+        bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_intrinsic_op_rdmsr
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_RDMSR_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+
+    /// <!-- description -->
+    ///   @brief Reads an MSR directly from the CPU given the address of
+    ///     the MSR to read. Note that this is specific to Intel/AMD only.
+    ///     Also note that not all MSRs can be read, and which MSRs that
+    ///     can be read is up to the microkernel's internal policy as well
+    ///     as which architecture the hypervisor is running on.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param msr The address of the MSR to read
+    ///   @param value The resulting value
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_intrinsic_op_rdmsr(              // --
+        bf_handle_t const &handle,      // --
+        bsl::safe_uint32 const &msr,    // --
+        bsl::safe_uint64 &value) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_intrinsic_op_rdmsr_impl(handle.hndl, msr.get(), value.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_intrinsic_op_wrmsr
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_intrinsic_op_wrmsr.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_intrinsic_op_wrmsr_impl(    // --
+        bf_uint64_t const reg0_in,                               // --
+        bf_uint32_t const reg1_in,                               // --
+        bf_uint64_t const reg2_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_intrinsic_op_wrmsr
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_WRMSR_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+
+    /// <!-- description -->
+    ///   @brief Writes to an MSR directly from the CPU given the address of
+    ///     the MSR to write as well as the value to write. Note that this is
+    ///     specific to Intel/AMD only. Also note that not all MSRs can be
+    ///     written to, and which MSRs that can be written to is up to the
+    ///     microkernel's internal policy as well as which architecture the
+    ///     hypervisor is running on.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param msr The address of the MSR to write to
+    ///   @param value The value to write to the requested MSR
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_intrinsic_op_wrmsr(              // --
+        bf_handle_t const &handle,      // --
+        bsl::safe_uint32 const &msr,    // --
+        bsl::safe_uint64 const &value) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_intrinsic_op_wrmsr_impl(handle.hndl, msr.get(), value.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_intrinsic_op_invlpga
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_intrinsic_op_invlpga.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_intrinsic_op_invlpga_impl(    // --
+        bf_uint64_t const reg0_in,                                 // --
+        bf_uint64_t const reg1_in,                                 // --
+        bf_uint64_t const reg2_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_intrinsic_op_invlpga
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_INVLPGA_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+
+    /// <!-- description -->
+    ///   @brief Invalidates the TLB mapping for a given virtual page and a
+    ///     given ASID. Note that this is specific to AMD only.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param addr The address to invalidate
+    ///   @param asid The ASID to invalidate
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_intrinsic_op_invlpga(             // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint64 const &addr,    // --
+        bsl::safe_uint64 const &asid) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_intrinsic_op_invlpga_impl(handle.hndl, addr.get(), asid.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_intrinsic_op_invept
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_intrinsic_op_invept.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_intrinsic_op_invept_impl(    // --
+        bf_uint64_t const reg0_in,                                // --
+        bf_uint64_t const reg1_in,                                // --
+        bf_uint64_t const reg2_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_intrinsic_op_invept
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_INVEPT_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
+
+    /// <!-- description -->
+    ///   @brief Invalidates mappings in the translation lookaside buffers
+    ///     (TLBs) and paging-structure caches that were derived from extended
+    ///     page tables (EPT). Note that this is specific to Intel only.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param eptp The EPTP to invalidate
+    ///   @param type The INVEPT type (see the Intel SDM for details)
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_intrinsic_op_invept(              // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint64 const &eptp,    // --
+        bsl::safe_uint64 const &type) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_intrinsic_op_invept_impl(handle.hndl, eptp.get(), type.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_intrinsic_op_invvpid
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_intrinsic_op_invvpid.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @param reg3_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_intrinsic_op_invvpid_impl(    // --
+        bf_uint64_t const reg0_in,                                 // --
+        bf_uint64_t const reg1_in,                                 // --
+        bf_uint16_t const reg2_in,                                 // --
+        bf_uint64_t const reg3_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_intrinsic_op_invvpid
+    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_INVVPID_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
+
+    /// <!-- description -->
+    ///   @brief Invalidates mappings in the translation lookaside buffers
+    ///     (TLBs) and paging-structure caches based on virtual-processor
+    ///     identifier (VPID). Note that this is specific to Intel only.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param addr The address to invalidate
+    ///   @param vpid The VPID to invalidate
+    ///   @param type The INVVPID type (see the Intel SDM for details)
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_intrinsic_op_invvpid(             // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint64 const &addr,    // --
+        bsl::safe_uint16 const &vpid,    // --
+        bsl::safe_uint64 const &type) noexcept -> bsl::errc_type
+    {
+        auto const status{
+            bf_intrinsic_op_invvpid_impl(handle.hndl, addr.get(), vpid.get(), type.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_mem_op_alloc_page
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_mem_op_alloc_page.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg0_out n/a
+    ///   @param reg1_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_mem_op_alloc_page_impl(    // --
+        bf_uint64_t const reg0_in,                              // --
+        bf_ptr_t *const reg0_out,                               // --
+        bf_uint64_t *const reg1_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_mem_op_alloc_page
+    constexpr bsl::safe_uint64 BF_MEM_OP_ALLOC_PAGE_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+
+    /// <!-- description -->
+    ///   @brief bf_mem_op_alloc_page allocates a page. When allocating a
+    ///     page, the extension should keep in mind the following:
+    ///     - Virtual address to physical address conversions require a page
+    ///       walk, so they are slow.
+    ///     - The microkernel does not support physical address to virtual
+    ///       address conversions.
+    ///     - bf_mem_op_free_page is optional and if implemented, may be slow.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam T the type of memory to allocate
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param virt The virtual address of the resulting page
+    ///   @param phys The physical address of the resulting page
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    template<typename T>
+    [[nodiscard]] inline auto
+    bf_mem_op_alloc_page(             // --
+        bf_handle_t const &handle,    // --
+        T *&virt,                     // --
+        bsl::safe_uint64 &phys) noexcept -> bsl::errc_type
+    {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        auto **const ptr{reinterpret_cast<void **>(&virt)};
+
+        auto const status{bf_mem_op_alloc_page_impl(handle.hndl, ptr, phys.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_mem_op_free_page
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_mem_op_free_page.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_mem_op_free_page_impl(    // --
+        bf_uint64_t const reg0_in,                             // --
+        bf_ptr_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_mem_op_free_page
+    constexpr bsl::safe_uint64 BF_MEM_OP_FREE_PAGE_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+
+    /// <!-- description -->
+    ///   @brief Frees a page previously allocated by bf_mem_op_alloc_page.
+    ///     This operation is optional and not all microkernels may implement
+    ///     it. For more information, please see bf_mem_op_alloc_page.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param virt The virtual address of the page to free
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_mem_op_free_page(              // --
+        bf_handle_t const &handle,    // --
+        bf_ptr_t virt) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_mem_op_free_page_impl(handle.hndl, virt)};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_mem_op_alloc_huge
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_mem_op_alloc_huge.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg0_out n/a
+    ///   @param reg1_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_mem_op_alloc_huge_impl(    // --
+        bf_uint64_t const reg0_in,                              // --
+        bf_uint64_t const reg1_in,                              // --
+        bf_ptr_t *const reg0_out,                               // --
+        bf_uint64_t *const reg1_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_mem_op_alloc_huge
+    constexpr bsl::safe_uint64 BF_MEM_OP_ALLOC_HUGE_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+
+    /// <!-- description -->
+    ///   @brief bf_mem_op_alloc_huge allocates a physically contiguous block
+    ///     of memory. When allocating a page, the extension should keep in
+    ///     mind the following:
+    ///       - The total memory available to allocate from this pool is
+    ///         extremely limited. This should only be used when absolutely
+    ///         needed, and you should not expect more than 1 MB (might be
+    ///         less) of total memory available.
+    ///       - Memory allocated from the huge pool might be allocated using
+    ///         different schemes. For example, the microkernel might allocate
+    ///         in increments of a page, or it might use a buddy allocator that
+    ///         would allocate in multiples of 2. If the allocation size
+    ///         doesn't match the algorithm, internal fragmentation could
+    ///         occur, further limiting the total number of allocations this
+    ///         pool can support. - Virtual address to physical address
+    ///         conversions require a page walk, so they are slow.
+    ///       - The microkernel does not support physical address to virtual
+    ///         address conversions.
+    ///       - bf_mem_op_free_huge is optional and if implemented, may be slow.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam T the type of memory to allocate
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param size The total number of bytes to allocate
+    ///   @param virt The virtual address of the resulting memory
+    ///   @param phys The physical address of the resulting memory
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    template<typename T>
+    [[nodiscard]] inline auto
+    bf_mem_op_alloc_huge(                // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint64 const &size,    // --
+        T *&virt,                        // --
+        bsl::safe_uint64 &phys) noexcept -> bsl::errc_type
+    {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        auto **const ptr{reinterpret_cast<void **>(&virt)};
+
+        auto const status{bf_mem_op_alloc_huge_impl(handle.hndl, size.get(), ptr, phys.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_mem_op_free_huge
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_mem_op_free_huge.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_mem_op_free_huge_impl(    // --
+        bf_uint64_t const reg0_in,                             // --
+        bf_ptr_t const reg1_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_mem_op_free_huge
+    constexpr bsl::safe_uint64 BF_MEM_OP_FREE_HUGE_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
+
+    /// <!-- description -->
+    ///   @brief Frees memory previously allocated by bf_mem_op_alloc_huge.
+    ///     This operation is optional and not all microkernels may implement
+    ///     it. For more information, please see bf_mem_op_alloc_huge.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param virt The virtual address of the memory to free
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_mem_op_free_huge(              // --
+        bf_handle_t const &handle,    // --
+        bf_ptr_t virt) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_mem_op_free_huge_impl(handle.hndl, virt)};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_mem_op_alloc_heap
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_mem_op_alloc_heap.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_mem_op_alloc_heap_impl(    // --
+        bf_uint64_t const reg0_in,                              // --
+        bf_uint64_t const reg1_in,                              // --
+        bf_ptr_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_mem_op_alloc_heap
+    constexpr bsl::safe_uint64 BF_MEM_OP_ALLOC_HEAP_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
+
+    /// <!-- description -->
+    ///   @brief bf_mem_op_alloc_heap allocates heap memory. When allocating
+    ///     heap memory, the extension should keep in mind the following:
+    ///       - This ABI is designed to work similar to sbrk() to support
+    ///         malloc/free implementations common with existing open source
+    ///         libraries.
+    ///       - Calling this ABI with with a size of 0 will return the current
+    ///         heap location.
+    ///       - Calling this ABI with a size (in bytes) will result in return
+    ///         the previous heap location. The current heap location will be
+    ///         set to the previous location, plus the provide size, rounded to
+    ///         the nearest page size.
+    ///       - The microkernel does not support
+    ///         virtual address to physical address conversions.
+    ///       - The microkernel does not support physical address to virtual
+    ///         address conversions.
+    ///       - There is no ability to free heap memory
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam T the type of memory to allocate
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param size The number of bytes to increase the heap by
+    ///   @param virt The virtual address of the previous heap location
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    template<typename T>
+    [[nodiscard]] inline auto
+    bf_mem_op_alloc_heap(                // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint64 const &size,    // --
+        T *&virt) noexcept -> bsl::errc_type
+    {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        auto **const ptr{reinterpret_cast<void **>(&virt)};
+
+        auto const status{bf_mem_op_alloc_heap_impl(handle.hndl, size.get(), ptr)};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_mem_op_virt_to_phys
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_mem_op_virt_to_phys.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg0_out n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_mem_op_virt_to_phys_impl(    // --
+        bf_uint64_t const reg0_in,                                // --
+        bf_ptr_t const reg1_in,                                   // --
+        bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_mem_op_virt_to_phys
+    constexpr bsl::safe_uint64 BF_MEM_OP_VIRT_TO_PHYS_IDX_VAL{bsl::to_u64(0x0000000000000005U)};
+
+    /// <!-- description -->
+    ///   @brief bf_mem_op_virt_to_phys converts a provided virtual address to
+    ///     a physical address for any virtual address allocated using
+    ///     bf_mem_op_alloc_page or bf_mem_op_alloc_huge.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param virt The virtual address of the page to convert
+    ///   @param phys The physical address of the provided virtual address
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_mem_op_virt_to_phys(           // --
+        bf_handle_t const &handle,    // --
+        bf_ptr_t const virt,          // --
+        bsl::safe_uint64 &phys) noexcept -> bsl::errc_type
+    {
+        auto const status{bf_mem_op_virt_to_phys_impl(handle.hndl, virt, phys.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
     // Direct Map
     // -------------------------------------------------------------------------
 
@@ -1802,1619 +3597,6 @@ namespace syscall
         }
 
         return bsl::errc_failure;
-    }
-
-    // -------------------------------------------------------------------------
-    // Syscall Status Codes
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines a mask for BF_STATUS_SIG
-    constexpr bf_status_t BF_STATUS_SIG_MASK{bsl::to_u64(0xFFFF000000000000U)};
-    /// @brief Defines a mask for BF_STATUS_FLAGS
-    constexpr bf_status_t BF_STATUS_FLAGS_MASK{bsl::to_u64(0x0000FFFFFFFF0000U)};
-    /// @brief Defines a mask for BF_STATUS_VALUE
-    constexpr bf_status_t BF_STATUS_VALUE_MASK{bsl::to_u64(0x000000000000FFFFU)};
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param status n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] inline auto
-    bf_status_sig(bf_status_t const &status) noexcept -> bf_status_t
-    {
-        return status & BF_STATUS_SIG_MASK;
-    }
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param status n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] inline auto
-    bf_status_flags(bf_status_t const &status) noexcept -> bf_status_t
-    {
-        return status & BF_STATUS_FLAGS_MASK;
-    }
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param status n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] inline auto
-    bf_status_value(bf_status_t const &status) noexcept -> bf_status_t
-    {
-        return status & BF_STATUS_VALUE_MASK;
-    }
-
-    /// @brief Used to indicated that the syscall returned successfully
-    constexpr bf_status_t BF_STATUS_SUCCESS{bsl::to_u64(0x0000000000000000U)};
-    /// @brief Indicates an unknown error occurred
-    constexpr bf_status_t BF_STATUS_FAILURE_UNKNOWN{bsl::to_u64(0xDEAD000000010001U)};
-    /// @brief Indicates the syscall is unsupported
-    constexpr bf_status_t BF_STATUS_FAILURE_INVALID_HANDLE{bsl::to_u64(0xDEAD000000020001U)};
-    /// @brief Indicates the provided handle is invalid
-    constexpr bf_status_t BF_STATUS_FAILURE_UNSUPPORTED{bsl::to_u64(0xDEAD000000040001U)};
-    /// @brief Indicates the extension is not allowed to execute this syscall
-    constexpr bf_status_t BF_STATUS_INVALID_PERM_EXT{bsl::to_u64(0xDEAD000000010002U)};
-    /// @brief Indicates the policy engine denied the syscall
-    constexpr bf_status_t BF_STATUS_INVALID_PERM_DENIED{bsl::to_u64(0xDEAD000000020002U)};
-    /// @brief Indicates param 0 is invalid
-    constexpr bf_status_t BF_STATUS_INVALID_PARAMS0{bsl::to_u64(0xDEAD000000010003U)};
-    /// @brief Indicates param 1 is invalid
-    constexpr bf_status_t BF_STATUS_INVALID_PARAMS1{bsl::to_u64(0xDEAD000000020003U)};
-    /// @brief Indicates param 2 is invalid
-    constexpr bf_status_t BF_STATUS_INVALID_PARAMS2{bsl::to_u64(0xDEAD000000040003U)};
-    /// @brief Indicates param 3 is invalid
-    constexpr bf_status_t BF_STATUS_INVALID_PARAMS3{bsl::to_u64(0xDEAD000000080003U)};
-    /// @brief Indicates param 4 is invalid
-    constexpr bf_status_t BF_STATUS_INVALID_PARAMS4{bsl::to_u64(0xDEAD000000100003U)};
-    /// @brief Indicates param 5 is invalid
-    constexpr bf_status_t BF_STATUS_INVALID_PARAMS5{bsl::to_u64(0xDEAD000000200003U)};
-
-    // -------------------------------------------------------------------------
-    // Syscall Inputs
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the BF_SYSCALL_SIG field for RAX
-    constexpr bsl::safe_uint64 BF_HYPERCALL_SIG_VAL{bsl::to_u64(0x6642000000000000U)};
-    /// @brief Defines a mask for BF_SYSCALL_SIG
-    constexpr bsl::safe_uint64 BF_HYPERCALL_SIG_MASK{bsl::to_u64(0xFFFF000000000000U)};
-    /// @brief Defines a mask for BF_SYSCALL_FLAGS
-    constexpr bsl::safe_uint64 BF_HYPERCALL_FLAGS_MASK{bsl::to_u64(0x0000FFFF00000000U)};
-    /// @brief Defines a mask for BF_SYSCALL_OP
-    constexpr bsl::safe_uint64 BF_HYPERCALL_OPCODE_MASK{bsl::to_u64(0xFFFF0000FFFF0000U)};
-    /// @brief Defines a mask for BF_SYSCALL_OP (with no signature added)
-    constexpr bsl::safe_uint64 BF_HYPERCALL_OPCODE_NOSIG_MASK{bsl::to_u64(0x00000000FFFF0000U)};
-    /// @brief Defines a mask for BF_SYSCALL_IDX
-    constexpr bsl::safe_uint64 BF_HYPERCALL_INDEX_MASK{bsl::to_u64(0x000000000000FFFFU)};
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param rax n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] constexpr auto
-    bf_syscall_sig(bsl::safe_uint64 const &rax) noexcept -> bsl::safe_uint64
-    {
-        return rax & BF_HYPERCALL_SIG_MASK;
-    }
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param rax n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] constexpr auto
-    bf_syscall_flags(bsl::safe_uint64 const &rax) noexcept -> bsl::safe_uint64
-    {
-        return rax & BF_HYPERCALL_FLAGS_MASK;
-    }
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param rax n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] constexpr auto
-    bf_syscall_opcode(bsl::safe_uint64 const &rax) noexcept -> bsl::safe_uint64
-    {
-        return rax & BF_HYPERCALL_OPCODE_MASK;
-    }
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param rax n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] constexpr auto
-    bf_syscall_opcode_nosig(bsl::safe_uint64 const &rax) noexcept -> bsl::safe_uint64
-    {
-        return rax & BF_HYPERCALL_OPCODE_NOSIG_MASK;
-    }
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param rax n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] constexpr auto
-    bf_syscall_index(bsl::safe_uint64 const &rax) noexcept -> bsl::safe_uint64
-    {
-        return rax & BF_HYPERCALL_INDEX_MASK;
-    }
-
-    // -------------------------------------------------------------------------
-    // Specification IDs
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the ID for version #1 of this spec
-    constexpr bsl::safe_uint32 BF_SPEC_ID1_VAL{bsl::to_u32(0x31236642)};
-
-    /// @brief Defines the mask for checking support for version #1 of this spec
-    constexpr bsl::safe_uint32 BF_SPEC_ID1_MASK{bsl::to_u32(0x2)};
-
-    /// @brief Defines the value likely returned by bf_handle_op_version
-    constexpr bsl::safe_uint32 BF_ALL_SPECS_SUPPORTED_VAL{bsl::to_u32(0x2)};
-
-    // -------------------------------------------------------------------------
-    // Syscall Opcodes - Control Support
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall opcode for bf_control_op
-    constexpr bsl::safe_uint64 BF_CONTROL_OP_VAL{bsl::to_u64(0x6642000000000000U)};
-    /// @brief Defines the syscall opcode for bf_control_op (nosig)
-    constexpr bsl::safe_uint64 BF_CONTROL_OP_NOSIG_VAL{bsl::to_u64(0x0000000000000000U)};
-
-    // -------------------------------------------------------------------------
-    // Syscall Opcodes - Handle Support
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall opcode for bf_handle_op
-    constexpr bsl::safe_uint64 BF_HANDLE_OP_VAL{bsl::to_u64(0x6642000000010000U)};
-    /// @brief Defines the syscall opcode for bf_handle_op (nosig)
-    constexpr bsl::safe_uint64 BF_HANDLE_OP_NOSIG_VAL{bsl::to_u64(0x0000000000010000U)};
-
-    // -------------------------------------------------------------------------
-    // Syscall Opcodes - Debug Support
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall opcode for bf_debug_op
-    constexpr bsl::safe_uint64 BF_DEBUG_OP_VAL{bsl::to_u64(0x6642000000020000U)};
-    /// @brief Defines the syscall opcode for bf_debug_op (nosig)
-    constexpr bsl::safe_uint64 BF_DEBUG_OP_NOSIG_VAL{bsl::to_u64(0x00000000000020000U)};
-
-    // -------------------------------------------------------------------------
-    // Syscall Opcodes - Callback Support
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall opcode for bf_callback_op
-    constexpr bsl::safe_uint64 BF_CALLBACK_OP_VAL{bsl::to_u64(0x6642000000030000U)};
-    /// @brief Defines the syscall opcode for bf_callback_op (nosig)
-    constexpr bsl::safe_uint64 BF_CALLBACK_OP_NOSIG_VAL{bsl::to_u64(0x0000000000030000U)};
-
-    // -------------------------------------------------------------------------
-    // Syscall Opcodes - VM Support
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall opcode for bf_vm_op
-    constexpr bsl::safe_uint64 BF_VM_OP_VAL{bsl::to_u64(0x6642000000040000U)};
-    /// @brief Defines the syscall opcode for bf_vm_op (nosig)
-    constexpr bsl::safe_uint64 BF_VM_OP_NOSIG_VAL{bsl::to_u64(0x0000000000040000U)};
-
-    // -------------------------------------------------------------------------
-    // Syscall Opcodes - VP Support
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall opcode for bf_vp_op
-    constexpr bsl::safe_uint64 BF_VP_OP_VAL{bsl::to_u64(0x6642000000050000U)};
-    /// @brief Defines the syscall opcode for bf_vp_op (nosig)
-    constexpr bsl::safe_uint64 BF_VP_OP_NOSIG_VAL{bsl::to_u64(0x0000000000050000U)};
-
-    // -------------------------------------------------------------------------
-    // Syscall Opcodes - VPS Support
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall opcode for bf_vps_op
-    constexpr bsl::safe_uint64 BF_VPS_OP_VAL{bsl::to_u64(0x6642000000060000U)};
-    /// @brief Defines the syscall opcode for bf_vps_op (nosig)
-    constexpr bsl::safe_uint64 BF_VPS_OP_NOSIG_VAL{bsl::to_u64(0x0000000000060000U)};
-
-    // -------------------------------------------------------------------------
-    // Syscall Opcodes - Intrinsic Support
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall opcode for bf_intrinsic_op
-    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_VAL{bsl::to_u64(0x6642000000070000U)};
-    /// @brief Defines the syscall opcode for bf_intrinsic_op (nosig)
-    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_NOSIG_VAL{bsl::to_u64(0x0000000000070000U)};
-
-    // -------------------------------------------------------------------------
-    // Syscall Opcodes - Mem Support
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall opcode for bf_mem_op
-    constexpr bsl::safe_uint64 BF_MEM_OP_VAL{bsl::to_u64(0x6642000000080000U)};
-    /// @brief Defines the syscall opcode for bf_mem_op (nosig)
-    constexpr bsl::safe_uint64 BF_MEM_OP_NOSIG_VAL{bsl::to_u64(0x0000000000080000U)};
-
-    // -------------------------------------------------------------------------
-    // bf_control_op_exit
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_control_op_exit
-    constexpr bsl::safe_uint64 BF_CONTROL_OP_EXIT_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to exit the execution
-    ///     of an extension, providing a means to fast fail.
-    ///
-    inline void
-    bf_control_op_exit() noexcept
-    {
-        bf_control_op_exit_impl();
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_handle_op_open_handle
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_handle_op_open_handle
-    constexpr bsl::safe_uint64 BF_HANDLE_OP_OPEN_HANDLE_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall returns a handle which is required to execute
-    ///     the remaining syscalls. Some versions of Bareflank might provide
-    ///     a certain degree of backwards compatibility which can be queried
-    ///     using bf_handle_op_version. The version argument of this syscall
-    ///     provides software with means to tell the microkernel which version
-    ///     of this spec it is trying to use. If software provides a version
-    ///     that Bareflank doesn't support (i.e., a version that is not listed
-    ///     by bf_handle_op_version), this syscall will fail.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param version The version of this spec that software supports
-    ///   @param handle The value to set REG0 to for most other syscalls
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_handle_op_open_handle(               // --
-        bsl::safe_uint32 const &version,    // --
-        bf_handle_t &handle) noexcept -> bf_status_t
-    {
-        return {bf_handle_op_open_handle_impl(version.get(), &handle.hndl)};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_handle_op_close_handle
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_handle_op_close_handle
-    constexpr bsl::safe_uint64 BF_HANDLE_OP_CLOSE_HANDLE_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall closes a previously opened handle.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///
-    inline void
-    bf_handle_op_close_handle(    // --
-        bf_handle_t &handle) noexcept
-    {
-        bf_handle_op_close_handle_impl(handle.hndl);
-        handle = {};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_is_spec1_supported
-    // -------------------------------------------------------------------------
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param version n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] constexpr auto
-    bf_is_spec1_supported(bsl::safe_uint32 const &version) noexcept -> bool
-    {
-        return ((version & BF_SPEC_ID1_MASK) != bsl::ZERO_U32);
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_debug_op_out
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_debug_op_out
-    constexpr bsl::safe_uint64 BF_DEBUG_OP_OUT_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to output RDI and RSI to
-    ///     the console device the microkernel is currently using for
-    ///     debugging. The purpose of this syscall is to provide a simple
-    ///     means for debugging issues with the extension and can be used
-    ///     even when the extension is not fully bootstrapped or is in a
-    ///     failure state. Also note that this syscall is designed to execute
-    ///     as quickly as possible (although it is still constrained by the
-    ///     speed at which it can dump debug text to the console).
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param val1 The first value to output to the microkernel's console
-    ///   @param val2 The second value to output to the microkernel's console
-    ///
-    inline void
-    bf_debug_op_out(                     // --
-        bsl::safe_uint64 const &val1,    // --
-        bsl::safe_uint64 const &val2) noexcept
-    {
-        bf_debug_op_out_impl(val1.get(), val2.get());
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_debug_op_dump_vm
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_debug_op_dump_vm
-    constexpr bsl::safe_uint64 BF_DEBUG_OP_DUMP_VM_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to output the state of a
-    ///     VM to the console device the microkernel is currently using for
-    ///     debugging. The report that is generated is implementation defined,
-    ///     and in some cases could take a while to complete. In other words,
-    ///     this syscall should only be used when debugging, and only in
-    ///     scenarios where you can afford the time needed to output a lot of
-    ///     VM state to the microkernel's console.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param vmid The VMID of the VM whose state is to be outputted
-    ///
-    inline void
-    bf_debug_op_dump_vm(    // --
-        bsl::safe_uint16 const &vmid) noexcept
-    {
-        bf_debug_op_dump_vm_impl(vmid.get());
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_debug_op_dump_vp
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_debug_op_dump_vp
-    constexpr bsl::safe_uint64 BF_DEBUG_OP_DUMP_VP_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to output the state of a
-    ///     VP to the console device the microkernel is currently using for
-    ///     debugging. The report that is generated is implementation defined,
-    ///     and in some cases could take a while to complete. In other words,
-    ///     this syscall should only be used when debugging, and only in
-    ///     scenarios where you can afford the time needed to output a lot of
-    ///     VP state to the microkernel's console.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param vpid The VPID of the VP whose state is to be outputted
-    ///
-    inline void
-    bf_debug_op_dump_vp(    // --
-        bsl::safe_uint16 const &vpid) noexcept
-    {
-        bf_debug_op_dump_vp_impl(vpid.get());
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_debug_op_dump_vps
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_debug_op_dump_vps
-    constexpr bsl::safe_uint64 BF_DEBUG_OP_DUMP_VPS_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to output the state of a
-    ///     VPS to the console device the microkernel is currently using for
-    ///     debugging. The report that is generated is implementation defined,
-    ///     and in some cases could take a while to complete. In other words,
-    ///     this syscall should only be used when debugging, and only in
-    ///     scenarios where you can afford the time needed to output a lot of
-    ///     VPS state to the microkernel's console.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param vpsid The VPSID of the VPS whose state is to be outputted
-    ///
-    inline void
-    bf_debug_op_dump_vps(    // --
-        bsl::safe_uint16 const &vpsid) noexcept
-    {
-        bf_debug_op_dump_vps_impl(vpsid.get());
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_debug_op_dump_vmexit_log
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_debug_op_dump_vmexit_log
-    constexpr bsl::safe_uint64 BF_DEBUG_OP_DUMP_VMEXIT_LOG_IDX_VAL{
-        bsl::to_u64(0x0000000000000004U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to output the vmexit log.
-    ///     The vmexit log is a chronological log of the "X" number of exits
-    ///     that have occurred from the time the call to
-    ///     bf_debug_op_dump_vmexit_log is made. The total number of "X" logs
-    ///     is implementation defined and not under the control of software
-    ///     (i.e., this value is usually compiled into Bareflank cannot be
-    ///     changed at runtime). In addition, the format of this log is also
-    ///     implementation defined. If the microkernel has to kill a VP for
-    ///     VM for any reason it will output this log by default for debugging
-    ///     purposes, but sometimes, software is aware of odd condition, or is
-    ///     even aware that something bad has happened, and this syscall
-    ///     provides software with an opportunity to dump this log on demand.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param vpid The VPID of the VP to dump the log from
-    ///
-    inline void
-    bf_debug_op_dump_vmexit_log(    // --
-        bsl::safe_uint16 const &vpid) noexcept
-    {
-        bf_debug_op_dump_vmexit_log_impl(vpid.get());
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_debug_op_write_c
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_debug_op_write_c
-    constexpr bsl::safe_uint64 BF_DEBUG_OP_WRITE_C_IDX_VAL{bsl::to_u64(0x0000000000000005U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to output a provided
-    ///     character to the microkernel's console.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param c The character to output
-    ///
-    inline void
-    bf_debug_op_write_c(    // --
-        bsl::char_type const c) noexcept
-    {
-        bf_debug_op_write_c_impl(c);
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_debug_op_write_str
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_debug_op_write_str
-    constexpr bsl::safe_uint64 BF_DEBUG_OP_WRITE_STR_IDX_VAL{bsl::to_u64(0x0000000000000006U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to output a provided
-    ///     string to the microkernel's console.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param str The virtual address of a null terminated string to output
-    ///
-    inline void
-    bf_debug_op_write_str(    // --
-        bsl::cstr_type const str) noexcept
-    {
-        bf_debug_op_write_str_impl(str);
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_callback_op_wait
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_callback_op_wait
-    constexpr bsl::safe_uint64 BF_CALLBACK_OP_WAIT_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel that the extension would
-    ///     like to wait for a callback. This is a blocking syscall that never
-    ///     returns and should be used to return from the successful execution
-    ///     of the _start function.
-    ///
-    inline void
-    bf_callback_op_wait() noexcept
-    {
-        bf_callback_op_wait_impl();
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_callback_op_register_bootstrap
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_callback_op_register_bootstrap
-    constexpr bsl::safe_uint64 BF_CALLBACK_OP_REGISTER_BOOTSTRAP_IDX_VAL{
-        bsl::to_u64(0x0000000000000002U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel that the extension would
-    ///     like to receive callbacks for bootstrap events
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param handler Set to the virtual address of the callback
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_callback_op_register_bootstrap(    // --
-        bf_handle_t const &handle,        // --
-        bf_callback_handler_bootstrap_t const handler) noexcept -> bf_status_t
-    {
-        return {bf_callback_op_register_bootstrap_impl(handle.hndl, handler)};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_callback_op_register_vmexit
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_callback_op_register_vmexit
-    constexpr bsl::safe_uint64 BF_CALLBACK_OP_REGISTER_VMEXIT_IDX_VAL{
-        bsl::to_u64(0x0000000000000003U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel that the extension would
-    ///     like to receive callbacks for VM exits
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param handler Set to the virtual address of the callback
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_callback_op_register_vmexit(    // --
-        bf_handle_t const &handle,     // --
-        bf_callback_handler_vmexit_t const handler) noexcept -> bf_status_t
-    {
-        return {bf_callback_op_register_vmexit_impl(handle.hndl, handler)};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_callback_op_register_fail
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_callback_op_register_fail
-    constexpr bsl::safe_uint64 BF_CALLBACK_OP_REGISTER_FAIL_IDX_VAL{
-        bsl::to_u64(0x0000000000000004U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel that the extension would
-    ///     like to receive callbacks for fast fail events. If a fast fail
-    ///     event occurs, something really bad has happened, and action must
-    ///     be taken, or the physical processor will halt.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param handler Set to the virtual address of the callback
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_callback_op_register_fail(     // --
-        bf_handle_t const &handle,    // --
-        bf_callback_handler_fail_t const handler) noexcept -> bf_status_t
-    {
-        return {bf_callback_op_register_fail_impl(handle.hndl, handler)};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vm_op_create_vm
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vm_op_create_vm
-    constexpr bsl::safe_uint64 BF_VM_OP_CREATE_VM_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to create a VM
-    ///     and return it's ID.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vmid The resulting VMID of the newly created VM
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vm_op_create_vm(               // --
-        bf_handle_t const &handle,    // --
-        bsl::safe_uint16 &vmid) noexcept -> bf_status_t
-    {
-        return {bf_vm_op_create_vm_impl(handle.hndl, vmid.data())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vm_op_destroy_vm
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vm_op_destroy_vm
-    constexpr bsl::safe_uint64 BF_VM_OP_DESTROY_VM_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to destroy a VM
-    ///     given an ID.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vmid The VMID of the VM to destroy
-    ///
-    inline void
-    bf_vm_op_destroy_vm(              // --
-        bf_handle_t const &handle,    // --
-        bsl::safe_uint16 const &vmid) noexcept
-    {
-        bf_vm_op_destroy_vm_impl(handle.hndl, vmid.get());
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vp_op_create_vp
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vp_op_create_vp
-    constexpr bsl::safe_uint64 BF_VP_OP_CREATE_VP_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to create a VP
-    ///     and return it's ID.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpid The resulting VPID of the newly created VP
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vp_op_create_vp(               // --
-        bf_handle_t const &handle,    // --
-        bsl::safe_uint16 &vpid) noexcept -> bf_status_t
-    {
-        return {bf_vp_op_create_vp_impl(handle.hndl, vpid.data())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vp_op_destroy_vp
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vp_op_destroy_vp
-    constexpr bsl::safe_uint64 BF_VP_OP_DESTROY_VP_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to destroy a VP
-    ///     given an ID.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpid The VPID of the VP to destroy
-    ///
-    inline void
-    bf_vp_op_destroy_vp(              // --
-        bf_handle_t const &handle,    // --
-        bsl::safe_uint16 const &vpid) noexcept
-    {
-        bf_vp_op_destroy_vp_impl(handle.hndl, vpid.get());
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_create_vps
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_create_vps
-    constexpr bsl::safe_uint64 BF_VPS_OP_CREATE_VPS_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to create a VPS
-    ///     and return it's ID.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The resulting VPSID of the newly created VPS
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_create_vps(             // --
-        bf_handle_t const &handle,    // --
-        bsl::safe_uint16 &vpsid) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_create_vps_impl(handle.hndl, vpsid.data())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_destroy_vps
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_destroy_vps
-    constexpr bsl::safe_uint64 BF_VPS_OP_DESTROY_VPS_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to destroy a VPS
-    ///     given an ID.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to destroy
-    ///
-    inline void
-    bf_vps_op_destroy_vps(            // --
-        bf_handle_t const &handle,    // --
-        bsl::safe_uint16 const &vpsid) noexcept
-    {
-        bf_vps_op_destroy_vps_impl(handle.hndl, vpsid.get());
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_init_as_root
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_init_as_root
-    constexpr bsl::safe_uint64 BF_VPS_OP_INIT_AS_ROOT_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to initialize a VPS using
-    ///     the root VP state that was provided by the loader given the VPSID
-    ///     to initialize as well as the PPID of the physical processor to
-    ///     get the root VP state from.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to initialize
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_init_as_root(           // --
-        bf_handle_t const &handle,    // --
-        bsl::safe_uint16 const &vpsid) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_init_as_root_impl(handle.hndl, vpsid.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_read8
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_read8
-    constexpr bsl::safe_uint64 BF_VPS_OP_READ8_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
-
-    /// <!-- description -->
-    ///   @brief Reads an 8bit field from the VPS. The "index" is architecture
-    ///     specific. For Intel, the index (or encoding) is the defined in
-    ///     Appendix B "Field Encoding in VMCS". For AMD, the index (or offset)
-    ///     is defined in Appendix B "Layout of VMCB".
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to read from
-    ///   @param index The HVE specific index defining which field to read
-    ///   @param value The resulting value
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_read8(                      // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint8 &value) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_read8_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_read16
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_read16
-    constexpr bsl::safe_uint64 BF_VPS_OP_READ16_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
-
-    /// <!-- description -->
-    ///   @brief Reads a 16bit field from the VPS. The "index" is architecture
-    ///     specific. For Intel, the index (or encoding) is the defined in
-    ///     Appendix B "Field Encoding in VMCS". For AMD, the index (or offset)
-    ///     is defined in Appendix B "Layout of VMCB".
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to read from
-    ///   @param index The HVE specific index defining which field to read
-    ///   @param value The resulting value
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_read16(                     // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint16 &value) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_read16_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_read32
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_read32
-    constexpr bsl::safe_uint64 BF_VPS_OP_READ32_IDX_VAL{bsl::to_u64(0x0000000000000005U)};
-
-    /// <!-- description -->
-    ///   @brief Reads a 32bit field from the VPS. The "index" is architecture
-    ///     specific. For Intel, the index (or encoding) is the defined in
-    ///     Appendix B "Field Encoding in VMCS". For AMD, the index (or offset)
-    ///     is defined in Appendix B "Layout of VMCB".
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to read from
-    ///   @param index The HVE specific index defining which field to read
-    ///   @param value The resulting value
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_read32(                     // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint32 &value) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_read32_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_read64
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_read64
-    constexpr bsl::safe_uint64 BF_VPS_OP_READ64_IDX_VAL{bsl::to_u64(0x0000000000000006U)};
-
-    /// <!-- description -->
-    ///   @brief Reads an 64bit field from the VPS. The "index" is architecture
-    ///     specific. For Intel, the index (or encoding) is the defined in
-    ///     Appendix B "Field Encoding in VMCS". For AMD, the index (or offset)
-    ///     is defined in Appendix B "Layout of VMCB".
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to read from
-    ///   @param index The HVE specific index defining which field to read
-    ///   @param value The resulting value
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_read64(                     // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint64 &value) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_read64_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_write8
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_write
-    constexpr bsl::safe_uint64 BF_VPS_OP_WRITE8_IDX_VAL{bsl::to_u64(0x0000000000000007U)};
-
-    /// <!-- description -->
-    ///   @brief Writes to an 8bit field in the VPS. The "index" is architecture
-    ///     specific. For Intel, the index (or encoding) is the defined in
-    ///     Appendix B "Field Encoding in VMCS". For AMD, the index (or offset)
-    ///     is defined in Appendix B "Layout of VMCB".
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to write to
-    ///   @param index The HVE specific index defining which field to write to
-    ///   @param value The value to write to the requested field
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_write8(                     // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint8 const &value) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_write8_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_write16
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_write
-    constexpr bsl::safe_uint64 BF_VPS_OP_WRITE16_IDX_VAL{bsl::to_u64(0x0000000000000008U)};
-
-    /// <!-- description -->
-    ///   @brief Writes to a 16bit field in the VPS. The "index" is architecture
-    ///     specific. For Intel, the index (or encoding) is the defined in
-    ///     Appendix B "Field Encoding in VMCS". For AMD, the index (or offset)
-    ///     is defined in Appendix B "Layout of VMCB".
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to write to
-    ///   @param index The HVE specific index defining which field to write to
-    ///   @param value The value to write to the requested field
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_write16(                    // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint16 const &value) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_write16_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_write32
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_write
-    constexpr bsl::safe_uint64 BF_VPS_OP_WRITE32_IDX_VAL{bsl::to_u64(0x0000000000000009U)};
-
-    /// <!-- description -->
-    ///   @brief Writes to a 32bit field in the VPS. The "index" is architecture
-    ///     specific. For Intel, the index (or encoding) is the defined in
-    ///     Appendix B "Field Encoding in VMCS". For AMD, the index (or offset)
-    ///     is defined in Appendix B "Layout of VMCB".
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to write to
-    ///   @param index The HVE specific index defining which field to write to
-    ///   @param value The value to write to the requested field
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_write32(                    // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint32 const &value) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_write32_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_write64
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_write
-    constexpr bsl::safe_uint64 BF_VPS_OP_WRITE64_IDX_VAL{bsl::to_u64(0x000000000000000AU)};
-
-    /// <!-- description -->
-    ///   @brief Writes to a 64bit field in the VPS. The "index" is architecture
-    ///     specific. For Intel, the index (or encoding) is the defined in
-    ///     Appendix B "Field Encoding in VMCS". For AMD, the index (or offset)
-    ///     is defined in Appendix B "Layout of VMCB".
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to write to
-    ///   @param index The HVE specific index defining which field to write to
-    ///   @param value The value to write to the requested field
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_write64(                    // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint64 const &value) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_write64_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_read_reg
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_read_reg
-    constexpr bsl::safe_uint64 BF_VPS_OP_READ_REG_IDX_VAL{bsl::to_u64(0x000000000000000BU)};
-
-    /// <!-- description -->
-    ///   @brief Reads a CPU register from the VPS given a bf_reg_t. Note
-    ///     that the bf_reg_t is architecture specific.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to read from
-    ///   @param reg A bf_reg_t defining which register to read
-    ///   @param value The resulting value
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_read_reg(                   // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bf_reg_t const reg,               // --
-        bsl::safe_uint64 &value) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_read_reg_impl(handle.hndl, vpsid.get(), reg, value.data())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_write_reg
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_write_reg
-    constexpr bsl::safe_uint64 BF_VPS_OP_WRITE_REG_IDX_VAL{bsl::to_u64(0x000000000000000CU)};
-
-    /// <!-- description -->
-    ///   @brief Writes to a CPU register in the VPS given a bf_reg_t and the
-    ///     value to write. Note that the bf_reg_t is architecture specific.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to write to
-    ///   @param reg A bf_reg_t defining which register to write to
-    ///   @param value The value to write to the requested register
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_write_reg(                  // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bf_reg_t const reg,               // --
-        bsl::safe_uint64 const &value) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_write_reg_impl(handle.hndl, vpsid.get(), reg, value.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_run
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_run
-    constexpr bsl::safe_uint64 BF_VPS_OP_RUN_IDX_VAL{bsl::to_u64(0x000000000000000DU)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to run a VP on behalf
-    ///     of a given VM by executing the VP with a given VPS. This system
-    ///     call only returns if an error occurs. On success, this system
-    ///     call will physically execute the requested VP using the requested
-    ///     VPS, and the extension will only execute again on the next VMExit.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to run
-    ///   @param vpid The VPID of the VP to run
-    ///   @param vmid The VMID of the VM to run
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_run(                        // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint16 const &vpid,     // --
-        bsl::safe_uint16 const &vmid) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_run_impl(handle.hndl, vpsid.get(), vpid.get(), vmid.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_run_current
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_run_current
-    constexpr bsl::safe_uint64 BF_VPS_OP_RUN_CURRENT_IDX_VAL{bsl::to_u64(0x000000000000000EU)};
-
-    /// <!-- description -->
-    ///   @brief bf_vps_op_run_current tells the microkernel to execute the
-    ///     currently active VPS, VP and VM.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_run_current(    // --
-        bf_handle_t const &handle) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_run_current_impl(handle.hndl)};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_advance_ip
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_advance_ip
-    constexpr bsl::safe_uint64 BF_VPS_OP_ADVANCE_IP_IDX_VAL{bsl::to_u64(0x000000000000000FU)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to advance the instruction
-    ///     pointer in the requested VPS.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS advance the IP in
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_advance_ip(             // --
-        bf_handle_t const &handle,    // --
-        bsl::safe_uint16 const &vpsid) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_advance_ip_impl(handle.hndl, vpsid.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_advance_ip_and_run_current
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_advance_ip_and_run_current
-    constexpr bsl::safe_uint64 BF_VPS_OP_ADVANCE_IP_AND_RUN_CURRENT_IDX_VAL{
-        bsl::to_u64(0x0000000000000010U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to advance the instruction
-    ///     pointer in the requested VPS and run the currently active VPS, VP
-    ///     and VM (i.e., this combines bf_vps_op_advance_ip and
-    ///     bf_vps_op_advance_ip).
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_vps_op_advance_ip_and_run_current(    // --
-        bf_handle_t const &handle) noexcept -> bf_status_t
-    {
-        return {bf_vps_op_advance_ip_and_run_current_impl(handle.hndl)};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_promote
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_promote
-    constexpr bsl::safe_uint64 BF_VPS_OP_PROMOTE_IDX_VAL{bsl::to_u64(0x0000000000000011U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to promote the requested
-    ///     VPS. This will stop the hypervisor complete on the physical
-    ///     processor that this syscall is executed on and replace it's state
-    ///     with the state in the VPS. Note that this syscall only returns
-    ///     on error.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to promote
-    ///
-    inline void
-    bf_vps_op_promote(                // --
-        bf_handle_t const &handle,    // --
-        bsl::safe_uint16 const &vpsid) noexcept
-    {
-        bf_vps_op_promote_impl(handle.hndl, vpsid.get());
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_vps_op_clear_vps
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_vps_op_clear_vps
-    constexpr bsl::safe_uint64 BF_VPS_OP_CLEAR_VPS_IDX_VAL{bsl::to_u64(0x0000000000000012U)};
-
-    /// <!-- description -->
-    ///   @brief bf_vps_op_clear_vps tells the microkernel to clear the VPS's
-    ///     hardware cache, if one exists. How this is used depends entirely
-    ///     on the hardware and is associated with AMD's VMCB Clean Bits,
-    ///     and Intel's VMClear instruction. See the associated documentation
-    ///     for more details. On AMD, this ABI clears the entire VMCB. For more
-    ///     fine grained control, use the write ABIs to manually modify the
-    ///     VMCB.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to clear
-    ///
-    inline void
-    bf_vps_op_clear_vps(                // --
-        bf_handle_t const &handle,    // --
-        bsl::safe_uint16 const &vpsid) noexcept
-    {
-        bf_vps_op_clear_vps_impl(handle.hndl, vpsid.get());
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_intrinsic_op_rdmsr
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_intrinsic_op_rdmsr
-    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_RDMSR_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
-
-    /// <!-- description -->
-    ///   @brief Reads an MSR directly from the CPU given the address of
-    ///     the MSR to read. Note that this is specific to Intel/AMD only.
-    ///     Also note that not all MSRs can be read, and which MSRs that
-    ///     can be read is up to the microkernel's internal policy as well
-    ///     as which architecture the hypervisor is running on.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param msr The address of the MSR to read
-    ///   @param value The resulting value
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_intrinsic_op_rdmsr(              // --
-        bf_handle_t const &handle,      // --
-        bsl::safe_uint32 const &msr,    // --
-        bsl::safe_uint64 &value) noexcept -> bf_status_t
-    {
-        return {bf_intrinsic_op_rdmsr_impl(handle.hndl, msr.get(), value.data())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_intrinsic_op_wrmsr
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_intrinsic_op_wrmsr
-    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_WRMSR_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
-
-    /// <!-- description -->
-    ///   @brief Writes to an MSR directly from the CPU given the address of
-    ///     the MSR to write as well as the value to write. Note that this is
-    ///     specific to Intel/AMD only. Also note that not all MSRs can be
-    ///     written to, and which MSRs that can be written to is up to the
-    ///     microkernel's internal policy as well as which architecture the
-    ///     hypervisor is running on.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param msr The address of the MSR to write to
-    ///   @param value The value to write to the requested MSR
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_intrinsic_op_wrmsr(              // --
-        bf_handle_t const &handle,      // --
-        bsl::safe_uint32 const &msr,    // --
-        bsl::safe_uint64 const &value) noexcept -> bf_status_t
-    {
-        return {bf_intrinsic_op_wrmsr_impl(handle.hndl, msr.get(), value.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_intrinsic_op_invlpga
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_intrinsic_op_invlpga
-    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_INVLPGA_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
-
-    /// <!-- description -->
-    ///   @brief Invalidates the TLB mapping for a given virtual page and a
-    ///     given ASID. Note that this is specific to AMD only.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param addr The address to invalidate
-    ///   @param asid The ASID to invalidate
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_intrinsic_op_invlpga(             // --
-        bf_handle_t const &handle,       // --
-        bsl::safe_uint64 const &addr,    // --
-        bsl::safe_uint64 const &asid) noexcept -> bf_status_t
-    {
-        return {bf_intrinsic_op_invlpga_impl(handle.hndl, addr.get(), asid.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_intrinsic_op_invept
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_intrinsic_op_invept
-    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_INVEPT_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
-
-    /// <!-- description -->
-    ///   @brief Invalidates mappings in the translation lookaside buffers
-    ///     (TLBs) and paging-structure caches that were derived from extended
-    ///     page tables (EPT). Note that this is specific to Intel only.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param eptp The EPTP to invalidate
-    ///   @param type The INVEPT type (see the Intel SDM for details)
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_intrinsic_op_invept(              // --
-        bf_handle_t const &handle,       // --
-        bsl::safe_uint64 const &eptp,    // --
-        bsl::safe_uint64 const &type) noexcept -> bf_status_t
-    {
-        return {bf_intrinsic_op_invept_impl(handle.hndl, eptp.get(), type.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_intrinsic_op_invvpid
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_intrinsic_op_invvpid
-    constexpr bsl::safe_uint64 BF_INTRINSIC_OP_INVVPID_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
-
-    /// <!-- description -->
-    ///   @brief Invalidates mappings in the translation lookaside buffers
-    ///     (TLBs) and paging-structure caches based on virtual-processor
-    ///     identifier (VPID). Note that this is specific to Intel only.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param addr The address to invalidate
-    ///   @param vpid The VPID to invalidate
-    ///   @param type The INVVPID type (see the Intel SDM for details)
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_intrinsic_op_invvpid(             // --
-        bf_handle_t const &handle,       // --
-        bsl::safe_uint64 const &addr,    // --
-        bsl::safe_uint16 const &vpid,    // --
-        bsl::safe_uint64 const &type) noexcept -> bf_status_t
-    {
-        return {bf_intrinsic_op_invvpid_impl(handle.hndl, addr.get(), vpid.get(), type.get())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_mem_op_alloc_page
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_mem_op_alloc_page
-    constexpr bsl::safe_uint64 BF_MEM_OP_ALLOC_PAGE_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
-
-    /// <!-- description -->
-    ///   @brief bf_mem_op_alloc_page allocates a page. When allocating a
-    ///     page, the extension should keep in mind the following:
-    ///     - Virtual address to physical address conversions require a page
-    ///       walk, so they are slow.
-    ///     - The microkernel does not support physical address to virtual
-    ///       address conversions.
-    ///     - bf_mem_op_free_page is optional and if implemented, may be slow.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @tparam T the type of memory to allocate
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param virt The virtual address of the resulting page
-    ///   @param phys The physical address of the resulting page
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    template<typename T>
-    [[nodiscard]] inline auto
-    bf_mem_op_alloc_page(             // --
-        bf_handle_t const &handle,    // --
-        T *&virt,                     // --
-        bsl::safe_uint64 &phys) noexcept -> bf_status_t
-    {
-        return {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            bf_mem_op_alloc_page_impl(handle.hndl, reinterpret_cast<void **>(&virt), phys.data())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_mem_op_free_page
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_mem_op_free_page
-    constexpr bsl::safe_uint64 BF_MEM_OP_FREE_PAGE_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
-
-    /// <!-- description -->
-    ///   @brief Frees a page previously allocated by bf_mem_op_alloc_page.
-    ///     This operation is optional and not all microkernels may implement
-    ///     it. For more information, please see bf_mem_op_alloc_page.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param virt The virtual address of the page to free
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_mem_op_free_page(              // --
-        bf_handle_t const &handle,    // --
-        bf_ptr_t virt) noexcept -> bf_status_t
-    {
-        return {bf_mem_op_free_page_impl(handle.hndl, virt)};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_mem_op_alloc_huge
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_mem_op_alloc_huge
-    constexpr bsl::safe_uint64 BF_MEM_OP_ALLOC_HUGE_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
-
-    /// <!-- description -->
-    ///   @brief bf_mem_op_alloc_huge allocates a physically contiguous block
-    ///     of memory. When allocating a page, the extension should keep in
-    ///     mind the following:
-    ///       - The total memory available to allocate from this pool is
-    ///         extremely limited. This should only be used when absolutely
-    ///         needed, and you should not expect more than 1 MB (might be
-    ///         less) of total memory available.
-    ///       - Memory allocated from the huge pool might be allocated using
-    ///         different schemes. For example, the microkernel might allocate
-    ///         in increments of a page, or it might use a buddy allocator that
-    ///         would allocate in multiples of 2. If the allocation size
-    ///         doesn't match the algorithm, internal fragmentation could
-    ///         occur, further limiting the total number of allocations this
-    ///         pool can support. - Virtual address to physical address
-    ///         conversions require a page walk, so they are slow.
-    ///       - The microkernel does not support physical address to virtual
-    ///         address conversions.
-    ///       - bf_mem_op_free_huge is optional and if implemented, may be slow.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @tparam T the type of memory to allocate
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param size The total number of bytes to allocate
-    ///   @param virt The virtual address of the resulting memory
-    ///   @param phys The physical address of the resulting memory
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    template<typename T>
-    [[nodiscard]] inline auto
-    bf_mem_op_alloc_huge(                // --
-        bf_handle_t const &handle,       // --
-        bsl::safe_uint64 const &size,    // --
-        T *&virt,                        // --
-        bsl::safe_uint64 &phys) noexcept -> bf_status_t
-    {
-        return {bf_mem_op_alloc_huge_impl(
-            handle.hndl,
-            size.get(),
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            reinterpret_cast<void **>(&virt),
-            phys.data())};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_mem_op_free_huge
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_mem_op_free_huge
-    constexpr bsl::safe_uint64 BF_MEM_OP_FREE_HUGE_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
-
-    /// <!-- description -->
-    ///   @brief Frees memory previously allocated by bf_mem_op_alloc_huge.
-    ///     This operation is optional and not all microkernels may implement
-    ///     it. For more information, please see bf_mem_op_alloc_huge.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param virt The virtual address of the memory to free
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_mem_op_free_huge(              // --
-        bf_handle_t const &handle,    // --
-        bf_ptr_t virt) noexcept -> bf_status_t
-    {
-        return {bf_mem_op_free_huge_impl(handle.hndl, virt)};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_mem_op_alloc_heap
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_mem_op_alloc_heap
-    constexpr bsl::safe_uint64 BF_MEM_OP_ALLOC_HEAP_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
-
-    /// <!-- description -->
-    ///   @brief bf_mem_op_alloc_heap allocates heap memory. When allocating
-    ///     heap memory, the extension should keep in mind the following:
-    ///       - This ABI is designed to work similar to sbrk() to support
-    ///         malloc/free implementations common with existing open source
-    ///         libraries.
-    ///       - Calling this ABI with with a size of 0 will return the current
-    ///         heap location.
-    ///       - Calling this ABI with a size (in bytes) will result in return
-    ///         the previous heap location. The current heap location will be
-    ///         set to the previous location, plus the provide size, rounded to
-    ///         the nearest page size.
-    ///       - The microkernel does not support
-    ///         virtual address to physical address conversions.
-    ///       - The microkernel does not support physical address to virtual
-    ///         address conversions.
-    ///       - There is no ability to free heap memory
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @tparam T the type of memory to allocate
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param size The number of bytes to increase the heap by
-    ///   @param virt The virtual address of the previous heap location
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    template<typename T>
-    [[nodiscard]] inline auto
-    bf_mem_op_alloc_heap(                // --
-        bf_handle_t const &handle,       // --
-        bsl::safe_uint64 const &size,    // --
-        T *&virt) noexcept -> bf_status_t
-    {
-        return {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            bf_mem_op_alloc_heap_impl(handle.hndl, size.get(), reinterpret_cast<void **>(&virt))};
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_mem_op_virt_to_phys
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines the syscall index for bf_mem_op_virt_to_phys
-    constexpr bsl::safe_uint64 BF_MEM_OP_VIRT_TO_PHYS_IDX_VAL{bsl::to_u64(0x0000000000000005U)};
-
-    /// <!-- description -->
-    ///   @brief bf_mem_op_virt_to_phys converts a provided virtual address to
-    ///     a physical address for any virtual address allocated using
-    ///     bf_mem_op_alloc_page or bf_mem_op_alloc_huge.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param virt The virtual address of the page to convert
-    ///   @param phys The physical address of the provided virtual address
-    ///   @return Returns the bf_status_t result of the syscall. See the
-    ///     specification for more information about error codes.
-    ///
-    [[nodiscard]] inline auto
-    bf_mem_op_virt_to_phys(           // --
-        bf_handle_t const &handle,    // --
-        bf_ptr_t const virt,          // --
-        bsl::safe_uint64 &phys) noexcept -> bf_status_t
-    {
-        return {bf_mem_op_virt_to_phys_impl(handle.hndl, virt, phys.data())};
     }
 }
 

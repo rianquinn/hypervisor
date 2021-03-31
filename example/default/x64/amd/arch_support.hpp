@@ -103,7 +103,7 @@ namespace example
     [[nodiscard]] constexpr auto
     init_vps(HANDLE_CONCEPT &handle, bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
-        syscall::bf_status_t status{};
+        bsl::errc_type ret{};
 
         /// NOTE:
         /// - Set up ASID
@@ -112,10 +112,10 @@ namespace example
         constexpr bsl::safe_uint64 guest_asid_idx{bsl::to_u64(0x0058)};
         constexpr bsl::safe_uint32 guest_asid_val{bsl::to_u32(0x1)};
 
-        status = syscall::bf_vps_op_write32(handle, vpsid, guest_asid_idx, guest_asid_val);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        ret = syscall::bf_vps_op_write32(handle, vpsid, guest_asid_idx, guest_asid_val);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         /// NOTE:
@@ -128,18 +128,18 @@ namespace example
         constexpr bsl::safe_uint64 intercept_instruction2_idx{bsl::to_u64(0x0010U)};
         constexpr bsl::safe_uint32 intercept_instruction2_val{bsl::to_u32(0x00000001U)};
 
-        status = syscall::bf_vps_op_write32(
+        ret = syscall::bf_vps_op_write32(
             handle, vpsid, intercept_instruction1_idx, intercept_instruction1_val);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
-        status = syscall::bf_vps_op_write32(
+        ret = syscall::bf_vps_op_write32(
             handle, vpsid, intercept_instruction2_idx, intercept_instruction2_val);
-        if (bsl::unlikely(status != syscall::BF_STATUS_SUCCESS)) {
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         /// NOTE:
@@ -149,7 +149,7 @@ namespace example
         ///
 
         syscall::bf_tls_set_rax(handle, bsl::ZERO_UMAX);
-        return bsl::errc_success;
+        return ret;
     }
 }
 

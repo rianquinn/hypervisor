@@ -5,17 +5,16 @@
   - [1.2. Document Revision](#12-document-revision)
   - [1.3. Glossary](#13-glossary)
   - [1.4. Scalar Types](#14-scalar-types)
-  - [1.5. Memory Address Types](#15-memory-address-types)
-  - [1.6. ID Types](#16-id-types)
-  - [1.7. Constants, Structures, Enumerations, and Bit Fields](#17-constants-structures-enumerations-and-bit-fields)
-    - [1.7.1. Null](#171-null)
-    - [1.7.2. Handle Type](#172-handle-type)
-    - [1.7.3. Register Type](#173-register-type)
-    - [1.7.4. Exit Type](#174-exit-type)
-    - [1.7.5. Bootstrap Callback Handler Type](#175-bootstrap-callback-handler-type)
-    - [1.7.6. VMExit Callback Handler Type](#176-vmexit-callback-handler-type)
-    - [1.7.7. Fast Fail Callback Handler Type](#177-fast-fail-callback-handler-type)
-  - [1.8. Endianness](#18-endianness)
+  - [1.5. ID Types](#15-id-types)
+  - [1.6. Constants, Structures, Enumerations, and Bit Fields](#16-constants-structures-enumerations-and-bit-fields)
+    - [1.6.1. Null](#161-null)
+    - [1.6.2. Handle Type](#162-handle-type)
+    - [1.6.3. Register Type](#163-register-type)
+    - [1.6.4. Exit Type](#164-exit-type)
+    - [1.6.5. Bootstrap Callback Handler Type](#165-bootstrap-callback-handler-type)
+    - [1.6.6. VMExit Callback Handler Type](#166-vmexit-callback-handler-type)
+    - [1.6.7. Fast Fail Callback Handler Type](#167-fast-fail-callback-handler-type)
+  - [1.7. Endianness](#17-endianness)
 - [2. Syscall Interface](#2-syscall-interface)
   - [2.1. Legal Syscall Environments](#21-legal-syscall-environments)
   - [2.2. Syscall Status Codes](#22-syscall-status-codes)
@@ -84,20 +83,20 @@
     - [2.12.21. bf_vps_op_advance_ip, OP=0x5, IDX=0xF](#21221-bf_vps_op_advance_ip-op0x5-idx0xf)
     - [2.12.22. bf_vps_op_advance_ip_and_run_current, OP=0x5, IDX=0x10](#21222-bf_vps_op_advance_ip_and_run_current-op0x5-idx0x10)
     - [2.12.23. bf_vps_op_promote, OP=0x5, IDX=0x11](#21223-bf_vps_op_promote-op0x5-idx0x11)
-    - [2.15.1. bf_vps_op_clear_vps, OP=0x5, IDX=0x11](#2151-bf_vps_op_clear_vps-op0x5-idx0x11)
-  - [2.16. Intrinsic Syscalls](#216-intrinsic-syscalls)
-    - [2.16.1. bf_intrinsic_op_rdmsr, OP=0x7, IDX=0x0](#2161-bf_intrinsic_op_rdmsr-op0x7-idx0x0)
-    - [2.16.1. bf_intrinsic_op_wrmsr, OP=0x7, IDX=0x1](#2161-bf_intrinsic_op_wrmsr-op0x7-idx0x1)
-    - [2.16.1. bf_intrinsic_op_invlpga, OP=0x7, IDX=0x2](#2161-bf_intrinsic_op_invlpga-op0x7-idx0x2)
-    - [2.16.1. bf_intrinsic_op_invept, OP=0x7, IDX=0x3](#2161-bf_intrinsic_op_invept-op0x7-idx0x3)
-    - [2.16.1. bf_intrinsic_op_invvpid, OP=0x7, IDX=0x4](#2161-bf_intrinsic_op_invvpid-op0x7-idx0x4)
+    - [2.12.24. bf_vps_op_clear_vps, OP=0x5, IDX=0x11](#21224-bf_vps_op_clear_vps-op0x5-idx0x11)
+  - [2.13. Intrinsic Syscalls](#213-intrinsic-syscalls)
+    - [2.13.1. bf_intrinsic_op_rdmsr, OP=0x7, IDX=0x0](#2131-bf_intrinsic_op_rdmsr-op0x7-idx0x0)
+    - [2.13.2. bf_intrinsic_op_wrmsr, OP=0x7, IDX=0x1](#2132-bf_intrinsic_op_wrmsr-op0x7-idx0x1)
+    - [2.13.3. bf_intrinsic_op_invlpga, OP=0x7, IDX=0x2](#2133-bf_intrinsic_op_invlpga-op0x7-idx0x2)
+    - [2.13.4. bf_intrinsic_op_invept, OP=0x7, IDX=0x3](#2134-bf_intrinsic_op_invept-op0x7-idx0x3)
+    - [2.13.5. bf_intrinsic_op_invvpid, OP=0x7, IDX=0x4](#2135-bf_intrinsic_op_invvpid-op0x7-idx0x4)
   - [2.14. Mem Syscalls](#214-mem-syscalls)
     - [2.14.1. bf_mem_op_alloc_page, OP=0x7, IDX=0x0](#2141-bf_mem_op_alloc_page-op0x7-idx0x0)
     - [2.14.2. bf_mem_op_free_page, OP=0x7, IDX=0x1](#2142-bf_mem_op_free_page-op0x7-idx0x1)
     - [2.14.3. bf_mem_op_alloc_huge, OP=0x7, IDX=0x2](#2143-bf_mem_op_alloc_huge-op0x7-idx0x2)
     - [2.14.4. bf_mem_op_free_huge, OP=0x7, IDX=0x3](#2144-bf_mem_op_free_huge-op0x7-idx0x3)
     - [2.14.5. bf_mem_op_alloc_heap, OP=0x7, IDX=0x4](#2145-bf_mem_op_alloc_heap-op0x7-idx0x4)
-    - [2.16.1. bf_mem_op_virt_to_phys, OP=0x7, IDX=0x5](#2161-bf_mem_op_virt_to_phys-op0x7-idx0x5)
+    - [2.14.6. bf_mem_op_virt_to_phys, OP=0x7, IDX=0x5](#2146-bf_mem_op_virt_to_phys-op0x7-idx0x5)
 
 # 1. Introduction
 
@@ -148,17 +147,10 @@ This specification is specific to 64bit Intel and AMD processors conforming to t
 | bf_uint16_t | uint16_t | Defines an unsigned 16bit integer |
 | bf_uint32_t | uint32_t | Defines an unsigned 32bit integer |
 | bf_uint64_t | uint64_t | Defines an unsigned 64bit integer |
-| bf_ptr_t | void const * | Defines a raw pointer type |
+| bf_ptr_t | void * | Defines a raw pointer type |
+| bf_cptr_t | void const * | Defines a raw const pointer type |
 
-## 1.5. Memory Address Types
-
-| Name | Type |
-| :--- | :--- |
-| System Physical Address (SPA) | bf_uint64_t |
-| Guest Physical Address (GPA) | bf_uint64_t |
-| Guest Virtual Address (GVA) | bf_uint64_t |
-
-## 1.6. ID Types
+## 1.5. ID Types
 
 | Name | Type |
 | :--- | :--- |
@@ -167,16 +159,16 @@ This specification is specific to 64bit Intel and AMD processors conforming to t
 | Virtual Processor State ID (VPSID) | bf_uint64_t |
 | Physical Processor ID (PPID) | bf_uint64_t |
 
-## 1.7. Constants, Structures, Enumerations, and Bit Fields
+## 1.6. Constants, Structures, Enumerations, and Bit Fields
 
-### 1.7.1. Null
+### 1.6.1. Null
 
 **const, void *: BF_NULL**
 | Value | Description |
 | :---- | :---------- |
 | 0 | Defines the value of a null pointer |
 
-### 1.7.2. Handle Type
+### 1.6.2. Handle Type
 
 The bf_handle_t structure is an opaque structure containing the handle used by most of the syscalls in this specification. The opaque structure is used internally by the C wrapper interface and should not be accessed directly. The C wrapper is allowed to redefine the internal layout of this structure at any time (e.g., the C wrapper might provide an alternative layout for unit testing).
 
@@ -185,7 +177,7 @@ The bf_handle_t structure is an opaque structure containing the handle used by m
 | :--- | :--- | :----- | :--- | :---------- |
 | hndl | bf_uint64_t | 0x0 | 8 bytes | The handle returned by bf_handle_op_open_handle |
 
-### 1.7.3. Register Type
+### 1.6.3. Register Type
 
 Defines which register a syscall is requesting.
 
@@ -266,7 +258,7 @@ Defines which register a syscall is requesting.
 | bf_reg_t_ia32_pat | 71 | defines ia32_pat register |
 | bf_reg_t_ia32_debugctl | 72 | defines ia32_debugctl register |
 
-### 1.7.4. Exit Type
+### 1.6.4. Exit Type
 
 Defines the exit type used by bf_control_op_exit
 
@@ -276,25 +268,25 @@ Defines the exit type used by bf_control_op_exit
 | bf_exit_status_t_success | 0 | Exit with a success code |
 | bf_exit_status_t_failure | 1 | Exit with a failure code |
 
-### 1.7.5. Bootstrap Callback Handler Type
+### 1.6.5. Bootstrap Callback Handler Type
 
 Defines the signature of the bootstrap callback handler
 
 **typedef, void(*bf_callback_handler_bootstrap_t)(bf_uint16_t)**
 
-### 1.7.6. VMExit Callback Handler Type
+### 1.6.6. VMExit Callback Handler Type
 
 Defines the signature of the VM exit callback handler
 
 **typedef, void(*bf_callback_handler_vmexit_t)(bsl::bf_uint16_t, bf_uint64_t)**
 
-### 1.7.7. Fast Fail Callback Handler Type
+### 1.6.7. Fast Fail Callback Handler Type
 
 Defines the signature of the fast fail callback handler
 
-**typedef, void(*bf_callback_handler_fail_t)()**
+**typedef, void(*bf_callback_handler_fail_t)(bf_status_t)**
 
-## 1.8. Endianness
+## 1.7. Endianness
 
 This document only applies to 64bit Intel and AMD systems conforming to the amd64 architecture. As such, this document conforms to little-endian.
 
@@ -628,12 +620,42 @@ The following defines the specification IDs used when opening a handle. These pr
 
 The microkernel defines a "thread" the same way both Intel and AMD define a thread (i.e., a logical core). For example, some Intel CPUs have 4 cores and 8 threads when hyper-threading is enabled, or 4 cores and 4 threads when hyper-threading is disabled. Each logical core is given one "thread" and that thread always executes on that logical core. The microkernel defines these logical cores as physical processors (i.e., PP).
 
-Although there is only one thread per PP, a thread's ID changes based on the active extension, VM and VP. If a thread's ID changes, it's TLS block does not, meaning an extension is given one TLS block per PP, regardless of which VM or VP is active.
+Each thread is given an ID as follows:
 
-In addition, the layout of the TLS block uses a scheme similar to the ELF TLS specification, but with some modifications. Unlike the ELF TLS specification, each TLS block is limited to two pages. The lower half of the page is dedicated to "thread_local" storage. The upper half is defined by this specification, and provides access to registers shared between the microkernel and the extension to improve performance. For example, access to a VM's general purpose registers is available from the TLS block.
+**thread_id:**
+| Bits | Name | Description |
+| :--- | :--- | :---------- |
+| 63:48 | extid | Contains the currently running extension's ID |
+| 47:32 | vmid | Contains the currently running VM's ID |
+| 31:16 | vpid | Contains the currently running VP's ID |
+| 15:0 | ppid | Contains the ID of the PP this thread is assigned to |
+
+Although there is only one thread per PP, a thread's ID changes based on the active extension, VM and VP. If a thread's ID changes, it's TLS block **does not change**, meaning an extension is given one TLS block per PP, regardless of which VM or VP is active. This allows an extension to use the thread ID to determine not only which PP it is currently executing on, but which VM and VP are currently active (the TLS also contains a separate location for determine the active VPDID as well if needed), while still allowing the extension to have per PP TLS blocks.
+
+In addition, the layout of the TLS block uses a scheme similar to the ELF TLS specification, but with some modifications. Unlike the ELF TLS specification, each TLS block is limited to two pages. The lower half of the page is dedicated to "thread_local" storage. The upper half is defined by this specification, and provides access to registers shared between the microkernel and the extension to improve performance. For example, access to a VM's general purpose registers is available from the TLS block. Each TLS register defined by this specific is an offset into the upper half of the TLS block (which can be located using the fs segment register on Intel/AMD).
 
 ### 2.6.1. TLS Offsets
-TBD
+
+**consts, void *: bf_uint64_t**
+| Name | Value | Description |
+| :--- | :---- | :---------- |
+| TLS_OFFSET_RAX | 0x800U | stores the offset for rax |
+| TLS_OFFSET_RBX | 0x808U | stores the offset for rbx |
+| TLS_OFFSET_RCX | 0x810U | stores the offset for rcx |
+| TLS_OFFSET_RDX | 0x818U | stores the offset for rdx |
+| TLS_OFFSET_RBP | 0x820U | stores the offset for rbp |
+| TLS_OFFSET_RSI | 0x828U | stores the offset for rsi |
+| TLS_OFFSET_RDI | 0x830U | stores the offset for rdi |
+| TLS_OFFSET_R8 | 0x838U | stores the offset for r8 |
+| TLS_OFFSET_R9 | 0x840U | stores the offset for r9 |
+| TLS_OFFSET_R10 | 0x848U | stores the offset for r10 |
+| TLS_OFFSET_R11 | 0x850U | stores the offset for r11 |
+| TLS_OFFSET_R12 | 0x858U | stores the offset for r12 |
+| TLS_OFFSET_R13 | 0x860U | stores the offset for r13 |
+| TLS_OFFSET_R14 | 0x868U | stores the offset for r14 |
+| TLS_OFFSET_R15 | 0x870U | stores the offset for r15 |
+| TLS_OFFSET_ACTIVE_VPSID | 0xFF0U | stores the offset for the active vpsid |
+| TLS_OFFSET_THREAD_ID | 0xFF8U | stores the offset for the thread id |
 
 ## 2.7. Control Syscalls
 
@@ -763,7 +785,7 @@ In production builds of Bareflank, this syscall is not present.
 **Input:**
 | Register Name | Bits | Description |
 | :------------ | :--- | :---------- |
-| REG0 | 63:0 | The VPID of the VP to dump the log from |
+| REG0 | 63:0 | The VPSID of the VPS to dump the log from |
 
 **const, bf_uint64_t: BF_DEBUG_OP_DUMP_VMEXIT_LOG_IDX_VAL**
 | Value | Description |
@@ -1005,7 +1027,7 @@ This syscall tells the microkernel to initialize a VPS using the root VP state p
 
 ### 2.12.9. bf_vps_op_read8, OP=0x6, IDX=0x3
 
-bf_vps_op_read8 reads an 8bit field from the VPS and returns the value. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
+Reads an 8bit field from the VPS and returns the value. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1028,7 +1050,7 @@ bf_vps_op_read8 reads an 8bit field from the VPS and returns the value. The "ind
 
 ### 2.12.10. bf_vps_op_read16, OP=0x6, IDX=0x4
 
-bf_vps_op_read16 reads a 16bit field from the VPS and returns the value. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
+Reads a 16bit field from the VPS and returns the value. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1051,7 +1073,7 @@ bf_vps_op_read16 reads a 16bit field from the VPS and returns the value. The "in
 
 ### 2.12.11. bf_vps_op_read32, OP=0x6, IDX=0x5
 
-bf_vps_op_read32 reads a 32bit field from the VPS and returns the value. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
+Reads a 32bit field from the VPS and returns the value. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1074,7 +1096,7 @@ bf_vps_op_read32 reads a 32bit field from the VPS and returns the value. The "in
 
 ### 2.12.12. bf_vps_op_read64, OP=0x6, IDX=0x6
 
-bf_vps_op_read64 reads a 64bit field from the VPS and returns the value. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
+Reads a 64bit field from the VPS and returns the value. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1096,7 +1118,7 @@ bf_vps_op_read64 reads a 64bit field from the VPS and returns the value. The "in
 
 ### 2.12.13. bf_vps_op_write8, OP=0x6, IDX=0x7
 
-bf_vps_op_write8 writes to an 8bit field in the VPS. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
+Writes to an 8bit field in the VPS. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1115,7 +1137,7 @@ bf_vps_op_write8 writes to an 8bit field in the VPS. The "index" is architecture
 
 ### 2.12.14. bf_vps_op_write16, OP=0x6, IDX=0x8
 
-bf_vps_op_write16 writes to a 16bit field in the VPS. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
+Writes to a 16bit field in the VPS. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1134,7 +1156,7 @@ bf_vps_op_write16 writes to a 16bit field in the VPS. The "index" is architectur
 
 ### 2.12.15. bf_vps_op_write32, OP=0x6, IDX=0x9
 
-bf_vps_op_write32 writes to a 32bit field in the VPS. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
+Writes to a 32bit field in the VPS. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1153,7 +1175,7 @@ bf_vps_op_write32 writes to a 32bit field in the VPS. The "index" is architectur
 
 ### 2.12.16. bf_vps_op_write64, OP=0x6, IDX=0xA
 
-bf_vps_op_write64 writes to a 64bit field in the VPS. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
+Writes to a 64bit field in the VPS. The "index" is architecture-specific. For Intel, Appendix B, "Field Encoding in VMCS," defines the index (or encoding). For AMD, Appendix B, "Layout of VMCB," defines the index (or offset).
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1211,7 +1233,7 @@ Writes to a CPU register in the VPS given a bf_reg_t and the value to write. Not
 
 ### 2.12.19. bf_vps_op_run, OP=0x5, IDX=0xD
 
-bf_vps_op_run tells the microkernel to execute a given VPS on behalf of a given VP and VM. This system call only returns if an error occurs. On success, this system call will physically execute the requested VP using the requested VPS, and the extension will only execute again on the next VMExit.
+bf_vps_op_run tells the microkernel to execute a given VPS on behalf of a given VP and VM. This system call only returns if an error occurs. On success, this system call will physically execute the requested VM and VP using the requested VPS, and the extension will only execute again on the next VMExit.
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1261,14 +1283,12 @@ This syscall tells the microkernel to advance the instruction pointer in the req
 
 ### 2.12.22. bf_vps_op_advance_ip_and_run_current, OP=0x5, IDX=0x10
 
-This syscall tells the microkernel to advance the instruction pointer in the requested VPS and run the currently active VPS, VP and VM (i.e., this combines bf_vps_op_advance_ip and bf_vps_op_advance_ip).
+This syscall tells the microkernel to advance the instruction pointer in the currently active VPS and run the currently active VPS, VP and VM (i.e., this combines bf_vps_op_advance_ip and bf_vps_op_advance_ip).
 
 **Input:**
 | Register Name | Bits | Description |
 | :------------ | :--- | :---------- |
 | REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
-| REG1 | 15:0 | The VPSID of the VPS advance the IP in |
-| REG1 | 63:16 | REVI |
 
 **const, bf_uint64_t: BF_VPS_OP_ADVANCE_IP_IDX_VAL**
 | Value | Description |
@@ -1291,7 +1311,7 @@ bf_vps_op_promote tells the microkernel to promote the requested VPS. bf_vps_op_
 | :---- | :---------- |
 | 0x0000000000000011 | Defines the syscall index for bf_vps_op_promote |
 
-### 2.15.1. bf_vps_op_clear_vps, OP=0x5, IDX=0x11
+### 2.12.24. bf_vps_op_clear_vps, OP=0x5, IDX=0x11
 
 bf_vps_op_clear_vps tells the microkernel to clear the VPS's hardware cache, if one exists. How this is used depends entirely on the hardware and is associated with AMD's VMCB Clean Bits, and Intel's VMClear instruction. See the associated documentation for more details. On AMD, this ABI clears the entire VMCB. For more fine grained control, use the write ABIs to manually modify the VMCB.
 
@@ -1307,9 +1327,9 @@ bf_vps_op_clear_vps tells the microkernel to clear the VPS's hardware cache, if 
 | :---- | :---------- |
 | 0x0000000000000012 | Defines the syscall index for bf_vps_op_clear_vps |
 
-## 2.16. Intrinsic Syscalls
+## 2.13. Intrinsic Syscalls
 
-### 2.16.1. bf_intrinsic_op_rdmsr, OP=0x7, IDX=0x0
+### 2.13.1. bf_intrinsic_op_rdmsr, OP=0x7, IDX=0x0
 
 Reads an MSR directly from the CPU given the address of the MSR to read. Note that this is specific to Intel/AMD only. Also note that not all MSRs can be written to, and which MSRs that can be written to is up to the microkernel's internal policy as well as which architecture the hypervisor is running on.
 
@@ -1330,7 +1350,7 @@ Reads an MSR directly from the CPU given the address of the MSR to read. Note th
 | :---- | :---------- |
 | 0x0000000000000000 | Defines the syscall index for bf_intrinsic_op_rdmsr |
 
-### 2.16.1. bf_intrinsic_op_wrmsr, OP=0x7, IDX=0x1
+### 2.13.2. bf_intrinsic_op_wrmsr, OP=0x7, IDX=0x1
 
 Writes to an MSR directly from the CPU given the address of the MSR to write and the value to write. Note that this is specific to Intel/AMD only. Also note that not all MSRs can be written to, and which MSRs that can be written to is up to the microkernel's internal policy as well as which architecture the hypervisor is running on.
 
@@ -1347,7 +1367,7 @@ Writes to an MSR directly from the CPU given the address of the MSR to write and
 | :---- | :---------- |
 | 0x0000000000000001 | Defines the syscall index for bf_intrinsic_op_wrmsr |
 
-### 2.16.1. bf_intrinsic_op_invlpga, OP=0x7, IDX=0x2
+### 2.13.3. bf_intrinsic_op_invlpga, OP=0x7, IDX=0x2
 
 Invalidates the TLB mapping for a given virtual page and a given ASID. Note that this is specific to AMD only.
 
@@ -1363,7 +1383,7 @@ Invalidates the TLB mapping for a given virtual page and a given ASID. Note that
 | :---- | :---------- |
 | 0x0000000000000002 | Defines the syscall index for bf_intrinsic_op_invlpga |
 
-### 2.16.1. bf_intrinsic_op_invept, OP=0x7, IDX=0x3
+### 2.13.4. bf_intrinsic_op_invept, OP=0x7, IDX=0x3
 
 Invalidates mappings in the translation lookaside buffers (TLBs) and paging-structure caches that were derived from extended page tables (EPT). Note that this is specific to Intel only.
 
@@ -1379,7 +1399,7 @@ Invalidates mappings in the translation lookaside buffers (TLBs) and paging-stru
 | :---- | :---------- |
 | 0x0000000000000003 | Defines the syscall index for bf_intrinsic_op_invept |
 
-### 2.16.1. bf_intrinsic_op_invvpid, OP=0x7, IDX=0x4
+### 2.13.5. bf_intrinsic_op_invvpid, OP=0x7, IDX=0x4
 
 Invalidates mappings in the translation lookaside buffers (TLBs) and paging-structure caches based on virtual-processor identifier (VPID). Note that this is specific to Intel only.
 
@@ -1533,7 +1553,7 @@ bf_mem_op_alloc_heap allocates heap memory. When allocating heap memory, the ext
 | :---- | :---------- |
 | 0x0000000000000004 | Defines the syscall index for bf_mem_op_alloc_heap |
 
-### 2.16.1. bf_mem_op_virt_to_phys, OP=0x7, IDX=0x5
+### 2.14.6. bf_mem_op_virt_to_phys, OP=0x7, IDX=0x5
 
 bf_mem_op_virt_to_phys converts a provided virtual address to a physical address for any virtual address allocated using bf_mem_op_alloc_page or bf_mem_op_alloc_huge. It should also be noted that the virtual address of the page to convert must be page aligned.
 

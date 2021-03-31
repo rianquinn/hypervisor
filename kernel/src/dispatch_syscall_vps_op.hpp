@@ -578,7 +578,8 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        syscall_vps_op_clear_vps(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+        syscall_vps_op_clear_vps(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
+            -> syscall::bf_status_t
         {
             if (bsl::unlikely(!vps_pool.clear(bsl::to_u16_unsafe(tls.ext_reg1)))) {
                 bsl::print<bsl::V>() << bsl::here();
