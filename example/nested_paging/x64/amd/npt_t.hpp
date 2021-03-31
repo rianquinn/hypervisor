@@ -22,23 +22,43 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VMEXIT_LOOP_ENTRY_HPP
-#define VMEXIT_LOOP_ENTRY_HPP
+#ifndef PT_T_HPP
+#define PT_T_HPP
 
-#include <bsl/exit_code.hpp>
+#include <pte_t.hpp>
+
+#include <bsl/array.hpp>
+#include <bsl/convert.hpp>
+#include <bsl/safe_integral.hpp>
+
+#pragma pack(push, 1)
 
 namespace mk
 {
+    /// @brief defined the expected size of the pt_t struct
+    constexpr bsl::safe_uintmax NUM_PT_ENTRIES{bsl::to_umax(512)};
+
+    /// @struct mk::pt_t
+    ///
     /// <!-- description -->
-    ///   @brief Executes the main VMExit loop
-    ///   @return Returns bsl::exit_success on success, bsl::exit_failure
-    ///     otherwise
+    ///   @brief Defines the layout of a page table (pt).
     ///
-    /// <!-- inputs/outputs -->
-    ///   @return Returns bsl::exit_success on success and bsl::exit_failure
-    ///     otherwise
-    ///
-    extern "C" [[nodiscard]] auto vmexit_loop_entry() noexcept -> bsl::exit_code;
+    struct pt_t final
+    {
+        /// @brief stores the entires in the table
+        bsl::array<loader::pte_t, NUM_PT_ENTRIES.get()> entries;
+    };
+
+    namespace details
+    {
+        /// @brief defined the expected size of the pt_t struct
+        constexpr bsl::safe_uintmax EXPECTED_PT_T_SIZE{bsl::to_umax(HYPERVISOR_PAGE_SIZE)};
+
+        /// Check to make sure the pt_t is the right size.
+        static_assert(sizeof(pt_t) == EXPECTED_PT_T_SIZE);
+    }
 }
+
+#pragma pack(pop)
 
 #endif

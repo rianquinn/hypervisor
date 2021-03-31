@@ -22,23 +22,29 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VMEXIT_LOOP_ENTRY_HPP
-#define VMEXIT_LOOP_ENTRY_HPP
+#ifndef RANGE_T_HPP
+#define RANGE_T_HPP
 
-#include <bsl/exit_code.hpp>
+#include "memory_type_t.hpp"
 
-namespace mk
+#include <bsl/cstdint.hpp>
+
+namespace example
 {
+    /// @struct example::range_t
+    ///
     /// <!-- description -->
-    ///   @brief Executes the main VMExit loop
-    ///   @return Returns bsl::exit_success on success, bsl::exit_failure
-    ///     otherwise
+    ///   @brief Defines a MTRR range used by the mtrr_t class.
     ///
-    /// <!-- inputs/outputs -->
-    ///   @return Returns bsl::exit_success on success and bsl::exit_failure
-    ///     otherwise
-    ///
-    extern "C" [[nodiscard]] auto vmexit_loop_entry() noexcept -> bsl::exit_code;
+    struct range_t
+    {
+        /// @brief Defines the range's memory type
+        memory_type_t type;
+        /// @brief Defines the range's address
+        bsl::uintmax addr;
+        /// @brief Defines the range's size in bytes
+        bsl::uintmax size;
+    };
 }
 
 #endif

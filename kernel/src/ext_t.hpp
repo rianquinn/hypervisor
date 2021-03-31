@@ -1557,7 +1557,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
-        ///   @param exit_reason the exit reason associated with the VMExit
+        ///   @param exit_reason the reason for the VMExit
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///

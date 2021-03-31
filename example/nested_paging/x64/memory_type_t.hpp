@@ -22,23 +22,24 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VMEXIT_LOOP_ENTRY_HPP
-#define VMEXIT_LOOP_ENTRY_HPP
+#ifndef MEMORY_TYPE_T_HPP
+#define MEMORY_TYPE_T_HPP
 
-#include <bsl/exit_code.hpp>
+#include <bsl/cstdint.hpp>
 
-namespace mk
+namespace example
 {
     /// <!-- description -->
-    ///   @brief Executes the main VMExit loop
-    ///   @return Returns bsl::exit_success on success, bsl::exit_failure
-    ///     otherwise
+    ///   @brief Defines the different memory types that x86 supports
     ///
-    /// <!-- inputs/outputs -->
-    ///   @return Returns bsl::exit_success on success and bsl::exit_failure
-    ///     otherwise
-    ///
-    extern "C" [[nodiscard]] auto vmexit_loop_entry() noexcept -> bsl::exit_code;
+    enum class memory_type_t : bsl::uint64
+    {
+        un = static_cast<bsl::uint64>(0),
+        wc = static_cast<bsl::uint64>(1),
+        wt = static_cast<bsl::uint64>(4),
+        wp = static_cast<bsl::uint64>(5),
+        wb = static_cast<bsl::uint64>(6)
+    };
 }
 
 #endif

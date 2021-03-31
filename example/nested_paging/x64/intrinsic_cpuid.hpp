@@ -22,23 +22,28 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VMEXIT_LOOP_ENTRY_HPP
-#define VMEXIT_LOOP_ENTRY_HPP
+#ifndef INTRINSIC_CPUID_HPP
+#define INTRINSIC_CPUID_HPP
 
-#include <bsl/exit_code.hpp>
+#include <bsl/cstdint.hpp>
 
-namespace mk
+namespace example
 {
     /// <!-- description -->
-    ///   @brief Executes the main VMExit loop
-    ///   @return Returns bsl::exit_success on success, bsl::exit_failure
-    ///     otherwise
+    ///   @brief Executes the CPUID instruction given the provided EAX and ECX
+    ///     and returns the results
     ///
     /// <!-- inputs/outputs -->
-    ///   @return Returns bsl::exit_success on success and bsl::exit_failure
-    ///     otherwise
+    ///   @param rax the index used by CPUID, returns resulting rax
+    ///   @param rbx returns resulting rbx
+    ///   @param rcx the subindex used by CPUID, returns the resulting rcx
+    ///   @param rdx returns resulting rdx
     ///
-    extern "C" [[nodiscard]] auto vmexit_loop_entry() noexcept -> bsl::exit_code;
+    extern "C" void intrinsic_cpuid(
+        bsl::uint64 *const rax,
+        bsl::uint64 *const rbx,
+        bsl::uint64 *const rcx,
+        bsl::uint64 *const rdx) noexcept;
 }
 
 #endif

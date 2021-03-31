@@ -93,11 +93,11 @@ namespace example
                 }
 
                 case loader::CPUID_COMMAND_ECX_REPORT_ON.get(): {
-                    bsl::debug() << "host os is"                      // --
-                                 << bsl::bold_green                   // --
-                                 << " now "                           // --
-                                 << bsl::reset_color                  // --
-                                 << "in a vm (default example)\n";    // --
+                    bsl::debug() << "host os is"                            // --
+                                 << bsl::bold_green                         // --
+                                 << " now "                                 // --
+                                 << bsl::reset_color                        // --
+                                 << "in a vm (nested_paging example)\n";    // --
 
                     return bsl::errc_success;
                 }
