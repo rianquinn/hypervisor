@@ -94,7 +94,7 @@ bf_add_config(
 bf_add_config(
     CONFIG_NAME HYPERVISOR_EXTENSIONS_DIR
     CONFIG_TYPE STRING
-    DEFAULT_VAL "${CMAKE_SOURCE_DIR}/example"
+    DEFAULT_VAL "${CMAKE_SOURCE_DIR}/example/default"
     DESCRIPTION "Defines the extension to use"
     SKIP_VALIDATION
 )
