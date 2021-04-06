@@ -38,7 +38,7 @@
 namespace example
 {
     /// @brief stores the MSR bitmap used by this extension
-    inline void const *g_msr_bitmaps{};
+    inline void *g_msr_bitmaps{};
     /// @brief stores the physical address of the MSR bitmap
     inline bsl::safe_uintmax g_msr_bitmaps_phys{};
 
