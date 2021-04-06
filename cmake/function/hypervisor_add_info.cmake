@@ -240,22 +240,22 @@ macro(hypervisor_add_info)
     )
 
     add_custom_command(TARGET info
-        COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_MK_HUGE_POOL_ADDR   ${BF_COLOR_CYN}${HYPERVISOR_MK_HUGE_POOL_ADDR}${BF_COLOR_RST}"
-        VERBATIM
-    )
-
-    add_custom_command(TARGET info
-        COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_MK_HUGE_POOL_SIZE   ${BF_COLOR_CYN}${HYPERVISOR_MK_HUGE_POOL_SIZE}${BF_COLOR_RST}"
-        VERBATIM
-    )
-
-    add_custom_command(TARGET info
         COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_MK_PAGE_POOL_ADDR   ${BF_COLOR_CYN}${HYPERVISOR_MK_PAGE_POOL_ADDR}${BF_COLOR_RST}"
         VERBATIM
     )
 
     add_custom_command(TARGET info
         COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_MK_PAGE_POOL_SIZE   ${BF_COLOR_CYN}${HYPERVISOR_MK_PAGE_POOL_SIZE}${BF_COLOR_RST}"
+        VERBATIM
+    )
+
+    add_custom_command(TARGET info
+        COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_MK_HUGE_POOL_ADDR   ${BF_COLOR_CYN}${HYPERVISOR_MK_HUGE_POOL_ADDR}${BF_COLOR_RST}"
+        VERBATIM
+    )
+
+    add_custom_command(TARGET info
+        COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_MK_HUGE_POOL_SIZE   ${BF_COLOR_CYN}${HYPERVISOR_MK_HUGE_POOL_SIZE}${BF_COLOR_RST}"
         VERBATIM
     )
 

@@ -22,13 +22,14 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef HUGE_POOL_T_HPP
-#define HUGE_POOL_T_HPP
+#ifndef PAGE_POOL_T_HPP
+#define PAGE_POOL_T_HPP
 
-#include <bsl/byte.hpp>
 #include <bsl/construct_at.hpp>
 #include <bsl/convert.hpp>
-#include <bsl/discard.hpp>
+#include <bsl/cstring.hpp>
+#include <bsl/debug.hpp>
+#include <bsl/disjunction.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
 #include <bsl/is_standard_layout.hpp>
@@ -40,37 +41,41 @@
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
 
-namespace mk
+namespace example
 {
-    /// @class mk::huge_pool_t
+    /// @class example::page_pool_t
     ///
     /// <!-- description -->
-    ///   @brief The huge pool provides access to physically contiguous
-    ///     memory. The amount of memory that is available is really, really
-    ///     small (likely no more than 1 MB), but some is needed for different
-    ///     architectures that require it like AMD. This memory is only needed
-    ///     by the extensions, and we currently do not support the ability
-    ///     to free memory, so there is no need to over complicate how this
-    ///     allocator works. We simply use a cursor that is always increasing.
-    ///     Once you allocate all of the memory, that is it.
+    ///   @brief The page pool is responsible for allocating and freeing
+    ///      pages. The page pool exists in the extensions's direct map and so
+    ///      the page pool can also return the physical address of any page
+    ///      that it has allocated. For more information about how this page
+    ///      pool works, see the page_pool_t in the kernel, as they are
+    ///      very similar.
     ///
-    ///   TODO:
-    ///   - Implement this allocator using a buddy allocator. This way free
-    ///     could be supported.
+    ///      One question you might ask if, why have a page_pool_t in the
+    ///      extension in the first place? The reason is because some
+    ///      microkernel implementation might not implement the free_page
+    ///      ABI as it is optional, but the extension will still need to be
+    ///      able to free memory and reuse it. For this reason, all allocations
+    ///      are done using this class, instead of allocating memory manually.
+    ///      Any time memory is freed, it is returned to the page pool to be
+    ///      used again on the next allocation, and any time an allocation
+    ///      occurs and there isn't enough memory, the extension asks the
+    ///      kernel for another page. This way, the extension is only asking
+    ///      for pages when it needs it, and it is able to reuse memory
+    ///      when it is freed.
     ///
-    /// <!-- template parameters -->
-    ///   @tparam PAGE_SIZE defines the size of a page
-    ///   @tparam MK_HUGE_POOL_ADDR defines the base address of the huge pool
-    ///
-    template<bsl::uintmax PAGE_SIZE, bsl::uintmax MK_HUGE_POOL_ADDR>
-    class huge_pool_t final
+    class page_pool_t final
     {
         /// @brief stores true if initialized() has been executed
         bool m_initialized{};
-        /// @brief stores the range of memory used by this allocator
-        bsl::span<bsl::byte> m_pool{};
-        /// @brief stores the huge pool's cursor
-        bsl::safe_uintmax m_crsr{};
+        /// @brief stores the handle used to communicate with the kernel
+        syscall::bf_handle_t m_handle;
+        /// @brief stores the head of the page pool stack.
+        void *m_head{};
+        /// @brief stores the total number of bytes in the page pool.
+        bsl::safe_uintmax m_size{};
         /// @brief safe guards operations on the pool.
         mutable bsl::spinlock m_pool_lock{};
 
@@ -78,23 +83,21 @@ namespace mk
         /// <!-- description -->
         ///   @brief Default constructor
         ///
-        constexpr huge_pool_t() noexcept = default;
+        constexpr page_pool_t() noexcept = default;
 
         /// <!-- description -->
-        ///   @brief Creates the huge pool given a mutable_buffer_t to
-        ///     the huge pool as well as the virtual address base of the
-        ///     huge pool which is used for virt to phys translations.
+        ///   @brief Initializes the page pool
         ///
         /// <!-- inputs/outputs -->
-        ///   @param pool the mutable_buffer_t of the huge pool
+        ///   @param handle the handle used to communicate with the kernel
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(bsl::span<bsl::byte> &pool) &noexcept -> bsl::errc_type
+        initialize(syscall::bf_handle_t const &handle) &noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(m_initialized)) {
-                bsl::error() << "huge_pool_t already initialized\n" << bsl::here();
+                bsl::error() << "page_pool_t already initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
@@ -102,12 +105,7 @@ namespace mk
                 this->release();
             }};
 
-            if (bsl::unlikely(pool.empty())) {
-                bsl::error() << "pool is empty\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            m_pool = pool;
+            m_handle = handle;
 
             release_on_error.ignore();
             m_initialized = true;
@@ -116,21 +114,22 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Release the huge_pool_t
+        ///   @brief Release the page_pool_t
         ///
         constexpr void
         release() &noexcept
         {
-            m_crsr = bsl::safe_uintmax::zero(true);
-            m_pool = {};
+            m_size = {};
+            m_head = {};
 
+            m_handle = {};
             m_initialized = {};
         }
 
         /// <!-- description -->
-        ///   @brief Destroyes a previously created huge_pool_t
+        ///   @brief Destroyes a previously created page_pool_t
         ///
-        constexpr ~huge_pool_t() noexcept = default;
+        constexpr ~page_pool_t() noexcept = default;
 
         /// <!-- description -->
         ///   @brief copy constructor
@@ -138,7 +137,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param o the object being copied
         ///
-        constexpr huge_pool_t(huge_pool_t const &o) noexcept = delete;
+        constexpr page_pool_t(page_pool_t const &o) noexcept = delete;
 
         /// <!-- description -->
         ///   @brief move constructor
@@ -146,7 +145,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param o the object being moved
         ///
-        constexpr huge_pool_t(huge_pool_t &&o) noexcept = default;
+        constexpr page_pool_t(page_pool_t &&o) noexcept = default;
 
         /// <!-- description -->
         ///   @brief copy assignment
@@ -155,8 +154,8 @@ namespace mk
         ///   @param o the object being copied
         ///   @return a reference to *this
         ///
-        [[maybe_unused]] constexpr auto operator=(huge_pool_t const &o) &noexcept
-            -> huge_pool_t & = delete;
+        [[maybe_unused]] constexpr auto operator=(page_pool_t const &o) &noexcept
+            -> page_pool_t & = delete;
 
         /// <!-- description -->
         ///   @brief move assignment
@@ -165,58 +164,42 @@ namespace mk
         ///   @param o the object being moved
         ///   @return a reference to *this
         ///
-        [[maybe_unused]] constexpr auto operator=(huge_pool_t &&o) &noexcept
-            -> huge_pool_t & = default;
+        [[maybe_unused]] constexpr auto operator=(page_pool_t &&o) &noexcept
+            -> page_pool_t & = default;
 
         /// <!-- description -->
-        ///   @brief Allocates memory from the huge pool.
+        ///   @brief Allocates a page from the page pool.
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam T the type of pointer to return
-        ///   @param size the total number of bytes to allocate.
-        ///   @return Returns a pointer to the newly allocated memory
+        ///   @return Returns a pointer to the newly allocated page
         ///
         template<typename T>
         [[nodiscard]] constexpr auto
-        allocate(bsl::safe_uintmax const &size) &noexcept -> T *
+        allocate() &noexcept -> T *
         {
             bsl::lock_guard lock{m_pool_lock};
 
             if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "huge_pool_t not initialized\n" << bsl::here();
+                bsl::error() << "page_pool_t not initialized\n" << bsl::here();
                 return nullptr;
             }
 
-            if (bsl::unlikely(!size)) {
-                bsl::error() << "invalid size: "    // --
-                             << bsl::hex(size)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+            if (bsl::unlikely(nullptr == m_head)) {
+                bsl::safe_uintmax phys{};
+                auto const ret{syscall::bf_mem_op_alloc_page(m_handle, m_head, phys)};
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return nullptr;
+                }
 
-                return nullptr;
-            }
-
-            auto pages{size / PAGE_SIZE};
-            if ((size % PAGE_SIZE) != bsl::ZERO_UMAX) {
-                ++pages;
-            }
-            else {
                 bsl::touch();
             }
 
-            if (bsl::unlikely(m_pool.at_if(m_crsr + (pages * PAGE_SIZE)) == nullptr)) {
-                bsl::error() << "huge pool out of memory: "    // --
-                             << bsl::hex(size)                 // --
-                             << bsl::endl                      // --
-                             << bsl::here();                   // --
+            void *const ptr{m_head};
+            m_head = *static_cast<void **>(m_head);
 
-                return nullptr;
-            }
-
-            void *const ptr{m_pool.at_if(m_crsr)};
-            m_crsr += (pages * PAGE_SIZE);
-
-            bsl::builtin_memset(ptr, '\0', size);
+            bsl::builtin_memset(ptr, '\0', bsl::to_umax(HYPERVISOR_PAGE_SIZE).get());
 
             if constexpr (!bsl::is_void<T>::value) {
                 static_assert(bsl::is_standard_layout<T>::value, "T must be a standard layout");
@@ -227,44 +210,47 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Not supported
+        ///   @brief Returns a page previously allocated using the allocate
+        ///     function to the page pool.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param ptr the pointer to the memory to deallocate
+        ///   @param ptr the pointer to the page to deallocate
         ///
         constexpr void
         deallocate(void *const ptr) &noexcept
         {
             bsl::lock_guard lock{m_pool_lock};
-            bsl::discard(ptr);
 
-            /// NOTE:
-            /// - If this function is implemented, we will have to deal with
-            ///   deallocations being a page in size. Specifically, right now
-            ///   a huge page is allocated and mapped into the page tables
-            ///   one page at a time. When is is time to deallocate, this
-            ///   memory is released one page at a time. If the page tables
-            ///   are deallocating one page of a larger physically contiguous
-            ///   memory region, it should be assumed that the entire region
-            ///   will be freed, it will just happen in page increments.
-            /// - What this means is this function could see a free for the
-            ///   same physically contiguous block of memory (one for each
-            ///   page in the block). We could ignore the extras, or we
-            ///   could set up the allocator so that it frees one page at a
-            ///   time. Just depends on how we want to do this... but in
-            ///   general, I would suggest using the later as a buddy allocator
-            ///   can support this without any added overhead.
-            ///
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::error() << "page_pool_t not initialized\n" << bsl::here();
+                return;
+            }
+
+            if (bsl::unlikely(nullptr == ptr)) {
+                return;
+            }
+
+            if (bsl::to_umax(ptr) < HYPERVISOR_EXT_PAGE_POOL_ADDR) {
+                bsl::error() << "invalid ptr"    // --
+                             << ptr              // --
+                             << bsl::endl        // --
+                             << bsl::here();
+
+                return;
+            }
+
+            *static_cast<void **>(ptr) = m_head;
+            m_head = ptr;
         }
 
         /// <!-- description -->
         ///   @brief Converts a virtual address to a physical address for
-        ///     any memory allocated by the huge pool. If the provided ptr
+        ///     any page allocated by the page pool. If the provided ptr
         ///     was not allocated using the allocate function by the same
-        ///     huge pool, this results of this function are UB. It should
+        ///     page pool, this results of this function are UB. It should
         ///     be noted that any virtual address may be used meaning the
         ///     provided address does not have to be page aligned, it simply
-        ///     needs to be allocated using the same huge pool.
+        ///     needs to be allocated using the same page pool.
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam T defines the type of virtual address being converted
@@ -276,17 +262,17 @@ namespace mk
         virt_to_phys(T const *const virt) const &noexcept -> bsl::safe_uintmax
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_umax(virt) - MK_HUGE_POOL_ADDR;
+            return bsl::to_umax(virt) - HYPERVISOR_EXT_PAGE_POOL_ADDR;
         }
 
         /// <!-- description -->
         ///   @brief Converts a physical address to a virtual address for
-        ///     any memory allocated by the huge pool. If the provided address
+        ///     any page allocated by the page pool. If the provided address
         ///     was not allocated using the allocate function by the same
-        ///     huge pool, this results of this function are UB. It should
+        ///     page pool, this results of this function are UB. It should
         ///     be noted that any physical address may be used meaning the
         ///     provided address does not have to be page aligned, it simply
-        ///     needs to be allocated using the same huge pool.
+        ///     needs to be allocated using the same page pool.
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam T defines the type of virtual address to convert to
@@ -298,7 +284,7 @@ namespace mk
         phys_to_virt(bsl::safe_uintmax const &phys) const &noexcept -> T *
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_ptr<T *>(phys + MK_HUGE_POOL_ADDR);
+            return bsl::to_ptr<T *>(phys + HYPERVISOR_EXT_PAGE_POOL_ADDR);
         }
     };
 }

@@ -160,31 +160,6 @@ namespace mk
             tls.ext_reg0 = previous_heap_virt.get();
             return syscall::BF_STATUS_SUCCESS;
         }
-
-        /// <!-- description -->
-        ///   @brief Implements the bf_mem_op_virt_to_phys syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-        ///   @param tls the current TLS block
-        ///   @param ext the extension that made the syscall
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename EXT_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_mem_op_virt_to_phys(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
-        {
-            auto const phys{ext.virt_to_phys(tls.ext_reg1)};
-            if (bsl::unlikely(!phys)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            tls.ext_reg0 = phys.get();
-            return syscall::BF_STATUS_SUCCESS;
-        }
     }
 
     /// <!-- description -->
@@ -256,16 +231,6 @@ namespace mk
 
             case syscall::BF_MEM_OP_ALLOC_HEAP_IDX_VAL.get(): {
                 ret = details::syscall_mem_op_alloc_heap(tls, ext);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return ret;
-                }
-
-                return ret;
-            }
-
-            case syscall::BF_MEM_OP_VIRT_TO_PHYS_IDX_VAL.get(): {
-                ret = details::syscall_mem_op_virt_to_phys(tls, ext);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

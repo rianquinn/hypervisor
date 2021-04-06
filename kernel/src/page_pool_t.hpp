@@ -78,21 +78,7 @@ namespace mk
     ///      is mapped into the microkernel's address space at the physical
     ///      address + some offset. This means that virt to phys conversions
     ///      can all be done with simple arithmetic (i.e., no lookups are
-    ///      needed). This is what is typically called a direct map. In other
-    ///      kernels, the direct map has been an issue with respect to attacks
-    ///      like Spectre/Meltdown. In the case of this microkernel, the only
-    ///      memory in the direct map is memory used by the page/huge pools,
-    ///      all of which do not store secrects or VM memory, but instead
-    ///      are used by the microkernel for internal resources, hardware
-    ///      resources and memory to back extensions, all of which should not
-    ///      have secrects in them. On the flip side, kernels typically have
-    ///      more conventional userspace processes and their associated memory
-    ///      as well as kernel memory all mapped into the direct map, which
-    ///      could include secrets like encryption keys, passwords, etc. If
-    ///      secrets are needed, they should be stored in global or stack based
-    ///      memory in the microkernel (not in an extension), and the
-    ///      microkernel should be the only thing working with the unprotected
-    ///      version of the secret.
+    ///      needed). This is what is typically called a direct map.
     ///
     /// <!-- template parameters -->
     ///   @tparam PAGE_SIZE defines the size of a page
@@ -262,11 +248,14 @@ namespace mk
                 return;
             }
 
-            /// TODO:
-            /// - If the address is not in the right range (i.e., not the
-            ///   direct map), this function should return and throw up an
-            ///   error and return
-            ///
+            if (bsl::to_umax(ptr) < MK_PAGE_POOL_ADDR) {
+                bsl::error() << "invalid ptr"    // --
+                             << ptr              // --
+                             << bsl::endl        // --
+                             << bsl::here();
+
+                return;
+            }
 
             *static_cast<void **>(ptr) = m_head;
             m_head = ptr;
@@ -291,23 +280,7 @@ namespace mk
         virt_to_phys(T const *const virt) const &noexcept -> bsl::safe_uintmax
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "page_pool_t not initialized\n" << bsl::here();
-                return bsl::safe_uintmax::zero(true);
-            }
-
-            auto const ret{bsl::to_umax(virt) - bsl::to_umax(MK_PAGE_POOL_ADDR)};
-            if (bsl::unlikely(!ret)) {
-                bsl::error() << "virtual to physical address conversion failed for "    // --
-                             << virt                                                    // --
-                             << bsl::endl                                               // --
-                             << bsl::here();                                            // --
-
-                return bsl::safe_uintmax::zero(true);
-            }
-
-            return ret;
+            return bsl::to_umax(virt) - MK_PAGE_POOL_ADDR;
         }
 
         /// <!-- description -->
@@ -329,23 +302,7 @@ namespace mk
         phys_to_virt(bsl::safe_uintmax const &phys) const &noexcept -> T *
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "page_pool_t not initialized\n" << bsl::here();
-                return nullptr;
-            }
-
-            auto const ret{phys + bsl::to_umax(MK_PAGE_POOL_ADDR)};
-            if (bsl::unlikely(!ret)) {
-                bsl::error() << "physical to virtual address conversion failed for "    // --
-                             << bsl::hex(phys)                                          // --
-                             << bsl::endl                                               // --
-                             << bsl::here();                                            // --
-
-                return nullptr;
-            }
-
-            return bsl::to_ptr<T *>(ret);
+            return bsl::to_ptr<T *>(phys + MK_PAGE_POOL_ADDR);
         }
     };
 }

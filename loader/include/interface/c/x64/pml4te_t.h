@@ -27,14 +27,14 @@
 #ifndef PML4TE_T_H
 #define PML4TE_T_H
 
+#include <static_assert.h>
+#include <types.h>
+
 #pragma pack(push, 1)
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4214)
 #endif
-
-#include <static_assert.h>
-#include <types.h>
 
 /**
  * @struct pml4te_t

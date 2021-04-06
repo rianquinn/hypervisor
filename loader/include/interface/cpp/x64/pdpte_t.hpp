@@ -25,11 +25,11 @@
 #ifndef PDPTE_T_HPP
 #define PDPTE_T_HPP
 
-#pragma pack(push, 1)
-
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>
 #include <bsl/safe_integral.hpp>
+
+#pragma pack(push, 1)
 
 namespace loader
 {
@@ -53,18 +53,18 @@ namespace loader
         bsl::uint64 pcd : static_cast<bsl::uint64>(1);
         /// @brief defines the "accessed" field in the page
         bsl::uint64 a : static_cast<bsl::uint64>(1);
-        /// @brief defines an ignored field in the page
-        bsl::uint64 ignored1 : static_cast<bsl::uint64>(1);
-        /// @brief defines a field in the page that must be 0
-        bsl::uint64 mbz1 : static_cast<bsl::uint64>(1);
-        /// @brief defines an ignored field in the page
-        bsl::uint64 ignored2 : static_cast<bsl::uint64>(1);
+        /// @brief defines the "dirty" field in the page (ignored)
+        bsl::uint64 d : static_cast<bsl::uint64>(1);
+        /// @brief defines the "page size" field in the page (must be 0)
+        bsl::uint64 ps : static_cast<bsl::uint64>(1);
+        /// @brief defines the "global" field in the page (must be 0)
+        bsl::uint64 g : static_cast<bsl::uint64>(1);
         /// @brief defines the "available to software" field in the page
-        bsl::uint64 avl : static_cast<bsl::uint64>(3);
-        /// @brief defines the physical address field in the page
+        bsl::uint64 available1 : static_cast<bsl::uint64>(3);
+        /// @brief defines the "physical address" field in the page
         bsl::uint64 phys : static_cast<bsl::uint64>(40);
-        /// @brief defines fields in the page available to the OS for use
-        bsl::uint64 available : static_cast<bsl::uint64>(11);
+        /// @brief defines the "available to software" field in the page
+        bsl::uint64 available2 : static_cast<bsl::uint64>(11);
         /// @brief defines the "no-execute" field in the page
         bsl::uint64 nx : static_cast<bsl::uint64>(1);
     };

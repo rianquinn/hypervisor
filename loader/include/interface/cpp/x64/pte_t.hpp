@@ -25,11 +25,11 @@
 #ifndef PTE_T_HPP
 #define PTE_T_HPP
 
-#pragma pack(push, 1)
-
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>
 #include <bsl/safe_integral.hpp>
+
+#pragma pack(push, 1)
 
 namespace loader
 {
@@ -51,18 +51,22 @@ namespace loader
         bsl::uint64 pcd : static_cast<bsl::uint64>(1);
         /// @brief defines the "accessed" field in the page
         bsl::uint64 a : static_cast<bsl::uint64>(1);
-        /// @brief defines the "dirty" field in the page
+        /// @brief defines the "dirty" field in the page (ignored)
         bsl::uint64 d : static_cast<bsl::uint64>(1);
-        /// @brief defines the "page-attribute table" field in the page
-        bsl::uint64 pat : static_cast<bsl::uint64>(1);
-        /// @brief defines the "global page" field in the page
+        /// @brief defines the "page size" field in the page (must be 0)
+        bsl::uint64 ps : static_cast<bsl::uint64>(1);
+        /// @brief defines the "global" field in the page (must be 0)
         bsl::uint64 g : static_cast<bsl::uint64>(1);
+        /// @brief defines our "auto_release_page_pool" field in the page
+        bsl::uint64 auto_release_page_pool : static_cast<bsl::uint64>(1);
+        /// @brief defines our "auto_release_huge_pool" field in the page
+        bsl::uint64 auto_release_huge_pool : static_cast<bsl::uint64>(1);
         /// @brief defines the "available to software" field in the page
-        bsl::uint64 avl : static_cast<bsl::uint64>(3);
-        /// @brief defines the physical addressfield in the page
+        bsl::uint64 available1 : static_cast<bsl::uint64>(1);
+        /// @brief defines the "physical address" field in the page
         bsl::uint64 phys : static_cast<bsl::uint64>(40);
-        /// @brief defines whether or not the page can be auto released
-        bsl::uint64 auto_release : static_cast<bsl::uint64>(7);
+        /// @brief defines the "available to software" field in the page
+        bsl::uint64 available2 : static_cast<bsl::uint64>(7);
         /// @brief defines the "memory protection key" field in the page
         bsl::uint64 mpk : static_cast<bsl::uint64>(4);
         /// @brief defines the "no-execute" field in the page

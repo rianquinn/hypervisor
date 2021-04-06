@@ -22,10 +22,10 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef PDPT_T_HPP
-#define PDPT_T_HPP
+#ifndef NPDPT_T_HPP
+#define NPDPT_T_HPP
 
-#include <pdpte_t.hpp>
+#include <npdpte_t.hpp>
 
 #include <bsl/array.hpp>
 #include <bsl/convert.hpp>
@@ -33,29 +33,29 @@
 
 #pragma pack(push, 1)
 
-namespace mk
+namespace example
 {
-    /// @brief defined the expected size of the pdpt_t struct
+    /// @brief defined the expected size of the npdpt_t struct
     constexpr bsl::safe_uintmax NUM_PDPT_ENTRIES{bsl::to_umax(512)};
 
-    /// @struct mk::pdpt_t
+    /// @struct example::npdpt_t
     ///
     /// <!-- description -->
-    ///   @brief Defines the layout of a page-directory-pionter table (pdpt).
+    ///   @brief Defines the layout of a page-directory-pionter table (npdpt).
     ///
-    struct pdpt_t final
+    struct npdpt_t final
     {
         /// @brief stores the entires in the table
-        bsl::array<loader::pdpte_t, NUM_PDPT_ENTRIES.get()> entries;
+        bsl::array<npdpte_t, NUM_PDPT_ENTRIES.get()> entries;
     };
 
     namespace details
     {
-        /// @brief defined the expected size of the pdpt_t struct
+        /// @brief defined the expected size of the npdpt_t struct
         constexpr bsl::safe_uintmax EXPECTED_PDPT_T_SIZE{bsl::to_umax(HYPERVISOR_PAGE_SIZE)};
 
-        /// Check to make sure the pdpt_t is the right size.
-        static_assert(sizeof(pdpt_t) == EXPECTED_PDPT_T_SIZE);
+        /// Check to make sure the npdpt_t is the right size.
+        static_assert(sizeof(npdpt_t) == EXPECTED_PDPT_T_SIZE);
     }
 }
 

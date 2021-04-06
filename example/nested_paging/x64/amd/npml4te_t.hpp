@@ -22,23 +22,24 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef PML4TE_T_HPP
-#define PML4TE_T_HPP
-
-#pragma pack(push, 1)
+#ifndef NPML4TE_T_HPP
+#define NPML4TE_T_HPP
 
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>
 #include <bsl/safe_integral.hpp>
 
-namespace loader
+#pragma pack(push, 1)
+
+namespace example
 {
-    /// @struct loader::pml4te_t
+    /// @struct example::npml4te_t
     ///
     /// <!-- description -->
-    ///   @brief Defines the layout of a page-map level-4 table entry (PML4TE).
+    ///   @brief Defines the layout of a nested page-map level-4 table entry
+    ///     (NPML4TE).
     ///
-    struct pml4te_t final
+    struct npml4te_t final
     {
         /// @brief defines the "present" field in the page
         bsl::uint64 p : static_cast<bsl::uint64>(1);
@@ -52,29 +53,29 @@ namespace loader
         bsl::uint64 pcd : static_cast<bsl::uint64>(1);
         /// @brief defines the "accessed" field in the page
         bsl::uint64 a : static_cast<bsl::uint64>(1);
-        /// @brief defines an ignored field in the page
-        bsl::uint64 ignored1 : static_cast<bsl::uint64>(1);
-        /// @brief defines a field in the page that must be 0
+        /// @brief defines the "dirty" field in the page (ignored)
+        bsl::uint64 ignored : static_cast<bsl::uint64>(1);
+        /// @brief defines the "page size" field in the page (must be 0)
         bsl::uint64 mbz1 : static_cast<bsl::uint64>(1);
-        /// @brief defines a field in the page that must be 0
+        /// @brief defines the "global" field in the page (must be 0)
         bsl::uint64 mbz2 : static_cast<bsl::uint64>(1);
         /// @brief defines the "available to software" field in the page
-        bsl::uint64 avl : static_cast<bsl::uint64>(3);
-        /// @brief defines the physical address field in the page
+        bsl::uint64 available1 : static_cast<bsl::uint64>(3);
+        /// @brief defines the "physical address" field in the page
         bsl::uint64 phys : static_cast<bsl::uint64>(40);
-        /// @brief defines if this page is an alias (i.e., non-owning)
-        bsl::uint64 alias : static_cast<bsl::uint64>(11);
+        /// @brief defines the "available to software" field in the page
+        bsl::uint64 available2 : static_cast<bsl::uint64>(11);
         /// @brief defines the "no-execute" field in the page
         bsl::uint64 nx : static_cast<bsl::uint64>(1);
     };
 
     namespace details
     {
-        /// @brief defined the expected size of the pml4te_t struct
-        constexpr bsl::safe_uintmax EXPECTED_PML4TE_T_SIZE{bsl::to_umax(8)};
+        /// @brief defined the expected size of the npml4te_t struct
+        constexpr bsl::safe_uintmax EXPECTED_NPML4TE_T_SIZE{bsl::to_umax(8)};
 
-        /// Check to make sure the pml4te_t is the right size.
-        static_assert(sizeof(pml4te_t) == EXPECTED_PML4TE_T_SIZE);
+        /// Check to make sure the npml4te_t is the right size.
+        static_assert(sizeof(npml4te_t) == EXPECTED_NPML4TE_T_SIZE);
     }
 }
 

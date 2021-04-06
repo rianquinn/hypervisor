@@ -97,6 +97,7 @@ namespace mk
     using mk_root_page_table_type = root_page_table_t<    // --
         mk_intrinsic_type,                                // --
         mk_page_pool_type,                                // --
+        mk_huge_pool_type,                                // --
         bsl::to_umax(HYPERVISOR_PAGE_SIZE).get(),         // --
         bsl::to_umax(HYPERVISOR_PAGE_SHIFT).get()>;       // --
 

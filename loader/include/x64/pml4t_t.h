@@ -27,12 +27,12 @@
 #ifndef PML4T_T_H
 #define PML4T_T_H
 
-#pragma pack(push, 1)
-
 #include <pdpt_t.h>
 #include <pml4te_t.h>
 #include <static_assert.h>
 #include <types.h>
+
+#pragma pack(push, 1)
 
 /** @brief defines total number of entries in the PML4T */
 #define LOADER_NUM_PML4T_ENTRIES ((uint64_t)512)

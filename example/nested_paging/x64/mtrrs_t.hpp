@@ -37,21 +37,31 @@
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/sort.hpp>
+#include <bsl/touch.hpp>
 
 namespace example
 {
     namespace details
     {
         /// @brief defines the CPUID feature identifier bit for MTRR
-        constexpr bsl::safe_uintmax MAX_RANGES{bsl::to_umax(256)};
+        constexpr bsl::safe_uintmax MAX_RANGES{bsl::to_umax(512)};
 
+        /// @brief defines the CPUID feature identifier index
+        constexpr bsl::safe_uintmax CPUID_FEATURE_IDENTIFIERS{bsl::to_umax(0x00000001U)};
         /// @brief defines the CPUID feature identifier bit for MTRR
-        constexpr bsl::safe_uintmax CPUID_FEATURE_IDENTIFIERS_MTRR{bsl::to_umax(12)};
+        constexpr bsl::safe_uintmax CPUID_FEATURE_IDENTIFIERS_MTRR{bsl::to_umax(0x00001000U)};
+
+        /// @brief defines the CPUID linear/physical address size index
+        constexpr bsl::safe_uintmax CPUID_LP_ADDRESS_SIZE{bsl::to_umax(0x80000008U)};
+        /// @brief defines the CPUID linear/physical address size phys addr bits
+        constexpr bsl::safe_uintmax CPUID_LP_ADDRESS_SIZE_PHYS_ADDR_BITS{bsl::to_umax(0x000000FFU)};
 
         /// @brief defines the MTRRcap MSR
         constexpr bsl::safe_uint32 IA32_MTRRCAP{bsl::to_u32(0x000000FEU)};
         /// @brief defines the MTRRcap MSR VCNT field
         constexpr bsl::safe_uintmax IA32_MTRRCAP_VCNT{bsl::to_umax(0x00000000000000FFU)};
+        /// @brief defines the MTRRcap MSR FIX field
+        constexpr bsl::safe_uintmax IA32_MTRRCAP_FIX{bsl::to_umax(0x0000000000000100U)};
 
         /// @brief defines the MTRRdefType MSR
         constexpr bsl::safe_uint32 IA32_MTRRDEFTYPE{bsl::to_u32(0x000002FFU)};
@@ -62,10 +72,85 @@ namespace example
         /// @brief defines the MTRRdefType MSR enable field
         constexpr bsl::safe_uintmax IA32_MTRRDEFTYPE_E{bsl::to_umax(0x0000000000000800U)};
 
-        /// @brief defines the min address of physical memory
-        constexpr bsl::safe_uintmax MIN_PHYSICAL_ADDR{bsl::to_umax(0x0000000000000000U)};
-        /// @brief defines the max size of physical memory
-        constexpr bsl::safe_uintmax MAX_PHYSICAL_SIZE{bsl::to_umax(0xFFFFFFFFFFFFFFFFU)};
+        /// @brief defines the MTRRfix64K_00000 MSR
+        constexpr bsl::safe_uint32 IA32_MTRRFIX64K_00000{bsl::to_u32(0x000000250U)};
+        /// @brief defines the MTRRfix16K_80000 MSR
+        constexpr bsl::safe_uint32 IA32_MTRRFIX16K_80000{bsl::to_u32(0x000000258U)};
+        /// @brief defines the MTRRfix16K_A0000 MSR
+        constexpr bsl::safe_uint32 IA32_MTRRFIX16K_A0000{bsl::to_u32(0x000000259U)};
+        /// @brief defines the MTRRfix4K_C0000 MSR
+        constexpr bsl::safe_uint32 IA32_MTRRFIX4K_C0000{bsl::to_u32(0x000000268U)};
+        /// @brief defines the MTRRfix4K_C8000 MSR
+        constexpr bsl::safe_uint32 IA32_MTRRFIX4K_C8000{bsl::to_u32(0x000000269U)};
+        /// @brief defines the MTRRfix4K_D0000 MSR
+        constexpr bsl::safe_uint32 IA32_MTRRFIX4K_D0000{bsl::to_u32(0x00000026AU)};
+        /// @brief defines the MTRRfix4K_D8000 MSR
+        constexpr bsl::safe_uint32 IA32_MTRRFIX4K_D8000{bsl::to_u32(0x00000026BU)};
+        /// @brief defines the MTRRfix4K_E0000 MSR
+        constexpr bsl::safe_uint32 IA32_MTRRFIX4K_E0000{bsl::to_u32(0x00000026CU)};
+        /// @brief defines the MTRRfix4K_E8000 MSR
+        constexpr bsl::safe_uint32 IA32_MTRRFIX4K_E8000{bsl::to_u32(0x00000026DU)};
+        /// @brief defines the MTRRfix4K_F0000 MSR
+        constexpr bsl::safe_uint32 IA32_MTRRFIX4K_F0000{bsl::to_u32(0x00000026EU)};
+        /// @brief defines the MTRRfix4K_F8000 MSR
+        constexpr bsl::safe_uint32 IA32_MTRRFIX4K_F8000{bsl::to_u32(0x00000026FU)};
+
+        /// @brief defines the memory type mask for fixed ranges
+        constexpr bsl::safe_uintmax MTRR_FIX_MASK{bsl::to_umax(0x00000000000000FFU)};
+        /// @brief defines the memory type shift for fixed ranges
+        constexpr bsl::safe_uintmax MTRR_FIX_SHFT{bsl::to_umax(8)};
+        /// @brief defines the total number of MTRRs per MSR for fixed ranges
+        constexpr bsl::safe_uintmax MTRR_FIX_MTRRS_PER_MSR{bsl::to_umax(8)};
+
+        /// @brief defines the address of MTRRFIX64K_00000
+        constexpr bsl::safe_uintmax MTRRFIX64K_00000_ADDR{bsl::to_umax(0x0000000000000000U)};
+        /// @brief defines the size of MTRRFIX64K_00000
+        constexpr bsl::safe_uintmax MTRRFIX64K_00000_SIZE{bsl::to_umax(0x10000U)};
+        /// @brief defines the address of MTRRFIX16K_80000
+        constexpr bsl::safe_uintmax MTRRFIX16K_80000_ADDR{bsl::to_umax(0x0000000000080000U)};
+        /// @brief defines the size of MTRRFIX16K_80000
+        constexpr bsl::safe_uintmax MTRRFIX16K_80000_SIZE{bsl::to_umax(0x4000U)};
+        /// @brief defines the address of MTRRFIX16K_A0000
+        constexpr bsl::safe_uintmax MTRRFIX16K_A0000_ADDR{bsl::to_umax(0x00000000000A0000U)};
+        /// @brief defines the size of MTRRFIX16K_A0000
+        constexpr bsl::safe_uintmax MTRRFIX16K_A0000_SIZE{bsl::to_umax(0x4000U)};
+        /// @brief defines the address of MTRRFIX4K_C0000
+        constexpr bsl::safe_uintmax MTRRFIX4K_C0000_ADDR{bsl::to_umax(0x00000000000C0000U)};
+        /// @brief defines the size of MTRRFIX4K_C0000
+        constexpr bsl::safe_uintmax MTRRFIX4K_C0000_SIZE{bsl::to_umax(0x1000U)};
+        /// @brief defines the address of MTRRFIX4K_C8000
+        constexpr bsl::safe_uintmax MTRRFIX4K_C8000_ADDR{bsl::to_umax(0x00000000000C8000U)};
+        /// @brief defines the size of MTRRFIX4K_C8000
+        constexpr bsl::safe_uintmax MTRRFIX4K_C8000_SIZE{bsl::to_umax(0x1000U)};
+        /// @brief defines the address of MTRRFIX4K_D0000
+        constexpr bsl::safe_uintmax MTRRFIX4K_D0000_ADDR{bsl::to_umax(0x00000000000D0000U)};
+        /// @brief defines the size of MTRRFIX4K_D0000
+        constexpr bsl::safe_uintmax MTRRFIX4K_D0000_SIZE{bsl::to_umax(0x1000U)};
+        /// @brief defines the address of MTRRFIX4K_D8000
+        constexpr bsl::safe_uintmax MTRRFIX4K_D8000_ADDR{bsl::to_umax(0x00000000000D8000U)};
+        /// @brief defines the size of MTRRFIX4K_D8000
+        constexpr bsl::safe_uintmax MTRRFIX4K_D8000_SIZE{bsl::to_umax(0x1000U)};
+        /// @brief defines the address of MTRRFIX4K_E0000
+        constexpr bsl::safe_uintmax MTRRFIX4K_E0000_ADDR{bsl::to_umax(0x00000000000E0000U)};
+        /// @brief defines the size of MTRRFIX4K_E0000
+        constexpr bsl::safe_uintmax MTRRFIX4K_E0000_SIZE{bsl::to_umax(0x1000U)};
+        /// @brief defines the address of MTRRFIX4K_E8000
+        constexpr bsl::safe_uintmax MTRRFIX4K_E8000_ADDR{bsl::to_umax(0x00000000000E8000U)};
+        /// @brief defines the size of MTRRFIX4K_E8000
+        constexpr bsl::safe_uintmax MTRRFIX4K_E8000_SIZE{bsl::to_umax(0x1000U)};
+        /// @brief defines the address of MTRRFIX4K_F0000
+        constexpr bsl::safe_uintmax MTRRFIX4K_F0000_ADDR{bsl::to_umax(0x00000000000F0000U)};
+        /// @brief defines the size of MTRRFIX4K_F0000
+        constexpr bsl::safe_uintmax MTRRFIX4K_F0000_SIZE{bsl::to_umax(0x1000U)};
+        /// @brief defines the address of MTRRFIX4K_F8000
+        constexpr bsl::safe_uintmax MTRRFIX4K_F8000_ADDR{bsl::to_umax(0x00000000000F8000U)};
+        /// @brief defines the size of MTRRFIX4K_F8000
+        constexpr bsl::safe_uintmax MTRRFIX4K_F8000_SIZE{bsl::to_umax(0x1000U)};
+
+        /// @brief defines the MTRRphysBase MSR
+        constexpr bsl::safe_uint32 IA32_MTRRPHYSBASE{bsl::to_u32(0x000000200U)};
+        /// @brief defines the MTRRphysMask MSR
+        constexpr bsl::safe_uint32 IA32_MTRRPHYSMASK{bsl::to_u32(0x000000201U)};
 
         /// <!-- description -->
         ///   @brief Implements the sort function that we use for a range_t
@@ -78,6 +163,14 @@ namespace example
         [[nodiscard]] constexpr auto
         range_t_sort_cmp(range_t const &a, range_t const &b) noexcept -> bool
         {
+            if (!a.addr) {
+                return false;
+            }
+
+            if (!b.addr) {
+                return true;
+            }
+
             return a.addr < b.addr;
         };
     }
@@ -105,10 +198,73 @@ namespace example
         ///   @return Returns the combination of two memory type based on the
         ///     memory combining rules defined in the AMD/Intel manuals.
         ///
-        [[nodiscard]] constexpr auto
-        combine(range_t const &r1, range_t const &r2) &noexcept -> bsl::safe_uintmax
+        [[nodiscard]] static constexpr auto
+        combine(range_t const &r1, range_t const &r2) noexcept -> bsl::safe_uintmax
         {
-            return bsl::to_umax(0);
+            if (r1.dflt) {
+                return r2.type;
+            }
+
+            if (r2.dflt) {
+                return r1.type;
+            }
+
+            /// NOTE:
+            /// - "a. If the memory types are identical, then that memory type
+            ///    is used."
+            ///
+
+            if (r1.type == r2.type) {
+                return r1.type;
+            }
+
+            /// NOTE:
+            /// - "b. If at least one of the memory types is UC, the UC memory
+            ///    type is used."
+            ///
+
+            if (r1.type == MEMORY_TYPE_UC) {
+                return MEMORY_TYPE_UC;
+            }
+
+            if (r2.type == MEMORY_TYPE_UC) {
+                return MEMORY_TYPE_UC;
+            }
+
+            /// NOTE:
+            /// - "c. If at least one of the memory types is WT, and the only
+            ///    other memory type is WB, then the WT memory type is used"
+            ///
+
+            if (r1.type == MEMORY_TYPE_WT) {
+                if (r2.type == MEMORY_TYPE_WB) {
+                    return MEMORY_TYPE_WT;
+                }
+
+                bsl::touch();
+            }
+            else {
+                bsl::touch();
+            }
+
+            if (r2.type == MEMORY_TYPE_WT) {
+                if (r1.type == MEMORY_TYPE_WB) {
+                    return MEMORY_TYPE_WT;
+                }
+
+                bsl::touch();
+            }
+            else {
+                bsl::touch();
+            }
+
+            /// NOTE:
+            /// - "d. If the combination of memory types is not listed Steps A
+            ///    through C immediately above, then the memory type used is
+            ///    undefined"
+            ///
+
+            return MEMORY_TYPE_UC;
         }
 
         /// <!-- description -->
@@ -122,17 +278,13 @@ namespace example
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
-        add_range(range_t const &r) &noexcept -> bsl::errc_type
+        add_range(range_t const &r) noexcept -> bsl::errc_type
         {
             auto *const ptr{m_ranges.at_if(m_ranges_count)};
             if (bsl::unlikely(nullptr == ptr)) {
                 bsl::error() << "mtrrs_t full\n" << bsl::here();
                 return bsl::errc_failure;
             }
-
-            bsl::print() << "adding range:" << bsl::endl;
-            bsl::print() << "  - addr: " << bsl::hex(r.addr) << bsl::endl;
-            bsl::print() << "  - size: " << bsl::hex(r.size) << bsl::endl;
 
             *ptr = r;
             ++m_ranges_count;
@@ -159,12 +311,12 @@ namespace example
         add_range(
             bsl::safe_uintmax const &addr,
             bsl::safe_uintmax const &size,
-            bsl::safe_uintmax const &type) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &type) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
             range_t r1{addr, size, type, false};
 
-            for (bsl::safe_uintmax i{}; i < m_ranges.size(); ++i) {
+            for (bsl::safe_uintmax i{}; i < m_ranges_count; ++i) {
                 auto *const r2{m_ranges.at_if(i)};
 
                 auto const r1_l{r1.addr};
@@ -172,78 +324,825 @@ namespace example
                 auto const r2_l{r2->addr};
                 auto const r2_r{r2->addr + r2->size};
 
+                /// NOTE:
+                /// - If the range has a size of 0, there is no range to add
+                ///   and we can stop. This could either happen because we
+                ///   were given a 0 sized range to start, or the range we
+                ///   were overlaps multiple ranges, in which case we have to
+                ///   slowly remove from the provided range until it is 0, and
+                ///   this will stop the loop when it is done.
+                ///
+
                 if (r1.size.is_zero()) {
-                    return bsl::errc_success;
+                    break;
                 }
 
-                if (!(r2_r > r1_l)) {
+                /// NOTE:
+                /// - We need to scan the ranges until we find the first
+                ///   range in the list that the provided range actually
+                ///   intersects. For example:
+                ///
+                ///   ----------------------------------------
+                ///   |    |              |  +++++           |
+                ///   |    |              |  + 1 +    2      |
+                ///   |    |              |  +++++           |
+                ///   ----------------------------------------
+                ///
+                ///   Until the left side of r1 is greater than or equal to
+                ///   the left side of r2, we can keep scanning because r1
+                ///   and r2 do not intersect. Note that, you might be
+                ///   thinking about, what if r1's right side overlaps into
+                ///   r2. In this case, it would mean that r1's left side is
+                ///   greater than or equal to the range to the left, which
+                ///   means we have found a match. In other words, we only
+                ///   have to pay attention to the left side, because if
+                ///   the right side is an issue, the left side must also
+                ///   be an issue with the adjacent range, which is really the
+                ///   r2 we should be concerned with.
+                ///
+                /// - It should be noted that the above assumes that the
+                ///   entire physical address range is represented by a range.
+                ///   Meaning, there are not wholes. To ensure this, we the
+                ///   first thing we do is fill the range list with the
+                ///   default range that goes from 0 to MAX. From there, this
+                ///   algorithm will perform it's work to add the range, and
+                ///   then sort the list to ensure the list of ranges continues
+                ///   to completely cover the entire physical address range.
+                ///
+
+                if (!(r1_l < r2_r)) {
                     continue;
                 }
 
+                /// NOTE:
+                /// - Ok, if we got this far, it means that we have found a
+                ///   range that intersects. Now, we need to handle the
+                ///   different types of scenarios that might occur.
+                ///
+
                 if (r1_l == r2_l) {
-                    ret = this->add_range({r1.addr, r1.size, this->combine(r1, *r2), false});
-                    if (bsl::unlikely(!ret)) {
-                        bsl::print<bsl::V>() << bsl::here();
-                        return bsl::errc_failure;
+
+                    /// Case #1:
+                    /// - In this case, r1's left side is the same as r2's left
+                    ///   side, meaning they are touching. When this happens,
+                    ///   we need to divide r2 into two ranges.
+                    ///
+                    /// --------------------
+                    /// |         2        |
+                    /// |+++++             |
+                    /// |+ 1 +             |
+                    /// |+++++             |
+                    /// |                  |
+                    /// --------------------
+                    ///
+                    /// or
+                    ///
+                    /// --------------------
+                    /// |         2        |
+                    /// |++++++++++++++++++++++
+                    /// |+ 1                  +
+                    /// |++++++++++++++++++++++
+                    /// |                  |
+                    /// --------------------
+                    ///
+
+                    if (r1_r < r2_r) {
+                        auto const new_r1_addr{r1.addr};
+                        auto const new_r1_size{r1.size};
+                        auto const new_r1_type{this->combine(r1, *r2)};
+                        bool const new_r1_dflt{false};
+
+                        ret = this->add_range({new_r1_addr, new_r1_size, new_r1_type, new_r1_dflt});
+                        if (bsl::unlikely(!ret)) {
+                            bsl::print<bsl::V>() << bsl::here();
+                            return bsl::errc_failure;
+                        }
+
+                        auto const new_r2_addr{r1_r};
+                        auto const new_r2_size{r2_r - r1_r};
+                        auto const new_r2_type{r2->type};
+                        bool const new_r2_dflt{r2->dflt};
+
+                        ret = this->add_range({new_r2_addr, new_r2_size, new_r2_type, new_r2_dflt});
+                        if (bsl::unlikely(!ret)) {
+                            bsl::print<bsl::V>() << bsl::here();
+                            return bsl::errc_failure;
+                        }
+
+                        r1.addr = bsl::ZERO_UMAX;
+                        r1.size = bsl::ZERO_UMAX;
+                    }
+                    else {
+                        auto const new_r1_addr{r1.addr};
+                        auto const new_r1_size{r2->size};
+                        auto const new_r1_type{this->combine(r1, *r2)};
+                        bool const new_r1_dflt{false};
+
+                        ret = this->add_range({new_r1_addr, new_r1_size, new_r1_type, new_r1_dflt});
+                        if (bsl::unlikely(!ret)) {
+                            bsl::print<bsl::V>() << bsl::here();
+                            return bsl::errc_failure;
+                        }
+
+                        r1.addr = r2_r;
+                        r1.size = r1_r - r2_r;
                     }
 
-                    r2->addr = r1.addr + r1.size;
-
-                    bsl::print() << "r2 is (equal path):" << bsl::endl;
-                    bsl::print() << "  - addr: " << bsl::hex(r2->addr) << bsl::endl;
-                    bsl::print() << "  - size: " << bsl::hex(r2->size) << bsl::endl;
+                    r2->addr = bsl::safe_uintmax::zero(true);
+                    r2->size = bsl::safe_uintmax::zero(true);
+                    r2->type = bsl::safe_uintmax::zero(true);
+                    r2->dflt = false;
+                    --m_ranges_count;
 
                     bsl::sort(m_ranges, &details::range_t_sort_cmp);
-                    return bsl::errc_success;
                 }
+                else {
+                    /// Case #2:
+                    /// - In this case, r1 is inside r1, meaning their left
+                    ///   sides are not touching. This will force us to add
+                    ///   2 or 3 ranges depending on the right side of r1.
+                    ///
+                    /// --------------------
+                    /// |         2        |
+                    /// |   +++++          |
+                    /// |   + 1 +          |
+                    /// |   +++++          |
+                    /// |                  |
+                    /// --------------------
+                    ///
+                    /// or
+                    ///
+                    /// --------------------
+                    /// |         2        |
+                    /// |   +++++++++++++++++++
+                    /// |   + 1               +
+                    /// |   +++++++++++++++++++
+                    /// |                  |
+                    /// --------------------
+                    ///
 
-                if (r1_r < r2_r) {
-                    ret = this->add_range({r2->addr, r1.addr - r2->addr, r2->type, false});
-                    if (bsl::unlikely(!ret)) {
-                        bsl::print<bsl::V>() << bsl::here();
-                        return bsl::errc_failure;
+                    if (r1_r < r2_r) {
+                        auto const new_r1_addr{r2->addr};
+                        auto const new_r1_size{r1_l - r2_l};
+                        auto const new_r1_type{r2->type};
+                        bool const new_r1_dflt{r2->dflt};
+
+                        ret = this->add_range({new_r1_addr, new_r1_size, new_r1_type, new_r1_dflt});
+                        if (bsl::unlikely(!ret)) {
+                            bsl::print<bsl::V>() << bsl::here();
+                            return bsl::errc_failure;
+                        }
+
+                        auto const new_r2_addr{r1.addr};
+                        auto const new_r2_size{r1.size};
+                        auto const new_r2_type{this->combine(r1, *r2)};
+                        bool const new_r2_dflt{false};
+
+                        ret = this->add_range({new_r2_addr, new_r2_size, new_r2_type, new_r2_dflt});
+                        if (bsl::unlikely(!ret)) {
+                            bsl::print<bsl::V>() << bsl::here();
+                            return bsl::errc_failure;
+                        }
+
+                        auto const new_r3_addr{r1_r};
+                        auto const new_r3_size{r2_r - r1_r};
+                        auto const new_r3_type{r2->type};
+                        bool const new_r3_dflt{r2->dflt};
+
+                        ret = this->add_range({new_r3_addr, new_r3_size, new_r3_type, new_r3_dflt});
+                        if (bsl::unlikely(!ret)) {
+                            bsl::print<bsl::V>() << bsl::here();
+                            return bsl::errc_failure;
+                        }
+
+                        r1.addr = bsl::ZERO_UMAX;
+                        r1.size = bsl::ZERO_UMAX;
+                    }
+                    else {
+                        auto const new_r1_addr{r2->addr};
+                        auto const new_r1_size{r1_l - r2_l};
+                        auto const new_r1_type{r2->type};
+                        bool const new_r1_dflt{r2->dflt};
+
+                        ret = this->add_range({new_r1_addr, new_r1_size, new_r1_type, new_r1_dflt});
+                        if (bsl::unlikely(!ret)) {
+                            bsl::print<bsl::V>() << bsl::here();
+                            return bsl::errc_failure;
+                        }
+
+                        auto const new_r2_addr{r1.addr};
+                        auto const new_r2_size{r2_r - r1_l};
+                        auto const new_r2_type{this->combine(r1, *r2)};
+                        bool const new_r2_dflt{false};
+
+                        ret = this->add_range({new_r2_addr, new_r2_size, new_r2_type, new_r2_dflt});
+                        if (bsl::unlikely(!ret)) {
+                            bsl::print<bsl::V>() << bsl::here();
+                            return bsl::errc_failure;
+                        }
+
+                        r1.addr = r2_r;
+                        r1.size = r1_r - r2_r;
                     }
 
-                    ret = this->add_range({r1.addr, r1.size, this->combine(r1, *r2), false});
-                    if (bsl::unlikely(!ret)) {
-                        bsl::print<bsl::V>() << bsl::here();
-                        return bsl::errc_failure;
-                    }
-
-                    r2->addr = r1.addr + r1.size;
-
-                    bsl::print() << "r2 is (less than path):" << bsl::endl;
-                    bsl::print() << "  - addr: " << bsl::hex(r2->addr) << bsl::endl;
-                    bsl::print() << "  - size: " << bsl::hex(r2->size) << bsl::endl;
+                    r2->addr = bsl::safe_uintmax::zero(true);
+                    r2->size = bsl::safe_uintmax::zero(true);
+                    r2->type = bsl::safe_uintmax::zero(true);
+                    r2->dflt = false;
+                    --m_ranges_count;
 
                     bsl::sort(m_ranges, &details::range_t_sort_cmp);
-                    return bsl::errc_success;
                 }
+            }
 
-                auto const r1_new_addr{r2->addr + r2->size};
-                auto const r1_new_size{r1.size - (r1_new_addr - r1.addr)};
+            return bsl::errc_success;
+        }
 
-                ret = this->add_range(
-                    {r1.addr, r1_new_addr - r1.addr, this->combine(r1, *r2), false});
+        /// <!-- description -->
+        ///   @brief Once all of the ranges have been added, we can compress
+        ///     the range list to reduce the overall size of the list.
+        ///     Compression is simple. If two adjacent ranges have the same
+        ///     type, we can combine them into a single range. Basically this
+        ///     means we need to modify one range to be bigger and remove
+        ///     the other range. Continue this process until we have scanned
+        ///     the entire range list.
+        ///
+        /// <!-- inputs/outputs -->
+        ///
+        constexpr void
+        compress_ranges() noexcept
+        {
+            bsl::safe_uintmax i{bsl::ONE_UMAX};
+
+            if (m_ranges.size() == bsl::ONE_UMAX) {
+                return;
+            }
+
+            while (i < m_ranges_count) {
+                auto *const r1{m_ranges.at_if(i - bsl::ONE_UMAX)};
+                auto *const r2{m_ranges.at_if(i)};
+
+                if (r1->type == r2->type) {
+                    r1->size += r2->size;
+
+                    r2->addr = bsl::safe_uintmax::zero(true);
+                    r2->size = bsl::safe_uintmax::zero(true);
+                    r2->type = bsl::safe_uintmax::zero(true);
+                    r2->dflt = false;
+                    --m_ranges_count;
+
+                    bsl::sort(m_ranges, &details::range_t_sort_cmp);
+                }
+                else {
+                    ++i;
+                }
+            }
+        }
+
+        /// <!-- description -->
+        ///   @brief Adds the 64k Fixed Range MTRRs starting at 0x00000.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_ia32_mtrr_fix64k_00000(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax mtrr{};
+            bsl::safe_uintmax shft{};
+
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRFIX64K_00000, mtrr);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < details::MTRR_FIX_MTRRS_PER_MSR; ++i) {
+                auto const size{details::MTRRFIX64K_00000_SIZE};
+                auto const addr{details::MTRRFIX64K_00000_ADDR + (size * i)};
+                auto const mask{details::MTRR_FIX_MASK << shft};
+                auto const type{(mtrr & mask) >> shft};
+
+                ret = this->add_range(addr, size, type);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
 
-                r2->size = r1.addr - r2->addr;
+                shft += details::MTRR_FIX_SHFT;
+            }
 
-                r1.addr = r1_new_addr;
-                r1.size = r1_new_size;
+            return bsl::errc_success;
+        }
 
-                bsl::print() << "r1 is (last path):" << bsl::endl;
-                bsl::print() << "  - addr: " << bsl::hex(r1.addr) << bsl::endl;
-                bsl::print() << "  - size: " << bsl::hex(r1.size) << bsl::endl;
+        /// <!-- description -->
+        ///   @brief Adds the 16k Fixed Range MTRRs starting at 0x80000.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_ia32_mtrr_fix16k_80000(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax mtrr{};
+            bsl::safe_uintmax shft{};
 
-                bsl::print() << "r2 is (last path):" << bsl::endl;
-                bsl::print() << "  - addr: " << bsl::hex(r2->addr) << bsl::endl;
-                bsl::print() << "  - size: " << bsl::hex(r2->size) << bsl::endl;
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRFIX16K_80000, mtrr);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
 
-                bsl::sort(m_ranges, &details::range_t_sort_cmp);
+            for (bsl::safe_uintmax i{}; i < details::MTRR_FIX_MTRRS_PER_MSR; ++i) {
+                auto const size{details::MTRRFIX16K_80000_SIZE};
+                auto const addr{details::MTRRFIX16K_80000_ADDR + (size * i)};
+                auto const mask{details::MTRR_FIX_MASK << shft};
+                auto const type{(mtrr & mask) >> shft};
+
+                ret = this->add_range(addr, size, type);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                shft += details::MTRR_FIX_SHFT;
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Adds the 16k Fixed Range MTRRs starting at 0xA0000.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_ia32_mtrr_fix16k_a0000(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax mtrr{};
+            bsl::safe_uintmax shft{};
+
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRFIX16K_A0000, mtrr);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < details::MTRR_FIX_MTRRS_PER_MSR; ++i) {
+                auto const size{details::MTRRFIX16K_A0000_SIZE};
+                auto const addr{details::MTRRFIX16K_A0000_ADDR + (size * i)};
+                auto const mask{details::MTRR_FIX_MASK << shft};
+                auto const type{(mtrr & mask) >> shft};
+
+                ret = this->add_range(addr, size, type);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                shft += details::MTRR_FIX_SHFT;
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Adds the 4k Fixed Range MTRRs starting at 0xC0000.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_ia32_mtrr_fix4k_c0000(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax mtrr{};
+            bsl::safe_uintmax shft{};
+
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRFIX4K_C0000, mtrr);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < details::MTRR_FIX_MTRRS_PER_MSR; ++i) {
+                auto const size{details::MTRRFIX4K_C0000_SIZE};
+                auto const addr{details::MTRRFIX4K_C0000_ADDR + (size * i)};
+                auto const mask{details::MTRR_FIX_MASK << shft};
+                auto const type{(mtrr & mask) >> shft};
+
+                ret = this->add_range(addr, size, type);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                shft += details::MTRR_FIX_SHFT;
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Adds the 4k Fixed Range MTRRs starting at 0xC8000.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_ia32_mtrr_fix4k_c8000(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax mtrr{};
+            bsl::safe_uintmax shft{};
+
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRFIX4K_C8000, mtrr);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < details::MTRR_FIX_MTRRS_PER_MSR; ++i) {
+                auto const size{details::MTRRFIX4K_C8000_SIZE};
+                auto const addr{details::MTRRFIX4K_C8000_ADDR + (size * i)};
+                auto const mask{details::MTRR_FIX_MASK << shft};
+                auto const type{(mtrr & mask) >> shft};
+
+                ret = this->add_range(addr, size, type);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                shft += details::MTRR_FIX_SHFT;
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Adds the 4k Fixed Range MTRRs starting at 0xD0000.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_ia32_mtrr_fix4k_d0000(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax mtrr{};
+            bsl::safe_uintmax shft{};
+
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRFIX4K_D0000, mtrr);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < details::MTRR_FIX_MTRRS_PER_MSR; ++i) {
+                auto const size{details::MTRRFIX4K_D0000_SIZE};
+                auto const addr{details::MTRRFIX4K_D0000_ADDR + (size * i)};
+                auto const mask{details::MTRR_FIX_MASK << shft};
+                auto const type{(mtrr & mask) >> shft};
+
+                ret = this->add_range(addr, size, type);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                shft += details::MTRR_FIX_SHFT;
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Adds the 4k Fixed Range MTRRs starting at 0xD8000.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_ia32_mtrr_fix4k_d8000(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax mtrr{};
+            bsl::safe_uintmax shft{};
+
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRFIX4K_D8000, mtrr);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < details::MTRR_FIX_MTRRS_PER_MSR; ++i) {
+                auto const size{details::MTRRFIX4K_D8000_SIZE};
+                auto const addr{details::MTRRFIX4K_D8000_ADDR + (size * i)};
+                auto const mask{details::MTRR_FIX_MASK << shft};
+                auto const type{(mtrr & mask) >> shft};
+
+                ret = this->add_range(addr, size, type);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                shft += details::MTRR_FIX_SHFT;
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Adds the 4k Fixed Range MTRRs starting at 0xE0000.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_ia32_mtrr_fix4k_e0000(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax mtrr{};
+            bsl::safe_uintmax shft{};
+
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRFIX4K_E0000, mtrr);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < details::MTRR_FIX_MTRRS_PER_MSR; ++i) {
+                auto const size{details::MTRRFIX4K_E0000_SIZE};
+                auto const addr{details::MTRRFIX4K_E0000_ADDR + (size * i)};
+                auto const mask{details::MTRR_FIX_MASK << shft};
+                auto const type{(mtrr & mask) >> shft};
+
+                ret = this->add_range(addr, size, type);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                shft += details::MTRR_FIX_SHFT;
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Adds the 4k Fixed Range MTRRs starting at 0xE8000.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_ia32_mtrr_fix4k_e8000(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax mtrr{};
+            bsl::safe_uintmax shft{};
+
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRFIX4K_E8000, mtrr);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < details::MTRR_FIX_MTRRS_PER_MSR; ++i) {
+                auto const size{details::MTRRFIX4K_E8000_SIZE};
+                auto const addr{details::MTRRFIX4K_E8000_ADDR + (size * i)};
+                auto const mask{details::MTRR_FIX_MASK << shft};
+                auto const type{(mtrr & mask) >> shft};
+
+                ret = this->add_range(addr, size, type);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                shft += details::MTRR_FIX_SHFT;
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Adds the 4k Fixed Range MTRRs starting at 0xF0000.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_ia32_mtrr_fix4k_f0000(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax mtrr{};
+            bsl::safe_uintmax shft{};
+
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRFIX4K_F0000, mtrr);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < details::MTRR_FIX_MTRRS_PER_MSR; ++i) {
+                auto const size{details::MTRRFIX4K_F0000_SIZE};
+                auto const addr{details::MTRRFIX4K_F0000_ADDR + (size * i)};
+                auto const mask{details::MTRR_FIX_MASK << shft};
+                auto const type{(mtrr & mask) >> shft};
+
+                ret = this->add_range(addr, size, type);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                shft += details::MTRR_FIX_SHFT;
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Adds the 4k Fixed Range MTRRs starting at 0xF8000.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_ia32_mtrr_fix4k_f8000(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax mtrr{};
+            bsl::safe_uintmax shft{};
+
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRFIX4K_F8000, mtrr);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < details::MTRR_FIX_MTRRS_PER_MSR; ++i) {
+                auto const size{details::MTRRFIX4K_F8000_SIZE};
+                auto const addr{details::MTRRFIX4K_F8000_ADDR + (size * i)};
+                auto const mask{details::MTRR_FIX_MASK << shft};
+                auto const type{(mtrr & mask) >> shft};
+
+                ret = this->add_range(addr, size, type);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                shft += details::MTRR_FIX_SHFT;
+            }
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the base address portion of physbase
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param physbase the physbase to convert
+        ///   @return Returns the base address portion of physbase
+        ///
+        [[nodiscard]] static constexpr auto
+        physbase_to_addr(bsl::safe_uintmax const &physbase) noexcept -> bsl::safe_uintmax
+        {
+            constexpr bsl::safe_uintmax mask{bsl::to_umax(0xFFFFFFFFFFFFF000U)};
+            return physbase & mask;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the size portion of physmask using the conversion
+        ///     logic defined in the manual.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param physmask the physmask to convert
+        ///   @param pas the physical address size
+        ///   @return Returns the size portion of physmask using the conversion
+        ///     logic defined in the manual.
+        ///
+        [[nodiscard]] static constexpr auto
+        physmask_to_size(                         // --
+            bsl::safe_uintmax const &physmask,    // --
+            bsl::safe_uintmax const &pas) noexcept -> bsl::safe_uintmax
+        {
+            return ((~physmask) & ((bsl::ONE_UMAX << pas) - bsl::ONE_UMAX)) + bsl::ONE_UMAX;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the memory type portion of physbase
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param physbase the physbase to convert
+        ///   @return Returns the memory type portion of physbase
+        ///
+        [[nodiscard]] static constexpr auto
+        physbase_to_type(bsl::safe_uintmax const &physbase) noexcept -> bsl::safe_uintmax
+        {
+            constexpr bsl::safe_uintmax mask{bsl::to_umax(0x00000000000000FFU)};
+            return physbase & mask;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if the valid bit is set in physmask,
+        ///     false otherwise.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param physmask the physmask to query
+        ///   @return Returns true if the valid bit is set in physmask,
+        ///     false otherwise.
+        ///
+        [[nodiscard]] static constexpr auto
+        physmask_to_valid(bsl::safe_uintmax const &physmask) noexcept -> bool
+        {
+            constexpr bsl::safe_uintmax mask{bsl::to_umax(0x0000000000000800U)};
+            return (physmask & mask).is_pos();
+        }
+
+        /// <!-- description -->
+        ///   @brief Parses all of the variable range MTRRs and adds them
+        ///     to the list.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param handle the handle to use
+        ///   @param vcnt the total number of supported variable range MTRRs
+        ///   @param pas the physical address size
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        add_variable_range(
+            syscall::bf_handle_t &handle,
+            bsl::safe_uint32 const &vcnt,
+            bsl::safe_uintmax const &pas) noexcept -> bsl::errc_type
+        {
+            bsl::errc_type ret{};
+            bsl::safe_uintmax physbase{};
+            bsl::safe_uintmax physmask{};
+
+            constexpr auto msrs_per_iteration{bsl::to_u32(2)};
+            for (bsl::safe_uint32 i{}; i < (vcnt * msrs_per_iteration); i += msrs_per_iteration) {
+                auto ia32_mtrrphysbasen{details::IA32_MTRRPHYSBASE + i};
+                auto ia32_mtrrphysmaskn{details::IA32_MTRRPHYSMASK + i};
+
+                ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_mtrrphysmaskn, physmask);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                if (!this->physmask_to_valid(physmask)) {
+                    continue;
+                }
+
+                ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_mtrrphysbasen, physbase);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                auto const addr{this->physbase_to_addr(physbase)};
+                auto const size{this->physmask_to_size(physmask, pas)};
+                auto const type{this->physbase_to_type(physbase)};
+
+                ret = this->add_range(addr, size, type);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -257,21 +1156,25 @@ namespace example
         ///     opinion as to what the memory's type is.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam HANDLE_CONCEPT the type of handle to use
         ///   @param handle the handle to use
         ///   @return Returns bsl::errc_success on success and bsl::errc_failure
         ///     on failure.
         ///
-        template<typename HANDLE_CONCEPT>
         [[nodiscard]] constexpr auto
-        parse(HANDLE_CONCEPT &handle) &noexcept -> bsl::errc_type
+        parse(syscall::bf_handle_t &handle) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
+            bsl::safe_uintmax rax{};
+            bsl::safe_uintmax rbx{};
+            bsl::safe_uintmax rcx{};
+            bsl::safe_uintmax rdx{};
+
             /// NOTE:
             /// - Before we start, we need to ensure that the ranges are
-            ///   cleared. This is just in case this function is run more
-            ///   than once.
+            ///   cleared and an invalid state. This will ensure that during
+            ///   the sorting process, ranges that are not used are ordered
+            ///   last in the list.
             ///
 
             for (auto const elem : m_ranges) {
@@ -285,22 +1188,37 @@ namespace example
             m_ranges_count = {};
 
             /// NOTE:
-            /// - The first step is to make sure that MTRRs are supported.
+            /// - The first step is to get the total number of physical address
+            ///   bits the hardware supports. This is needed to convert
+            ///   the variable range registers.
+            ///
+
+            rax = details::CPUID_LP_ADDRESS_SIZE;
+            rcx = {};
+            intrinsic_cpuid(rax.data(), rbx.data(), rcx.data(), rdx.data());
+
+            auto const pas{rax & details::CPUID_LP_ADDRESS_SIZE_PHYS_ADDR_BITS};
+            auto const pas_bytes{bsl::ONE_UMAX << pas};
+
+            /// NOTE:
+            /// - The next step is to make sure that MTRRs are supported.
             ///   If they aren't something really weird is going on, but in
-            ///   general, that is ok as well we have to do is add a single
+            ///   general, that is ok as all we have to do is add a single
             ///   range that marks all of memory as WB.
             ///
 
-            bsl::safe_uintmax rax{};
-            bsl::safe_uintmax rbx{};
-            bsl::safe_uintmax rcx{};
-            bsl::safe_uintmax rdx{};
-
+            rax = details::CPUID_FEATURE_IDENTIFIERS;
+            rcx = {};
             intrinsic_cpuid(rax.data(), rbx.data(), rcx.data(), rdx.data());
 
             if ((rdx & details::CPUID_FEATURE_IDENTIFIERS_MTRR).is_zero()) {
-                return this->add_range(
-                    details::MIN_PHYSICAL_ADDR, details::MAX_PHYSICAL_SIZE, MEMORY_TYPE_WB);
+                ret = this->add_range({bsl::ZERO_UMAX, pas_bytes, MEMORY_TYPE_WB, false});
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                return bsl::errc_success;
             }
 
             /// NOTE:
@@ -309,7 +1227,7 @@ namespace example
             ///
 
             bsl::safe_uintmax cap{};
-            bsl::safe_uintmax def{};
+            bsl::safe_uintmax deftype{};
 
             ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRCAP, cap);
             if (bsl::unlikely(!ret)) {
@@ -317,13 +1235,33 @@ namespace example
                 return bsl::errc_failure;
             }
 
-            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRDEFTYPE, def);
+            ret = syscall::bf_intrinsic_op_rdmsr(handle, details::IA32_MTRRDEFTYPE, deftype);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            auto const default_mem_type{def & details::IA32_MTRRDEFTYPE_TYPE};
+            auto const cap_vcnt{bsl::to_u32(cap & details::IA32_MTRRCAP_VCNT)};
+            auto const cap_fix{bsl::to_u32(cap & details::IA32_MTRRCAP_FIX)};
+
+            auto const deftype_type{deftype & details::IA32_MTRRDEFTYPE_TYPE};
+            auto const deftype_fe{deftype & details::IA32_MTRRDEFTYPE_FE};
+            auto const deftype_e{deftype & details::IA32_MTRRDEFTYPE_E};
+
+            /// NOTE:
+            /// - If the MTRRs are disabled, the default memory type is
+            ///   uncacheable.
+            ///
+
+            if (deftype_e.is_zero()) {
+                ret = this->add_range({bsl::ZERO_UMAX, pas_bytes, MEMORY_TYPE_UC, false});
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                return bsl::errc_success;
+            }
 
             /// NOTE:
             /// - Next we need to add the default range to the list. This sets
@@ -335,72 +1273,219 @@ namespace example
             ///   that this initial range is added for it work properly.
             ///
 
-            ret = this->add_range(
-                {details::MIN_PHYSICAL_ADDR, details::MAX_PHYSICAL_SIZE, default_mem_type, true});
+            ret = this->add_range({bsl::ZERO_UMAX, pas_bytes, deftype_type, true});
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
             /// NOTE:
-            /// - To create a continuous, non-overlapping view of the entire
-            ///   physical memory space, we must first start with the default
+            /// - Next, let's add the fixed range MTRRs.
             ///
 
-            ret = this->add_range(bsl::to_umax(0x0000), bsl::to_umax(0x2000), MEMORY_TYPE_WB);
+            if (cap_fix.is_pos()) {
+                if (deftype_fe.is_pos()) {
+                    ret = this->add_ia32_mtrr_fix64k_00000(handle);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return bsl::errc_failure;
+                    }
 
-            ret = this->add_range(bsl::to_umax(0x1000), bsl::to_umax(0x2000), MEMORY_TYPE_WB);
+                    ret = this->add_ia32_mtrr_fix16k_80000(handle);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return bsl::errc_failure;
+                    }
 
-            for (bsl::safe_uintmax i{}; i < m_ranges_count; ++i) {
-                bsl::print() << "[" << i << "] MTRR range:" << bsl::endl;
-                bsl::print() << "  - addr: " << bsl::hex(m_ranges.at_if(i)->addr) << bsl::endl;
-                bsl::print() << "  - size: " << bsl::hex(m_ranges.at_if(i)->size) << bsl::endl;
-                bsl::print() << "  - type: " << m_ranges.at_if(i)->type << bsl::endl;
+                    ret = this->add_ia32_mtrr_fix16k_a0000(handle);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return bsl::errc_failure;
+                    }
+
+                    ret = this->add_ia32_mtrr_fix4k_c0000(handle);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return bsl::errc_failure;
+                    }
+
+                    ret = this->add_ia32_mtrr_fix4k_c8000(handle);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return bsl::errc_failure;
+                    }
+
+                    ret = this->add_ia32_mtrr_fix4k_d0000(handle);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return bsl::errc_failure;
+                    }
+
+                    ret = this->add_ia32_mtrr_fix4k_d8000(handle);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return bsl::errc_failure;
+                    }
+
+                    ret = this->add_ia32_mtrr_fix4k_e0000(handle);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return bsl::errc_failure;
+                    }
+
+                    ret = this->add_ia32_mtrr_fix4k_e8000(handle);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return bsl::errc_failure;
+                    }
+
+                    ret = this->add_ia32_mtrr_fix4k_f0000(handle);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return bsl::errc_failure;
+                    }
+
+                    ret = this->add_ia32_mtrr_fix4k_f8000(handle);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return bsl::errc_failure;
+                    }
+
+                    bsl::touch();
+                }
+                else {
+                    bsl::touch();
+                }
             }
+            else {
+                bsl::touch();
+            }
+
+            ret = this->add_variable_range(handle, cap_vcnt, pas);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            this->compress_ranges();
 
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            /// [ ] Get default type
-            /// [ ] Add range for entire space with default type
-            /// [ ] create function to add range that splits as needed
-            /// [ ] Add range for the fixed width as uncacheable
-            /// [ ] Add all variable range
-            /// [ ] Sort and set as non-blocking?
-            /// [ ] Create dump function
-            /// [ ] Implement NP and test
-            /// [ ] Implement identify map function in the mtrrs_t.
-            ///     This function will loop through all of the ranges and
-            ///     1:1 map from there.
-            /// [ ] Implement EPT
-
-            /// [ ] Implement map 4k, 2m and 1g
-            /// [ ] Implement map identify map range
-
             return bsl::errc_success;
         }
+
+        /// <!-- description -->
+        ///   @brief Outputs the contents of the MTRRs.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam T the type of outputter provided
+        ///   @param o the instance of the outputter used to output the value.
+        ///
+        template<typename T>
+        constexpr void
+        dump(bsl::out<T> const o) const &noexcept
+        {
+            o << bsl::bold_magenta;
+            o << "MTRRs Dump: ";
+            o << bsl::reset_color << bsl::endl;
+
+            o << bsl::yellow;
+            o << "+------------------------------------------------+";
+            o << bsl::reset_color << bsl::endl;
+
+            o << bsl::yellow << "| " << bsl::cyan;
+            o << "Start ";
+            o << bsl::yellow << "             | " << bsl::cyan;
+            o << "End ";
+            o << bsl::yellow << "               | " << bsl::cyan;
+            o << "Type ";
+            o << bsl::yellow << "|" << bsl::reset_color << bsl::endl;
+
+            o << bsl::yellow;
+            o << "+------------------------------------------------+";
+            o << bsl::reset_color << bsl::endl;
+
+            for (bsl::safe_uintmax i{}; i < m_ranges_count; ++i) {
+                if (m_ranges.at_if(i)->type == MEMORY_TYPE_UC) {
+                    o << bsl::yellow << "| " << bsl::black;
+                    o << bsl::hex(m_ranges.at_if(i)->addr);
+                    o << bsl::yellow << " | " << bsl::black;
+                    o << bsl::hex(
+                        m_ranges.at_if(i)->addr + m_ranges.at_if(i)->size - bsl::ONE_UMAX);
+                    o << bsl::yellow << " |  " << bsl::black;
+                    o << "uc";
+                    o << bsl::yellow << "  |" << bsl::reset_color << bsl::endl;
+                }
+                else {
+                    o << bsl::yellow << "| " << bsl::white;
+                    o << bsl::hex(m_ranges.at_if(i)->addr);
+                    o << bsl::yellow << " | " << bsl::white;
+                    o << bsl::hex(
+                        m_ranges.at_if(i)->addr + m_ranges.at_if(i)->size - bsl::ONE_UMAX);
+                    o << bsl::yellow << " |  " << bsl::white;
+
+                    switch (m_ranges.at_if(i)->type.get()) {
+                        case MEMORY_TYPE_WC.get(): {
+                            o << "wc";
+                            break;
+                        }
+
+                        case MEMORY_TYPE_WP.get(): {
+                            o << "wp";
+                            break;
+                        }
+
+                        case MEMORY_TYPE_WT.get(): {
+                            o << "wt";
+                            break;
+                        }
+
+                        case MEMORY_TYPE_WB.get(): {
+                            o << "wb";
+                            break;
+                        }
+
+                        default: {
+                            o << "uc";
+                            break;
+                        }
+                    }
+
+                    o << bsl::yellow << "  |" << bsl::reset_color << bsl::endl;
+                }
+            }
+
+            o << bsl::yellow;
+            o << "+------------------------------------------------+";
+            o << bsl::reset_color << bsl::endl;
+        }
     };
+
+    /// <!-- description -->
+    ///   @brief Outputs the provided example::mtrrs_t to the provided
+    ///     output type.
+    ///   @related example::mtrrs_t
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam T the type of outputter provided
+    ///   @param o the instance of the outputter used to output the value.
+    ///   @param mtrrs the example::mtrrs_t to output
+    ///   @return return o
+    ///
+    template<typename T>
+    [[maybe_unused]] constexpr auto
+    operator<<(bsl::out<T> const o, mtrrs_t const &mtrrs) noexcept -> bsl::out<T>
+    {
+        if constexpr (!o) {
+            return o;
+        }
+
+        mtrrs.dump(o);
+        return o;
+    }
 }
 
 #endif
-
-// /// Contains
-// ///
-// /// @param addr the address to test
-// /// @return returns true if the provided address is contained in the
-// ///     range, false otherwise
-// ///
-// bool contains(uint64_t addr) const
-// { return addr >= base && addr <= base + size; }
-
-// /// Distance
-// ///
-// /// @param addr the address to test
-// /// @return returns the distance from the provided address to the end
-// ///     of the range. If the provided address is not contained in the
-// ///     range, the result is undefined.
-// ///
-// uint64_t distance(uint64_t addr) const
-// { return size - (addr - base);  }

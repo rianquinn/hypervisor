@@ -34,7 +34,7 @@ namespace example
     /// <!-- description -->
     ///   @brief Defines a MTRR range used by the mtrr_t class.
     ///
-    struct range_t
+    struct range_t final
     {
         /// @brief Defines the range's address
         bsl::safe_uintmax addr;
@@ -43,7 +43,7 @@ namespace example
         /// @brief Defines the range's memory type
         bsl::safe_uintmax type;
         /// @brief Defines if the range is the default range
-        bool is_default;
+        bool dflt;
     };
 }
 

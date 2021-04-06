@@ -44,15 +44,13 @@ namespace example
     ///   @brief Handle CPUID VMExits
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam HANDLE_CONCEPT the type of handle to use
     ///   @param handle the handle to use
     ///   @param vpsid the ID of the VPS that caused the VMExit
     ///   @return Returns bsl::errc_success on success and bsl::errc_failure
     ///     on failure.
     ///
-    template<typename HANDLE_CONCEPT>
     [[nodiscard]] constexpr auto
-    handle_vmexit_cpuid(HANDLE_CONCEPT &handle, bsl::safe_uint16 const &vpsid) noexcept
+    handle_vmexit_cpuid(syscall::bf_handle_t &handle, bsl::safe_uint16 const &vpsid) noexcept
         -> bsl::errc_type
     {
         bsl::errc_type ret{};

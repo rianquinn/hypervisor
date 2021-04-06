@@ -41,15 +41,13 @@ namespace example
     ///   @brief Implements the architecture specific VMExit handler.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam HANDLE_CONCEPT the type of handle to use
     ///   @param handle the handle to use
     ///   @param vpsid the ID of the VPS that generated the VMExit
     ///   @param exit_reason the exit reason associated with the VMExit
     ///
-    template<typename HANDLE_CONCEPT>
     constexpr void
     vmexit(
-        HANDLE_CONCEPT &handle,
+        syscall::bf_handle_t &handle,
         bsl::safe_uint16 const &vpsid,
         bsl::safe_uint64 const &exit_reason) noexcept
     {
@@ -93,15 +91,13 @@ namespace example
     ///   @brief Initializes a VPS with architecture specific stuff.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam HANDLE_CONCEPT the type of handle to use
     ///   @param handle the handle to use
     ///   @param vpsid the VPS being intialized
     ///   @return Returns bsl::errc_success on success and bsl::errc_failure
     ///     on failure.
     ///
-    template<typename HANDLE_CONCEPT>
     [[nodiscard]] constexpr auto
-    init_vps(HANDLE_CONCEPT &handle, bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
+    init_vps(syscall::bf_handle_t &handle, bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -109,8 +105,8 @@ namespace example
         /// - Set up ASID
         ///
 
-        constexpr bsl::safe_uint64 guest_asid_idx{bsl::to_u64(0x0058)};
-        constexpr bsl::safe_uint32 guest_asid_val{bsl::to_u32(0x1)};
+        constexpr bsl::safe_uint64 guest_asid_idx{bsl::to_u64(0x0058U)};
+        constexpr bsl::safe_uint32 guest_asid_val{bsl::to_u32(0x1U)};
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, guest_asid_idx, guest_asid_val);
         if (bsl::unlikely(!ret)) {

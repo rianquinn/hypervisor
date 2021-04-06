@@ -102,8 +102,6 @@ namespace example
         syscall::bf_control_op_exit();
     }
 
-    extern "C" bsl::uint32 rdtsc_yourmom(void) noexcept;
-
     /// <!-- description -->
     ///   @brief Implements the bootstrap entry function. The main function is
     ///     called on PP #0, and is only used to register the bootstrap entry

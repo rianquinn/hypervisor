@@ -27,7 +27,8 @@
 
 #include <common_arch_support.hpp>
 #include <mk_interface.hpp>
-#include <mtrrs_t.hpp>
+#include <page_pool_t.hpp>
+#include <nested_page_table_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -38,22 +39,31 @@
 
 namespace example
 {
-    /// @brief defines storage for the global MTRRs
-    inline mtrrs_t g_mtrrs{};
+    namespace details
+    {
+        /// @brief defines the CPUID SVM feature identification index
+        constexpr bsl::safe_uintmax CPUID_SVM_FEATURE_IDENTIFICATION{bsl::to_umax(0x8000000AU)};
+        /// @brief defines the CPUID SVM feature identification bit for NP
+        constexpr bsl::safe_uintmax CPUID_SVM_FEATURE_IDENTIFICATION_NP{bsl::to_umax(0x00000001U)};
+    }
+
+    /// @brief stores the page pool to use for page allocation
+    constinit inline page_pool_t g_page_pool{};
+
+    /// @brief stores the nested page tables
+    constinit inline nested_page_table_t g_npt{};
 
     /// <!-- description -->
     ///   @brief Implements the architecture specific VMExit handler.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam HANDLE_CONCEPT the type of handle to use
     ///   @param handle the handle to use
     ///   @param vpsid the ID of the VPS that generated the VMExit
     ///   @param exit_reason the exit reason associated with the VMExit
     ///
-    template<typename HANDLE_CONCEPT>
     constexpr void
     vmexit(
-        HANDLE_CONCEPT &handle,
+        syscall::bf_handle_t &handle,
         bsl::safe_uint16 const &vpsid,
         bsl::safe_uint64 const &exit_reason) noexcept
     {
@@ -97,24 +107,27 @@ namespace example
     ///   @brief Initializes a VPS with architecture specific stuff.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam HANDLE_CONCEPT the type of handle to use
     ///   @param handle the handle to use
     ///   @param vpsid the VPS being intialized
     ///   @return Returns bsl::errc_success on success and bsl::errc_failure
     ///     on failure.
     ///
-    template<typename HANDLE_CONCEPT>
     [[nodiscard]] constexpr auto
-    init_vps(HANDLE_CONCEPT &handle, bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
+    init_vps(syscall::bf_handle_t &handle, bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
+
+        bsl::safe_uintmax rax{};
+        bsl::safe_uintmax rbx{};
+        bsl::safe_uintmax rcx{};
+        bsl::safe_uintmax rdx{};
 
         /// NOTE:
         /// - Set up ASID
         ///
 
-        constexpr bsl::safe_uint64 guest_asid_idx{bsl::to_u64(0x0058)};
-        constexpr bsl::safe_uint32 guest_asid_val{bsl::to_u32(0x1)};
+        constexpr bsl::safe_uint64 guest_asid_idx{bsl::to_u64(0x0058U)};
+        constexpr bsl::safe_uint32 guest_asid_val{bsl::to_u32(0x1U)};
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, guest_asid_idx, guest_asid_val);
         if (bsl::unlikely(!ret)) {
@@ -147,13 +160,106 @@ namespace example
         }
 
         /// NOTE:
-        /// - Parse the MTRRs. Note that for AMD, using the MTRRs to create
-        ///   the nested page tables is optional, but useful for keeping
-        ///   both Intel and AMD the same. On Intel, using the MTRRs is not
-        ///   optional as Intel ignores the MTRRs when EPT is used.
+        /// - The first step in setting up nested paging is to determine
+        ///   if we have support for it. We do this on each physical processor
+        ///   we are being started on, but likely you could just do this
+        ///   check on the first physical processor and be done.
         ///
 
-        ret = g_mtrrs.parse(handle);
+        rax = details::CPUID_SVM_FEATURE_IDENTIFICATION;
+        rcx = {};
+        intrinsic_cpuid(rax.data(), rbx.data(), rcx.data(), rdx.data());
+
+        if (bsl::unlikely((rdx & details::CPUID_SVM_FEATURE_IDENTIFICATION_NP).is_zero())) {
+            bsl::error() << "nested paging not supported\n" << bsl::here();
+            return bsl::errc_failure;
+        }
+
+        /// NOTE:
+        /// - The next step is to enable nested paging in the VMCB.
+        ///
+
+        constexpr bsl::safe_uint64 guest_ctls1_idx{bsl::to_u64(0x0090U)};
+        constexpr bsl::safe_uint64 guest_ctls1_val{bsl::to_u64(0x1U)};
+
+        ret = syscall::bf_vps_op_write64(handle, vpsid, guest_ctls1_idx, guest_ctls1_val);
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return ret;
+        }
+
+        /// NOTE:
+        /// - Before we can set up the nested page tables, we need to set up
+        ///   a page pool. This is needed because not all microkernels will
+        ///   support the free_page() ABI. If we want to change the nested
+        ///   page tables, or make new ones and then release them when we are
+        ///   done, etc, we will need the ability to free a page so that we
+        ///   can use it again. To do this we create our own page pool.
+        ///   Whenever we allocate a page, if the page pool is empty, it will
+        ///   as the microkernel for a page. When memory is freed, it puts
+        ///   the freed page into our page pool so that we can use it the next
+        ///   time an allocation occurs.
+        /// - Note that this approach is basically how malloc/free engines
+        ///   work when you write your own application for Windows/Linux.
+        ///   The allocation engine asks the kernel for memory (usually it
+        ///   asks for heap memory, but that is not a requirement), and then
+        ///   it provides this memory when you run malloc(). We are doing the
+        ///   samething here, but with page granularity.
+        /// - It should also be noted that the microkernel does provide a
+        ///   heap if you want to use it, but in this case we really do want
+        ///   page allocation as you cannot do virtual address to physical
+        ///   address conversions for memory that was allocated on the heap.
+        ///
+
+        if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
+            ret = g_page_pool.initialize(handle);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+        }
+
+        /// NOTE:
+        /// - The next step is to initialize and set up the nested page
+        ///   tables. One issue with this is you need to know how much
+        ///   physical memory to map in. You could determine how much
+        ///   physical address space you will need, or you could use on-demand
+        ///   paging. You could also fill the entire physical address space
+        ///   (up to the MAX value provided by CPUID), but how much memory
+        ///   you need to allocate for the page tables to make that work is
+        ///   up to what granularity you use. In this example, we only
+        ///   provide 2M granularity, so this approach is likely a bad idea.
+        /// - Also note that what we are creating here is what we call an
+        ///   identify map. Basically, each guest physical address is mapped
+        ///   to the same system physical address. This is needed (usually)
+        ///   for the root OS. If you plan to create your own guest VMs,
+        ///   you will need a different mapping scheme.
+        /// - By default, we map in 512 GB of memory. Again, this is likely
+        ///   not safe, but is good enough for an example.
+        ///
+
+        constexpr bsl::safe_uint64 page_size_2m{bsl::to_umax(0x200000U)};
+        constexpr bsl::safe_uint64 max_physical_mem{bsl::to_umax(0x8000000000U)};
+
+        if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
+            ret = g_npt.initialize(&g_page_pool);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            for (bsl::safe_uintmax gpa{}; gpa < max_physical_mem; gpa += page_size_2m) {
+                ret = g_npt.map_2m_page(gpa, gpa, MAP_PAGE_RWE);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return ret;
+                }
+            }
+        }
+
+        constexpr bsl::safe_uint64 guest_n_cr3_idx{bsl::to_u64(0x00B0U)};
+
+        ret = syscall::bf_vps_op_write64(handle, vpsid, guest_n_cr3_idx, g_npt.phys());
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;

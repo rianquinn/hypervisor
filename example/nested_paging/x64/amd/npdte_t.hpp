@@ -22,23 +22,24 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef PDTE_T_HPP
-#define PDTE_T_HPP
-
-#pragma pack(push, 1)
+#ifndef NPDTE_T_HPP
+#define NPDTE_T_HPP
 
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>
 #include <bsl/safe_integral.hpp>
 
-namespace loader
+#pragma pack(push, 1)
+
+namespace example
 {
-    /// @struct loader::pdte_t
+    /// @struct example::npdte_t
     ///
     /// <!-- description -->
-    ///   @brief Defines the layout of a page-directory table entry (PDTE).
+    ///   @brief Defines the layout of a nested page-directory table entry
+    ///     (NPDTE).
     ///
-    struct pdte_t final
+    struct npdte_t final
     {
         /// @brief defines the "present" field in the page
         bsl::uint64 p : static_cast<bsl::uint64>(1);
@@ -52,29 +53,29 @@ namespace loader
         bsl::uint64 pcd : static_cast<bsl::uint64>(1);
         /// @brief defines the "accessed" field in the page
         bsl::uint64 a : static_cast<bsl::uint64>(1);
-        /// @brief defines an ignored field in the page
-        bsl::uint64 ignored1 : static_cast<bsl::uint64>(1);
-        /// @brief defines a field in the page that must be 0
-        bsl::uint64 mbz1 : static_cast<bsl::uint64>(1);
-        /// @brief defines an ignored field in the page
-        bsl::uint64 ignored2 : static_cast<bsl::uint64>(1);
+        /// @brief defines the "dirty" field in the page (ignored)
+        bsl::uint64 d : static_cast<bsl::uint64>(1);
+        /// @brief defines the "page size" field in the page (must be 0)
+        bsl::uint64 ps : static_cast<bsl::uint64>(1);
+        /// @brief defines the "global" field in the page (must be 0)
+        bsl::uint64 g : static_cast<bsl::uint64>(1);
         /// @brief defines the "available to software" field in the page
-        bsl::uint64 avl : static_cast<bsl::uint64>(3);
-        /// @brief defines the physical address field in the page
+        bsl::uint64 available1 : static_cast<bsl::uint64>(3);
+        /// @brief defines the "physical address" field in the page
         bsl::uint64 phys : static_cast<bsl::uint64>(40);
-        /// @brief defines fields in the page available to the OS for use
-        bsl::uint64 available : static_cast<bsl::uint64>(11);
+        /// @brief defines the "available to software" field in the page
+        bsl::uint64 available2 : static_cast<bsl::uint64>(11);
         /// @brief defines the "no-execute" field in the page
         bsl::uint64 nx : static_cast<bsl::uint64>(1);
     };
 
     namespace details
     {
-        /// @brief defined the expected size of the pdte_t struct
-        constexpr bsl::safe_uintmax EXPECTED_PDTE_T_SIZE{bsl::to_umax(8)};
+        /// @brief defined the expected size of the npdte_t struct
+        constexpr bsl::safe_uintmax EXPECTED_NPDTE_T_SIZE{bsl::to_umax(8)};
 
-        /// Check to make sure the pdte_t is the right size.
-        static_assert(sizeof(pdte_t) == EXPECTED_PDTE_T_SIZE);
+        /// Check to make sure the npdte_t is the right size.
+        static_assert(sizeof(npdte_t) == EXPECTED_NPDTE_T_SIZE);
     }
 }
 

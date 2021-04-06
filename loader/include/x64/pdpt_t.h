@@ -27,12 +27,12 @@
 #ifndef PDPT_T_H
 #define PDPT_T_H
 
-#pragma pack(push, 1)
-
 #include <pdpte_t.h>
 #include <pdt_t.h>
 #include <static_assert.h>
 #include <types.h>
+
+#pragma pack(push, 1)
 
 /** @brief defines total number of entries in the PDPT */
 #define LOADER_NUM_PDPT_ENTRIES ((uint64_t)512)

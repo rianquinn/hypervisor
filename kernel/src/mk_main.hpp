@@ -247,7 +247,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = m_system_rpt.initialize(&m_intrinsic, &m_page_pool);
+            ret = m_system_rpt.initialize(&m_intrinsic, &m_page_pool, &m_huge_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;

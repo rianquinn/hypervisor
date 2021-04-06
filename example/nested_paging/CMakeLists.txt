@@ -21,6 +21,13 @@
 
 add_executable(example_nested_paging)
 
+target_include_directories(example_nested_paging PRIVATE
+    .
+)
+list(APPEND HEADERS
+    ${CMAKE_CURRENT_LIST_DIR}/page_pool_t.hpp
+)
+
 # NOTE:
 # - Include your headers and include directories
 #

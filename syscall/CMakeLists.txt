@@ -51,7 +51,6 @@ if (NOT CMAKE_PROJECT_NAME STREQUAL "hypervisor_microkernel")
         src/x64/bf_mem_op_alloc_page_impl.S
         src/x64/bf_mem_op_free_huge_impl.S
         src/x64/bf_mem_op_free_page_impl.S
-        src/x64/bf_mem_op_virt_to_phys_impl.S
         src/x64/bf_tls_extid_impl.S
         src/x64/bf_tls_ppid_impl.S
         src/x64/bf_tls_rax_impl.S

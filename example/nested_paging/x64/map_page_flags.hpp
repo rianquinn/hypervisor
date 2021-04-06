@@ -22,43 +22,27 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef NPDT_T_HPP
-#define NPDT_T_HPP
+#ifndef MAP_PAGE_FLAGS_HPP
+#define MAP_PAGE_FLAGS_HPP
 
-#include <npdte_t.hpp>
-
-#include <bsl/array.hpp>
 #include <bsl/convert.hpp>
 #include <bsl/safe_integral.hpp>
 
-#pragma pack(push, 1)
-
 namespace example
 {
-    /// @brief defined the expected size of the npdt_t struct
-    constexpr bsl::safe_uintmax NUM_PDT_ENTRIES{bsl::to_umax(512)};
+    /// @brief Map a page with read permmissions (has no effect)
+    constexpr bsl::safe_uintmax MAP_PAGE_READ{bsl::to_umax(0x0000000000000001U)};
+    /// @brief Map a page with write permmissions
+    constexpr bsl::safe_uintmax MAP_PAGE_WRITE{bsl::to_umax(0x0000000000000002U)};
+    /// @brief Map a page with execute permmissions
+    constexpr bsl::safe_uintmax MAP_PAGE_EXECUTE{bsl::to_umax(0x0000000000000004U)};
 
-    /// @struct example::npdt_t
-    ///
-    /// <!-- description -->
-    ///   @brief Defines the layout of a page-directory table (npdt).
-    ///
-    struct npdt_t final
-    {
-        /// @brief stores the entires in the table
-        bsl::array<npdte_t, NUM_PDT_ENTRIES.get()> entries;
-    };
-
-    namespace details
-    {
-        /// @brief defined the expected size of the npdt_t struct
-        constexpr bsl::safe_uintmax EXPECTED_PDT_T_SIZE{bsl::to_umax(HYPERVISOR_PAGE_SIZE)};
-
-        /// Check to make sure the npdt_t is the right size.
-        static_assert(sizeof(npdt_t) == EXPECTED_PDT_T_SIZE);
-    }
+    /// @brief Map a page with read/execute permmissions
+    constexpr bsl::safe_uintmax MAP_PAGE_RE{MAP_PAGE_READ | MAP_PAGE_EXECUTE};
+    /// @brief Map a page with read/write permmissions
+    constexpr bsl::safe_uintmax MAP_PAGE_RW{MAP_PAGE_READ | MAP_PAGE_WRITE};
+    /// @brief Map a page with read/write/execute permmissions
+    constexpr bsl::safe_uintmax MAP_PAGE_RWE{MAP_PAGE_READ | MAP_PAGE_WRITE | MAP_PAGE_EXECUTE};
 }
-
-#pragma pack(pop)
 
 #endif

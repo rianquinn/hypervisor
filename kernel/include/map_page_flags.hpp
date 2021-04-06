@@ -31,13 +31,16 @@
 namespace mk
 {
     /// @brief Map a page with read permmissions (has no effect)
-    constexpr bsl::safe_uintmax MAP_PAGE_FLAG_READ{bsl::to_umax(0x0000000000000001U)};
+    constexpr bsl::safe_uintmax MAP_PAGE_READ{bsl::to_umax(0x0000000000000001U)};
     /// @brief Map a page with write permmissions
-    constexpr bsl::safe_uintmax MAP_PAGE_FLAG_WRITE{bsl::to_umax(0x0000000000000002U)};
+    constexpr bsl::safe_uintmax MAP_PAGE_WRITE{bsl::to_umax(0x0000000000000002U)};
     /// @brief Map a page with execute permmissions
-    constexpr bsl::safe_uintmax MAP_PAGE_FLAG_EXECUTE{bsl::to_umax(0x0000000000000004U)};
-    /// @brief Map a page that must be manually freed when the RPT is released
-    constexpr bsl::safe_uintmax MAP_PAGE_FLAG_NO_AUTO_RELEASE{bsl::to_umax(0x0000000000000010U)};
+    constexpr bsl::safe_uintmax MAP_PAGE_EXECUTE{bsl::to_umax(0x0000000000000004U)};
+
+    /// @brief Map a page and release to the page pool
+    constexpr bsl::safe_uintmax MAP_PAGE_AUTO_RELEASE_PAGE_POOL{bsl::to_umax(0x0000000000000010U)};
+    /// @brief Map a page and release to the huge pool
+    constexpr bsl::safe_uintmax MAP_PAGE_AUTO_RELEASE_HUGE_POOL{bsl::to_umax(0x0000000000000020U)};
 }
 
 #endif

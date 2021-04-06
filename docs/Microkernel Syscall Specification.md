@@ -96,7 +96,6 @@
     - [2.14.3. bf_mem_op_alloc_huge, OP=0x7, IDX=0x2](#2143-bf_mem_op_alloc_huge-op0x7-idx0x2)
     - [2.14.4. bf_mem_op_free_huge, OP=0x7, IDX=0x3](#2144-bf_mem_op_free_huge-op0x7-idx0x3)
     - [2.14.5. bf_mem_op_alloc_heap, OP=0x7, IDX=0x4](#2145-bf_mem_op_alloc_heap-op0x7-idx0x4)
-    - [2.14.6. bf_mem_op_virt_to_phys, OP=0x7, IDX=0x5](#2146-bf_mem_op_virt_to_phys-op0x7-idx0x5)
 
 # 1. Introduction
 
@@ -1426,25 +1425,20 @@ Each extension has access to several different memory pools:
 - TLS (used for thread-local storage)
 - The direct map
 
-The page pool provides a means to allocate a page. It should be noted that some microkernels may choose not to implement bf_mem_op_free_page which is optional.
+The page pool provides a means to allocate a page.
 
 The huge pool provides a method for allocating physically contiguous memory. This pool is small and platform-dependent (as in less than a megabyte total).
 It should be noted that some microkernels may choose not to implement bf_mem_op_free_huge which is optional.
 
-The heap pool provides memory that can only be grown, meaning the memory must always remain virtually contiguous. An extension is free to use heap memory or the page pool. The only difference between these two pools is the page pool can only allocate a single page at a time and may or may not be fragmented (depends on the implementation). The heap pool can allocate memory of any size (must be a multiple of a page) and never fragments. Freeing memory is also different. An extension can free any page from the page pool if the microkernel implements bf_mem_op_free_page. The heap pool can only be grown, meaning there is no ability to free heap memory.
-
-Allocations must all occur during the bootstrap phase of the extension. Once an extension has executed bf_vps_op_run, allocations are no longer allowed on that physical processor.
+The heap pool provides memory that can only be grown, meaning the memory must always remain virtually contiguous. An extension is free to use heap memory or the page pool. The only difference between these two pools is the page pool can only allocate a single page at a time and may or may not be fragmented (depends on the implementation). The heap pool can allocate memory of any size (must be a multiple of a page) and never fragments.
 
 Thread-Local Storage (TLS) memory (typically allocated using `thread_local`) provides per-physical processor storage. The amount of TLS available to an extension is 1 page per physical processor.
 
-The direct map provides an extension with a means to access any physical address by accessing the direct map region of the virtual address space (depends on the hypervisor's configuration). By default, on Intel/AMD with 4-level paging, this region starts at 0xFFFFC00000000000. An extension can access any physical address by simply adding 0xFFFFC00000000000 to the physical address and dereferencing the resulting value. When a VM is destroyed, all physical memory maps associated with that VM will be removed.
+The direct map provides an extension with a means to access any physical address by accessing the direct map region of the virtual address space (depends on the hypervisor's configuration). By default, on Intel/AMD with 4-level paging, this region starts at 0xFFFFC00000000000. An extension can access any physical address by simply adding 0xFFFFC00000000000 to the physical address and dereferencing the resulting value. When a VM is destroyed, all physical memory maps associated with that VM will be removed. The direct map is also where page and huge page allocations are mapped, providing an extension with a simple means for performing a virtual address to physical address (and vice versa) translations.
 
 ### 2.14.1. bf_mem_op_alloc_page, OP=0x7, IDX=0x0
 
-bf_mem_op_alloc_page allocates a page. When allocating a page, the extension should keep in mind the following:
-- Virtual address to physical address conversions require a page walk, so they are slow.
-- The microkernel does not support physical address to virtual address conversions.
-- bf_mem_op_free_page is optional and if implemented, may be slow.
+bf_mem_op_alloc_page allocates a page, and maps this page into the direct map of the VM.
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1464,7 +1458,7 @@ bf_mem_op_alloc_page allocates a page. When allocating a page, the extension sho
 
 ### 2.14.2. bf_mem_op_free_page, OP=0x7, IDX=0x1
 
-Frees a page previously allocated by bf_mem_op_alloc_page. This operation is optional and not all microkernels may implement it. For more information, please see bf_mem_op_alloc_page.
+Frees a page previously allocated by bf_mem_op_alloc_page. This operation is optional and not all microkernels may implement it.
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1487,9 +1481,6 @@ Frees a page previously allocated by bf_mem_op_alloc_page. This operation is opt
 bf_mem_op_alloc_huge allocates a physically contiguous block of memory. When allocating a page, the extension should keep in mind the following:
 - The total memory available to allocate from this pool is extremely limited. This should only be used when absolutely needed, and you should not expect more than 1 MB (might be less) of total memory available.
 - Memory allocated from the huge pool might be allocated using different schemes. For example, the microkernel might allocate in increments of a page, or it might use a buddy allocator that would allocate in multiples of 2. If the allocation size doesn't match the algorithm, internal fragmentation could occur, further limiting the total number of allocations this pool can support.
-- Virtual address to physical address conversions require a page walk, so they are slow.
-- The microkernel does not support physical address to virtual address conversions.
-- bf_mem_op_free_huge is optional and if implemented, may be slow.
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1510,7 +1501,7 @@ bf_mem_op_alloc_huge allocates a physically contiguous block of memory. When all
 
 ### 2.14.4. bf_mem_op_free_huge, OP=0x7, IDX=0x3
 
-Frees memory previously allocated by bf_mem_op_alloc_huge. This operation is optional and not all microkernels may implement it. For more information, please see bf_mem_op_alloc_huge.
+Frees memory previously allocated by bf_mem_op_alloc_huge. This operation is optional and not all microkernels may implement it.
 
 **Input:**
 | Register Name | Bits | Description |
@@ -1533,8 +1524,7 @@ bf_mem_op_alloc_heap allocates heap memory. When allocating heap memory, the ext
 - This ABI is designed to work similar to sbrk() to support malloc/free implementations common with existing open source libraries.
 - Calling this ABI with with a size of 0 will return the current heap location.
 - Calling this ABI with a size (in bytes) will result in return the previous heap location. The current heap location will be set to the previous location, plus the provide size, rounded to the nearest page size.
-- The microkernel does not support virtual address to physical address conversions.
-- The microkernel does not support physical address to virtual address conversions.
+- The heap is not mapped into the direct map, so virtual to physical (and vice versa) translations are not possible.
 - There is no ability to free heap memory
 
 **Input:**
@@ -1552,23 +1542,3 @@ bf_mem_op_alloc_heap allocates heap memory. When allocating heap memory, the ext
 | Value | Description |
 | :---- | :---------- |
 | 0x0000000000000004 | Defines the syscall index for bf_mem_op_alloc_heap |
-
-### 2.14.6. bf_mem_op_virt_to_phys, OP=0x7, IDX=0x5
-
-bf_mem_op_virt_to_phys converts a provided virtual address to a physical address for any virtual address allocated using bf_mem_op_alloc_page or bf_mem_op_alloc_huge. It should also be noted that the virtual address of the page to convert must be page aligned.
-
-**Input:**
-| Register Name | Bits | Description |
-| :------------ | :--- | :---------- |
-| REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
-| REG1 | 63:0 | The virtual address of the page to convert |
-
-**Output:**
-| Register Name | Bits | Description |
-| :------------ | :--- | :---------- |
-| REG0 | 63:0 | The physical address of the provided virtual address |
-
-**const, bf_uint64_t: BF_MEM_OP_VIRT_TO_PHYS_IDX_VAL**
-| Value | Description |
-| :---- | :---------- |
-| 0x0000000000000006 | Defines the syscall index for bf_mem_op_virt_to_phys |

@@ -22,22 +22,22 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef PTE_T_HPP
-#define PTE_T_HPP
-
-#pragma pack(push, 1)
+#ifndef NPTE_T_HPP
+#define NPTE_T_HPP
 
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>
 #include <bsl/safe_integral.hpp>
 
-namespace loader
+#pragma pack(push, 1)
+
+namespace example
 {
-    /// @struct loader::pte_t
+    /// @struct example::npte_t
     /// <!-- description -->
-    ///   @brief Defines the layout of a page table entry (PTE).
+    ///   @brief Defines the layout of a nested page table entry (NPTE).
     ///
-    struct pte_t final
+    struct npte_t final
     {
         /// @brief defines the "present" field in the page
         bsl::uint64 p : static_cast<bsl::uint64>(1);
@@ -51,31 +51,29 @@ namespace loader
         bsl::uint64 pcd : static_cast<bsl::uint64>(1);
         /// @brief defines the "accessed" field in the page
         bsl::uint64 a : static_cast<bsl::uint64>(1);
-        /// @brief defines the "dirty" field in the page
+        /// @brief defines the "dirty" field in the page (ignored)
         bsl::uint64 d : static_cast<bsl::uint64>(1);
-        /// @brief defines the "page-attribute table" field in the page
-        bsl::uint64 pat : static_cast<bsl::uint64>(1);
-        /// @brief defines the "global page" field in the page
+        /// @brief defines the "page size" field in the page (must be 0)
+        bsl::uint64 ps : static_cast<bsl::uint64>(1);
+        /// @brief defines the "global" field in the page (must be 0)
         bsl::uint64 g : static_cast<bsl::uint64>(1);
         /// @brief defines the "available to software" field in the page
-        bsl::uint64 avl : static_cast<bsl::uint64>(3);
-        /// @brief defines the physical addressfield in the page
+        bsl::uint64 available1 : static_cast<bsl::uint64>(3);
+        /// @brief defines the "physical address" field in the page
         bsl::uint64 phys : static_cast<bsl::uint64>(40);
-        /// @brief defines whether or not the page can be auto released
-        bsl::uint64 auto_release : static_cast<bsl::uint64>(7);
-        /// @brief defines the "memory protection key" field in the page
-        bsl::uint64 mpk : static_cast<bsl::uint64>(4);
+        /// @brief defines the "available to software" field in the page
+        bsl::uint64 available2 : static_cast<bsl::uint64>(11);
         /// @brief defines the "no-execute" field in the page
         bsl::uint64 nx : static_cast<bsl::uint64>(1);
     };
 
     namespace details
     {
-        /// @brief defined the expected size of the pte_t struct
-        constexpr bsl::safe_uintmax EXPECTED_PTE_T_SIZE{bsl::to_umax(8)};
+        /// @brief defined the expected size of the npte_t struct
+        constexpr bsl::safe_uintmax EXPECTED_NPTE_T_SIZE{bsl::to_umax(8)};
 
-        /// Check to make sure the pte_t is the right size.
-        static_assert(sizeof(pte_t) == EXPECTED_PTE_T_SIZE);
+        /// Check to make sure the npte_t is the right size.
+        static_assert(sizeof(npte_t) == EXPECTED_NPTE_T_SIZE);
     }
 }
 

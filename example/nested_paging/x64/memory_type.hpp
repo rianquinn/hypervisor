@@ -31,7 +31,7 @@
 namespace example
 {
     /// @brief defines the uncacheable memory type
-    constexpr bsl::safe_uintmax MEMORY_TYPE_UN{bsl::to_umax(0)};
+    constexpr bsl::safe_uintmax MEMORY_TYPE_UC{bsl::to_umax(0)};
     /// @brief defines the write-combine memory type
     constexpr bsl::safe_uintmax MEMORY_TYPE_WC{bsl::to_umax(1)};
     /// @brief defines the write-through memory type

@@ -25,12 +25,12 @@
 #ifndef VMCS_HPP
 #define VMCS_HPP
 
-#pragma pack(push, 1)
-
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>
 #include <bsl/details/carray.hpp>
 #include <bsl/safe_integral.hpp>
+
+#pragma pack(push, 1)
 
 namespace mk
 {

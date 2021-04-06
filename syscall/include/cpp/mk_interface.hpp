@@ -30,7 +30,10 @@
 #include <bsl/cstdint.hpp>
 #include <bsl/cstr_type.hpp>
 #include <bsl/discard.hpp>
+#include <bsl/disjunction.hpp>
 #include <bsl/errc_type.hpp>
+#include <bsl/is_standard_layout.hpp>
+#include <bsl/is_void.hpp>
 #include <bsl/likely.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
@@ -1434,7 +1437,7 @@ namespace syscall
         bsl::safe_uint32 const &version,    // --
         bf_handle_t &handle) noexcept -> bsl::errc_type
     {
-        auto const status{bf_handle_op_open_handle_impl(version.get(), &handle.hndl)};
+        bf_status_t const status{bf_handle_op_open_handle_impl(version.get(), &handle.hndl)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -1453,7 +1456,7 @@ namespace syscall
     ///   @param reg0_in n/a
     ///   @return n/a
     ///
-    extern "C" auto bf_handle_op_close_handle_impl(    // --
+    extern "C" [[nodiscard]] auto bf_handle_op_close_handle_impl(    // --
         bf_uint64_t const reg0_in) noexcept -> bf_status_t::value_type;
 
     /// @brief Defines the syscall index for bf_handle_op_close_handle
@@ -1471,7 +1474,7 @@ namespace syscall
     bf_handle_op_close_handle(    // --
         bf_handle_t &handle) noexcept -> bsl::errc_type
     {
-        auto const status{bf_handle_op_close_handle_impl(handle.hndl)};
+        bf_status_t const status{bf_handle_op_close_handle_impl(handle.hndl)};
         handle = {};
 
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
@@ -1761,7 +1764,7 @@ namespace syscall
         bf_handle_t const &handle,        // --
         bf_callback_handler_bootstrap_t const handler) noexcept -> bsl::errc_type
     {
-        auto const status{bf_callback_op_register_bootstrap_impl(handle.hndl, handler)};
+        bf_status_t const status{bf_callback_op_register_bootstrap_impl(handle.hndl, handler)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -1804,7 +1807,7 @@ namespace syscall
         bf_handle_t const &handle,     // --
         bf_callback_handler_vmexit_t const handler) noexcept -> bsl::errc_type
     {
-        auto const status{bf_callback_op_register_vmexit_impl(handle.hndl, handler)};
+        bf_status_t const status{bf_callback_op_register_vmexit_impl(handle.hndl, handler)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -1849,7 +1852,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bf_callback_handler_fail_t const handler) noexcept -> bsl::errc_type
     {
-        auto const status{bf_callback_op_register_fail_impl(handle.hndl, handler)};
+        bf_status_t const status{bf_callback_op_register_fail_impl(handle.hndl, handler)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -1891,7 +1894,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 &vmid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vm_op_create_vm_impl(handle.hndl, vmid.data())};
+        bf_status_t const status{bf_vm_op_create_vm_impl(handle.hndl, vmid.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -1911,8 +1914,8 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" auto bf_vm_op_destroy_vm_impl(    // --
-        bf_uint64_t const reg0_in,               // --
+    extern "C" [[nodiscard]] auto bf_vm_op_destroy_vm_impl(    // --
+        bf_uint64_t const reg0_in,                             // --
         bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
 
     /// @brief Defines the syscall index for bf_vm_op_destroy_vm
@@ -1933,7 +1936,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vm_op_destroy_vm_impl(handle.hndl, vmid.get())};
+        bf_status_t const status{bf_vm_op_destroy_vm_impl(handle.hndl, vmid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -1975,7 +1978,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 &vpid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vp_op_create_vp_impl(handle.hndl, vpid.data())};
+        bf_status_t const status{bf_vp_op_create_vp_impl(handle.hndl, vpid.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -1995,8 +1998,8 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" auto bf_vp_op_destroy_vp_impl(    // --
-        bf_uint64_t const reg0_in,               // --
+    extern "C" [[nodiscard]] auto bf_vp_op_destroy_vp_impl(    // --
+        bf_uint64_t const reg0_in,                             // --
         bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
 
     /// @brief Defines the syscall index for bf_vp_op_destroy_vp
@@ -2017,7 +2020,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vp_op_destroy_vp_impl(handle.hndl, vpid.get())};
+        bf_status_t const status{bf_vp_op_destroy_vp_impl(handle.hndl, vpid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2059,7 +2062,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 &vpsid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vps_op_create_vps_impl(handle.hndl, vpsid.data())};
+        bf_status_t const status{bf_vps_op_create_vps_impl(handle.hndl, vpsid.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2079,8 +2082,8 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" auto bf_vps_op_destroy_vps_impl(    // --
-        bf_uint64_t const reg0_in,                 // --
+    extern "C" [[nodiscard]] auto bf_vps_op_destroy_vps_impl(    // --
+        bf_uint64_t const reg0_in,                               // --
         bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
 
     /// @brief Defines the syscall index for bf_vps_op_destroy_vps
@@ -2101,7 +2104,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vps_op_destroy_vps_impl(handle.hndl, vpsid.get())};
+        bf_status_t const status{bf_vps_op_destroy_vps_impl(handle.hndl, vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2143,7 +2146,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vps_op_init_as_root_impl(handle.hndl, vpsid.get())};
+        bf_status_t const status{bf_vps_op_init_as_root_impl(handle.hndl, vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2195,7 +2198,7 @@ namespace syscall
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint8 &value) noexcept -> bsl::errc_type
     {
-        auto const status{
+        bf_status_t const status{
             bf_vps_op_read8_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2248,7 +2251,7 @@ namespace syscall
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint16 &value) noexcept -> bsl::errc_type
     {
-        auto const status{
+        bf_status_t const status{
             bf_vps_op_read16_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2301,7 +2304,7 @@ namespace syscall
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint32 &value) noexcept -> bsl::errc_type
     {
-        auto const status{
+        bf_status_t const status{
             bf_vps_op_read32_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2354,7 +2357,7 @@ namespace syscall
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint64 &value) noexcept -> bsl::errc_type
     {
-        auto const status{
+        bf_status_t const status{
             bf_vps_op_read64_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2407,7 +2410,7 @@ namespace syscall
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint8 const &value) noexcept -> bsl::errc_type
     {
-        auto const status{
+        bf_status_t const status{
             bf_vps_op_write8_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2460,7 +2463,7 @@ namespace syscall
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint16 const &value) noexcept -> bsl::errc_type
     {
-        auto const status{
+        bf_status_t const status{
             bf_vps_op_write16_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2513,7 +2516,7 @@ namespace syscall
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint32 const &value) noexcept -> bsl::errc_type
     {
-        auto const status{
+        bf_status_t const status{
             bf_vps_op_write32_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2566,7 +2569,7 @@ namespace syscall
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint64 const &value) noexcept -> bsl::errc_type
     {
-        auto const status{
+        bf_status_t const status{
             bf_vps_op_write64_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2617,7 +2620,8 @@ namespace syscall
         bf_reg_t const reg,               // --
         bsl::safe_uint64 &value) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vps_op_read_reg_impl(handle.hndl, vpsid.get(), reg, value.data())};
+        bf_status_t const status{
+            bf_vps_op_read_reg_impl(handle.hndl, vpsid.get(), reg, value.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2667,7 +2671,8 @@ namespace syscall
         bf_reg_t const reg,               // --
         bsl::safe_uint64 const &value) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vps_op_write_reg_impl(handle.hndl, vpsid.get(), reg, value.get())};
+        bf_status_t const status{
+            bf_vps_op_write_reg_impl(handle.hndl, vpsid.get(), reg, value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2720,7 +2725,8 @@ namespace syscall
         bsl::safe_uint16 const &vpid,     // --
         bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vps_op_run_impl(handle.hndl, vpsid.get(), vpid.get(), vmid.get())};
+        bf_status_t const status{
+            bf_vps_op_run_impl(handle.hndl, vpsid.get(), vpid.get(), vmid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2758,7 +2764,7 @@ namespace syscall
     bf_vps_op_run_current(    // --
         bf_handle_t const &handle) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vps_op_run_current_impl(handle.hndl)};
+        bf_status_t const status{bf_vps_op_run_current_impl(handle.hndl)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2800,7 +2806,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vps_op_advance_ip_impl(handle.hndl, vpsid.get())};
+        bf_status_t const status{bf_vps_op_advance_ip_impl(handle.hndl, vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2841,7 +2847,7 @@ namespace syscall
     bf_vps_op_advance_ip_and_run_current(    // --
         bf_handle_t const &handle) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vps_op_advance_ip_and_run_current_impl(handle.hndl)};
+        bf_status_t const status{bf_vps_op_advance_ip_and_run_current_impl(handle.hndl)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2861,8 +2867,8 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" auto bf_vps_op_promote_impl(    // --
-        bf_uint64_t const reg0_in,             // --
+    extern "C" [[nodiscard]] auto bf_vps_op_promote_impl(    // --
+        bf_uint64_t const reg0_in,                           // --
         bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
 
     /// @brief Defines the syscall index for bf_vps_op_promote
@@ -2886,7 +2892,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vps_op_promote_impl(handle.hndl, vpsid.get())};
+        bf_status_t const status{bf_vps_op_promote_impl(handle.hndl, vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2906,8 +2912,8 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" auto bf_vps_op_clear_vps_impl(    // --
-        bf_uint64_t const reg0_in,               // --
+    extern "C" [[nodiscard]] auto bf_vps_op_clear_vps_impl(    // --
+        bf_uint64_t const reg0_in,                             // --
         bf_uint16_t const reg1_in) noexcept -> bf_status_t::value_type;
 
     /// @brief Defines the syscall index for bf_vps_op_clear_vps
@@ -2933,7 +2939,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_vps_op_clear_vps_impl(handle.hndl, vpsid.get())};
+        bf_status_t const status{bf_vps_op_clear_vps_impl(handle.hndl, vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2982,7 +2988,7 @@ namespace syscall
         bsl::safe_uint32 const &msr,    // --
         bsl::safe_uint64 &value) noexcept -> bsl::errc_type
     {
-        auto const status{bf_intrinsic_op_rdmsr_impl(handle.hndl, msr.get(), value.data())};
+        bf_status_t const status{bf_intrinsic_op_rdmsr_impl(handle.hndl, msr.get(), value.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -3032,7 +3038,7 @@ namespace syscall
         bsl::safe_uint32 const &msr,    // --
         bsl::safe_uint64 const &value) noexcept -> bsl::errc_type
     {
-        auto const status{bf_intrinsic_op_wrmsr_impl(handle.hndl, msr.get(), value.get())};
+        bf_status_t const status{bf_intrinsic_op_wrmsr_impl(handle.hndl, msr.get(), value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -3078,7 +3084,7 @@ namespace syscall
         bsl::safe_uint64 const &addr,    // --
         bsl::safe_uint64 const &asid) noexcept -> bsl::errc_type
     {
-        auto const status{bf_intrinsic_op_invlpga_impl(handle.hndl, addr.get(), asid.get())};
+        bf_status_t const status{bf_intrinsic_op_invlpga_impl(handle.hndl, addr.get(), asid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -3125,7 +3131,7 @@ namespace syscall
         bsl::safe_uint64 const &eptp,    // --
         bsl::safe_uint64 const &type) noexcept -> bsl::errc_type
     {
-        auto const status{bf_intrinsic_op_invept_impl(handle.hndl, eptp.get(), type.get())};
+        bf_status_t const status{bf_intrinsic_op_invept_impl(handle.hndl, eptp.get(), type.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -3176,7 +3182,7 @@ namespace syscall
         bsl::safe_uint16 const &vpid,    // --
         bsl::safe_uint64 const &type) noexcept -> bsl::errc_type
     {
-        auto const status{
+        bf_status_t const status{
             bf_intrinsic_op_invvpid_impl(handle.hndl, addr.get(), vpid.get(), type.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -3207,13 +3213,8 @@ namespace syscall
     constexpr bsl::safe_uint64 BF_MEM_OP_ALLOC_PAGE_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
 
     /// <!-- description -->
-    ///   @brief bf_mem_op_alloc_page allocates a page. When allocating a
-    ///     page, the extension should keep in mind the following:
-    ///     - Virtual address to physical address conversions require a page
-    ///       walk, so they are slow.
-    ///     - The microkernel does not support physical address to virtual
-    ///       address conversions.
-    ///     - bf_mem_op_free_page is optional and if implemented, may be slow.
+    ///   @brief bf_mem_op_alloc_page allocates a page, and maps this page
+    ///     into the direct map of the VM.
     ///
     /// <!-- inputs/outputs -->
     ///   @tparam T the type of memory to allocate
@@ -3230,14 +3231,14 @@ namespace syscall
         T *&virt,                     // --
         bsl::safe_uint64 &phys) noexcept -> bsl::errc_type
     {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        auto **const ptr{reinterpret_cast<void **>(&virt)};
+        T *ptr{};
 
-        auto const status{bf_mem_op_alloc_page_impl(handle.hndl, ptr, phys.data())};
+        bf_status_t const status{bf_mem_op_alloc_page_impl(handle.hndl, &ptr, phys.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
 
+        virt = ptr;
         return bsl::errc_success;
     }
 
@@ -3263,7 +3264,7 @@ namespace syscall
     /// <!-- description -->
     ///   @brief Frees a page previously allocated by bf_mem_op_alloc_page.
     ///     This operation is optional and not all microkernels may implement
-    ///     it. For more information, please see bf_mem_op_alloc_page.
+    ///     it.
     ///
     /// <!-- inputs/outputs -->
     ///   @param handle Set to the result of bf_handle_op_open_handle
@@ -3276,7 +3277,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bf_ptr_t virt) noexcept -> bsl::errc_type
     {
-        auto const status{bf_mem_op_free_page_impl(handle.hndl, virt)};
+        bf_status_t const status{bf_mem_op_free_page_impl(handle.hndl, virt)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -3321,11 +3322,7 @@ namespace syscall
     ///         would allocate in multiples of 2. If the allocation size
     ///         doesn't match the algorithm, internal fragmentation could
     ///         occur, further limiting the total number of allocations this
-    ///         pool can support. - Virtual address to physical address
-    ///         conversions require a page walk, so they are slow.
-    ///       - The microkernel does not support physical address to virtual
-    ///         address conversions.
-    ///       - bf_mem_op_free_huge is optional and if implemented, may be slow.
+    ///         pool can support.
     ///
     /// <!-- inputs/outputs -->
     ///   @tparam T the type of memory to allocate
@@ -3344,14 +3341,15 @@ namespace syscall
         T *&virt,                        // --
         bsl::safe_uint64 &phys) noexcept -> bsl::errc_type
     {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        auto **const ptr{reinterpret_cast<void **>(&virt)};
+        T *ptr{};
 
-        auto const status{bf_mem_op_alloc_huge_impl(handle.hndl, size.get(), ptr, phys.data())};
+        bf_status_t const status{
+            bf_mem_op_alloc_huge_impl(handle.hndl, size.get(), &ptr, phys.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
 
+        virt = ptr;
         return bsl::errc_success;
     }
 
@@ -3377,7 +3375,7 @@ namespace syscall
     /// <!-- description -->
     ///   @brief Frees memory previously allocated by bf_mem_op_alloc_huge.
     ///     This operation is optional and not all microkernels may implement
-    ///     it. For more information, please see bf_mem_op_alloc_huge.
+    ///     it.
     ///
     /// <!-- inputs/outputs -->
     ///   @param handle Set to the result of bf_handle_op_open_handle
@@ -3390,7 +3388,7 @@ namespace syscall
         bf_handle_t const &handle,    // --
         bf_ptr_t virt) noexcept -> bsl::errc_type
     {
-        auto const status{bf_mem_op_free_huge_impl(handle.hndl, virt)};
+        bf_status_t const status{bf_mem_op_free_huge_impl(handle.hndl, virt)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -3431,10 +3429,8 @@ namespace syscall
     ///         the previous heap location. The current heap location will be
     ///         set to the previous location, plus the provide size, rounded to
     ///         the nearest page size.
-    ///       - The microkernel does not support
-    ///         virtual address to physical address conversions.
-    ///       - The microkernel does not support physical address to virtual
-    ///         address conversions.
+    ///       - The heap is not mapped into the direct map, so virtual to
+    ///         physical (and vice versa) translations are not possible.
     ///       - There is no ability to free heap memory
     ///
     /// <!-- inputs/outputs -->
@@ -3452,61 +3448,14 @@ namespace syscall
         bsl::safe_uint64 const &size,    // --
         T *&virt) noexcept -> bsl::errc_type
     {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        auto **const ptr{reinterpret_cast<void **>(&virt)};
+        T *ptr{};
 
-        auto const status{bf_mem_op_alloc_heap_impl(handle.hndl, size.get(), ptr)};
+        bf_status_t const status{bf_mem_op_alloc_heap_impl(handle.hndl, size.get(), &ptr)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
 
-        return bsl::errc_success;
-    }
-
-    // -------------------------------------------------------------------------
-    // bf_mem_op_virt_to_phys
-    // -------------------------------------------------------------------------
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_mem_op_virt_to_phys.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///   @param reg0_out n/a
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_mem_op_virt_to_phys_impl(    // --
-        bf_uint64_t const reg0_in,                                // --
-        bf_ptr_t const reg1_in,                                   // --
-        bf_uint64_t *const reg0_out) noexcept -> bf_status_t::value_type;
-
-    /// @brief Defines the syscall index for bf_mem_op_virt_to_phys
-    constexpr bsl::safe_uint64 BF_MEM_OP_VIRT_TO_PHYS_IDX_VAL{bsl::to_u64(0x0000000000000005U)};
-
-    /// <!-- description -->
-    ///   @brief bf_mem_op_virt_to_phys converts a provided virtual address to
-    ///     a physical address for any virtual address allocated using
-    ///     bf_mem_op_alloc_page or bf_mem_op_alloc_huge.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param virt The virtual address of the page to convert
-    ///   @param phys The physical address of the provided virtual address
-    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-    ///     otherwise
-    ///
-    [[nodiscard]] inline auto
-    bf_mem_op_virt_to_phys(           // --
-        bf_handle_t const &handle,    // --
-        bf_ptr_t const virt,          // --
-        bsl::safe_uint64 &phys) noexcept -> bsl::errc_type
-    {
-        auto const status{bf_mem_op_virt_to_phys_impl(handle.hndl, virt, phys.data())};
-        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
-            return bsl::errc_failure;
-        }
-
+        virt = ptr;
         return bsl::errc_success;
     }
 
@@ -3516,87 +3465,107 @@ namespace syscall
 
     /// <!-- description -->
     ///   @brief Returns the value at the provided physical address
-    ///     on success, or returns bsl::safe_integral<FIELD_TYPE>::zero(true)
+    ///     on success, or returns bsl::safe_integral<T>::zero(true)
     ///     on failure.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam FIELD_TYPE the type of integral to read
     ///   @tparam EXT_DIRECT_MAP_ADDR the address of the extension's direct map
-    ///   @tparam EXT_DIRECT_MAP_SIZE the size of the extension's direct map
+    ///   @tparam T the type of integral to read
     ///   @param handle reserved for unit testing
     ///   @param phys the physical address to read
     ///   @return Returns the value at the provided physical address
-    ///     on success, or returns bsl::safe_integral<FIELD_TYPE>::zero(true)
+    ///     on success, or returns bsl::safe_integral<T>::zero(true)
     ///     on failure.
     ///
-    template<
-        typename FIELD_TYPE = bsl::uintmax,
-        bsl::uintmax EXT_DIRECT_MAP_ADDR,
-        bsl::uintmax EXT_DIRECT_MAP_SIZE>
+    template<bsl::uintmax EXT_DIRECT_MAP_ADDR, typename T = bsl::uintmax>
     [[nodiscard]] inline auto
     bf_read_phys(bf_handle_t const &handle, bsl::safe_uintmax const &phys) noexcept
-        -> bsl::safe_integral<FIELD_TYPE>
+        -> bsl::safe_integral<T>
     {
         bsl::discard(handle);
 
-        constexpr auto dm_addr{bsl::to_umax(EXT_DIRECT_MAP_ADDR)};
-        constexpr auto dm_size{bsl::to_umax(EXT_DIRECT_MAP_SIZE)};
-
-        if (bsl::unlikely(!phys)) {
-            return bsl::safe_integral<FIELD_TYPE>::zero(true);
+        auto const virt{EXT_DIRECT_MAP_ADDR + phys};
+        if (bsl::likely(virt)) {
+            return bsl::safe_integral<T>{*bsl::to_ptr<T *>(virt)};
         }
 
-        if (bsl::likely(phys < dm_size)) {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            return {*reinterpret_cast<FIELD_TYPE *>((dm_addr + phys).get())};
-        }
-
-        return bsl::safe_integral<FIELD_TYPE>::zero(true);
+        return bsl::safe_integral<T>::zero(true);
     }
 
     /// <!-- description -->
     ///   @brief Writes the provided value at the provided physical address
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam FIELD_TYPE the type of integral to write
     ///   @tparam EXT_DIRECT_MAP_ADDR the address of the extension's direct map
-    ///   @tparam EXT_DIRECT_MAP_SIZE the size of the extension's direct map
+    ///   @tparam T the type of integral to write
     ///   @param handle reserved for unit testing
     ///   @param phys the physical address to write
     ///   @param val the value to write to the provided physical address
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<
-        typename FIELD_TYPE = bsl::uintmax,
-        bsl::uintmax EXT_DIRECT_MAP_ADDR,
-        bsl::uintmax EXT_DIRECT_MAP_SIZE>
+    template<bsl::uintmax EXT_DIRECT_MAP_ADDR, typename T>
     [[nodiscard]] inline auto
     bf_write_phys(
         bf_handle_t const &handle,
         bsl::safe_uintmax const &phys,
-        bsl::safe_integral<FIELD_TYPE> const &val) noexcept -> bsl::errc_type
+        bsl::safe_integral<T> const &val) noexcept -> bsl::errc_type
     {
         bsl::discard(handle);
 
-        constexpr auto dm_addr{bsl::to_umax(EXT_DIRECT_MAP_ADDR)};
-        constexpr auto dm_size{bsl::to_umax(EXT_DIRECT_MAP_SIZE)};
-
-        if (bsl::unlikely(!phys)) {
-            return bsl::errc_failure;
-        }
-
-        if (bsl::unlikely(!val)) {
-            return bsl::errc_failure;
-        }
-
-        if (bsl::likely(phys < dm_size)) {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            *reinterpret_cast<FIELD_TYPE *>((dm_addr + phys).get()) = val.get();
+        auto const virt{EXT_DIRECT_MAP_ADDR + phys};
+        if (bsl::likely(virt)) {
+            *bsl::to_ptr<T *>(virt) = val.get();
             return bsl::errc_success;
         }
 
         return bsl::errc_failure;
+    }
+
+    /// <!-- description -->
+    ///   @brief Performs a virtual address to physical address translation.
+    ///     Note that this function only works on direct map memory, which
+    ///     includes direct map addresses, allocated pages and allocated
+    ///     huge memory.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam EXT_DIRECT_MAP_ADDR the address of the extension's direct map
+    ///   @tparam T the type of virtual address to convert
+    ///   @param handle reserved for unit testing
+    ///   @param virt the virtual address to convert
+    ///   @return Returns the resulting physical address
+    ///
+    template<bsl::uintmax EXT_DIRECT_MAP_ADDR, typename T>
+    [[nodiscard]] constexpr auto
+    bf_virt_to_phys(bf_handle_t const &handle, T const *const virt) noexcept -> bsl::safe_uintmax
+    {
+        bsl::discard(handle);
+
+        static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
+        return bsl::to_umax(virt) - EXT_DIRECT_MAP_ADDR;
+    }
+
+    /// <!-- description -->
+    ///   @brief Performs a physical address to virtual address translation.
+    ///     Note that this function only works on direct map memory, which
+    ///     includes direct map addresses, allocated pages and allocated
+    ///     huge memory.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam EXT_DIRECT_MAP_ADDR the address of the extension's direct map
+    ///   @tparam T the type of physical address to convert
+    ///   @param handle reserved for unit testing
+    ///   @param phys the physical address to convert
+    ///   @return Returns the resulting virtual address
+    ///
+    template<bsl::uintmax EXT_DIRECT_MAP_ADDR, typename T>
+    [[nodiscard]] constexpr auto
+    phys_to_virt(bf_handle_t const &handle, bsl::safe_uintmax const &phys) noexcept -> T *
+    {
+        bsl::discard(handle);
+
+        static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
+        return bsl::to_ptr<T *>(phys + EXT_DIRECT_MAP_ADDR);
     }
 }
 

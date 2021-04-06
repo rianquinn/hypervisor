@@ -46,15 +46,13 @@ namespace example
     ///   @brief Handle NMIs. This is required by Intel.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam HANDLE_CONCEPT the type of handle to use
     ///   @param handle the handle to use
     ///   @param vpsid the ID of the VPS that caused the VMExit
     ///   @return Returns bsl::errc_success on success and bsl::errc_failure
     ///     on failure.
     ///
-    template<typename HANDLE_CONCEPT>
     [[nodiscard]] constexpr auto
-    handle_vmexit_nmi(HANDLE_CONCEPT &handle, bsl::safe_uint16 const &vpsid) noexcept
+    handle_vmexit_nmi(syscall::bf_handle_t &handle, bsl::safe_uint16 const &vpsid) noexcept
         -> bsl::errc_type
     {
         /// NOTE:
@@ -94,15 +92,13 @@ namespace example
     ///   @brief Handle NMIs Windows
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam HANDLE_CONCEPT the type of handle to use
     ///   @param handle the handle to use
     ///   @param vpsid the ID of the VPS that caused the VMExit
     ///   @return Returns bsl::errc_success on success and bsl::errc_failure
     ///     on failure.
     ///
-    template<typename HANDLE_CONCEPT>
     [[nodiscard]] constexpr auto
-    handle_vmexit_nmi_window(HANDLE_CONCEPT &handle, bsl::safe_uint16 const &vpsid) noexcept
+    handle_vmexit_nmi_window(syscall::bf_handle_t &handle, bsl::safe_uint16 const &vpsid) noexcept
         -> bsl::errc_type
     {
         /// NOTE:
@@ -159,15 +155,13 @@ namespace example
     ///   @brief Implements the architecture specific VMExit handler.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam HANDLE_CONCEPT the type of handle to use
     ///   @param handle the handle to use
     ///   @param vpsid the ID of the VPS that generated the VMExit
     ///   @param exit_reason the exit reason associated with the VMExit
     ///
-    template<typename HANDLE_CONCEPT>
     constexpr void
     vmexit(
-        HANDLE_CONCEPT &handle,
+        syscall::bf_handle_t &handle,
         bsl::safe_uint16 const &vpsid,
         bsl::safe_uint64 const &exit_reason) noexcept
     {
@@ -237,15 +231,13 @@ namespace example
     ///   @brief Initializes a VPS with architecture specific stuff.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam HANDLE_CONCEPT the type of handle to use
     ///   @param handle the handle to use
     ///   @param vpsid the VPS being intialized
     ///   @return Returns bsl::errc_success on success and bsl::errc_failure
     ///     on failure.
     ///
-    template<typename HANDLE_CONCEPT>
     [[nodiscard]] constexpr auto
-    init_vps(HANDLE_CONCEPT &handle, bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
+    init_vps(syscall::bf_handle_t &handle, bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
