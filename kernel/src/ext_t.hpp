@@ -132,8 +132,6 @@ namespace mk
         bsl::safe_uintmax m_fail_ip{bsl::safe_uintmax::zero(true)};
         /// @brief stores the extension's handle
         bsl::safe_uintmax m_handle{bsl::safe_uintmax::zero(true)};
-        /// @brief stores the extension's huge pool cursor
-        bsl::safe_uintmax m_huge_pool_crsr{};
         /// @brief stores the extension's heap pool cursor
         bsl::safe_uintmax m_heap_pool_crsr{};
 
@@ -910,7 +908,6 @@ namespace mk
         release() &noexcept
         {
             m_heap_pool_crsr = bsl::safe_uintmax::zero(true);
-            m_huge_pool_crsr = bsl::safe_uintmax::zero(true);
             m_handle = bsl::safe_uintmax::zero(true);
             m_fail_ip = bsl::safe_uintmax::zero(true);
             m_vmexit_ip = bsl::safe_uintmax::zero(true);

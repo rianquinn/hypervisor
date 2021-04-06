@@ -300,6 +300,91 @@ namespace mk
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
             return bsl::to_ptr<T *>(phys + MK_HUGE_POOL_ADDR);
         }
+
+        /// <!-- description -->
+        ///   @brief Dumps the page_pool_t
+        ///
+        constexpr void
+        dump() const &noexcept
+        {
+            constexpr auto kb{bsl::to_umax(1024)};
+            constexpr auto mb{bsl::to_umax(1024) * bsl::to_umax(1024)};
+
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::print() << "[error]" << bsl::endl;
+                return;
+            }
+
+            bsl::print() << bsl::mag << "huge pool dump: ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Header
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Description ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Value   ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Total
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << "total       ";
+            bsl::print() << bsl::ylw << "| ";
+            if ((m_pool.size() / mb).is_zero()) {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", m_pool.size() / kb} << " KB ";
+            }
+            else {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", m_pool.size() / mb} << " MB ";
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Used
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << "used        ";
+            bsl::print() << bsl::ylw << "| ";
+            if ((m_crsr / mb).is_zero()) {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", m_crsr / kb} << " KB ";
+            }
+            else {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", m_crsr / mb} << " MB ";
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Remaining
+            ///
+
+            bsl::print() << bsl::ylw << "| " ;
+            bsl::print() << bsl::wht << "remaining   ";
+            bsl::print() << bsl::ylw << "| ";
+            if (((m_pool.size() - m_crsr) / mb).is_zero()) {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", (m_pool.size() - m_crsr) / kb} << " KB ";
+            }
+            else {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", (m_pool.size() - m_crsr) / mb} << " MB ";
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Footer
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+        }
     };
 }
 

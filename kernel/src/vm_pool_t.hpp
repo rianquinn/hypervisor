@@ -286,6 +286,94 @@ namespace mk
 
             return vm->is_allocated();
         }
+
+        /// <!-- description -->
+        ///   @brief Dumps the vm_t
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///
+        template<typename TLS_CONCEPT>
+        constexpr void
+        dump(TLS_CONCEPT &tls) const &noexcept
+        {
+            bsl::print() << bsl::mag << "vm pool dump: ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Header
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Id     ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Allocated ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Active ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+-----------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// VMs
+            ///
+
+            for (auto const vm : m_pool) {
+                bsl::print() << bsl::ylw << "| ";
+                bsl::print() << bsl::wht << bsl::hex(vm.data->id()) << " ";
+                bsl::print() << bsl::ylw << "| ";
+                if (vm.data->is_allocated()) {
+                    bsl::print() << bsl::grn << bsl::fmt{">10s", "yes "};
+                }
+                else {
+                    bsl::print() << bsl::red << bsl::fmt{">10s", "no "};
+                }
+                bsl::print() << bsl::ylw << "| ";
+                if (tls.vmid() == vm.data->id()) {
+                    bsl::print() << bsl::grn << bsl::fmt{">7s", "yes "};
+                }
+                else {
+                    bsl::print() << bsl::red << bsl::fmt{">7s", "no "};
+                }
+                bsl::print() << bsl::ylw << "| ";
+                bsl::print() << bsl::rst << bsl::endl;
+            }
+
+            /// Footer
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+        }
+
+        /// <!-- description -->
+        ///   @brief Dumps the requested VM
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param vmid the ID of the VM to dump
+        ///
+        template<typename TLS_CONCEPT>
+        constexpr void
+        dump(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
+        {
+            auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
+            if (bsl::unlikely(nullptr == vm)) {
+                bsl::error() << "invalid vmid: "    // --
+                             << bsl::hex(vmid)      // --
+                             << bsl::endl            // --
+                             << bsl::here();         // --
+
+                return;
+            }
+
+            vm->dump(tls);
+        }
     };
 }
 

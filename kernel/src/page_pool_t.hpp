@@ -91,8 +91,10 @@ namespace mk
         bool m_initialized{};
         /// @brief stores the head of the page pool stack.
         void *m_head{};
-        /// @brief stores the total number of bytes in the page pool.
+        /// @brief stores the total number of bytes given to the page pool.
         bsl::safe_uintmax m_size{};
+        /// @brief stores the total number of bytes in the page pool.
+        bsl::safe_uintmax m_used{};
         /// @brief safe guards operations on the pool.
         mutable bsl::spinlock m_pool_lock{};
 
@@ -131,6 +133,7 @@ namespace mk
 
             m_head = pool.data();
             m_size = pool.size();
+            m_used = {};
 
             release_on_error.ignore();
             m_initialized = true;
@@ -144,6 +147,7 @@ namespace mk
         constexpr void
         release() &noexcept
         {
+            m_used = {};
             m_size = {};
             m_head = {};
 
@@ -216,6 +220,7 @@ namespace mk
 
             void *const ptr{m_head};
             m_head = *static_cast<void **>(m_head);
+            m_used += PAGE_SIZE;
 
             bsl::builtin_memset(ptr, '\0', PAGE_SIZE);
 
@@ -259,6 +264,7 @@ namespace mk
 
             *static_cast<void **>(ptr) = m_head;
             m_head = ptr;
+            m_used -= PAGE_SIZE;
         }
 
         /// <!-- description -->
@@ -303,6 +309,91 @@ namespace mk
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
             return bsl::to_ptr<T *>(phys + MK_PAGE_POOL_ADDR);
+        }
+
+        /// <!-- description -->
+        ///   @brief Dumps the page_pool_t
+        ///
+        constexpr void
+        dump() const &noexcept
+        {
+            constexpr auto kb{bsl::to_umax(1024)};
+            constexpr auto mb{bsl::to_umax(1024) * bsl::to_umax(1024)};
+
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::print() << "[error]" << bsl::endl;
+                return;
+            }
+
+            bsl::print() << bsl::mag << "page pool dump: ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Header
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Description ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Value   ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Total
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << "total       ";
+            bsl::print() << bsl::ylw << "| ";
+            if ((m_size / mb).is_zero()) {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", m_size / kb} << " KB ";
+            }
+            else {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", m_size / mb} << " MB ";
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Used
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << "used        ";
+            bsl::print() << bsl::ylw << "| ";
+            if ((m_used / mb).is_zero()) {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", m_used / kb} << " KB ";
+            }
+            else {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", m_used / mb} << " MB ";
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Remaining
+            ///
+
+            bsl::print() << bsl::ylw << "| " ;
+            bsl::print() << bsl::wht << "remaining   ";
+            bsl::print() << bsl::ylw << "| ";
+            if (((m_size - m_used) / mb).is_zero()) {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", (m_size - m_used) / kb} << " KB ";
+            }
+            else {
+                bsl::print() << bsl::wht << bsl::fmt{"4d", (m_size - m_used) / mb} << " MB ";
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Footer
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
         }
     };
 }

@@ -335,6 +335,19 @@ namespace mk
                 return bsl::exit_failure;
             }
 
+            if (tls.ppid().is_zero()) {
+                m_page_pool.dump();
+                m_huge_pool.dump();
+
+                m_vm_pool.dump(tls, bsl::ZERO_U16);
+                m_vm_pool.dump(tls, bsl::ONE_U16);
+                m_vm_pool.dump(tls);
+
+                m_vp_pool.dump(tls, bsl::ZERO_U16);
+                m_vp_pool.dump(tls, bsl::ONE_U16);
+                m_vp_pool.dump(tls);
+            }
+
             /// TODO:
             /// - Need a way to ensure that vps_run was executed before
             ///   getting here. Otherwise, nothing at this point makes
@@ -348,21 +361,43 @@ namespace mk
 
             return bsl::exit_success;
 
+            // [x] implement page_pool_t dump
+            // [x] implement huge_pool_t dump
+            // [x] implement vm_pool_t dump
+            // [x] implement vm_t dump
+            // [x] implement vp_pool_t dump
+            // [x] implement vp_t dump
+            // [ ] implement vps_pool_t dump
+            // [ ] implement vps_t dump
+            // [ ] implement ext_pool_t dump
+            // [ ] implement ext_t dump
+            //     - m_id
+            //     - m_started
+            //     - m_main_ip
+            //     - m_bootstrap_ip
+            //     - m_vmexit_ip
+            //     - m_fail_ip
+            //     - m_handle
+            //     - m_heap_pool_crsr
+            //     - m_current_direct_map_rpt
+
+            // [ ] implement vmexit log dump
+            // [ ] implement root_page_table_t dump
+            // [ ] implement mtrrs_t dump
+            // [ ] implement debug ops for all dump functions
+            // [ ] implement ept
+            // [ ] implement validate the input of all syscalls
+
             // Remaining Tasks (besides todos):
             // [ ] implement -bsl-template-generic-param properly
-            // [ ] implement optimizations for release builds
-            // [ ] implement validate the input of all syscalls
-            // [ ] implement policy for which MSRs can be read/written
-            // [ ] implement policy for VMCS fields can be read/written
-            // [ ] implement dump function for AMD vps
-            // [ ] implement dump functions for all types
+            // [ ] implement additional optimizations for release builds
+            // [ ] implement checks for which MSRs can be read/written
+            // [ ] implement checks for VMCS fields can be read/written
             // [ ] implement contants for all of the asm logic
-            // [ ] implement all debug ops
             // [ ] implement some basic unit tests
             // [ ] implement some basic syscall tests
             // [ ] implement configuration validation
             // [ ] implement reproduceable builds
-            // [ ] implement mitigations for transient execution vulnerabilities
         }
     };
 }

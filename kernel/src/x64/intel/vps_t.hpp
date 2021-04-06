@@ -3334,9 +3334,9 @@ namespace mk
 
             // clang-format off
 
-            bsl::print<bsl::V>() << bsl::bold_magenta << "VPS" << bsl::reset_color;
+            bsl::print<bsl::V>() << bsl::bold_magenta << "vps" << bsl::reset_color;
             bsl::print<bsl::V>() << " [" << bsl::hex(m_id) << "] ";
-            bsl::print<bsl::V>() << bsl::bold_magenta << "Dump: " << bsl::reset_color;
+            bsl::print<bsl::V>() << bsl::bold_magenta << "dump: " << bsl::reset_color;
             bsl::print<bsl::V>() << bsl::yellow << bsl::endl;
             bsl::print<bsl::V>() << "+---------------------------------------";
             bsl::print<bsl::V>() << "---------------------------------------+";

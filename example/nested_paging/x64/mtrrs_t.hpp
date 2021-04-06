@@ -1389,7 +1389,7 @@ namespace example
         dump(bsl::out<T> const o) const &noexcept
         {
             o << bsl::bold_magenta;
-            o << "MTRRs Dump: ";
+            o << "mtrrs dump: ";
             o << bsl::reset_color << bsl::endl;
 
             o << bsl::yellow;

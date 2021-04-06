@@ -286,6 +286,93 @@ namespace mk
 
             return vp->is_allocated();
         }
+        /// <!-- description -->
+        ///   @brief Dumps the vp_t
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///
+        template<typename TLS_CONCEPT>
+        constexpr void
+        dump(TLS_CONCEPT &tls) const &noexcept
+        {
+            bsl::print() << bsl::mag << "vp pool dump: ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Header
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Id     ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Allocated ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Active ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+-----------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// VPs
+            ///
+
+            for (auto const vp : m_pool) {
+                bsl::print() << bsl::ylw << "| ";
+                bsl::print() << bsl::wht << bsl::hex(vp.data->id()) << " ";
+                bsl::print() << bsl::ylw << "| ";
+                if (vp.data->is_allocated()) {
+                    bsl::print() << bsl::grn << bsl::fmt{">10s", "yes "};
+                }
+                else {
+                    bsl::print() << bsl::red << bsl::fmt{">10s", "no "};
+                }
+                bsl::print() << bsl::ylw << "| ";
+                if (tls.vpid() == vp.data->id()) {
+                    bsl::print() << bsl::grn << bsl::fmt{">7s", "yes "};
+                }
+                else {
+                    bsl::print() << bsl::red << bsl::fmt{">7s", "no "};
+                }
+                bsl::print() << bsl::ylw << "| ";
+                bsl::print() << bsl::rst << bsl::endl;
+            }
+
+            /// Footer
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+        }
+
+        /// <!-- description -->
+        ///   @brief Dumps the requested VP
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param vpid the ID of the VP to dump
+        ///
+        template<typename TLS_CONCEPT>
+        constexpr void
+        dump(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid) &noexcept
+        {
+            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            if (bsl::unlikely(nullptr == vp)) {
+                bsl::error() << "invalid vpid: "    // --
+                             << bsl::hex(vpid)      // --
+                             << bsl::endl            // --
+                             << bsl::here();         // --
+
+                return;
+            }
+
+            vp->dump(tls);
+        }
     };
 }
 

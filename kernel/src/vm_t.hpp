@@ -30,6 +30,7 @@
 #include <bsl/finally.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/discard.hpp>
 
 namespace mk
 {
@@ -237,6 +238,78 @@ namespace mk
         set_next(vm_t *val) &noexcept
         {
             m_next = val;
+        }
+
+        /// <!-- description -->
+        ///   @brief Dumps the vm_t
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///
+        template<typename TLS_CONCEPT>
+        constexpr void
+        dump(TLS_CONCEPT &tls) const &noexcept
+        {
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::print() << "[error]" << bsl::endl;
+                return;
+            }
+
+            bsl::print() << bsl::mag << "vm [" << bsl::hex(m_id) << "] dump: ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Header
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Description ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << "Value   ";
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Allocated
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << "allocated   ";
+            bsl::print() << bsl::ylw << "| ";
+            if (m_allocated) {
+                bsl::print() << bsl::grn << bsl::fmt{">8s", "yes "};
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{">8s", "no "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Active
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << "active      ";
+            bsl::print() << bsl::ylw << "| ";
+            if (tls.vmid() == m_id) {
+                bsl::print() << bsl::grn << bsl::fmt{">8s", "yes "};
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{">8s", "no "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Footer
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
         }
     };
 }
