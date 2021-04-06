@@ -49,7 +49,7 @@ namespace example
     ///   @return Returns bsl::errc_success on success and bsl::errc_failure
     ///     on failure.
     ///
-    [[nodiscard]] constexpr auto
+    [[nodiscard]] inline auto
     handle_vmexit_cpuid(syscall::bf_handle_t &handle, bsl::safe_uint16 const &vpsid) noexcept
         -> bsl::errc_type
     {
