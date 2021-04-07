@@ -3145,6 +3145,8 @@ namespace mk
             if constexpr (!bsl::to_umax(BSL_DEBUG_LEVEL).is_zero()) {
                 *m_vmexit_log.at_if(m_vmexit_log_crsr) = {
                     exit_reason,
+                    m_intrinsic->vmread64_quiet(VMCS_EXIT_QUALIFICATION),
+                    m_intrinsic->vmread64_quiet(VMCS_VMEXIT_INSTRUCTION_INFORMATION),
                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX),
                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX),
                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX),
@@ -3583,14 +3585,47 @@ namespace mk
                     bsl::print() << bsl::cyn << " rip: " << bsl::wht << bsl::hex(entry->rip);
                     bsl::print() << bsl::cyn << " rsp: " << bsl::wht << bsl::hex(entry->rsp);
 
-                    switch(entry->exit_reason.get()) {
+                    switch (entry->exit_reason.get()) {
                         case exit_reason_cpuid.get(): {
-                            bsl::print() << bsl::cyn << " eax: " << bsl::wht << bsl::hex(bsl::to_u32_unsafe(entry->rax));
-                            bsl::print() << bsl::cyn << " ecx: " << bsl::wht << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
+                            bsl::print() << bsl::cyn << " eax: " << bsl::wht
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->rax));
+                            bsl::print() << bsl::cyn << " ecx: " << bsl::wht
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
+                            break;
+                        }
+
+                        case exit_reason_io.get(): {
+                            bsl::print() << bsl::cyn << " dx: " << bsl::wht
+                                         << bsl::hex(bsl::to_u16_unsafe(entry->rdx));
+                            bsl::print() << bsl::cyn << " exit_qualification: " << bsl::wht
+                                         << bsl::hex(entry->exit_qualification);
+                            bsl::print() << bsl::cyn << " exit_information: " << bsl::wht
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->exit_information));
+                            break;
+                        }
+
+                        case exit_reason_rdmsr.get(): {
+                            bsl::print() << bsl::cyn << " ecx: " << bsl::wht
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
+                            break;
+                        }
+
+                        case exit_reason_wrmsr.get(): {
+                            bsl::print() << bsl::cyn << " ecx: " << bsl::wht
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
+                            bsl::print() << bsl::cyn << " eax: " << bsl::wht
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->rax));
+                            bsl::print() << bsl::cyn << " edx: " << bsl::wht
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->rdx));
                             break;
                         }
 
                         default: {
+                            bsl::print() << bsl::cyn << " exit_qualification: " << bsl::wht
+                                         << bsl::hex(entry->exit_qualification);
+                            bsl::print() << bsl::cyn << " exit_information: " << bsl::wht
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->exit_information));
+
                             break;
                         }
                     }

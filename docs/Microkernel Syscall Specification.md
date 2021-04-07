@@ -709,9 +709,6 @@ This syscall closes a previously opened handle.
 
 This syscall tells the microkernel to output RDI and RSI to the console device the microkernel is currently using for debugging.
 
-**WARNING:**
-In production builds of Bareflank, this syscall is not present.
-
 **Input:**
 | Register Name | Bits | Description |
 | :------------ | :--- | :---------- |
@@ -727,9 +724,6 @@ In production builds of Bareflank, this syscall is not present.
 
 This syscall tells the microkernel to output a VM's state to the console device the microkernel is currently using for debugging.
 
-**WARNING:**
-In production builds of Bareflank, this syscall is not present.
-
 **Input:**
 | Register Name | Bits | Description |
 | :------------ | :--- | :---------- |
@@ -743,9 +737,6 @@ In production builds of Bareflank, this syscall is not present.
 ### 2.9.3. bf_debug_op_dump_vp, OP=0x2, IDX=0x2
 
 This syscall tells the microkernel to output a VP's state to the console device the microkernel is currently using for debugging.
-
-**WARNING:**
-In production builds of Bareflank, this syscall is not present.
 
 **Input:**
 | Register Name | Bits | Description |
@@ -761,9 +752,6 @@ In production builds of Bareflank, this syscall is not present.
 
 This syscall tells the microkernel to output a VPS's state to the console device the microkernel is currently using for debugging.
 
-**WARNING:**
-In production builds of Bareflank, this syscall is not present.
-
 **Input:**
 | Register Name | Bits | Description |
 | :------------ | :--- | :---------- |
@@ -777,9 +765,6 @@ In production builds of Bareflank, this syscall is not present.
 ### 2.9.5. bf_debug_op_dump_vmexit_log, OP=0x2, IDX=0x4
 
 This syscall tells the microkernel to output the VMExit log. The VMExit log is a chronological log of the "X" number of exits that have occurred. The total number of "X" logs is implementation-defined and not under the control of software.
-
-**WARNING:**
-In production builds of Bareflank, this syscall is not present.
 
 **Input:**
 | Register Name | Bits | Description |
@@ -819,6 +804,38 @@ This syscall tells the microkernel to output a provided string to the microkerne
 | Value | Description |
 | :---- | :---------- |
 | 0x0000000000000006 | Defines the syscall index for bf_debug_op_write_str |
+
+### 2.9.4. bf_debug_op_dump_ext, OP=0x2, IDX=0x7
+
+This syscall tells the microkernel to output a VPS's state to the console device the microkernel is currently using for debugging.
+
+**Input:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+| REG0 | 63:0 | The VPSID of the VPS's state to output |
+
+**const, bf_uint64_t: BF_DEBUG_OP_DUMP_VPS_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000007 | Defines the syscall index for bf_debug_op_dump_ext |
+
+### 2.9.4. bf_debug_op_dump_page_pool, OP=0x2, IDX=0x8
+
+This syscall tells the microkernel to output a VPS's state to the console device the microkernel is currently using for debugging.
+
+**const, bf_uint64_t: BF_DEBUG_OP_DUMP_VPS_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000003 | Defines the syscall index for bf_debug_op_dump_page_pool |
+
+### 2.9.4. bf_debug_op_dump_huge_pool, OP=0x2, IDX=0x9
+
+This syscall tells the microkernel to output a VPS's state to the console device the microkernel is currently using for debugging.
+
+**const, bf_uint64_t: BF_DEBUG_OP_DUMP_VPS_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000003 | Defines the syscall index for bf_debug_op_dump_huge_pool |
 
 ## 2.10. Callback Syscalls
 

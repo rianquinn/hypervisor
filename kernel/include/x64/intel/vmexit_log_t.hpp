@@ -38,8 +38,10 @@ namespace mk
     {
         /// @brief stores the exit reason
         bsl::safe_uintmax exit_reason;
-        /// @brief stores the exit info
-        bsl::safe_uintmax exit_info;
+        /// @brief stores the exit qualification
+        bsl::safe_uintmax exit_qualification;
+        /// @brief stores the exit information
+        bsl::safe_uintmax exit_information;
         /// @brief stores rax
         bsl::safe_uintmax rax;
         /// @brief stores rcx
