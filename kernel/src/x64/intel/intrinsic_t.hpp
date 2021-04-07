@@ -31,6 +31,7 @@
 #include <bsl/array.hpp>
 #include <bsl/cstdint.hpp>
 #include <bsl/debug.hpp>
+#include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/exit_code.hpp>
 #include <bsl/is_constant_evaluated.hpp>
@@ -919,6 +920,8 @@ namespace mk
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmload failed for "    // --
                              << phys                    // --
+                             << " with error code "     // --
+                             << ret                     // --
                              << bsl::endl               // --
                              << bsl::here();            // --
 
@@ -958,6 +961,8 @@ namespace mk
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmclear failed for "    // --
                              << phys                     // --
+                             << " with error code "      // --
+                             << ret                      // --
                              << bsl::endl                // --
                              << bsl::here();             // --
 
@@ -1005,6 +1010,8 @@ namespace mk
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmread failed for field "    // --
                              << bsl::hex(field)               // --
+                             << " with error code "           // --
+                             << ret                           // --
                              << bsl::endl                     // --
                              << bsl::here();                  // --
 
@@ -1052,6 +1059,8 @@ namespace mk
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmread failed for field "    // --
                              << bsl::hex(field)               // --
+                             << " with error code "           // --
+                             << ret                           // --
                              << bsl::endl                     // --
                              << bsl::here();                  // --
 
@@ -1099,6 +1108,8 @@ namespace mk
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmread failed for field "    // --
                              << bsl::hex(field)               // --
+                             << " with error code "           // --
+                             << ret                           // --
                              << bsl::endl                     // --
                              << bsl::here();                  // --
 
@@ -1114,42 +1125,28 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param field the 16 bit VMCS field to read
-        ///   @param val the value to store the 32 bit VMCS field to
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///   @return Returns the value read from the VMS, or
+        ///     bsl::safe_uint16::zero(true) on failure.
         ///
         [[nodiscard]] static constexpr auto
-        vmread16_quiet(bsl::safe_uint64 const &field, bsl::uint16 *const val) noexcept
-            -> bsl::errc_type
+        vmread16_quiet(bsl::safe_uint64 const &field) noexcept -> bsl::safe_uint16
         {
+            bsl::safe_uint16 val{};
+
             if (bsl::is_constant_evaluated()) {
-                return bsl::errc_success;
+                return val;
             }
 
             if (bsl::unlikely(!field)) {
-                bsl::error() << "invalid field: "    // --
-                             << bsl::hex(field)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
-
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(nullptr == val)) {
-                bsl::error() << "invalid val: "    // --
-                             << val                // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
-
-                return bsl::errc_failure;
-            }
-
-            bsl::exit_code const ret{details::intrinsic_vmread16(field.get(), val)};
+            bsl::exit_code const ret{details::intrinsic_vmread16(field.get(), val.data())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
-            return bsl::errc_success;
+            return val;
         }
 
         /// <!-- description -->
@@ -1158,42 +1155,28 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param field the 32 bit VMCS field to read
-        ///   @param val the value to store the 32 bit VMCS field to
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///   @return Returns the value read from the VMS, or
+        ///     bsl::safe_uint32::zero(true) on failure.
         ///
         [[nodiscard]] static constexpr auto
-        vmread32_quiet(bsl::safe_uint64 const &field, bsl::uint32 *const val) noexcept
-            -> bsl::errc_type
+        vmread32_quiet(bsl::safe_uint64 const &field) noexcept -> bsl::safe_uint32
         {
+            bsl::safe_uint32 val{};
+
             if (bsl::is_constant_evaluated()) {
-                return bsl::errc_success;
+                return val;
             }
 
             if (bsl::unlikely(!field)) {
-                bsl::error() << "invalid field: "    // --
-                             << bsl::hex(field)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
-
-                return bsl::errc_failure;
+                return bsl::safe_uint32::zero(true);
             }
 
-            if (bsl::unlikely(nullptr == val)) {
-                bsl::error() << "invalid val: "    // --
-                             << val                // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
-
-                return bsl::errc_failure;
-            }
-
-            bsl::exit_code const ret{details::intrinsic_vmread32(field.get(), val)};
+            bsl::exit_code const ret{details::intrinsic_vmread32(field.get(), val.data())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
-                return bsl::errc_failure;
+                return bsl::safe_uint32::zero(true);
             }
 
-            return bsl::errc_success;
+            return val;
         }
 
         /// <!-- description -->
@@ -1202,42 +1185,28 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param field the 64 bit VMCS field to read
-        ///   @param val the value to store the 32 bit VMCS field to
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///   @return Returns the value read from the VMS, or
+        ///     bsl::safe_uint64::zero(true) on failure.
         ///
         [[nodiscard]] static constexpr auto
-        vmread64_quiet(bsl::safe_uint64 const &field, bsl::uint64 *const val) noexcept
-            -> bsl::errc_type
+        vmread64_quiet(bsl::safe_uint64 const &field) noexcept -> bsl::safe_uint64
         {
+            bsl::safe_uint64 val{};
+
             if (bsl::is_constant_evaluated()) {
-                return bsl::errc_success;
+                return val;
             }
 
             if (bsl::unlikely(!field)) {
-                bsl::error() << "invalid field: "    // --
-                             << bsl::hex(field)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
-
-                return bsl::errc_failure;
+                return bsl::safe_uint64::zero(true);
             }
 
-            if (bsl::unlikely(nullptr == val)) {
-                bsl::error() << "invalid val: "    // --
-                             << val                // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
-
-                return bsl::errc_failure;
-            }
-
-            bsl::exit_code const ret{details::intrinsic_vmread64(field.get(), val)};
+            bsl::exit_code const ret{details::intrinsic_vmread64(field.get(), val.data())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
-                return bsl::errc_failure;
+                return bsl::safe_uint64::zero(true);
             }
 
-            return bsl::errc_success;
+            return val;
         }
 
         /// <!-- description -->
@@ -1281,6 +1250,8 @@ namespace mk
                              << bsl::hex(field)                // --
                              << " with value "                 // --
                              << bsl::hex(val)                  // --
+                             << " with error code "            // --
+                             << ret                            // --
                              << bsl::endl                      // --
                              << bsl::here();                   // --
 
@@ -1331,6 +1302,8 @@ namespace mk
                              << bsl::hex(field)                // --
                              << " with value "                 // --
                              << bsl::hex(val)                  // --
+                             << " with error code "            // --
+                             << ret                            // --
                              << bsl::endl                      // --
                              << bsl::here();                   // --
 
@@ -1381,6 +1354,8 @@ namespace mk
                              << bsl::hex(field)                // --
                              << " with value "                 // --
                              << bsl::hex(val)                  // --
+                             << " with error code "            // --
+                             << ret                            // --
                              << bsl::endl                      // --
                              << bsl::here();                   // --
 

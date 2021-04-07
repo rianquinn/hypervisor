@@ -407,7 +407,10 @@ intrinsic_vmload:
     int 3
 
 intrinsic_vmload_failure:
-    mov rax, 0x1
+
+    mov rax, 0x4400
+    vmread rax, rax
+
     ret
     int 3
 
@@ -428,7 +431,10 @@ intrinsic_vmclear:
     int 3
 
 intrinsic_vmclear_failure:
-    mov rax, 0x1
+
+    mov rax, 0x4400
+    vmread rax, rax
+
     ret
     int 3
 
@@ -449,7 +455,10 @@ intrinsic_vmread16:
     int 3
 
 intrinsic_vmread16_failure:
-    mov rax, 0x1
+
+    mov rax, 0x4400
+    vmread rax, rax
+
     ret
     int 3
 
@@ -470,7 +479,10 @@ intrinsic_vmread32:
     int 3
 
 intrinsic_vmread32_failure:
-    mov rax, 0x1
+
+    mov rax, 0x4400
+    vmread rax, rax
+
     ret
     int 3
 
@@ -491,7 +503,10 @@ intrinsic_vmread64:
     int 3
 
 intrinsic_vmread64_failure:
-    mov rax, 0x1
+
+    mov rax, 0x4400
+    vmread rax, rax
+
     ret
     int 3
 
@@ -511,7 +526,10 @@ intrinsic_vmwrite16:
     int 3
 
 intrinsic_vmwrite16_failure:
-    mov rax, 0x1
+
+    mov rax, 0x4400
+    vmread rax, rax
+
     ret
     int 3
 
@@ -531,7 +549,10 @@ intrinsic_vmwrite32:
     int 3
 
 intrinsic_vmwrite32_failure:
-    mov rax, 0x1
+
+    mov rax, 0x4400
+    vmread rax, rax
+
     ret
     int 3
 
@@ -551,7 +572,10 @@ intrinsic_vmwrite64:
     int 3
 
 intrinsic_vmwrite64_failure:
-    mov rax, 0x1
+
+    mov rax, 0x4400
+    vmread rax, rax
+
     ret
     int 3
 
@@ -732,7 +756,10 @@ intrinsic_vmrun_failure:
     pop rbp
     pop rbx
 
-    mov rax, 0xFFFFFFFFFFFFFFFF
+    mov rax, 0x4400
+    vmread rax, rax
+    or rax, 0xFFFFFFFFFFFFFF00
+
     ret
     int 3
 

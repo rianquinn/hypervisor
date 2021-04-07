@@ -70,6 +70,8 @@ namespace example
             switch (bsl::to_u32_unsafe(rcx).get()) {
                 case loader::CPUID_COMMAND_ECX_STOP.get(): {
 
+                    syscall::bf_debug_op_dump_vmexit_log(vpsid);
+
                     /// NOTE:
                     /// - To support stopping the hypervisor, we need to
                     ///   report success by setting RAX to 0, and advancing

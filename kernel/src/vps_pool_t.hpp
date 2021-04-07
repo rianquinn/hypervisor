@@ -674,6 +674,28 @@ namespace mk
 
             vps->dump(tls);
         }
+
+        /// <!-- description -->
+        ///   @brief Dumps the VMExit log from the requested VPS
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid the ID of the VPS whose VMExit log should be dumped
+        ///
+        constexpr void
+        dump_vmexit_log(bsl::safe_uint16 const &vpsid) &noexcept
+        {
+            auto *const vps{m_pool.at_if(bsl::to_umax(vpsid))};
+            if (bsl::unlikely(nullptr == vps)) {
+                bsl::error() << "invalid vpsid: "    // --
+                             << bsl::hex(vpsid)      // --
+                             << bsl::endl            // --
+                             << bsl::here();         // --
+
+                return;
+            }
+
+            vps->dump_vmexit_log();
+        }
     };
 }
 

@@ -89,8 +89,8 @@ namespace mk
             }
 
             case syscall::BF_DEBUG_OP_DUMP_VMEXIT_LOG_IDX_VAL.get(): {
-                bsl::error() << "bf_debug_op_dump_vmexit_log unsupported\n" << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNSUPPORTED;
+                vps_pool.dump_vmexit_log(bsl::to_u16_unsafe(tls.ext_reg0));
+                return syscall::BF_STATUS_SUCCESS;
             }
 
             case syscall::BF_DEBUG_OP_WRITE_C_IDX_VAL.get(): {

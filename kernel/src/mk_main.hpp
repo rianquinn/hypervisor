@@ -347,8 +347,8 @@ namespace mk
                 // m_vp_pool.dump(tls, bsl::ONE_U16);
                 // m_vp_pool.dump(tls);
 
-                m_vps_pool.dump(tls, bsl::ZERO_U16);
-                m_vps_pool.dump(tls, bsl::ONE_U16);
+                // m_vps_pool.dump(tls, bsl::ZERO_U16);
+                // m_vps_pool.dump(tls, bsl::ONE_U16);
                 // m_vps_pool.dump(tls);
 
                 // m_ext_pool.dump(tls, bsl::ZERO_U16);
@@ -373,11 +373,11 @@ namespace mk
             // [x] implement vm_t dump
             // [x] implement vp_pool_t dump
             // [x] implement vp_t dump
-            // [ ] implement vps_pool_t dump
-            // [ ] implement vps_t dump
+            // [x] implement vps_pool_t dump
+            // [x] implement vps_t dump
             // [x] implement ext_t dump
             // [ ] implement vmexit log dump
-            // [ ] implement root_page_table_t dump
+            // [x] implement root_page_table_t dump
             // [ ] implement esr dump
             // [ ] implement mtrrs_t dump
             // [ ] implement debug ops for all dump functions

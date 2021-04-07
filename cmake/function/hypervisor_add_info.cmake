@@ -155,6 +155,11 @@ macro(hypervisor_add_info)
     )
 
     add_custom_command(TARGET info
+        COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_VMEXIT_LOG_SIZE     ${BF_COLOR_CYN}${HYPERVISOR_VMEXIT_LOG_SIZE}${BF_COLOR_RST}"
+        VERBATIM
+    )
+
+    add_custom_command(TARGET info
         COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_MAX_ELF_FILE_SIZE   ${BF_COLOR_CYN}${HYPERVISOR_MAX_ELF_FILE_SIZE}${BF_COLOR_RST}"
         VERBATIM
     )

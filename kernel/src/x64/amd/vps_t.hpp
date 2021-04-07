@@ -89,8 +89,9 @@ namespace mk
     /// <!-- template parameters -->
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
+    ///   @tparam VMEXIT_LOG_SIZE defines the max number of VMExit log entries
     ///
-    template<typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT, bsl::uintmax VMEXIT_LOG_SIZE>
     class vps_t final
     {
         /// @brief stores true if initialized() has been executed
@@ -1566,6 +1567,8 @@ namespace mk
         constexpr void
         dump(TLS_CONCEPT &tls) const &noexcept
         {
+            // clang-format off
+
             constexpr auto guest_instruction_bytes_0{bsl::to_umax(0x0U)};
             constexpr auto guest_instruction_bytes_1{bsl::to_umax(0x1U)};
             constexpr auto guest_instruction_bytes_2{bsl::to_umax(0x2U)};
@@ -1587,7 +1590,7 @@ namespace mk
                 return;
             }
 
-            bsl::print() << bsl::mag << "vm [" << bsl::hex(m_id) << "] dump: ";
+            bsl::print() << bsl::mag << "vps [" << bsl::hex(m_id) << "] dump: ";
             bsl::print() << bsl::rst << bsl::endl;
 
             /// Header
@@ -1664,7 +1667,6 @@ namespace mk
 
             /// Guest Control Area Fields
             ///
-            // clang-format off
 
             bsl::print() << bsl::ylw << "+----------------------------------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
@@ -1724,7 +1726,6 @@ namespace mk
 
             /// Guest State Save Area Fields
             ///
-            // clang-format off
 
             bsl::print() << bsl::ylw << "+----------------------------------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
@@ -1801,6 +1802,8 @@ namespace mk
 
             bsl::print() << bsl::ylw << "+----------------------------------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
+
+            // clang-format on
         }
     };
 }

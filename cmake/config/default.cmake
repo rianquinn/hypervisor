@@ -164,6 +164,14 @@ bf_add_config(
 )
 
 bf_add_config(
+    CONFIG_NAME HYPERVISOR_VMEXIT_LOG_SIZE
+    CONFIG_TYPE STRING
+    DEFAULT_VAL "25"
+    DESCRIPTION "Defines the hypervisor's vmexit log size in # of entries"
+    SKIP_VALIDATION
+)
+
+bf_add_config(
     CONFIG_NAME HYPERVISOR_MAX_ELF_FILE_SIZE
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x800000"

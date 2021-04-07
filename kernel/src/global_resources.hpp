@@ -62,9 +62,10 @@ namespace mk
         bsl::to_umax(HYPERVISOR_MK_HUGE_POOL_ADDR).get()>;    // --
 
     /// @brief defines the VPS type to use
-    using mk_vps_type = vps_t<    // --
-        mk_intrinsic_type,        // --
-        mk_page_pool_type>;       // --
+    using mk_vps_type = vps_t<                              // --
+        mk_intrinsic_type,                                  // --
+        mk_page_pool_type,                                  // --
+        bsl::to_umax(HYPERVISOR_VMEXIT_LOG_SIZE).get()>;    // --
 
     /// @brief defines the VPS pool type to use
     using mk_vps_pool_type = vps_pool_t<             // --
