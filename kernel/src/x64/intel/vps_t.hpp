@@ -3162,122 +3162,50 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Dumps the contents of a VMCS field to the console
+        ///   @brief Dumps the contents of a field
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam FIELD_TYPE the type (i.e., size) of field to read
-        ///   @param name the name of the field
-        ///   @param type the field's type
-        ///   @param index the index of the field
+        ///   @tparam T the type of field to dump
+        ///   @param str the name of the field
+        ///   @param val the field to dump
         ///
-        template<typename FIELD_TYPE>
+        template<typename T>
         constexpr void
-        dump_vmcs_field(
-            bsl::string_view const &name,
-            bsl::string_view const &type,
-            bsl::safe_uintmax const &index) noexcept
+        dump(bsl::string_view const &str, bsl::safe_integral<T> const &val) const &noexcept
         {
-            constexpr bsl::safe_uintmax field_width{bsl::to_umax(44)};
+            bsl::cstr_type color{bsl::wht};
 
-            bsl::errc_type ret{};
-            bsl::safe_integral<FIELD_TYPE> val{};
-
-            if constexpr (bsl::is_same<FIELD_TYPE, bsl::uint16>::value) {
-                ret = m_intrinsic->vmread16_quiet(index, val.data());
-                if (bsl::unlikely(!ret)) {
-                    val = bsl::safe_integral<FIELD_TYPE>::zero(true);
-                }
+            if (val.is_zero()) {
+                color = bsl::blk;
             }
 
-            if constexpr (bsl::is_same<FIELD_TYPE, bsl::uint32>::value) {
-                ret = m_intrinsic->vmread32_quiet(index, val.data());
-                if (bsl::unlikely(!ret)) {
-                    val = bsl::safe_integral<FIELD_TYPE>::zero(true);
-                }
-            }
-
-            if constexpr (bsl::is_same<FIELD_TYPE, bsl::uint64>::value) {
-                ret = m_intrinsic->vmread64_quiet(index, val.data());
-                if (bsl::unlikely(!ret)) {
-                    val = bsl::safe_integral<FIELD_TYPE>::zero(true);
-                }
-            }
-
-            bsl::print<bsl::V>() << bsl::yellow << "| " << bsl::reset_color;
-            bsl::print<bsl::V>() << name;
-
-            for (bsl::safe_uintmax i{}; i < field_width - name.length(); ++i) {
-                bsl::print<bsl::V>() << ' ';
-            }
-
-            bsl::print<bsl::V>() << bsl::yellow << " | " << bsl::reset_color;
-            bsl::print<bsl::V>() << type;
-            bsl::print<bsl::V>() << bsl::yellow << " | " << bsl::reset_color;
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<30s", str};
+            bsl::print() << bsl::ylw << "| ";
 
             if (val) {
-                if (val.is_zero()) {
-                    bsl::print<bsl::V>() << bsl::black << bsl::hex(val) << bsl::reset_color;
-                }
-                else {
-                    bsl::print<bsl::V>() << bsl::hex(val);
+                if constexpr (bsl::is_same<T, bsl::uint8>::value) {
+                    bsl::print() << color << "       " << bsl::hex(val) << "        ";
                 }
 
-                if constexpr (bsl::is_same<FIELD_TYPE, bsl::uint16>::value) {
-                    bsl::print<bsl::V>() << bsl::yellow << "             |\n" << bsl::reset_color;
+                if constexpr (bsl::is_same<T, bsl::uint16>::value) {
+                    bsl::print() << color << "      " << bsl::hex(val) << "       ";
                 }
 
-                if constexpr (bsl::is_same<FIELD_TYPE, bsl::uint32>::value) {
-                    bsl::print<bsl::V>() << bsl::yellow << "         |\n" << bsl::reset_color;
+                if constexpr (bsl::is_same<T, bsl::uint32>::value) {
+                    bsl::print() << color << "    " << bsl::hex(val) << "     ";
                 }
 
-                if constexpr (bsl::is_same<FIELD_TYPE, bsl::uint64>::value) {
-                    bsl::print<bsl::V>() << bsl::yellow << " |\n" << bsl::reset_color;
+                if constexpr (bsl::is_same<T, bsl::uint64>::value) {
+                    bsl::print() << color << bsl::hex(val) << ' ';
                 }
             }
             else {
-                bsl::print<bsl::V>() << bsl::black << "unsupported       " << bsl::reset_color;
-                bsl::print<bsl::V>() << bsl::yellow << " |\n" << bsl::reset_color;
-            }
-        }
-
-        /// <!-- description -->
-        ///   @brief Dumps the contents of a missing VMCS register to the
-        ///     console. As a reminder, a missing register, is a register
-        ///     that we need to keep track of manually and is missing from
-        ///     the VMCS.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param name the name of the register
-        ///   @param type the register's type
-        ///   @param value the value of the register
-        ///
-        constexpr void
-        dump_missing_register(
-            bsl::string_view const &name,
-            bsl::string_view const &type,
-            bsl::safe_uintmax const &value) noexcept
-        {
-            constexpr bsl::safe_uintmax field_width{bsl::to_umax(44)};
-
-            bsl::print<bsl::V>() << bsl::yellow << "| " << bsl::reset_color;
-            bsl::print<bsl::V>() << name;
-
-            for (bsl::safe_uintmax i{}; i < field_width - name.length(); ++i) {
-                bsl::print<bsl::V>() << ' ';
+                bsl::print() << bsl::blk << bsl::fmt{"<19s", "unsupported"};
             }
 
-            bsl::print<bsl::V>() << bsl::yellow << " | " << bsl::reset_color;
-            bsl::print<bsl::V>() << type;
-            bsl::print<bsl::V>() << bsl::yellow << " | " << bsl::reset_color;
-
-            if (value.is_zero()) {
-                bsl::print<bsl::V>() << bsl::black << bsl::hex(value) << bsl::reset_color;
-            }
-            else {
-                bsl::print<bsl::V>() << bsl::hex(value);
-            }
-
-            bsl::print<bsl::V>() << bsl::yellow << " |\n" << bsl::reset_color;
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
         }
 
         /// <!-- description -->
@@ -3305,22 +3233,30 @@ namespace mk
             ///   use read instead.
             ///
 
-            constexpr bsl::string_view type_64bit_m{"64-bit M"};
-            constexpr bsl::string_view type_16bit_c{"16-bit C"};
-            constexpr bsl::string_view type_16bit_g{"16-bit G"};
-            constexpr bsl::string_view type_16bit_h{"16-bit H"};
-            constexpr bsl::string_view type_64bit_c{"64-bit C"};
-            constexpr bsl::string_view type_64bit_r{"64-bit R"};
-            constexpr bsl::string_view type_64bit_g{"64-bit G"};
-            constexpr bsl::string_view type_64bit_h{"64-bit H"};
-            constexpr bsl::string_view type_32bit_c{"32-bit C"};
-            constexpr bsl::string_view type_32bit_r{"32-bit R"};
-            constexpr bsl::string_view type_32bit_g{"32-bit G"};
-            constexpr bsl::string_view type_32bit_h{"32-bit H"};
-
-            if constexpr (BSL_DEBUG_LEVEL == bsl::ZERO_UMAX) {
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::print() << "[error]" << bsl::endl;
                 return;
             }
+
+            bsl::print() << bsl::mag << "vm [" << bsl::hex(m_id) << "] dump: ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Header
+            ///
+
+            bsl::print() << bsl::ylw << "+----------------------------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^30s", "description "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^19s", "value "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+----------------------------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
 
             if (bsl::unlikely(!m_allocated)) {
                 bsl::error() << "invalid vps\n" << bsl::here();
@@ -3332,499 +3268,478 @@ namespace mk
                 return;
             }
 
-            // clang-format off
+            // this->dump_missing_register(
+            //     "rax", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX));
+            // this->dump_missing_register(
+            //     "rbx", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX));
+            // this->dump_missing_register(
+            //     "rcx", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX));
+            // this->dump_missing_register(
+            //     "rdx", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX));
+            // this->dump_missing_register(
+            //     "rbp", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP));
+            // this->dump_missing_register(
+            //     "rsi", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI));
+            // this->dump_missing_register(
+            //     "rdi", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI));
+            // this->dump_missing_register(
+            //     "r8", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8));
+            // this->dump_missing_register(
+            //     "r9", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9));
+            // this->dump_missing_register(
+            //     "r10", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10));
+            // this->dump_missing_register(
+            //     "r11", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11));
+            // this->dump_missing_register(
+            //     "r12", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12));
+            // this->dump_missing_register(
+            //     "r13", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13));
+            // this->dump_missing_register(
+            //     "r14", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14));
+            // this->dump_missing_register(
+            //     "r15", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15));
 
-            bsl::print<bsl::V>() << bsl::bold_magenta << "vps" << bsl::reset_color;
-            bsl::print<bsl::V>() << " [" << bsl::hex(m_id) << "] ";
-            bsl::print<bsl::V>() << bsl::bold_magenta << "dump: " << bsl::reset_color;
-            bsl::print<bsl::V>() << bsl::yellow << bsl::endl;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
-            bsl::print<bsl::V>() << bsl::yellow << "| " << bsl::cyan;
-            bsl::print<bsl::V>() << "Field                                        ";
-            bsl::print<bsl::V>() << bsl::yellow << "| " << bsl::cyan;
-            bsl::print<bsl::V>() << "Type     ";
-            bsl::print<bsl::V>() << bsl::yellow << "| " << bsl::cyan;
-            bsl::print<bsl::V>() << "Value              ";
-            bsl::print<bsl::V>() << bsl::yellow << "|"  << bsl::reset_color << bsl::endl;
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // this->dump_missing_register(
+            //     "cr2", type_64bit_m, m_vmcs_missing_registers.cr2);
+            // this->dump_missing_register(
+            //     "dr6", type_64bit_m, m_vmcs_missing_registers.dr6);
 
-            this->dump_missing_register(
-                "rax", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX));
-            this->dump_missing_register(
-                "rbx", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX));
-            this->dump_missing_register(
-                "rcx", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX));
-            this->dump_missing_register(
-                "rdx", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX));
-            this->dump_missing_register(
-                "rbp", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP));
-            this->dump_missing_register(
-                "rsi", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI));
-            this->dump_missing_register(
-                "rdi", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI));
-            this->dump_missing_register(
-                "r8", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8));
-            this->dump_missing_register(
-                "r9", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9));
-            this->dump_missing_register(
-                "r10", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10));
-            this->dump_missing_register(
-                "r11", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11));
-            this->dump_missing_register(
-                "r12", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12));
-            this->dump_missing_register(
-                "r13", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13));
-            this->dump_missing_register(
-                "r14", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14));
-            this->dump_missing_register(
-                "r15", type_64bit_m, m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15));
+            // this->dump_missing_register(
+            //     "guest_ia32_star", type_64bit_m, m_vmcs_missing_registers.guest_ia32_star);
+            // this->dump_missing_register(
+            //     "guest_ia32_lstar", type_64bit_m, m_vmcs_missing_registers.guest_ia32_lstar);
+            // this->dump_missing_register(
+            //     "guest_ia32_cstar", type_64bit_m, m_vmcs_missing_registers.guest_ia32_cstar);
+            // this->dump_missing_register(
+            //     "guest_ia32_fmask", type_64bit_m, m_vmcs_missing_registers.guest_ia32_fmask);
+            // this->dump_missing_register(
+            //     "guest_ia32_kernel_gs_base", type_64bit_m, m_vmcs_missing_registers.guest_ia32_kernel_gs_base);
 
-            this->dump_missing_register(
-                "cr2", type_64bit_m, m_vmcs_missing_registers.cr2);
-            this->dump_missing_register(
-                "dr6", type_64bit_m, m_vmcs_missing_registers.dr6);
+            // this->dump_missing_register(
+            //     "host_ia32_star", type_64bit_m, m_vmcs_missing_registers.host_ia32_star);
+            // this->dump_missing_register(
+            //     "host_ia32_lstar", type_64bit_m, m_vmcs_missing_registers.host_ia32_lstar);
+            // this->dump_missing_register(
+            //     "host_ia32_cstar", type_64bit_m, m_vmcs_missing_registers.host_ia32_cstar);
+            // this->dump_missing_register(
+            //     "host_ia32_fmask", type_64bit_m, m_vmcs_missing_registers.host_ia32_fmask);
+            // this->dump_missing_register(
+            //     "host_ia32_kernel_gs_base", type_64bit_m, m_vmcs_missing_registers.host_ia32_kernel_gs_base);
 
-            this->dump_missing_register(
-                "guest_ia32_star", type_64bit_m, m_vmcs_missing_registers.guest_ia32_star);
-            this->dump_missing_register(
-                "guest_ia32_lstar", type_64bit_m, m_vmcs_missing_registers.guest_ia32_lstar);
-            this->dump_missing_register(
-                "guest_ia32_cstar", type_64bit_m, m_vmcs_missing_registers.guest_ia32_cstar);
-            this->dump_missing_register(
-                "guest_ia32_fmask", type_64bit_m, m_vmcs_missing_registers.guest_ia32_fmask);
-            this->dump_missing_register(
-                "guest_ia32_kernel_gs_base", type_64bit_m, m_vmcs_missing_registers.guest_ia32_kernel_gs_base);
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_missing_register(
-                "host_ia32_star", type_64bit_m, m_vmcs_missing_registers.host_ia32_star);
-            this->dump_missing_register(
-                "host_ia32_lstar", type_64bit_m, m_vmcs_missing_registers.host_ia32_lstar);
-            this->dump_missing_register(
-                "host_ia32_cstar", type_64bit_m, m_vmcs_missing_registers.host_ia32_cstar);
-            this->dump_missing_register(
-                "host_ia32_fmask", type_64bit_m, m_vmcs_missing_registers.host_ia32_fmask);
-            this->dump_missing_register(
-                "host_ia32_kernel_gs_base", type_64bit_m, m_vmcs_missing_registers.host_ia32_kernel_gs_base);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vm_instruction_error", type_32bit_r, VMCS_VM_INSTRUCTION_ERROR);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint32>(
-                "vm_instruction_error", type_32bit_r, VMCS_VM_INSTRUCTION_ERROR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "virtual_processor_identifier", type_16bit_c, VMCS_VIRTUAL_PROCESSOR_IDENTIFIER);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "posted_interrupt_notification_vector", type_16bit_c, VMCS_POSTED_INTERRUPT_NOTIFICATION_VECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "eptp_index", type_16bit_c, VMCS_EPTP_INDEX);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint16>(
-                "virtual_processor_identifier", type_16bit_c, VMCS_VIRTUAL_PROCESSOR_IDENTIFIER);
-            this->dump_vmcs_field<bsl::uint16>(
-                "posted_interrupt_notification_vector", type_16bit_c, VMCS_POSTED_INTERRUPT_NOTIFICATION_VECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "eptp_index", type_16bit_c, VMCS_EPTP_INDEX);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "guest_es_selector", type_16bit_g, VMCS_GUEST_ES_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "guest_cs_selector", type_16bit_g, VMCS_GUEST_CS_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "guest_ss_selector", type_16bit_g, VMCS_GUEST_SS_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "guest_ds_selector", type_16bit_g, VMCS_GUEST_DS_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "guest_fs_selector", type_16bit_g, VMCS_GUEST_FS_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "guest_gs_selector", type_16bit_g, VMCS_GUEST_GS_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "guest_ldtr_selector", type_16bit_g, VMCS_GUEST_LDTR_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "guest_tr_selector", type_16bit_g, VMCS_GUEST_TR_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "guest_interrupt_status", type_16bit_g, VMCS_GUEST_INTERRUPT_STATUS);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "pml_index", type_16bit_g, VMCS_PML_INDEX);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint16>(
-                "guest_es_selector", type_16bit_g, VMCS_GUEST_ES_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "guest_cs_selector", type_16bit_g, VMCS_GUEST_CS_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "guest_ss_selector", type_16bit_g, VMCS_GUEST_SS_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "guest_ds_selector", type_16bit_g, VMCS_GUEST_DS_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "guest_fs_selector", type_16bit_g, VMCS_GUEST_FS_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "guest_gs_selector", type_16bit_g, VMCS_GUEST_GS_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "guest_ldtr_selector", type_16bit_g, VMCS_GUEST_LDTR_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "guest_tr_selector", type_16bit_g, VMCS_GUEST_TR_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "guest_interrupt_status", type_16bit_g, VMCS_GUEST_INTERRUPT_STATUS);
-            this->dump_vmcs_field<bsl::uint16>(
-                "pml_index", type_16bit_g, VMCS_PML_INDEX);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "host_es_selector", type_16bit_h, VMCS_HOST_ES_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "host_cs_selector", type_16bit_h, VMCS_HOST_CS_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "host_ss_selector", type_16bit_h, VMCS_HOST_SS_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "host_ds_selector", type_16bit_h, VMCS_HOST_DS_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "host_fs_selector", type_16bit_h, VMCS_HOST_FS_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "host_gs_selector", type_16bit_h, VMCS_HOST_GS_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint16>(
+            //     "host_tr_selector", type_16bit_h, VMCS_HOST_TR_SELECTOR);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint16>(
-                "host_es_selector", type_16bit_h, VMCS_HOST_ES_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "host_cs_selector", type_16bit_h, VMCS_HOST_CS_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "host_ss_selector", type_16bit_h, VMCS_HOST_SS_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "host_ds_selector", type_16bit_h, VMCS_HOST_DS_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "host_fs_selector", type_16bit_h, VMCS_HOST_FS_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "host_gs_selector", type_16bit_h, VMCS_HOST_GS_SELECTOR);
-            this->dump_vmcs_field<bsl::uint16>(
-                "host_tr_selector", type_16bit_h, VMCS_HOST_TR_SELECTOR);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "address_of_io_bitmap_a", type_64bit_c, VMCS_ADDRESS_OF_IO_BITMAP_A);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "address_of_io_bitmap_b", type_64bit_c, VMCS_ADDRESS_OF_IO_BITMAP_B);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "address_of_msr_bitmaps", type_64bit_c, VMCS_ADDRESS_OF_MSR_BITMAPS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "vmexit_msr_store_address", type_64bit_c, VMCS_VMEXIT_MSR_STORE_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "vmexit_msr_load_address", type_64bit_c, VMCS_VMEXIT_MSR_LOAD_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "vmentry_msr_load_address", type_64bit_c, VMCS_VMENTRY_MSR_LOAD_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "executive_vmcs_pointer", type_64bit_c, VMCS_EXECUTIVE_VMCS_POINTER);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "pml_address", type_64bit_c, VMCS_PML_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "tsc_offset", type_64bit_c, VMCS_TSC_OFFSET);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "virtual_apic_address", type_64bit_c, VMCS_VIRTUAL_APIC_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "apic_access_address", type_64bit_c, VMCS_APIC_ACCESS_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "posted_interrupt_descriptor_address", type_64bit_c, VMCS_POSTED_INTERRUPT_DESCRIPTOR_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "vm_function_controls", type_64bit_c, VMCS_VM_FUNCTION_CONTROLS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "ept_pointer", type_64bit_c, VMCS_EPT_POINTER);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "eoi_exit_bitmap0", type_64bit_c, VMCS_EOI_EXIT_BITMAP0);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "eoi_exit_bitmap1", type_64bit_c, VMCS_EOI_EXIT_BITMAP1);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "eoi_exit_bitmap2", type_64bit_c, VMCS_EOI_EXIT_BITMAP2);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "eoi_exit_bitmap3", type_64bit_c, VMCS_EOI_EXIT_BITMAP3);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "eptp_list_address", type_64bit_c, VMCS_EPTP_LIST_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "vmread_bitmap_address", type_64bit_c, VMCS_VMREAD_BITMAP_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "vmwrite_bitmap_address", type_64bit_c, VMCS_VMWRITE_BITMAP_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "virt_exception_information_address", type_64bit_c, VMCS_VIRT_EXCEPTION_INFORMATION_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "xss_exiting_bitmap", type_64bit_c, VMCS_XSS_EXITING_BITMAP);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "encls_exiting_bitmap", type_64bit_c, VMCS_ENCLS_EXITING_BITMAP);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "sub_page_permission_table_pointer", type_64bit_c, VMCS_SUB_PAGE_PERMISSION_TABLE_POINTER);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "tls_multiplier", type_64bit_c, VMCS_TLS_MULTIPLIER);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint64>(
-                "address_of_io_bitmap_a", type_64bit_c, VMCS_ADDRESS_OF_IO_BITMAP_A);
-            this->dump_vmcs_field<bsl::uint64>(
-                "address_of_io_bitmap_b", type_64bit_c, VMCS_ADDRESS_OF_IO_BITMAP_B);
-            this->dump_vmcs_field<bsl::uint64>(
-                "address_of_msr_bitmaps", type_64bit_c, VMCS_ADDRESS_OF_MSR_BITMAPS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "vmexit_msr_store_address", type_64bit_c, VMCS_VMEXIT_MSR_STORE_ADDRESS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "vmexit_msr_load_address", type_64bit_c, VMCS_VMEXIT_MSR_LOAD_ADDRESS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "vmentry_msr_load_address", type_64bit_c, VMCS_VMENTRY_MSR_LOAD_ADDRESS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "executive_vmcs_pointer", type_64bit_c, VMCS_EXECUTIVE_VMCS_POINTER);
-            this->dump_vmcs_field<bsl::uint64>(
-                "pml_address", type_64bit_c, VMCS_PML_ADDRESS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "tsc_offset", type_64bit_c, VMCS_TSC_OFFSET);
-            this->dump_vmcs_field<bsl::uint64>(
-                "virtual_apic_address", type_64bit_c, VMCS_VIRTUAL_APIC_ADDRESS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "apic_access_address", type_64bit_c, VMCS_APIC_ACCESS_ADDRESS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "posted_interrupt_descriptor_address", type_64bit_c, VMCS_POSTED_INTERRUPT_DESCRIPTOR_ADDRESS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "vm_function_controls", type_64bit_c, VMCS_VM_FUNCTION_CONTROLS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "ept_pointer", type_64bit_c, VMCS_EPT_POINTER);
-            this->dump_vmcs_field<bsl::uint64>(
-                "eoi_exit_bitmap0", type_64bit_c, VMCS_EOI_EXIT_BITMAP0);
-            this->dump_vmcs_field<bsl::uint64>(
-                "eoi_exit_bitmap1", type_64bit_c, VMCS_EOI_EXIT_BITMAP1);
-            this->dump_vmcs_field<bsl::uint64>(
-                "eoi_exit_bitmap2", type_64bit_c, VMCS_EOI_EXIT_BITMAP2);
-            this->dump_vmcs_field<bsl::uint64>(
-                "eoi_exit_bitmap3", type_64bit_c, VMCS_EOI_EXIT_BITMAP3);
-            this->dump_vmcs_field<bsl::uint64>(
-                "eptp_list_address", type_64bit_c, VMCS_EPTP_LIST_ADDRESS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "vmread_bitmap_address", type_64bit_c, VMCS_VMREAD_BITMAP_ADDRESS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "vmwrite_bitmap_address", type_64bit_c, VMCS_VMWRITE_BITMAP_ADDRESS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "virt_exception_information_address", type_64bit_c, VMCS_VIRT_EXCEPTION_INFORMATION_ADDRESS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "xss_exiting_bitmap", type_64bit_c, VMCS_XSS_EXITING_BITMAP);
-            this->dump_vmcs_field<bsl::uint64>(
-                "encls_exiting_bitmap", type_64bit_c, VMCS_ENCLS_EXITING_BITMAP);
-            this->dump_vmcs_field<bsl::uint64>(
-                "sub_page_permission_table_pointer", type_64bit_c, VMCS_SUB_PAGE_PERMISSION_TABLE_POINTER);
-            this->dump_vmcs_field<bsl::uint64>(
-                "tls_multiplier", type_64bit_c, VMCS_TLS_MULTIPLIER);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_physical_address", type_64bit_r, VMCS_GUEST_PHYSICAL_ADDRESS);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_physical_address", type_64bit_r, VMCS_GUEST_PHYSICAL_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "vmcs_link_pointer", type_64bit_g, VMCS_VMCS_LINK_POINTER);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_ia32_debugctl", type_64bit_g, VMCS_GUEST_IA32_DEBUGCTL);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_ia32_pat", type_64bit_g, VMCS_GUEST_IA32_PAT);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_ia32_efer", type_64bit_g, VMCS_GUEST_IA32_EFER);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_ia32_perf_global_ctrl", type_64bit_g, VMCS_GUEST_IA32_PERF_GLOBAL_CTRL);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_pdpte0", type_64bit_g, VMCS_GUEST_PDPTE0);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_pdpte1", type_64bit_g, VMCS_GUEST_PDPTE1);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_pdpte2", type_64bit_g, VMCS_GUEST_PDPTE2);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_pdpte3", type_64bit_g, VMCS_GUEST_PDPTE3);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_ia32_bndcfgs", type_64bit_g, VMCS_GUEST_IA32_BNDCFGS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_rtit_ctl", type_64bit_g, VMCS_GUEST_RTIT_CTL);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint64>(
-                "vmcs_link_pointer", type_64bit_g, VMCS_VMCS_LINK_POINTER);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_ia32_debugctl", type_64bit_g, VMCS_GUEST_IA32_DEBUGCTL);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_ia32_pat", type_64bit_g, VMCS_GUEST_IA32_PAT);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_ia32_efer", type_64bit_g, VMCS_GUEST_IA32_EFER);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_ia32_perf_global_ctrl", type_64bit_g, VMCS_GUEST_IA32_PERF_GLOBAL_CTRL);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_pdpte0", type_64bit_g, VMCS_GUEST_PDPTE0);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_pdpte1", type_64bit_g, VMCS_GUEST_PDPTE1);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_pdpte2", type_64bit_g, VMCS_GUEST_PDPTE2);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_pdpte3", type_64bit_g, VMCS_GUEST_PDPTE3);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_ia32_bndcfgs", type_64bit_g, VMCS_GUEST_IA32_BNDCFGS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_rtit_ctl", type_64bit_g, VMCS_GUEST_RTIT_CTL);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_ia32_pat", type_64bit_h, VMCS_HOST_IA32_PAT);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_ia32_efer", type_64bit_h, VMCS_HOST_IA32_EFER);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_ia32_perf_global_ctrl", type_64bit_h, VMCS_HOST_IA32_PERF_GLOBAL_CTRL);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_ia32_pat", type_64bit_h, VMCS_HOST_IA32_PAT);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_ia32_efer", type_64bit_h, VMCS_HOST_IA32_EFER);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_ia32_perf_global_ctrl", type_64bit_h, VMCS_HOST_IA32_PERF_GLOBAL_CTRL);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "pin_based_vm_execution_ctls", type_32bit_c, VMCS_PIN_BASED_VM_EXECUTION_CTLS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "primary_proc_based_vm_execution_ctls", type_32bit_c, VMCS_PRIMARY_PROC_BASED_VM_EXECUTION_CTLS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "exception_bitmap", type_32bit_c, VMCS_EXCEPTION_BITMAP);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "page_fault_error_code_mask", type_32bit_c, VMCS_PAGE_FAULT_ERROR_CODE_MASK);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "page_fault_error_code_match", type_32bit_c, VMCS_PAGE_FAULT_ERROR_CODE_MATCH);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "cr3_target_count", type_32bit_c, VMCS_CR3_TARGET_COUNT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmexit_ctls", type_32bit_c, VMCS_VMEXIT_CTLS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmexit_msr_store_count", type_32bit_c, VMCS_VMEXIT_MSR_STORE_COUNT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmexit_msr_load_count", type_32bit_c, VMCS_VMEXIT_MSR_LOAD_COUNT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmentry_ctls", type_32bit_c, VMCS_VMENTRY_CTLS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmentry_msr_load_count", type_32bit_c, VMCS_VMENTRY_MSR_LOAD_COUNT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmentry_interrupt_information_field", type_32bit_c, VMCS_VMENTRY_INTERRUPT_INFORMATION_FIELD);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmentry_exception_error_code", type_32bit_c, VMCS_VMENTRY_EXCEPTION_ERROR_CODE);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmentry_instruction_length", type_32bit_c, VMCS_VMENTRY_INSTRUCTION_LENGTH);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "tpr_threshold", type_32bit_c, VMCS_TPR_THRESHOLD);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "secondary_proc_based_vm_execution_ctls", type_32bit_c, VMCS_SECONDARY_PROC_BASED_VM_EXECUTION_CTLS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "ple_gap", type_32bit_c, VMCS_PLE_GAP);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "ple_window", type_32bit_c, VMCS_PLE_WINDOW);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint32>(
-                "pin_based_vm_execution_ctls", type_32bit_c, VMCS_PIN_BASED_VM_EXECUTION_CTLS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "primary_proc_based_vm_execution_ctls", type_32bit_c, VMCS_PRIMARY_PROC_BASED_VM_EXECUTION_CTLS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "exception_bitmap", type_32bit_c, VMCS_EXCEPTION_BITMAP);
-            this->dump_vmcs_field<bsl::uint32>(
-                "page_fault_error_code_mask", type_32bit_c, VMCS_PAGE_FAULT_ERROR_CODE_MASK);
-            this->dump_vmcs_field<bsl::uint32>(
-                "page_fault_error_code_match", type_32bit_c, VMCS_PAGE_FAULT_ERROR_CODE_MATCH);
-            this->dump_vmcs_field<bsl::uint32>(
-                "cr3_target_count", type_32bit_c, VMCS_CR3_TARGET_COUNT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmexit_ctls", type_32bit_c, VMCS_VMEXIT_CTLS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmexit_msr_store_count", type_32bit_c, VMCS_VMEXIT_MSR_STORE_COUNT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmexit_msr_load_count", type_32bit_c, VMCS_VMEXIT_MSR_LOAD_COUNT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmentry_ctls", type_32bit_c, VMCS_VMENTRY_CTLS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmentry_msr_load_count", type_32bit_c, VMCS_VMENTRY_MSR_LOAD_COUNT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmentry_interrupt_information_field", type_32bit_c, VMCS_VMENTRY_INTERRUPT_INFORMATION_FIELD);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmentry_exception_error_code", type_32bit_c, VMCS_VMENTRY_EXCEPTION_ERROR_CODE);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmentry_instruction_length", type_32bit_c, VMCS_VMENTRY_INSTRUCTION_LENGTH);
-            this->dump_vmcs_field<bsl::uint32>(
-                "tpr_threshold", type_32bit_c, VMCS_TPR_THRESHOLD);
-            this->dump_vmcs_field<bsl::uint32>(
-                "secondary_proc_based_vm_execution_ctls", type_32bit_c, VMCS_SECONDARY_PROC_BASED_VM_EXECUTION_CTLS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "ple_gap", type_32bit_c, VMCS_PLE_GAP);
-            this->dump_vmcs_field<bsl::uint32>(
-                "ple_window", type_32bit_c, VMCS_PLE_WINDOW);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "exit_reason", type_32bit_r, VMCS_EXIT_REASON);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmexit_interruption_information", type_32bit_r, VMCS_VMEXIT_INTERRUPTION_INFORMATION);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmexit_interruption_error_code", type_32bit_r, VMCS_VMEXIT_INTERRUPTION_ERROR_CODE);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "idt_vectoring_information_field", type_32bit_r, VMCS_IDT_VECTORING_INFORMATION_FIELD);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "idt_vectoring_error_code", type_32bit_r, VMCS_IDT_VECTORING_ERROR_CODE);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmexit_instruction_length", type_32bit_r, VMCS_VMEXIT_INSTRUCTION_LENGTH);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmexit_instruction_information", type_32bit_r, VMCS_VMEXIT_INSTRUCTION_INFORMATION);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint32>(
-                "exit_reason", type_32bit_r, VMCS_EXIT_REASON);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmexit_interruption_information", type_32bit_r, VMCS_VMEXIT_INTERRUPTION_INFORMATION);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmexit_interruption_error_code", type_32bit_r, VMCS_VMEXIT_INTERRUPTION_ERROR_CODE);
-            this->dump_vmcs_field<bsl::uint32>(
-                "idt_vectoring_information_field", type_32bit_r, VMCS_IDT_VECTORING_INFORMATION_FIELD);
-            this->dump_vmcs_field<bsl::uint32>(
-                "idt_vectoring_error_code", type_32bit_r, VMCS_IDT_VECTORING_ERROR_CODE);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmexit_instruction_length", type_32bit_r, VMCS_VMEXIT_INSTRUCTION_LENGTH);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmexit_instruction_information", type_32bit_r, VMCS_VMEXIT_INSTRUCTION_INFORMATION);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_es_limit", type_32bit_g, VMCS_GUEST_ES_LIMIT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_cs_limit", type_32bit_g, VMCS_GUEST_CS_LIMIT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_ss_limit", type_32bit_g, VMCS_GUEST_SS_LIMIT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_ds_limit", type_32bit_g, VMCS_GUEST_DS_LIMIT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_fs_limit", type_32bit_g, VMCS_GUEST_FS_LIMIT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_gs_limit", type_32bit_g, VMCS_GUEST_GS_LIMIT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_ldtr_limit", type_32bit_g, VMCS_GUEST_LDTR_LIMIT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_tr_limit", type_32bit_g, VMCS_GUEST_TR_LIMIT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_gdtr_limit", type_32bit_g, VMCS_GUEST_GDTR_LIMIT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_idtr_limit", type_32bit_g, VMCS_GUEST_IDTR_LIMIT);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_es_access_rights", type_32bit_g, VMCS_GUEST_ES_ACCESS_RIGHTS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_cs_access_rights", type_32bit_g, VMCS_GUEST_CS_ACCESS_RIGHTS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_ss_access_rights", type_32bit_g, VMCS_GUEST_SS_ACCESS_RIGHTS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_ds_access_rights", type_32bit_g, VMCS_GUEST_DS_ACCESS_RIGHTS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_fs_access_rights", type_32bit_g, VMCS_GUEST_FS_ACCESS_RIGHTS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_gs_access_rights", type_32bit_g, VMCS_GUEST_GS_ACCESS_RIGHTS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_ldtr_access_rights", type_32bit_g, VMCS_GUEST_LDTR_ACCESS_RIGHTS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_tr_access_rights", type_32bit_g, VMCS_GUEST_TR_ACCESS_RIGHTS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_interruptibility_state", type_32bit_g, VMCS_GUEST_INTERRUPTIBILITY_STATE);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_activity_state", type_32bit_g, VMCS_GUEST_ACTIVITY_STATE);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_smbase", type_32bit_g, VMCS_GUEST_SMBASE);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "guest_ia32_sysenter_cs", type_32bit_g, VMCS_GUEST_IA32_SYSENTER_CS);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "vmx_preemption_timer_value", type_32bit_g, VMCS_VMX_PREEMPTION_TIMER_VALUE);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_es_limit", type_32bit_g, VMCS_GUEST_ES_LIMIT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_cs_limit", type_32bit_g, VMCS_GUEST_CS_LIMIT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_ss_limit", type_32bit_g, VMCS_GUEST_SS_LIMIT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_ds_limit", type_32bit_g, VMCS_GUEST_DS_LIMIT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_fs_limit", type_32bit_g, VMCS_GUEST_FS_LIMIT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_gs_limit", type_32bit_g, VMCS_GUEST_GS_LIMIT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_ldtr_limit", type_32bit_g, VMCS_GUEST_LDTR_LIMIT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_tr_limit", type_32bit_g, VMCS_GUEST_TR_LIMIT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_gdtr_limit", type_32bit_g, VMCS_GUEST_GDTR_LIMIT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_idtr_limit", type_32bit_g, VMCS_GUEST_IDTR_LIMIT);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_es_access_rights", type_32bit_g, VMCS_GUEST_ES_ACCESS_RIGHTS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_cs_access_rights", type_32bit_g, VMCS_GUEST_CS_ACCESS_RIGHTS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_ss_access_rights", type_32bit_g, VMCS_GUEST_SS_ACCESS_RIGHTS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_ds_access_rights", type_32bit_g, VMCS_GUEST_DS_ACCESS_RIGHTS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_fs_access_rights", type_32bit_g, VMCS_GUEST_FS_ACCESS_RIGHTS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_gs_access_rights", type_32bit_g, VMCS_GUEST_GS_ACCESS_RIGHTS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_ldtr_access_rights", type_32bit_g, VMCS_GUEST_LDTR_ACCESS_RIGHTS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_tr_access_rights", type_32bit_g, VMCS_GUEST_TR_ACCESS_RIGHTS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_interruptibility_state", type_32bit_g, VMCS_GUEST_INTERRUPTIBILITY_STATE);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_activity_state", type_32bit_g, VMCS_GUEST_ACTIVITY_STATE);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_smbase", type_32bit_g, VMCS_GUEST_SMBASE);
-            this->dump_vmcs_field<bsl::uint32>(
-                "guest_ia32_sysenter_cs", type_32bit_g, VMCS_GUEST_IA32_SYSENTER_CS);
-            this->dump_vmcs_field<bsl::uint32>(
-                "vmx_preemption_timer_value", type_32bit_g, VMCS_VMX_PREEMPTION_TIMER_VALUE);
+            // this->dump_vmcs_field<bsl::uint32>(
+            //     "host_ia32_sysenter_cs", type_32bit_h, VMCS_HOST_IA32_SYSENTER_CS);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint32>(
-                "host_ia32_sysenter_cs", type_32bit_h, VMCS_HOST_IA32_SYSENTER_CS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "cr0_guest_host_mask", type_64bit_c, VMCS_CR0_GUEST_HOST_MASK);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "cr4_guest_host_mask", type_64bit_c, VMCS_CR4_GUEST_HOST_MASK);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "cr0_read_shadow", type_64bit_c, VMCS_CR0_READ_SHADOW);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "cr4_read_shadow", type_64bit_c, VMCS_CR4_READ_SHADOW);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "cr3_target_value0", type_64bit_c, VMCS_CR3_TARGET_VALUE0);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "cr3_target_value1", type_64bit_c, VMCS_CR3_TARGET_VALUE1);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "cr3_target_value2", type_64bit_c, VMCS_CR3_TARGET_VALUE2);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "cr3_target_value3", type_64bit_c, VMCS_CR3_TARGET_VALUE3);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint64>(
-                "cr0_guest_host_mask", type_64bit_c, VMCS_CR0_GUEST_HOST_MASK);
-            this->dump_vmcs_field<bsl::uint64>(
-                "cr4_guest_host_mask", type_64bit_c, VMCS_CR4_GUEST_HOST_MASK);
-            this->dump_vmcs_field<bsl::uint64>(
-                "cr0_read_shadow", type_64bit_c, VMCS_CR0_READ_SHADOW);
-            this->dump_vmcs_field<bsl::uint64>(
-                "cr4_read_shadow", type_64bit_c, VMCS_CR4_READ_SHADOW);
-            this->dump_vmcs_field<bsl::uint64>(
-                "cr3_target_value0", type_64bit_c, VMCS_CR3_TARGET_VALUE0);
-            this->dump_vmcs_field<bsl::uint64>(
-                "cr3_target_value1", type_64bit_c, VMCS_CR3_TARGET_VALUE1);
-            this->dump_vmcs_field<bsl::uint64>(
-                "cr3_target_value2", type_64bit_c, VMCS_CR3_TARGET_VALUE2);
-            this->dump_vmcs_field<bsl::uint64>(
-                "cr3_target_value3", type_64bit_c, VMCS_CR3_TARGET_VALUE3);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "exit_qualification", type_64bit_r, VMCS_EXIT_QUALIFICATION);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "io_rcx", type_64bit_r, VMCS_IO_RCX);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "io_rsi", type_64bit_r, VMCS_IO_RSI);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "io_rdi", type_64bit_r, VMCS_IO_RDI);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "io_rip", type_64bit_r, VMCS_IO_RIP);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_linear_address", type_64bit_r, VMCS_GUEST_LINEAR_ADDRESS);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint64>(
-                "exit_qualification", type_64bit_r, VMCS_EXIT_QUALIFICATION);
-            this->dump_vmcs_field<bsl::uint64>(
-                "io_rcx", type_64bit_r, VMCS_IO_RCX);
-            this->dump_vmcs_field<bsl::uint64>(
-                "io_rsi", type_64bit_r, VMCS_IO_RSI);
-            this->dump_vmcs_field<bsl::uint64>(
-                "io_rdi", type_64bit_r, VMCS_IO_RDI);
-            this->dump_vmcs_field<bsl::uint64>(
-                "io_rip", type_64bit_r, VMCS_IO_RIP);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_linear_address", type_64bit_r, VMCS_GUEST_LINEAR_ADDRESS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_cr0", type_64bit_g, VMCS_GUEST_CR0);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_cr3", type_64bit_g, VMCS_GUEST_CR3);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_cr4", type_64bit_g, VMCS_GUEST_CR4);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_es_base", type_64bit_g, VMCS_GUEST_ES_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_cs_base", type_64bit_g, VMCS_GUEST_CS_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_ss_base", type_64bit_g, VMCS_GUEST_SS_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_ds_base", type_64bit_g, VMCS_GUEST_DS_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_fs_base", type_64bit_g, VMCS_GUEST_FS_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_gs_base", type_64bit_g, VMCS_GUEST_GS_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_ldtr_base", type_64bit_g, VMCS_GUEST_LDTR_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_tr_base", type_64bit_g, VMCS_GUEST_TR_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_gdtr_base", type_64bit_g, VMCS_GUEST_GDTR_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_idtr_base", type_64bit_g, VMCS_GUEST_IDTR_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_dr7", type_64bit_g, VMCS_GUEST_DR7);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_rsp", type_64bit_g, VMCS_GUEST_RSP);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_rip", type_64bit_g, VMCS_GUEST_RIP);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_rflags", type_64bit_g, VMCS_GUEST_RFLAGS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_pending_debug_exceptions", type_64bit_g, VMCS_GUEST_PENDING_DEBUG_EXCEPTIONS);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_ia32_sysenter_esp", type_64bit_g, VMCS_GUEST_IA32_SYSENTER_ESP);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "guest_ia32_sysenter_eip", type_64bit_g, VMCS_GUEST_IA32_SYSENTER_EIP);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
 
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_cr0", type_64bit_g, VMCS_GUEST_CR0);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_cr3", type_64bit_g, VMCS_GUEST_CR3);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_cr4", type_64bit_g, VMCS_GUEST_CR4);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_es_base", type_64bit_g, VMCS_GUEST_ES_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_cs_base", type_64bit_g, VMCS_GUEST_CS_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_ss_base", type_64bit_g, VMCS_GUEST_SS_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_ds_base", type_64bit_g, VMCS_GUEST_DS_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_fs_base", type_64bit_g, VMCS_GUEST_FS_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_gs_base", type_64bit_g, VMCS_GUEST_GS_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_ldtr_base", type_64bit_g, VMCS_GUEST_LDTR_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_tr_base", type_64bit_g, VMCS_GUEST_TR_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_gdtr_base", type_64bit_g, VMCS_GUEST_GDTR_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_idtr_base", type_64bit_g, VMCS_GUEST_IDTR_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_dr7", type_64bit_g, VMCS_GUEST_DR7);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_rsp", type_64bit_g, VMCS_GUEST_RSP);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_rip", type_64bit_g, VMCS_GUEST_RIP);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_rflags", type_64bit_g, VMCS_GUEST_RFLAGS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_pending_debug_exceptions", type_64bit_g, VMCS_GUEST_PENDING_DEBUG_EXCEPTIONS);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_ia32_sysenter_esp", type_64bit_g, VMCS_GUEST_IA32_SYSENTER_ESP);
-            this->dump_vmcs_field<bsl::uint64>(
-                "guest_ia32_sysenter_eip", type_64bit_g, VMCS_GUEST_IA32_SYSENTER_EIP);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_cr0", type_64bit_h, VMCS_HOST_CR0);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_cr3", type_64bit_h, VMCS_HOST_CR3);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_cr4", type_64bit_h, VMCS_HOST_CR4);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_fs_base", type_64bit_h, VMCS_HOST_FS_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_gs_base", type_64bit_h, VMCS_HOST_GS_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_tr_base", type_64bit_h, VMCS_HOST_TR_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_gdtr_base", type_64bit_h, VMCS_HOST_GDTR_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_idtr_base", type_64bit_h, VMCS_HOST_IDTR_BASE);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_ia32_sysenter_esp", type_64bit_h, VMCS_HOST_IA32_SYSENTER_ESP);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_ia32_sysenter_eip", type_64bit_h, VMCS_HOST_IA32_SYSENTER_EIP);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_rsp", type_64bit_h, VMCS_HOST_RSP);
+            // this->dump_vmcs_field<bsl::uint64>(
+            //     "host_rip", type_64bit_h, VMCS_HOST_RIP);
 
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
-
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_cr0", type_64bit_h, VMCS_HOST_CR0);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_cr3", type_64bit_h, VMCS_HOST_CR3);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_cr4", type_64bit_h, VMCS_HOST_CR4);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_fs_base", type_64bit_h, VMCS_HOST_FS_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_gs_base", type_64bit_h, VMCS_HOST_GS_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_tr_base", type_64bit_h, VMCS_HOST_TR_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_gdtr_base", type_64bit_h, VMCS_HOST_GDTR_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_idtr_base", type_64bit_h, VMCS_HOST_IDTR_BASE);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_ia32_sysenter_esp", type_64bit_h, VMCS_HOST_IA32_SYSENTER_ESP);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_ia32_sysenter_eip", type_64bit_h, VMCS_HOST_IA32_SYSENTER_EIP);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_rsp", type_64bit_h, VMCS_HOST_RSP);
-            this->dump_vmcs_field<bsl::uint64>(
-                "host_rip", type_64bit_h, VMCS_HOST_RIP);
-
-            bsl::print<bsl::V>() << bsl::yellow;
-            bsl::print<bsl::V>() << "+---------------------------------------";
-            bsl::print<bsl::V>() << "---------------------------------------+";
-            bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
+            // bsl::print<bsl::V>() << bsl::yellow;
+            // bsl::print<bsl::V>() << "+---------------------------------------";
+            // bsl::print<bsl::V>() << "---------------------------------------+";
+            // bsl::print<bsl::V>() << bsl::reset_color << bsl::endl;
         }
     };
 }

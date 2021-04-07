@@ -28,11 +28,13 @@
 #include <mk_interface.hpp>
 #include <vmcb_t.hpp>
 
+#include <bsl/cstr_type.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
 #include <bsl/safe_integral.hpp>
+#include <bsl/string_view.hpp>
 #include <bsl/unlikely.hpp>
 
 namespace mk
@@ -112,6 +114,48 @@ namespace mk
         vmcb_t *m_host_vmcb{};
         /// @brief stores the physical address of the host VMCB
         bsl::safe_uintmax m_host_vmcb_phys{bsl::safe_uintmax::zero(true)};
+
+        /// <!-- description -->
+        ///   @brief Dumps the contents of a field
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam T the type of field to dump
+        ///   @param str the name of the field
+        ///   @param val the field to dump
+        ///
+        template<typename T>
+        constexpr void
+        dump(bsl::string_view const &str, bsl::safe_integral<T> const &val) const &noexcept
+        {
+            bsl::cstr_type color{bsl::wht};
+
+            if (val.is_zero()) {
+                color = bsl::blk;
+            }
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<30s", str};
+            bsl::print() << bsl::ylw << "| ";
+
+            if constexpr (bsl::is_same<T, bsl::uint8>::value) {
+                bsl::print() << color << "       " << bsl::hex(val) << "        ";
+            }
+
+            if constexpr (bsl::is_same<T, bsl::uint16>::value) {
+                bsl::print() << color << "      " << bsl::hex(val) << "       ";
+            }
+
+            if constexpr (bsl::is_same<T, bsl::uint32>::value) {
+                bsl::print() << color << "    " << bsl::hex(val) << "     ";
+            }
+
+            if constexpr (bsl::is_same<T, bsl::uint64>::value) {
+                bsl::print() << color << bsl::hex(val) << ' ';
+            }
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+        }
 
     public:
         /// @brief an alias for INTRINSIC_CONCEPT
@@ -1512,7 +1556,7 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Dumps the contents of the VPS to the console
+        ///   @brief Dumps the vm_t
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
@@ -1520,9 +1564,243 @@ namespace mk
         ///
         template<typename TLS_CONCEPT>
         constexpr void
-        dump(TLS_CONCEPT &tls) &noexcept
+        dump(TLS_CONCEPT &tls) const &noexcept
         {
-            bsl::discard(tls);
+            constexpr auto guest_instruction_bytes_0{bsl::to_umax(0x0U)};
+            constexpr auto guest_instruction_bytes_1{bsl::to_umax(0x1U)};
+            constexpr auto guest_instruction_bytes_2{bsl::to_umax(0x2U)};
+            constexpr auto guest_instruction_bytes_3{bsl::to_umax(0x3U)};
+            constexpr auto guest_instruction_bytes_4{bsl::to_umax(0x4U)};
+            constexpr auto guest_instruction_bytes_5{bsl::to_umax(0x5U)};
+            constexpr auto guest_instruction_bytes_6{bsl::to_umax(0x6U)};
+            constexpr auto guest_instruction_bytes_7{bsl::to_umax(0x7U)};
+            constexpr auto guest_instruction_bytes_8{bsl::to_umax(0x8U)};
+            constexpr auto guest_instruction_bytes_9{bsl::to_umax(0x9U)};
+            constexpr auto guest_instruction_bytes_A{bsl::to_umax(0xAU)};
+            constexpr auto guest_instruction_bytes_B{bsl::to_umax(0xBU)};
+            constexpr auto guest_instruction_bytes_C{bsl::to_umax(0xCU)};
+            constexpr auto guest_instruction_bytes_D{bsl::to_umax(0xDU)};
+            constexpr auto guest_instruction_bytes_E{bsl::to_umax(0xEU)};
+
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::print() << "[error]" << bsl::endl;
+                return;
+            }
+
+            bsl::print() << bsl::mag << "vm [" << bsl::hex(m_id) << "] dump: ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Header
+            ///
+
+            bsl::print() << bsl::ylw << "+----------------------------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^30s", "description "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^19s", "value "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+----------------------------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Control Area
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<30s", "allocated "};
+            bsl::print() << bsl::ylw << "| ";
+            if (m_allocated) {
+                bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{"^19s", "no "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Active
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<30s", "active "};
+            bsl::print() << bsl::ylw << "| ";
+            if (tls.active_vpsid == m_id) {
+                bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{"^19s", "no "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Guest Missing Fields
+            ///
+
+            bsl::print() << bsl::ylw << "+----------------------------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            if (!m_allocated) {
+                return;
+            }
+
+            this->dump("rax ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX));
+            this->dump("rbx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX));
+            this->dump("rcx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX));
+            this->dump("rdx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX));
+            this->dump("rbp ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP));
+            this->dump("rsi ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI));
+            this->dump("rdi ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI));
+            this->dump("r8 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8));
+            this->dump("r9 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9));
+            this->dump("r10 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10));
+            this->dump("r11 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11));
+            this->dump("r12 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12));
+            this->dump("r13 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13));
+            this->dump("r14 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14));
+            this->dump("r15 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15));
+
+            /// Guest Control Area Fields
+            ///
+            // clang-format off
+
+            bsl::print() << bsl::ylw << "+----------------------------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            this->dump("intercept_cr_read ", bsl::make_safe(m_guest_vmcb->intercept_cr_read));
+            this->dump("intercept_cr_write ", bsl::make_safe(m_guest_vmcb->intercept_cr_write));
+            this->dump("intercept_dr_read ", bsl::make_safe(m_guest_vmcb->intercept_dr_read));
+            this->dump("intercept_dr_write ", bsl::make_safe(m_guest_vmcb->intercept_dr_write));
+            this->dump("intercept_exception ", bsl::make_safe(m_guest_vmcb->intercept_exception));
+            this->dump("intercept_instruction1 ", bsl::make_safe(m_guest_vmcb->intercept_instruction1));
+            this->dump("intercept_instruction2 ", bsl::make_safe(m_guest_vmcb->intercept_instruction2));
+            this->dump("intercept_instruction3 ", bsl::make_safe(m_guest_vmcb->intercept_instruction3));
+            this->dump("pause_filter_threshold ", bsl::make_safe(m_guest_vmcb->pause_filter_threshold));
+            this->dump("pause_filter_count ", bsl::make_safe(m_guest_vmcb->pause_filter_count));
+            this->dump("iopm_base_pa ", bsl::make_safe(m_guest_vmcb->iopm_base_pa));
+            this->dump("msrpm_base_pa ", bsl::make_safe(m_guest_vmcb->msrpm_base_pa));
+            this->dump("tsc_offset ", bsl::make_safe(m_guest_vmcb->tsc_offset));
+            this->dump("guest_asid ", bsl::make_safe(m_guest_vmcb->guest_asid));
+            this->dump("tlb_control ", bsl::make_safe(m_guest_vmcb->tlb_control));
+            this->dump("virtual_interrupt_a ", bsl::make_safe(m_guest_vmcb->virtual_interrupt_a));
+            this->dump("virtual_interrupt_b ", bsl::make_safe(m_guest_vmcb->virtual_interrupt_b));
+            this->dump("exitcode ", bsl::make_safe(m_guest_vmcb->exitcode));
+            this->dump("exitinfo1 ", bsl::make_safe(m_guest_vmcb->exitinfo1));
+            this->dump("exitinfo2 ", bsl::make_safe(m_guest_vmcb->exitinfo2));
+            this->dump("exitininfo ", bsl::make_safe(m_guest_vmcb->exitininfo));
+            this->dump("ctls1 ", bsl::make_safe(m_guest_vmcb->ctls1));
+            this->dump("avic_apic_bar ", bsl::make_safe(m_guest_vmcb->avic_apic_bar));
+            this->dump("guest_pa_of_ghcb ", bsl::make_safe(m_guest_vmcb->guest_pa_of_ghcb));
+            this->dump("eventinj ", bsl::make_safe(m_guest_vmcb->eventinj));
+            this->dump("n_cr3 ", bsl::make_safe(m_guest_vmcb->n_cr3));
+            this->dump("ctls2 ", bsl::make_safe(m_guest_vmcb->ctls2));
+            this->dump("vmcb_clean_bits ", bsl::make_safe(m_guest_vmcb->vmcb_clean_bits));
+            this->dump("nrip ", bsl::make_safe(m_guest_vmcb->nrip));
+            this->dump("number_of_bytes_fetched ", bsl::make_safe(m_guest_vmcb->number_of_bytes_fetched));
+
+            auto const &gib{m_guest_vmcb->guest_instruction_bytes};
+            this->dump("guest_instruction_bytes[0]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_0)));
+            this->dump("guest_instruction_bytes[1]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_1)));
+            this->dump("guest_instruction_bytes[2]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_2)));
+            this->dump("guest_instruction_bytes[3]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_3)));
+            this->dump("guest_instruction_bytes[4]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_4)));
+            this->dump("guest_instruction_bytes[5]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_5)));
+            this->dump("guest_instruction_bytes[6]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_6)));
+            this->dump("guest_instruction_bytes[7]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_7)));
+            this->dump("guest_instruction_bytes[8]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_8)));
+            this->dump("guest_instruction_bytes[9]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_9)));
+            this->dump("guest_instruction_bytes[A]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_A)));
+            this->dump("guest_instruction_bytes[B]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_B)));
+            this->dump("guest_instruction_bytes[C]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_C)));
+            this->dump("guest_instruction_bytes[D]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_D)));
+            this->dump("guest_instruction_bytes[E]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_E)));
+
+            this->dump("avic_apic_backing_page_ptr ", bsl::make_safe(m_guest_vmcb->avic_apic_backing_page_ptr));
+            this->dump("avic_logical_table_ptr ", bsl::make_safe(m_guest_vmcb->avic_logical_table_ptr));
+            this->dump("avic_physical_table_ptr ", bsl::make_safe(m_guest_vmcb->avic_physical_table_ptr));
+            this->dump("vmsa_ptr ", bsl::make_safe(m_guest_vmcb->vmsa_ptr));
+
+            /// Guest State Save Area Fields
+            ///
+            // clang-format off
+
+            bsl::print() << bsl::ylw << "+----------------------------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            this->dump("es_selector ", bsl::make_safe(m_guest_vmcb->es_selector));
+            this->dump("es_attrib ", bsl::make_safe(m_guest_vmcb->es_attrib));
+            this->dump("es_limit ", bsl::make_safe(m_guest_vmcb->es_limit));
+            this->dump("es_base ", bsl::make_safe(m_guest_vmcb->es_base));
+            this->dump("cs_selector ", bsl::make_safe(m_guest_vmcb->cs_selector));
+            this->dump("cs_attrib ", bsl::make_safe(m_guest_vmcb->cs_attrib));
+            this->dump("cs_limit ", bsl::make_safe(m_guest_vmcb->cs_limit));
+            this->dump("cs_base ", bsl::make_safe(m_guest_vmcb->cs_base));
+            this->dump("ss_selector ", bsl::make_safe(m_guest_vmcb->ss_selector));
+            this->dump("ss_attrib ", bsl::make_safe(m_guest_vmcb->ss_attrib));
+            this->dump("ss_limit ", bsl::make_safe(m_guest_vmcb->ss_limit));
+            this->dump("ss_base ", bsl::make_safe(m_guest_vmcb->ss_base));
+            this->dump("ds_selector ", bsl::make_safe(m_guest_vmcb->ds_selector));
+            this->dump("ds_attrib ", bsl::make_safe(m_guest_vmcb->ds_attrib));
+            this->dump("ds_limit ", bsl::make_safe(m_guest_vmcb->ds_limit));
+            this->dump("ds_base ", bsl::make_safe(m_guest_vmcb->ds_base));
+            this->dump("fs_selector ", bsl::make_safe(m_guest_vmcb->fs_selector));
+            this->dump("fs_attrib ", bsl::make_safe(m_guest_vmcb->fs_attrib));
+            this->dump("fs_limit ", bsl::make_safe(m_guest_vmcb->fs_limit));
+            this->dump("fs_base ", bsl::make_safe(m_guest_vmcb->fs_base));
+            this->dump("gs_selector ", bsl::make_safe(m_guest_vmcb->gs_selector));
+            this->dump("gs_attrib ", bsl::make_safe(m_guest_vmcb->gs_attrib));
+            this->dump("gs_limit ", bsl::make_safe(m_guest_vmcb->gs_limit));
+            this->dump("gs_base ", bsl::make_safe(m_guest_vmcb->gs_base));
+            this->dump("gdtr_selector ", bsl::make_safe(m_guest_vmcb->gdtr_selector));
+            this->dump("gdtr_attrib ", bsl::make_safe(m_guest_vmcb->gdtr_attrib));
+            this->dump("gdtr_limit ", bsl::make_safe(m_guest_vmcb->gdtr_limit));
+            this->dump("gdtr_base ", bsl::make_safe(m_guest_vmcb->gdtr_base));
+            this->dump("ldtr_selector ", bsl::make_safe(m_guest_vmcb->ldtr_selector));
+            this->dump("ldtr_attrib ", bsl::make_safe(m_guest_vmcb->ldtr_attrib));
+            this->dump("ldtr_limit ", bsl::make_safe(m_guest_vmcb->ldtr_limit));
+            this->dump("ldtr_base ", bsl::make_safe(m_guest_vmcb->ldtr_base));
+            this->dump("idtr_selector ", bsl::make_safe(m_guest_vmcb->idtr_selector));
+            this->dump("idtr_attrib ", bsl::make_safe(m_guest_vmcb->idtr_attrib));
+            this->dump("idtr_limit ", bsl::make_safe(m_guest_vmcb->idtr_limit));
+            this->dump("idtr_base ", bsl::make_safe(m_guest_vmcb->idtr_base));
+            this->dump("tr_selector ", bsl::make_safe(m_guest_vmcb->tr_selector));
+            this->dump("tr_attrib ", bsl::make_safe(m_guest_vmcb->tr_attrib));
+            this->dump("tr_limit ", bsl::make_safe(m_guest_vmcb->tr_limit));
+            this->dump("tr_base ", bsl::make_safe(m_guest_vmcb->tr_base));
+            this->dump("cpl ", bsl::make_safe(m_guest_vmcb->cpl));
+            this->dump("efer ", bsl::make_safe(m_guest_vmcb->efer));
+            this->dump("cr4 ", bsl::make_safe(m_guest_vmcb->cr4));
+            this->dump("cr3 ", bsl::make_safe(m_guest_vmcb->cr3));
+            this->dump("cr0 ", bsl::make_safe(m_guest_vmcb->cr0));
+            this->dump("dr7 ", bsl::make_safe(m_guest_vmcb->dr7));
+            this->dump("dr6 ", bsl::make_safe(m_guest_vmcb->dr6));
+            this->dump("rflags ", bsl::make_safe(m_guest_vmcb->rflags));
+            this->dump("rip ", bsl::make_safe(m_guest_vmcb->rip));
+            this->dump("rsp ", bsl::make_safe(m_guest_vmcb->rsp));
+            this->dump("rax ", bsl::make_safe(m_guest_vmcb->rax));
+            this->dump("star ", bsl::make_safe(m_guest_vmcb->star));
+            this->dump("lstar ", bsl::make_safe(m_guest_vmcb->lstar));
+            this->dump("cstar ", bsl::make_safe(m_guest_vmcb->cstar));
+            this->dump("sfmask ", bsl::make_safe(m_guest_vmcb->sfmask));
+            this->dump("kernel_gs_base ", bsl::make_safe(m_guest_vmcb->kernel_gs_base));
+            this->dump("sysenter_cs ", bsl::make_safe(m_guest_vmcb->sysenter_cs));
+            this->dump("sysenter_esp ", bsl::make_safe(m_guest_vmcb->sysenter_esp));
+            this->dump("sysenter_eip ", bsl::make_safe(m_guest_vmcb->sysenter_eip));
+            this->dump("cr2 ", bsl::make_safe(m_guest_vmcb->cr2));
+            this->dump("g_pat ", bsl::make_safe(m_guest_vmcb->g_pat));
+            this->dump("dbgctl ", bsl::make_safe(m_guest_vmcb->dbgctl));
+            this->dump("br_from ", bsl::make_safe(m_guest_vmcb->br_from));
+            this->dump("br_to ", bsl::make_safe(m_guest_vmcb->br_to));
+            this->dump("lastexcpfrom ", bsl::make_safe(m_guest_vmcb->lastexcpfrom));
+            this->dump("lastexcpto ", bsl::make_safe(m_guest_vmcb->lastexcpto));
+
+            /// Footer
+            ///
+
+            bsl::print() << bsl::ylw << "+----------------------------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
         }
     };
 }

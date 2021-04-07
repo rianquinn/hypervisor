@@ -563,36 +563,36 @@ namespace example
 
             if (bsl::unlikely(!page_gpa)) {
                 bsl::error() << "guest physical address is invalid: "    // --
-                             << bsl::hex(page_gpa)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
+                             << bsl::hex(page_gpa)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!this->is_page_aligned(page_gpa))) {
                 bsl::error() << "guest physical address is not page aligned: "    // --
-                             << bsl::hex(page_gpa)                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
+                             << bsl::hex(page_gpa)                                // --
+                             << bsl::endl                                         // --
+                             << bsl::here();                                      // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!page_spa)) {
                 bsl::error() << "system physical address is invalid: "    // --
-                             << bsl::hex(page_spa)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
+                             << bsl::hex(page_spa)                        // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!this->is_page_aligned(page_spa))) {
                 bsl::error() << "system physical address is not page aligned: "    // --
-                             << bsl::hex(page_spa)                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
+                             << bsl::hex(page_spa)                                 // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
                 return bsl::errc_failure;
             }
@@ -641,11 +641,11 @@ namespace example
             auto *const npt{this->get_npt(npdte)};
             auto *const npte{npt->entries.at_if(this->npto(page_gpa))};
             if (bsl::unlikely(npte->p != bsl::ZERO_UMAX)) {
-                bsl::error() << "guest physical address "     // --
-                             << bsl::hex(page_gpa)    // --
-                             << " already mapped"      // --
-                             << bsl::endl              // --
-                             << bsl::here();           // --
+                bsl::error() << "guest physical address "    // --
+                             << bsl::hex(page_gpa)           // --
+                             << " already mapped"            // --
+                             << bsl::endl                    // --
+                             << bsl::here();                 // --
 
                 return bsl::errc_failure;
             }
@@ -698,36 +698,36 @@ namespace example
 
             if (bsl::unlikely(!page_gpa)) {
                 bsl::error() << "guest physical address is invalid: "    // --
-                             << bsl::hex(page_gpa)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
+                             << bsl::hex(page_gpa)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!this->is_page_aligned(page_gpa))) {
                 bsl::error() << "guest physical address is not page aligned: "    // --
-                             << bsl::hex(page_gpa)                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
+                             << bsl::hex(page_gpa)                                // --
+                             << bsl::endl                                         // --
+                             << bsl::here();                                      // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!page_spa)) {
                 bsl::error() << "system physical address is invalid: "    // --
-                             << bsl::hex(page_spa)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
+                             << bsl::hex(page_spa)                        // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!this->is_page_aligned(page_spa))) {
                 bsl::error() << "system physical address is not page aligned: "    // --
-                             << bsl::hex(page_spa)                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
+                             << bsl::hex(page_spa)                                 // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
                 return bsl::errc_failure;
             }
@@ -762,11 +762,11 @@ namespace example
             auto *const npdt{this->get_npdt(npdpte)};
             auto *const npdte{npdt->entries.at_if(this->npdto(page_gpa))};
             if (bsl::unlikely(npdte->p != bsl::ZERO_UMAX)) {
-                bsl::error() << "guest physical address "     // --
-                             << bsl::hex(page_gpa)    // --
-                             << " already mapped"      // --
-                             << bsl::endl              // --
-                             << bsl::here();           // --
+                bsl::error() << "guest physical address "    // --
+                             << bsl::hex(page_gpa)           // --
+                             << " already mapped"            // --
+                             << bsl::endl                    // --
+                             << bsl::here();                 // --
 
                 return bsl::errc_failure;
             }

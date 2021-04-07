@@ -132,7 +132,7 @@ namespace mk
         bsl::safe_uintmax m_fail_ip{bsl::safe_uintmax::zero(true)};
         /// @brief stores the extension's handle
         bsl::safe_uintmax m_handle{bsl::safe_uintmax::zero(true)};
-        /// @brief stores the extension's heap pool cursor
+        /// @brief stores the extension's heap cursor
         bsl::safe_uintmax m_heap_crsr{};
 
         /// <!-- description -->

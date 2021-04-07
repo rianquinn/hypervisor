@@ -34,34 +34,6 @@
 
 namespace mk
 {
-    namespace details
-    {
-        /// <!-- description -->
-        ///   @brief Implements the debug_op_dump_vps syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_debug_op_dump_vps(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
-            -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.dump(tls, bsl::to_u16_unsafe(tls.ext_reg0))};
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            return syscall::BF_STATUS_SUCCESS;
-        }
-    }
-
     /// <!-- description -->
     ///   @brief Dispatches the bf_debug_op syscalls
     ///
@@ -91,8 +63,6 @@ namespace mk
         VP_POOL_CONCEPT &vp_pool,
         VPS_POOL_CONCEPT &vps_pool) noexcept -> syscall::bf_status_t
     {
-        syscall::bf_status_t ret{};
-
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_DEBUG_OP_OUT_IDX_VAL.get(): {
                 bsl::print() << bsl::hex(tls.ext_reg0)    //--
@@ -104,25 +74,18 @@ namespace mk
             }
 
             case syscall::BF_DEBUG_OP_DUMP_VM_IDX_VAL.get(): {
-                bsl::discard(vm_pool);
-                bsl::error() << "bf_debug_op_dump_vms unsupported\n" << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNSUPPORTED;
+                vm_pool.dump(tls, bsl::to_u16_unsafe(tls.ext_reg0));
+                return syscall::BF_STATUS_SUCCESS;
             }
 
             case syscall::BF_DEBUG_OP_DUMP_VP_IDX_VAL.get(): {
-                bsl::discard(vp_pool);
-                bsl::error() << "bf_debug_op_dump_vps unsupported\n" << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNSUPPORTED;
+                vp_pool.dump(tls, bsl::to_u16_unsafe(tls.ext_reg0));
+                return syscall::BF_STATUS_SUCCESS;
             }
 
             case syscall::BF_DEBUG_OP_DUMP_VPS_IDX_VAL.get(): {
-                ret = details::syscall_debug_op_dump_vps(tls, vps_pool);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return ret;
-                }
-
-                return ret;
+                vps_pool.dump(tls, bsl::to_u16_unsafe(tls.ext_reg0));
+                return syscall::BF_STATUS_SUCCESS;
             }
 
             case syscall::BF_DEBUG_OP_DUMP_VMEXIT_LOG_IDX_VAL.get(): {

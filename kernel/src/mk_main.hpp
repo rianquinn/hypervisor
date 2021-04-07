@@ -335,7 +335,7 @@ namespace mk
                 return bsl::exit_failure;
             }
 
-            if (tls.ppid().is_zero()) {
+            if (tls.ppid() == bsl::to_u16(0)) {
                 // m_page_pool.dump();
                 // m_huge_pool.dump();
 
@@ -347,7 +347,11 @@ namespace mk
                 // m_vp_pool.dump(tls, bsl::ONE_U16);
                 // m_vp_pool.dump(tls);
 
-                m_ext_pool.dump(tls, bsl::ZERO_U16);
+                m_vps_pool.dump(tls, bsl::ZERO_U16);
+                m_vps_pool.dump(tls, bsl::ONE_U16);
+                // m_vps_pool.dump(tls);
+
+                // m_ext_pool.dump(tls, bsl::ZERO_U16);
             }
 
             /// TODO:
@@ -371,17 +375,7 @@ namespace mk
             // [x] implement vp_t dump
             // [ ] implement vps_pool_t dump
             // [ ] implement vps_t dump
-            // [ ] implement ext_t dump
-            //     - m_id
-            //     - m_started
-            //     - m_main_ip
-            //     - m_bootstrap_ip
-            //     - m_vmexit_ip
-            //     - m_fail_ip
-            //     - m_handle
-            //     - m_heap_pool_crsr
-            //     - m_current_direct_map_rpt
-
+            // [x] implement ext_t dump
             // [ ] implement vmexit log dump
             // [ ] implement root_page_table_t dump
             // [ ] implement esr dump

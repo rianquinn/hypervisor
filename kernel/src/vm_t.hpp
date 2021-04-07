@@ -26,11 +26,11 @@
 #define VM_T_HPP
 
 #include <bsl/debug.hpp>
+#include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
-#include <bsl/discard.hpp>
 
 namespace mk
 {

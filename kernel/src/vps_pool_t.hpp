@@ -588,18 +588,79 @@ namespace mk
         }
 
         /// <!-- description -->
+        ///   @brief Dumps the vps_t
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///
+        template<typename TLS_CONCEPT>
+        constexpr void
+        dump(TLS_CONCEPT &tls) const &noexcept
+        {
+            bsl::print() << bsl::mag << "vps pool dump: ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Header
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^7s", "id "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^10s", "allocated "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^7s", "active "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+-----------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// VPSs
+            ///
+
+            for (auto const vps : m_pool) {
+                bsl::print() << bsl::ylw << "| ";
+                bsl::print() << bsl::wht << bsl::hex(vps.data->id()) << " ";
+                bsl::print() << bsl::ylw << "| ";
+                if (vps.data->is_allocated()) {
+                    bsl::print() << bsl::grn << bsl::fmt{"^10s", "yes "};
+                }
+                else {
+                    bsl::print() << bsl::red << bsl::fmt{"^10s", "no "};
+                }
+                bsl::print() << bsl::ylw << "| ";
+                if (tls.active_vpsid == vps.data->id()) {
+                    bsl::print() << bsl::grn << bsl::fmt{"^7s", "yes "};
+                }
+                else {
+                    bsl::print() << bsl::red << bsl::fmt{"^7s", "no "};
+                }
+                bsl::print() << bsl::ylw << "| ";
+                bsl::print() << bsl::rst << bsl::endl;
+            }
+
+            /// Footer
+            ///
+
+            bsl::print() << bsl::ylw << "+-----------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+        }
+
+        /// <!-- description -->
         ///   @brief Dumps the requested VPS
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param vpsid the ID of the VPS to dump
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
         ///
         template<typename TLS_CONCEPT>
-        [[nodiscard]] constexpr auto
-        dump(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpsid) &noexcept -> bsl::errc_type
+        constexpr void
+        dump(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpsid) &noexcept
         {
             auto *const vps{m_pool.at_if(bsl::to_umax(vpsid))};
             if (bsl::unlikely(nullptr == vps)) {
@@ -608,11 +669,10 @@ namespace mk
                              << bsl::endl            // --
                              << bsl::here();         // --
 
-                return bsl::errc_failure;
+                return;
             }
 
             vps->dump(tls);
-            return bsl::errc_success;
         }
     };
 }

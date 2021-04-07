@@ -366,8 +366,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "invalid vmid: "    // --
                              << bsl::hex(vmid)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
 
                 return;
             }

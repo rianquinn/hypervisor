@@ -377,7 +377,7 @@ namespace mk
             /// Remaining
             ///
 
-            bsl::print() << bsl::ylw << "| " ;
+            bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::wht << bsl::fmt{"<12s", "remaining "};
             bsl::print() << bsl::ylw << "| ";
             if (((m_size - m_used) / mb).is_zero()) {

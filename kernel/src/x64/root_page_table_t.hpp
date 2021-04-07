@@ -1192,16 +1192,16 @@ namespace mk
 
             if (bsl::unlikely(page_phys.is_zero())) {
                 bsl::error() << "physical address is invalid: "    // --
-                             << bsl::hex(page_phys)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
+                             << bsl::hex(page_phys)                // --
+                             << bsl::endl                          // --
+                             << bsl::here();                       // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!this->is_page_aligned(page_phys))) {
                 bsl::error() << "physical address is not page aligned: "    // --
-                             << bsl::hex(page_phys)                              // --
+                             << bsl::hex(page_phys)                         // --
                              << bsl::endl                                   // --
                              << bsl::here();                                // --
 

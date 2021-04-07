@@ -286,6 +286,7 @@ namespace mk
 
             return vp->is_allocated();
         }
+
         /// <!-- description -->
         ///   @brief Dumps the vp_t
         ///
@@ -297,7 +298,7 @@ namespace mk
         constexpr void
         dump(TLS_CONCEPT &tls) const &noexcept
         {
-            bsl::print() << bsl::mag << "vm pool dump: ";
+            bsl::print() << bsl::mag << "vp pool dump: ";
             bsl::print() << bsl::rst << bsl::endl;
 
             /// Header
@@ -318,21 +319,21 @@ namespace mk
             bsl::print() << bsl::ylw << "+-----------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
-            /// VMs
+            /// VPs
             ///
 
-            for (auto const vm : m_pool) {
+            for (auto const vp : m_pool) {
                 bsl::print() << bsl::ylw << "| ";
-                bsl::print() << bsl::wht << bsl::hex(vm.data->id()) << " ";
+                bsl::print() << bsl::wht << bsl::hex(vp.data->id()) << " ";
                 bsl::print() << bsl::ylw << "| ";
-                if (vm.data->is_allocated()) {
+                if (vp.data->is_allocated()) {
                     bsl::print() << bsl::grn << bsl::fmt{"^10s", "yes "};
                 }
                 else {
                     bsl::print() << bsl::red << bsl::fmt{"^10s", "no "};
                 }
                 bsl::print() << bsl::ylw << "| ";
-                if (tls.vmid() == vm.data->id()) {
+                if (tls.vpid() == vp.data->id()) {
                     bsl::print() << bsl::grn << bsl::fmt{"^7s", "yes "};
                 }
                 else {
@@ -365,8 +366,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "invalid vpid: "    // --
                              << bsl::hex(vpid)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
 
                 return;
             }
