@@ -335,9 +335,9 @@ namespace mk
             bsl::print() << bsl::rst << bsl::endl;
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << "Description ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^12s", "description "};
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << "Value   ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^8s", "value "};
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
@@ -348,7 +348,7 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << "total       ";
+            bsl::print() << bsl::wht << bsl::fmt{"<12s", "total "};
             bsl::print() << bsl::ylw << "| ";
             if ((m_size / mb).is_zero()) {
                 bsl::print() << bsl::wht << bsl::fmt{"4d", m_size / kb} << " KB ";
@@ -363,7 +363,7 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << "used        ";
+            bsl::print() << bsl::wht << bsl::fmt{"<12s", "used "};
             bsl::print() << bsl::ylw << "| ";
             if ((m_used / mb).is_zero()) {
                 bsl::print() << bsl::wht << bsl::fmt{"4d", m_used / kb} << " KB ";
@@ -378,7 +378,7 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| " ;
-            bsl::print() << bsl::wht << "remaining   ";
+            bsl::print() << bsl::wht << bsl::fmt{"<12s", "remaining "};
             bsl::print() << bsl::ylw << "| ";
             if (((m_size - m_used) / mb).is_zero()) {
                 bsl::print() << bsl::wht << bsl::fmt{"4d", (m_size - m_used) / kb} << " KB ";

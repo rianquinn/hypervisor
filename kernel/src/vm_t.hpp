@@ -262,30 +262,30 @@ namespace mk
             /// Header
             ///
 
-            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::ylw << "+---------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << "Description ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^12s", "description "};
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << "Value   ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^6s", "value "};
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
-            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::ylw << "+---------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
             /// Allocated
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << "allocated   ";
+            bsl::print() << bsl::wht << bsl::fmt{"<12s", "allocated "};
             bsl::print() << bsl::ylw << "| ";
             if (m_allocated) {
-                bsl::print() << bsl::grn << bsl::fmt{">8s", "yes "};
+                bsl::print() << bsl::grn << bsl::fmt{"^6s", "yes "};
             }
             else {
-                bsl::print() << bsl::red << bsl::fmt{">8s", "no "};
+                bsl::print() << bsl::red << bsl::fmt{"^6s", "no "};
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
@@ -294,13 +294,13 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << "active      ";
+            bsl::print() << bsl::wht << bsl::fmt{"<12s", "active "};
             bsl::print() << bsl::ylw << "| ";
             if (tls.vmid() == m_id) {
-                bsl::print() << bsl::grn << bsl::fmt{">8s", "yes "};
+                bsl::print() << bsl::grn << bsl::fmt{"^6s", "yes "};
             }
             else {
-                bsl::print() << bsl::red << bsl::fmt{">8s", "no "};
+                bsl::print() << bsl::red << bsl::fmt{"^6s", "no "};
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
@@ -308,7 +308,7 @@ namespace mk
             /// Footer
             ///
 
-            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::ylw << "+---------------------+";
             bsl::print() << bsl::rst << bsl::endl;
         }
     };

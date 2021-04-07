@@ -297,7 +297,7 @@ namespace mk
         constexpr void
         dump(TLS_CONCEPT &tls) const &noexcept
         {
-            bsl::print() << bsl::mag << "vp pool dump: ";
+            bsl::print() << bsl::mag << "vm pool dump: ";
             bsl::print() << bsl::rst << bsl::endl;
 
             /// Header
@@ -307,36 +307,36 @@ namespace mk
             bsl::print() << bsl::rst << bsl::endl;
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << "Id     ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^7s", "id "};
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << "Allocated ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^10s", "allocated "};
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << "Active ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^7s", "active "};
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
             bsl::print() << bsl::ylw << "+-----------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
-            /// VPs
+            /// VMs
             ///
 
-            for (auto const vp : m_pool) {
+            for (auto const vm : m_pool) {
                 bsl::print() << bsl::ylw << "| ";
-                bsl::print() << bsl::wht << bsl::hex(vp.data->id()) << " ";
+                bsl::print() << bsl::wht << bsl::hex(vm.data->id()) << " ";
                 bsl::print() << bsl::ylw << "| ";
-                if (vp.data->is_allocated()) {
-                    bsl::print() << bsl::grn << bsl::fmt{">10s", "yes "};
+                if (vm.data->is_allocated()) {
+                    bsl::print() << bsl::grn << bsl::fmt{"^10s", "yes "};
                 }
                 else {
-                    bsl::print() << bsl::red << bsl::fmt{">10s", "no "};
+                    bsl::print() << bsl::red << bsl::fmt{"^10s", "no "};
                 }
                 bsl::print() << bsl::ylw << "| ";
-                if (tls.vpid() == vp.data->id()) {
-                    bsl::print() << bsl::grn << bsl::fmt{">7s", "yes "};
+                if (tls.vmid() == vm.data->id()) {
+                    bsl::print() << bsl::grn << bsl::fmt{"^7s", "yes "};
                 }
                 else {
-                    bsl::print() << bsl::red << bsl::fmt{">7s", "no "};
+                    bsl::print() << bsl::red << bsl::fmt{"^7s", "no "};
                 }
                 bsl::print() << bsl::ylw << "| ";
                 bsl::print() << bsl::rst << bsl::endl;

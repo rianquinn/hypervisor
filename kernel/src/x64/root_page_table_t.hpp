@@ -307,7 +307,6 @@ namespace mk
 
             o << bsl::blue                 // --
               << bsl::hex(m_pml4t_phys)    // --
-              << ": "                      // --
               << bsl::endl;                // --
 
             for (auto const elem : pml4t->entries) {

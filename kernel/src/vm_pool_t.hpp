@@ -308,11 +308,11 @@ namespace mk
             bsl::print() << bsl::rst << bsl::endl;
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << "Id     ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^7s", "id "};
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << "Allocated ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^10s", "allocated "};
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << "Active ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^7s", "active "};
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
@@ -327,17 +327,17 @@ namespace mk
                 bsl::print() << bsl::wht << bsl::hex(vm.data->id()) << " ";
                 bsl::print() << bsl::ylw << "| ";
                 if (vm.data->is_allocated()) {
-                    bsl::print() << bsl::grn << bsl::fmt{">10s", "yes "};
+                    bsl::print() << bsl::grn << bsl::fmt{"^10s", "yes "};
                 }
                 else {
-                    bsl::print() << bsl::red << bsl::fmt{">10s", "no "};
+                    bsl::print() << bsl::red << bsl::fmt{"^10s", "no "};
                 }
                 bsl::print() << bsl::ylw << "| ";
                 if (tls.vmid() == vm.data->id()) {
-                    bsl::print() << bsl::grn << bsl::fmt{">7s", "yes "};
+                    bsl::print() << bsl::grn << bsl::fmt{"^7s", "yes "};
                 }
                 else {
-                    bsl::print() << bsl::red << bsl::fmt{">7s", "no "};
+                    bsl::print() << bsl::red << bsl::fmt{"^7s", "no "};
                 }
                 bsl::print() << bsl::ylw << "| ";
                 bsl::print() << bsl::rst << bsl::endl;

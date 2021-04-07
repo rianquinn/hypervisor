@@ -123,7 +123,7 @@ namespace mk
         /// @brief stores a pointer to the current direct map rpt
         ROOT_PAGE_TABLE_CONCEPT *m_current_direct_map_rpt{};
         /// @brief stores the main IP registered by the extension
-        bsl::safe_uintmax m_main_ip{bsl::safe_uintmax::zero(true)};
+        bsl::safe_uintmax m_entry_ip{bsl::safe_uintmax::zero(true)};
         /// @brief stores the bootstrap IP registered by the extension
         bsl::safe_uintmax m_bootstrap_ip{bsl::safe_uintmax::zero(true)};
         /// @brief stores the vmexit IP registered by the extension
@@ -133,7 +133,7 @@ namespace mk
         /// @brief stores the extension's handle
         bsl::safe_uintmax m_handle{bsl::safe_uintmax::zero(true)};
         /// @brief stores the extension's heap pool cursor
-        bsl::safe_uintmax m_heap_pool_crsr{};
+        bsl::safe_uintmax m_heap_crsr{};
 
         /// <!-- description -->
         ///   @brief Validates the provided pt_load segment.
@@ -893,7 +893,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            m_main_ip = bfelf::get_elf64_ip(ext_elf_file);
+            m_entry_ip = bfelf::get_elf64_ip(ext_elf_file);
 
             release_on_error.ignore();
             m_initialized = true;
@@ -907,12 +907,12 @@ namespace mk
         constexpr void
         release() &noexcept
         {
-            m_heap_pool_crsr = bsl::safe_uintmax::zero(true);
+            m_heap_crsr = {};
             m_handle = bsl::safe_uintmax::zero(true);
             m_fail_ip = bsl::safe_uintmax::zero(true);
             m_vmexit_ip = bsl::safe_uintmax::zero(true);
             m_bootstrap_ip = bsl::safe_uintmax::zero(true);
-            m_main_ip = bsl::safe_uintmax::zero(true);
+            m_entry_ip = bsl::safe_uintmax::zero(true);
             m_current_direct_map_rpt = {};
 
             for (auto const rpt : m_direct_map_rpts) {
@@ -1318,7 +1318,7 @@ namespace mk
                 bsl::touch();
             }
 
-            if (bsl::unlikely((m_heap_pool_crsr + (pages * PAGE_SIZE)) > pool_size)) {
+            if (bsl::unlikely((m_heap_crsr + (pages * PAGE_SIZE)) > pool_size)) {
                 bsl::error() << "the extension's heap pool is out of memory"    // --
                              << bsl::endl                                       // --
                              << bsl::here();                                    // --
@@ -1326,7 +1326,7 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
-            auto const previous_heap_virt{m_heap_pool_crsr + pool_addr};
+            auto const previous_heap_virt{m_heap_crsr + pool_addr};
             if (bsl::unlikely(!previous_heap_virt)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::safe_uintmax::zero(true);
@@ -1345,7 +1345,7 @@ namespace mk
                     return bsl::safe_uintmax::zero(true);
                 }
 
-                auto const page_virt{m_heap_pool_crsr + pool_addr};
+                auto const page_virt{m_heap_crsr + pool_addr};
                 if (bsl::unlikely(!page_virt)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::safe_uintmax::zero(true);
@@ -1361,7 +1361,7 @@ namespace mk
                     return bsl::safe_uintmax::zero(true);
                 }
 
-                m_heap_pool_crsr += PAGE_SIZE;
+                m_heap_crsr += PAGE_SIZE;
             }
 
             ret = this->update_direct_map_rpts();
@@ -1581,7 +1581,7 @@ namespace mk
         start(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
         {
             auto const arg{bsl::to_umax(syscall::BF_ALL_SPECS_SUPPORTED_VAL)};
-            auto const ret{this->execute(tls, m_main_ip, *m_current_direct_map_rpt, arg)};
+            auto const ret{this->execute(tls, m_entry_ip, *m_current_direct_map_rpt, arg)};
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -1668,6 +1668,167 @@ namespace mk
             }
 
             return ret;
+        }
+
+        /// <!-- description -->
+        ///   @brief Dumps the vm_t
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///
+        template<typename TLS_CONCEPT>
+        constexpr void
+        dump(TLS_CONCEPT &tls) const &noexcept
+        {
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::print() << "[error]" << bsl::endl;
+                return;
+            }
+
+            bsl::print() << bsl::mag << "ext [" << bsl::hex(m_id) << "] dump: ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Header
+            ///
+
+            bsl::print() << bsl::ylw << "+------------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^14s", "description "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^19s", "value "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+------------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Started
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<14s", "started "};
+            bsl::print() << bsl::ylw << "| ";
+            if (m_started) {
+                bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{"^19s", "no "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Active
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<14s", "active "};
+            bsl::print() << bsl::ylw << "| ";
+            if (tls.extid() == m_id) {
+                bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{"^19s", "no "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Entry IP
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<14s", "entry ip "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::hex(m_entry_ip) << ' ';
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Bootstrap IP
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<14s", "bootstrap ip "};
+            bsl::print() << bsl::ylw << "| ";
+            if (m_bootstrap_ip) {
+                bsl::print() << bsl::wht << bsl::hex(m_bootstrap_ip) << ' ';
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{"^19s", "not registered "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// VMExit IP
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<14s", "vmexit ip "};
+            bsl::print() << bsl::ylw << "| ";
+            if (m_vmexit_ip) {
+                bsl::print() << bsl::wht << bsl::hex(m_vmexit_ip) << ' ';
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{"^19s", "not registered "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Fail IP
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<14s", "fail ip "};
+            bsl::print() << bsl::ylw << "| ";
+            if (m_fail_ip) {
+                bsl::print() << bsl::wht << bsl::hex(m_fail_ip) << ' ';
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{"^19s", "not registered "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Handle
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<14s", "handle "};
+            bsl::print() << bsl::ylw << "| ";
+            if (m_handle) {
+                bsl::print() << bsl::wht << bsl::hex(m_handle) << ' ';
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{"^19s", "not opened "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Heap Cursor
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::wht << bsl::fmt{"<14s", "heap cursor "};
+            bsl::print() << bsl::ylw << "| ";
+            if (!m_heap_crsr.is_zero()) {
+                bsl::print() << bsl::wht << bsl::hex(m_heap_crsr) << ' ';
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{"^19s", "not allocated "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Footer
+            ///
+
+            bsl::print() << bsl::ylw << "+------------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            if (nullptr != m_current_direct_map_rpt) {
+                bsl::print() << "current direct map: " << *m_current_direct_map_rpt;
+            }
         }
     };
 }

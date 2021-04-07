@@ -336,16 +336,18 @@ namespace mk
             }
 
             if (tls.ppid().is_zero()) {
-                m_page_pool.dump();
-                m_huge_pool.dump();
+                // m_page_pool.dump();
+                // m_huge_pool.dump();
 
-                m_vm_pool.dump(tls, bsl::ZERO_U16);
-                m_vm_pool.dump(tls, bsl::ONE_U16);
-                m_vm_pool.dump(tls);
+                // m_vm_pool.dump(tls, bsl::ZERO_U16);
+                // m_vm_pool.dump(tls, bsl::ONE_U16);
+                // m_vm_pool.dump(tls);
 
-                m_vp_pool.dump(tls, bsl::ZERO_U16);
-                m_vp_pool.dump(tls, bsl::ONE_U16);
-                m_vp_pool.dump(tls);
+                // m_vp_pool.dump(tls, bsl::ZERO_U16);
+                // m_vp_pool.dump(tls, bsl::ONE_U16);
+                // m_vp_pool.dump(tls);
+
+                m_ext_pool.dump(tls, bsl::ZERO_U16);
             }
 
             /// TODO:
@@ -369,7 +371,6 @@ namespace mk
             // [x] implement vp_t dump
             // [ ] implement vps_pool_t dump
             // [ ] implement vps_t dump
-            // [ ] implement ext_pool_t dump
             // [ ] implement ext_t dump
             //     - m_id
             //     - m_started
@@ -383,6 +384,7 @@ namespace mk
 
             // [ ] implement vmexit log dump
             // [ ] implement root_page_table_t dump
+            // [ ] implement esr dump
             // [ ] implement mtrrs_t dump
             // [ ] implement debug ops for all dump functions
             // [ ] implement ept

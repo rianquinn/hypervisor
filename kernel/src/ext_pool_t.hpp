@@ -67,7 +67,7 @@ namespace mk
         /// @brief stores system RPT provided by the loader
         ROOT_PAGE_TABLE_CONCEPT &m_system_rpt;
         /// @brief stores all of the extensions.
-        bsl::array<EXT_CONCEPT, MAX_EXTENSIONS> m_ext_pool;
+        bsl::array<EXT_CONCEPT, MAX_EXTENSIONS> m_pool;
 
     public:
         /// @brief an alias for EXT_CONCEPT
@@ -99,7 +99,7 @@ namespace mk
             , m_page_pool{page_pool}
             , m_huge_pool{huge_pool}
             , m_system_rpt{system_rpt}
-            , m_ext_pool{}
+            , m_pool{}
         {}
 
         /// <!-- description -->
@@ -120,7 +120,7 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(ext_elf_files.size() != m_ext_pool.size())) {
+            if (bsl::unlikely(ext_elf_files.size() != m_pool.size())) {
                 bsl::error() << "invalid ext_elf_file\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -129,7 +129,7 @@ namespace mk
                 this->release();
             }};
 
-            for (auto const ext : m_ext_pool) {
+            for (auto const ext : m_pool) {
                 if (ext_elf_files.at_if(ext.index)->empty()) {
                     break;
                 }
@@ -161,7 +161,7 @@ namespace mk
         constexpr void
         release() &noexcept
         {
-            for (auto const ext : m_ext_pool) {
+            for (auto const ext : m_pool) {
                 ext.data->release();
             }
         }
@@ -219,7 +219,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         signal_vm_created(bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
-            for (auto const ext : m_ext_pool) {
+            for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->signal_vm_created(vmid))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -243,7 +243,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         signal_vm_destroyed(bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
-            for (auto const ext : m_ext_pool) {
+            for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->signal_vm_destroyed(vmid))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -271,7 +271,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         set_active_vm(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
-            for (auto const ext : m_ext_pool) {
+            for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->set_active_vm(tls, vmid))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -297,7 +297,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         start(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
         {
-            for (auto const ext : m_ext_pool) {
+            for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->start(tls))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -323,7 +323,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         bootstrap(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
         {
-            for (auto const ext : m_ext_pool) {
+            for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->bootstrap(tls))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -349,6 +349,31 @@ namespace mk
             }
 
             return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Dumps the requested extension
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param extid the ID of the extension to dump
+        ///
+        template<typename TLS_CONCEPT>
+        constexpr void
+        dump(TLS_CONCEPT &tls, bsl::safe_uint16 const &extid) &noexcept
+        {
+            auto *const ext{m_pool.at_if(bsl::to_umax(extid))};
+            if (bsl::unlikely(nullptr == ext)) {
+                bsl::error() << "invalid extid: "    // --
+                             << bsl::hex(extid)      // --
+                             << bsl::endl            // --
+                             << bsl::here();         // --
+
+                return;
+            }
+
+            ext->dump(tls);
         }
     };
 }
