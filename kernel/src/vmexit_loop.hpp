@@ -40,14 +40,14 @@ namespace mk
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
-    ///   @param ext_vmexit the ext_t to handle the VMExit
+    ///   @param ext the ext_t to handle the VMExit
     ///   @param vps_pool the VPS pool to use
     ///   @return Returns bsl::exit_success on success, bsl::exit_failure
     ///     otherwise
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    vmexit_loop(TLS_CONCEPT &tls, EXT_CONCEPT &ext_vmexit, VPS_POOL_CONCEPT &vps_pool) noexcept
+    vmexit_loop(TLS_CONCEPT &tls, EXT_CONCEPT &ext, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::exit_code
     {
         auto const exit_reason{vps_pool.run(tls, tls.active_vpsid)};
@@ -56,7 +56,7 @@ namespace mk
             return bsl::exit_failure;
         }
 
-        auto const ret{ext_vmexit.vmexit(tls, exit_reason)};
+        auto const ret{ext.vmexit(tls, exit_reason)};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::exit_failure;

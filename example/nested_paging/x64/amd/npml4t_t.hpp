@@ -36,7 +36,7 @@
 namespace example
 {
     /// @brief defined the expected size of the npml4t_t struct
-    constexpr bsl::safe_uintmax NUM_PML4T_ENTRIES{bsl::to_umax(512)};
+    constexpr bsl::safe_uintmax NUM_NPML4T_ENTRIES{bsl::to_umax(512)};
 
     /// @struct example::npml4t_t
     ///
@@ -46,17 +46,8 @@ namespace example
     struct npml4t_t final
     {
         /// @brief stores the entires in the table
-        bsl::array<npml4te_t, NUM_PML4T_ENTRIES.get()> entries;
+        bsl::array<npml4te_t, NUM_NPML4T_ENTRIES.get()> entries;
     };
-
-    namespace details
-    {
-        /// @brief defined the expected size of the npml4t_t struct
-        constexpr bsl::safe_uintmax EXPECTED_PML4T_T_SIZE{bsl::to_umax(HYPERVISOR_PAGE_SIZE)};
-
-        /// Check to make sure the npml4t_t is the right size.
-        static_assert(sizeof(npml4t_t) == EXPECTED_PML4T_T_SIZE);
-    }
 }
 
 #pragma pack(pop)

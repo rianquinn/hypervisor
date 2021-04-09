@@ -27,7 +27,6 @@
 #ifndef PDPTE_T_H
 #define PDPTE_T_H
 
-#include <static_assert.h>
 #include <types.h>
 
 #pragma pack(push, 1)
@@ -57,24 +56,21 @@ struct pdpte_t
     uint64_t pcd : ((uint64_t)1);
     /** @brief defines the "accessed" field in the page */
     uint64_t a : ((uint64_t)1);
-    /** @brief defines an ignored field in the page */
-    uint64_t ignored1 : ((uint64_t)1);
-    /** @brief defines a field in the page that must be 0 */
-    uint64_t mbz1 : ((uint64_t)1);
-    /** @brief defines an ignored field in the page */
-    uint64_t ignored2 : ((uint64_t)1);
+    /** @brief defines the "dirty" field in the page (ignored) */
+    uint64_t d : ((uint64_t)1);
+    /** @brief defines the "page size" field in the page (must be 0) */
+    uint64_t ps : ((uint64_t)1);
+    /** @brief defines the "global" field in the page (must be 0) */
+    uint64_t g : ((uint64_t)1);
     /** @brief defines the "available to software" field in the page */
-    uint64_t avl : ((uint64_t)3);
-    /** @brief defines the physical address field in the page */
+    uint64_t available1 : ((uint64_t)3);
+    /** @brief defines the "physical address" field in the page */
     uint64_t phys : ((uint64_t)40);
-    /** @brief defines fields in the page available to the OS for use */
-    uint64_t available : ((uint64_t)11);
+    /** @brief defines the "available to software" field in the page */
+    uint64_t available2 : ((uint64_t)11);
     /** @brief defines the "no-execute" field in the page */
     uint64_t nx : ((uint64_t)1);
 };
-
-/** @brief Check to make sure the pdpte_t is the right size. */
-STATIC_ASSERT(sizeof(struct pdpte_t) == 8, invalid_size);
 
 #ifdef _MSC_VER
 #pragma warning(default : 4214)

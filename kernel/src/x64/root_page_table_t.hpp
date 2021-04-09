@@ -25,6 +25,7 @@
 #ifndef ROOT_PAGE_TABLE_T_HPP
 #define ROOT_PAGE_TABLE_T_HPP
 
+#include <allocate_tags.hpp>
 #include <map_page_flags.hpp>
 #include <pdpt_t.hpp>
 #include <pdpte_t.hpp>
@@ -129,7 +130,7 @@ namespace mk
             bsl::safe_uintmax const &index,
             bsl::safe_uintmax const &last_index) const noexcept
         {
-            o << bsl::reset_color;
+            o << bsl::rst;
 
             if (index != last_index) {
                 o << "├── ";
@@ -138,13 +139,13 @@ namespace mk
                 o << "└── ";
             }
 
-            o << "[" << bsl::yellow << bsl::fmt("#05x", index) << bsl::reset_color << "] ";
+            o << "[" << bsl::ylw << bsl::fmt{"#05x", index} << bsl::rst << "] ";
         }
 
         /// <!-- description -->
         ///   @brief Given an outputter, and whether or not the page table
         ///     entry is the last entry in the table, this function will
-        ///     either output whitespace, or a | and shitespace.
+        ///     either output whtspace, or a | and shitespace.
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam T the type of outputter provided
@@ -156,7 +157,7 @@ namespace mk
         constexpr void
         output_spacing(bsl::out<T> const o, bool const is_last_index) const noexcept
         {
-            o << bsl::reset_color;
+            o << bsl::rst;
 
             if (!is_last_index) {
                 o << "│   ";
@@ -183,10 +184,10 @@ namespace mk
             bool add_comma{};
 
             o << bsl::hex(*static_cast<bsl::uint64 const *>(static_cast<void const *>(entry)));
-            o << bsl::reset_color << " (";
+            o << bsl::rst << " (";
 
             if (bsl::ZERO_UMAX != entry->rw) {
-                o << bsl::green << "W" << bsl::reset_color;
+                o << bsl::grn << "W" << bsl::rst;
                 add_comma = true;
             }
             else {
@@ -201,7 +202,7 @@ namespace mk
                     bsl::touch();
                 }
 
-                o << bsl::green << "U" << bsl::reset_color;
+                o << bsl::grn << "U" << bsl::rst;
                 add_comma = true;
             }
             else {
@@ -216,7 +217,7 @@ namespace mk
                     bsl::touch();
                 }
 
-                o << bsl::green << "NX" << bsl::reset_color;
+                o << bsl::grn << "NX" << bsl::rst;
                 add_comma = true;
             }
             else {
@@ -232,7 +233,7 @@ namespace mk
                         bsl::touch();
                     }
 
-                    o << bsl::green << "alias" << bsl::reset_color;
+                    o << bsl::grn << "alias" << bsl::rst;
                     add_comma = true;
                 }
                 else {
@@ -241,35 +242,51 @@ namespace mk
             }
 
             if constexpr (bsl::is_same<ENTRY_CONCEPT, loader::pte_t>::value) {
-                if (bsl::ZERO_UMAX != entry->auto_release_page_pool) {
-                    if (add_comma) {
-                        o << ", ";
-                    }
-                    else {
-                        bsl::touch();
-                    }
-
-                    o << bsl::green << "auto_release_page_pool" << bsl::reset_color;
-                    add_comma = true;
+                if (add_comma) {
+                    o << ", ";
                 }
                 else {
                     bsl::touch();
                 }
 
-                if (bsl::ZERO_UMAX != entry->auto_release_huge_pool) {
-                    if (add_comma) {
-                        o << ", ";
-                    }
-                    else {
-                        bsl::touch();
+                switch (entry->auto_release) {
+                    case MAP_PAGE_AUTO_RELEASE_ALLOC_PAGE.get(): {
+                        o << bsl::grn << "auto_release_alloc_page" << bsl::rst;
+                        break;
                     }
 
-                    o << bsl::green << "auto_release_huge_pool" << bsl::reset_color;
-                    add_comma = true;
+                    case MAP_PAGE_AUTO_RELEASE_ALLOC_HUGE.get(): {
+                        o << bsl::grn << "auto_release_alloc_huge" << bsl::rst;
+                        break;
+                    }
+
+                    case MAP_PAGE_AUTO_RELEASE_ALLOC_HEAP.get(): {
+                        o << bsl::grn << "auto_release_alloc_heap" << bsl::rst;
+                        break;
+                    }
+
+                    case MAP_PAGE_AUTO_RELEASE_STACK.get(): {
+                        o << bsl::grn << "auto_release_stack" << bsl::rst;
+                        break;
+                    }
+
+                    case MAP_PAGE_AUTO_RELEASE_TLS.get(): {
+                        o << bsl::grn << "auto_release_tls" << bsl::rst;
+                        break;
+                    }
+
+                    case MAP_PAGE_AUTO_RELEASE_ELF.get(): {
+                        o << bsl::grn << "auto_release_elf" << bsl::rst;
+                        break;
+                    }
+
+                    default: {
+                        o << bsl::grn << "manual" << bsl::rst;
+                        break;
+                    }
                 }
-                else {
-                    bsl::touch();
-                }
+
+                add_comma = true;
             }
 
             o << ")" << bsl::endl;
@@ -305,7 +322,7 @@ namespace mk
         {
             bsl::safe_uintmax const last_index{this->get_last_index(pml4t)};
 
-            o << bsl::blue                 // --
+            o << bsl::blu                  // --
               << bsl::hex(m_pml4t_phys)    // --
               << bsl::endl;                // --
 
@@ -317,10 +334,10 @@ namespace mk
                 this->output_decoration_and_index(o, elem.index, last_index);
 
                 if (bsl::ZERO_UMAX != elem.data->us) {
-                    o << bsl::blue;
+                    o << bsl::blu;
                 }
                 else {
-                    o << bsl::black;
+                    o << bsl::blk;
                 }
 
                 this->output_entry_and_flags(o, elem.data);
@@ -345,7 +362,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         add_pdpt(loader::pml4te_t *const pml4te) noexcept -> bsl::errc_type
         {
-            auto const *const table{m_page_pool->template allocate<void>()};
+            auto const *const table{m_page_pool->template allocate<void>(ALLOCATE_TAG_PDPTS)};
             if (bsl::unlikely(nullptr == table)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -383,7 +400,7 @@ namespace mk
                 }
             }
 
-            m_page_pool->deallocate(get_pdpt(pml4te));
+            m_page_pool->deallocate(get_pdpt(pml4te), ALLOCATE_TAG_PDPTS);
         }
 
         /// <!-- description -->
@@ -461,7 +478,7 @@ namespace mk
                 this->output_spacing(o, is_pml4te_last_index);
                 this->output_decoration_and_index(o, elem.index, last_index);
 
-                o << bsl::blue;
+                o << bsl::blu;
                 this->output_entry_and_flags(o, elem.data);
 
                 this->dump_pdt(
@@ -480,7 +497,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         add_pdt(loader::pdpte_t *const pdpte) noexcept -> bsl::errc_type
         {
-            auto const *const table{m_page_pool->template allocate<void>()};
+            auto const *const table{m_page_pool->template allocate<void>(ALLOCATE_TAG_PDTS)};
             if (bsl::unlikely(nullptr == table)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -518,7 +535,7 @@ namespace mk
                 }
             }
 
-            m_page_pool->deallocate(get_pdt(pdpte));
+            m_page_pool->deallocate(get_pdt(pdpte), ALLOCATE_TAG_PDTS);
         }
 
         /// <!-- description -->
@@ -602,7 +619,7 @@ namespace mk
                 this->output_spacing(o, is_pdpte_last_index);
                 this->output_decoration_and_index(o, elem.index, last_index);
 
-                o << bsl::blue;
+                o << bsl::blu;
                 this->output_entry_and_flags(o, elem.data);
 
                 this->dump_pt(
@@ -625,7 +642,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         add_pt(loader::pdte_t *const pdte) noexcept -> bsl::errc_type
         {
-            auto const *const table{m_page_pool->template allocate<void>()};
+            auto const *const table{m_page_pool->template allocate<void>(ALLOCATE_TAG_PTS)};
             if (bsl::unlikely(nullptr == table)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -659,16 +676,61 @@ namespace mk
                     continue;
                 }
 
-                if (elem.data->auto_release_page_pool != bsl::ZERO_UMAX) {
-                    m_page_pool->deallocate(this->pte_from_page_pool_to_virt(elem.data));
-                }
+                switch (elem.data->auto_release) {
+                    case MAP_PAGE_NO_AUTO_RELEASE.get(): {
+                        break;
+                    }
 
-                if (elem.data->auto_release_huge_pool != bsl::ZERO_UMAX) {
-                    m_huge_pool->deallocate(this->pte_from_huge_pool_to_virt(elem.data));
+                    case MAP_PAGE_AUTO_RELEASE_ALLOC_PAGE.get(): {
+                        m_page_pool->deallocate(
+                            this->pte_from_page_pool_to_virt(elem.data),
+                            ALLOCATE_TAG_BF_MEM_OP_ALLOC_PAGE);
+
+                        break;
+                    }
+
+                    case MAP_PAGE_AUTO_RELEASE_ALLOC_HUGE.get(): {
+                        m_huge_pool->deallocate(this->pte_from_huge_pool_to_virt(elem.data));
+                        break;
+                    }
+
+                    case MAP_PAGE_AUTO_RELEASE_ALLOC_HEAP.get(): {
+                        m_page_pool->deallocate(
+                            this->pte_from_page_pool_to_virt(elem.data),
+                            ALLOCATE_TAG_BF_MEM_OP_ALLOC_HEAP);
+
+                        break;
+                    }
+
+                    case MAP_PAGE_AUTO_RELEASE_STACK.get(): {
+                        m_page_pool->deallocate(
+                            this->pte_from_page_pool_to_virt(elem.data), ALLOCATE_TAG_EXT_STACK);
+
+                        break;
+                    }
+
+                    case MAP_PAGE_AUTO_RELEASE_TLS.get(): {
+                        m_page_pool->deallocate(
+                            this->pte_from_page_pool_to_virt(elem.data), ALLOCATE_TAG_EXT_TLS);
+
+                        break;
+                    }
+
+                    case MAP_PAGE_AUTO_RELEASE_ELF.get(): {
+                        m_page_pool->deallocate(
+                            this->pte_from_page_pool_to_virt(elem.data), ALLOCATE_TAG_EXT_ELF);
+
+                        break;
+                    }
+
+                    default: {
+                        bsl::error() << "uknown tag\n" << bsl::here();
+                        break;
+                    }
                 }
             }
 
-            m_page_pool->deallocate(get_pt(pdte));
+            m_page_pool->deallocate(get_pt(pdte), ALLOCATE_TAG_PTS);
         }
 
         /// <!-- description -->
@@ -756,7 +818,7 @@ namespace mk
                 this->output_spacing(o, is_pdte_last_index);
                 this->output_decoration_and_index(o, elem.index, last_index);
 
-                o << bsl::white;
+                o << bsl::rst;
                 this->output_entry_and_flags(o, elem.data);
             }
         }
@@ -835,13 +897,15 @@ namespace mk
         ///   @param page_virt the virtual address to map the allocated
         ///     page to
         ///   @param page_flags defines how memory should be mapped
+        ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
         allocate_page(
-            bsl::safe_uintmax const &page_virt, bsl::safe_uintmax const &page_flags) &noexcept
-            -> void *
+            bsl::safe_uintmax const &page_virt,
+            bsl::safe_uintmax const &page_flags,
+            bsl::safe_uintmax const &auto_release) &noexcept -> void *
         {
             bsl::errc_type ret{};
 
@@ -850,7 +914,29 @@ namespace mk
                 return nullptr;
             }
 
-            auto *const page{m_page_pool->template allocate<void>()};
+            void *page{};
+            switch (auto_release.get()) {
+                case MAP_PAGE_AUTO_RELEASE_STACK.get(): {
+                    page = m_page_pool->template allocate<void>(ALLOCATE_TAG_EXT_STACK);
+                    break;
+                }
+
+                case MAP_PAGE_AUTO_RELEASE_TLS.get(): {
+                    page = m_page_pool->template allocate<void>(ALLOCATE_TAG_EXT_TLS);
+                    break;
+                }
+
+                case MAP_PAGE_AUTO_RELEASE_ELF.get(): {
+                    page = m_page_pool->template allocate<void>(ALLOCATE_TAG_EXT_ELF);
+                    break;
+                }
+
+                default: {
+                    bsl::error() << "unknown tag\n" << bsl::here();
+                    return nullptr;
+                }
+            }
+
             if (bsl::unlikely(nullptr == page)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return nullptr;
@@ -866,7 +952,7 @@ namespace mk
                 return nullptr;
             }
 
-            ret = this->map_page(page_virt, page_phys, page_flags);
+            ret = this->map_page(page_virt, page_phys, page_flags, auto_release);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return nullptr;
@@ -876,10 +962,10 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Releases the memory allocated in this root page table
+        ///   @brief Releases the memory allocated for tables
         ///
         constexpr void
-        auto_release() &noexcept
+        release_tables() &noexcept
         {
             if (bsl::unlikely(nullptr == m_pml4t)) {
                 return;
@@ -905,7 +991,7 @@ namespace mk
                 this->remove_pdpt(elem.data);
             }
 
-            m_page_pool->deallocate(m_pml4t);
+            m_page_pool->deallocate(m_pml4t, ALLOCATE_TAG_PML4TS);
             m_pml4t = {};
             m_pml4t_phys = bsl::safe_uintmax::zero(true);
         }
@@ -966,7 +1052,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            m_pml4t = m_page_pool->template allocate<pml4t_t>();
+            m_pml4t = m_page_pool->template allocate<pml4t_t>(ALLOCATE_TAG_PML4TS);
             if (bsl::unlikely(nullptr == m_pml4t)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -990,7 +1076,7 @@ namespace mk
         constexpr void
         release() &noexcept
         {
-            this->auto_release();
+            this->release_tables();
 
             m_huge_pool = {};
             m_page_pool = {};
@@ -1156,6 +1242,7 @@ namespace mk
         ///     too.
         ///   @param page_phys the physical address to map.
         ///   @param page_flags defines how memory should be mapped
+        ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
@@ -1163,7 +1250,8 @@ namespace mk
         map_page(
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_phys,
-            bsl::safe_uintmax const &page_flags) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &page_flags,
+            bsl::safe_uintmax const &auto_release) &noexcept -> bsl::errc_type
         {
             bsl::lock_guard lock{m_rpt_lock};
 
@@ -1206,17 +1294,6 @@ namespace mk
                              << bsl::here();                                // --
 
                 return bsl::errc_failure;
-            }
-
-            if ((page_flags & MAP_PAGE_AUTO_RELEASE_PAGE_POOL).is_pos()) {
-                if ((page_flags & MAP_PAGE_AUTO_RELEASE_HUGE_POOL).is_pos()) {
-                    bsl::error() << "invalid page_flags: "    // --
-                                 << bsl::hex(page_flags)      // --
-                                 << bsl::endl                 // --
-                                 << bsl::here();              // --
-
-                    return bsl::errc_failure;
-                }
             }
 
             if ((page_flags & MAP_PAGE_WRITE).is_pos()) {
@@ -1311,6 +1388,7 @@ namespace mk
             pte->phys = (page_phys >> PAGE_SHIFT).get();
             pte->p = bsl::ONE_UMAX.get();
             pte->us = bsl::ONE_UMAX.get();
+            pte->auto_release = auto_release.get();
 
             if (!(page_flags & MAP_PAGE_WRITE).is_zero()) {
                 pte->rw = bsl::ONE_UMAX.get();
@@ -1324,20 +1402,6 @@ namespace mk
             }
             else {
                 pte->nx = bsl::ONE_UMAX.get();
-            }
-
-            if ((page_flags & MAP_PAGE_AUTO_RELEASE_PAGE_POOL).is_zero()) {
-                pte->auto_release_page_pool = bsl::ZERO_UMAX.get();
-            }
-            else {
-                pte->auto_release_page_pool = bsl::ONE_UMAX.get();
-            }
-
-            if ((page_flags & MAP_PAGE_AUTO_RELEASE_HUGE_POOL).is_zero()) {
-                pte->auto_release_huge_pool = bsl::ZERO_UMAX.get();
-            }
-            else {
-                pte->auto_release_huge_pool = bsl::ONE_UMAX.get();
             }
 
             return bsl::errc_success;
@@ -1358,6 +1422,7 @@ namespace mk
         ///     address is set to 0, map_page will use the page pool to
         ///     determine the physical address.
         ///   @param page_flags defines how memory should be mapped
+        ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
@@ -1365,10 +1430,14 @@ namespace mk
         map_page_unaligned(
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_phys,
-            bsl::safe_uintmax const &page_flags) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &page_flags,
+            bsl::safe_uintmax const &auto_release) &noexcept -> bsl::errc_type
         {
             return this->map_page(
-                this->page_aligned(page_virt), this->page_aligned(page_phys), page_flags);
+                this->page_aligned(page_virt),
+                this->page_aligned(page_phys),
+                page_flags,
+                auto_release);
         }
 
         /// <!-- description -->
@@ -1383,14 +1452,16 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param page_virt the virtual address to map the allocated
         ///     page to
+        ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        allocate_page_rw(bsl::safe_uintmax const &page_virt) &noexcept -> void *
+        allocate_page_rw(
+            bsl::safe_uintmax const &page_virt, bsl::safe_uintmax const &auto_release) &noexcept
+            -> void *
         {
-            return this->allocate_page(
-                page_virt, MAP_PAGE_READ | MAP_PAGE_WRITE | MAP_PAGE_AUTO_RELEASE_PAGE_POOL);
+            return this->allocate_page(page_virt, MAP_PAGE_READ | MAP_PAGE_WRITE, auto_release);
         }
 
         /// <!-- description -->
@@ -1405,14 +1476,16 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param page_virt the virtual address to map the allocated
         ///     page to
+        ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        allocate_page_rx(bsl::safe_uintmax const &page_virt) &noexcept -> void *
+        allocate_page_rx(
+            bsl::safe_uintmax const &page_virt, bsl::safe_uintmax const &auto_release) &noexcept
+            -> void *
         {
-            return this->allocate_page(
-                page_virt, MAP_PAGE_READ | MAP_PAGE_EXECUTE | MAP_PAGE_AUTO_RELEASE_PAGE_POOL);
+            return this->allocate_page(page_virt, MAP_PAGE_READ | MAP_PAGE_EXECUTE, auto_release);
         }
 
         /// <!-- description -->

@@ -29,18 +29,15 @@
 
 namespace mk
 {
-    namespace details
-    {
-        /// <!-- description -->
-        ///   @brief Unlocks SMAP
-        ///
-        extern "C" void unlock_smap() noexcept;
+    /// <!-- description -->
+    ///   @brief Unlocks SMAP
+    ///
+    extern "C" void unlock_smap() noexcept;
 
-        /// <!-- description -->
-        ///   @brief Locks SMAP
-        ///
-        extern "C" void lock_smap() noexcept;
-    }
+    /// <!-- description -->
+    ///   @brief Locks SMAP
+    ///
+    extern "C" void lock_smap() noexcept;
 
     /// @class mk::smap_guard_t
     ///
@@ -61,7 +58,7 @@ namespace mk
                 return;
             }
 
-            details::unlock_smap();
+            unlock_smap();
         }
 
         /// <!-- description -->
@@ -73,7 +70,7 @@ namespace mk
                 return;
             }
 
-            details::lock_smap();
+            lock_smap();
         }
 
         /// <!-- description -->

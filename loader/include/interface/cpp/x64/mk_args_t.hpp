@@ -74,15 +74,6 @@ namespace loader
         /// @brief stores the location of the microkernel's huge pool
         bsl::span<bsl::byte> huge_pool;
     };
-
-    namespace details
-    {
-        /// @brief defined the expected size of the mk_args_t struct
-        constexpr bsl::safe_uintmax EXPECTED_MK_ARGS_T_SIZE{bsl::to_umax(HYPERVISOR_PAGE_SIZE)};
-
-        /// Check to make sure the mk_args_t is the right size.
-        static_assert(!(sizeof(mk_args_t) > EXPECTED_MK_ARGS_T_SIZE));
-    }
 }
 
 #pragma pack(pop)

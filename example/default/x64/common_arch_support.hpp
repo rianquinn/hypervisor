@@ -70,8 +70,6 @@ namespace example
             switch (bsl::to_u32_unsafe(rcx).get()) {
                 case loader::CPUID_COMMAND_ECX_STOP.get(): {
 
-                    syscall::bf_debug_op_dump_vmexit_log(vpsid);
-
                     /// NOTE:
                     /// - To support stopping the hypervisor, we need to
                     ///   report success by setting RAX to 0, and advancing
@@ -101,21 +99,17 @@ namespace example
                 }
 
                 case loader::CPUID_COMMAND_ECX_REPORT_ON.get(): {
-                    bsl::debug() << "host os is"                      // --
-                                 << bsl::bold_green                   // --
-                                 << " now "                           // --
-                                 << bsl::reset_color                  // --
-                                 << "in a vm (default example)\n";    // --
+                    bsl::debug() << bsl::rst << "host os is"                      // --
+                                 << bsl::grn << " now "                           // --
+                                 << bsl::rst << "in a vm (default example)\n";    // --
 
                     return bsl::errc_success;
                 }
 
                 case loader::CPUID_COMMAND_ECX_REPORT_OFF.get(): {
-                    bsl::debug() << "host os is"        // --
-                                 << bsl::bold_red       // --
-                                 << " not "             // --
-                                 << bsl::reset_color    // --
-                                 << "in a vm\n";        // --
+                    bsl::debug() << bsl::rst << "host os is"    // --
+                                 << bsl::red << " not "         // --
+                                 << bsl::rst << "in a vm\n";    // --
 
                     return bsl::errc_success;
                 }

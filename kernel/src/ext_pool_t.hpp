@@ -332,22 +332,6 @@ namespace mk
                 bsl::touch();
             }
 
-            if (bsl::unlikely(nullptr == tls.ext_vmexit)) {
-                bsl::error() << "a vmexit handler has not been registered"    // --
-                             << bsl::endl                                     // --
-                             << bsl::here();                                  // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(nullptr == tls.ext_fail)) {
-                bsl::error() << "a fast fail handler has not been registered"    // --
-                             << bsl::endl                                        // --
-                             << bsl::here();                                     // --
-
-                return bsl::errc_failure;
-            }
-
             return bsl::errc_success;
         }
 

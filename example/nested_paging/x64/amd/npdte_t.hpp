@@ -68,15 +68,6 @@ namespace example
         /// @brief defines the "no-execute" field in the page
         bsl::uint64 nx : static_cast<bsl::uint64>(1);
     };
-
-    namespace details
-    {
-        /// @brief defined the expected size of the npdte_t struct
-        constexpr bsl::safe_uintmax EXPECTED_NPDTE_T_SIZE{bsl::to_umax(8)};
-
-        /// Check to make sure the npdte_t is the right size.
-        static_assert(sizeof(npdte_t) == EXPECTED_NPDTE_T_SIZE);
-    }
 }
 
 #pragma pack(pop)

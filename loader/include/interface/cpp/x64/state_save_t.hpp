@@ -38,19 +38,16 @@
 
 namespace loader
 {
-    namespace details
-    {
-        /// @brief the size of reserved #0 in the state_save_t
-        constexpr bsl::safe_uintmax PAD_SIZE{bsl::to_umax(0x6)};
-        /// @brief the size of reserved #0 in the state_save_t
-        constexpr bsl::safe_uintmax RESERVED0_SIZE{bsl::to_umax(0xB)};
-        /// @brief the size of reserved #1 in the state_save_t
-        constexpr bsl::safe_uintmax RESERVED1_SIZE{bsl::to_umax(0x6)};
-        /// @brief the size of reserved #2 in the state_save_t
-        constexpr bsl::safe_uintmax RESERVED2_SIZE{bsl::to_umax(0x8)};
-        /// @brief the size of reserved #3 in the state_save_t
-        constexpr bsl::safe_uintmax RESERVED3_SIZE{bsl::to_umax(0x7)};
-    }
+    /// @brief the size of reserved #0 in the state_save_t
+    constexpr bsl::safe_uintmax SS_PAD_SIZE{bsl::to_umax(0x6)};
+    /// @brief the size of reserved #0 in the state_save_t
+    constexpr bsl::safe_uintmax SS_RESERVED0_SIZE{bsl::to_umax(0xB)};
+    /// @brief the size of reserved #1 in the state_save_t
+    constexpr bsl::safe_uintmax SS_RESERVED1_SIZE{bsl::to_umax(0x6)};
+    /// @brief the size of reserved #2 in the state_save_t
+    constexpr bsl::safe_uintmax SS_RESERVED2_SIZE{bsl::to_umax(0x8)};
+    /// @brief the size of reserved #3 in the state_save_t
+    constexpr bsl::safe_uintmax SS_RESERVED3_SIZE{bsl::to_umax(0x7)};
 
     /// @struct loader::state_save_t
     ///
@@ -135,13 +132,13 @@ namespace loader
         global_descriptor_table_register_t gdtr;
 
         /// @brief added padding for alignment (0x0AA)
-        bsl::details::carray<bsl::uint8, details::PAD_SIZE.get()> pad1;
+        bsl::details::carray<bsl::uint8, SS_PAD_SIZE.get()> pad1;
 
         /// @brief stores the value of the IDTR (0x0B0)
         interrupt_descriptor_table_register_t idtr;
 
         /// @brief added padding for alignment (0x0BA)
-        bsl::details::carray<bsl::uint8, details::PAD_SIZE.get()> pad2;
+        bsl::details::carray<bsl::uint8, SS_PAD_SIZE.get()> pad2;
 
         /// @brief stores the value of the ES segment selector (0x0C0)
         bsl::uint16 es_selector;
@@ -231,14 +228,14 @@ namespace loader
         bsl::uint64 cr4;
 
         /// @brief reserved for future use (0x168)
-        bsl::details::carray<bsl::uint64, details::RESERVED0_SIZE.get()> reserved0;
+        bsl::details::carray<bsl::uint64, SS_RESERVED0_SIZE.get()> reserved0;
 
         /// --------------------------------------------------------------------
         /// Debug Registers
         /// --------------------------------------------------------------------
 
         /// @brief reserved for future use (0x1C0)
-        bsl::details::carray<bsl::uint64, details::RESERVED1_SIZE.get()> reserved1;
+        bsl::details::carray<bsl::uint64, SS_RESERVED1_SIZE.get()> reserved1;
 
         /// @brief stores the value of DR6 debug register (0x1F0)
         bsl::uint64 dr6;
@@ -246,7 +243,7 @@ namespace loader
         bsl::uint64 dr7;
 
         /// @brief reserved for future use (0x200)
-        bsl::details::carray<bsl::uint64, details::RESERVED2_SIZE.get()> reserved2;
+        bsl::details::carray<bsl::uint64, SS_RESERVED2_SIZE.get()> reserved2;
 
         /// --------------------------------------------------------------------
         /// MSRs
@@ -280,7 +277,7 @@ namespace loader
         bsl::uint64 ia32_debugctl;
 
         /// @brief reserved for future use (0x2A8)
-        bsl::details::carray<bsl::uint64, details::RESERVED3_SIZE.get()> reserved3;
+        bsl::details::carray<bsl::uint64, SS_RESERVED3_SIZE.get()> reserved3;
 
         /// --------------------------------------------------------------------
         /// HVE Page
@@ -313,15 +310,6 @@ namespace loader
         /// @brief stores whether or not an NMI fired (0x318)
         bsl::uint64 nmi;
     };
-
-    namespace details
-    {
-        /// @brief defined the expected size of the state_save_t struct
-        constexpr bsl::safe_uintmax EXPECTED_STATE_SAVE_T_SIZE{bsl::to_umax(0x320)};
-
-        /// Check to make sure the state_save_t is the right size.
-        static_assert(sizeof(state_save_t) == EXPECTED_STATE_SAVE_T_SIZE);
-    }
 }
 
 #pragma pack(pop)

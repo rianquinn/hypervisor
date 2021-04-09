@@ -324,7 +324,7 @@ namespace mk
 
             for (auto const vp : m_pool) {
                 bsl::print() << bsl::ylw << "| ";
-                bsl::print() << bsl::wht << bsl::hex(vp.data->id()) << " ";
+                bsl::print() << bsl::rst << bsl::hex(vp.data->id()) << " ";
                 bsl::print() << bsl::ylw << "| ";
                 if (vp.data->is_allocated()) {
                     bsl::print() << bsl::grn << bsl::fmt{"^10s", "yes "};

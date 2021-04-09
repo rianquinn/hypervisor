@@ -49,8 +49,17 @@ namespace mk
     dispatch_syscall_trampoline(tls_t *const tls) noexcept -> syscall::bf_status_t::value_type
     {
         auto *const ext{static_cast<mk_ext_type *>(tls->ext)};
+
         return dispatch_syscall<smap_guard_t>(
-                   *tls, g_ext_pool, *ext, g_intrinsic, g_vm_pool, g_vp_pool, g_vps_pool)
+                   *tls,
+                   g_intrinsic,
+                   g_page_pool,
+                   g_huge_pool,
+                   g_vps_pool,
+                   g_vp_pool,
+                   g_vm_pool,
+                   *ext,
+                   g_ext_pool)
             .get();
     }
 }

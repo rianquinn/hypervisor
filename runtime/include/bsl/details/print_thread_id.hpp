@@ -50,11 +50,11 @@ namespace bsl::details
 
         auto const thread_id{syscall::bf_tls_thread_id()};
 
-        o << " ["                                                             // --
-          << bsl::cyan << bsl::fmt("#018x", thread_id) << bsl::reset_color    // --
-          << " - "                                                            // --
-          << bsl::blue << "US" << bsl::reset_color                            // --
-          << ']';                                                             // --
+        o << bsl::rst << '['                             // --
+          << bsl::cyn << bsl::fmt{"#018x", thread_id}    // --
+          << bsl::rst << " - "                           // --
+          << bsl::blu << "US" << bsl::rst                // --
+          << bsl::rst << ']';                            // --
     }
 }
 

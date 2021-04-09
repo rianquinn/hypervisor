@@ -40,11 +40,8 @@
 
 namespace vmmctl
 {
-    namespace details
-    {
-        /// @brief defines what an invalid handle is.
-        constexpr bsl::safe_int32 IOCTL_INVALID_HNDL{-1};
-    }
+    /// @brief defines what an invalid handle is.
+    constexpr bsl::safe_int32 IOCTL_INVALID_HNDL{-1};
 
     /// @class bsl::ioctl
     ///
@@ -56,7 +53,7 @@ namespace vmmctl
     class ioctl final
     {
         /// @brief stores a handle to the device driver.
-        bsl::int32 m_hndl{details::IOCTL_INVALID_HNDL.get()};
+        bsl::int32 m_hndl{IOCTL_INVALID_HNDL.get()};
 
         /// <!-- description -->
         ///   @brief Swaps *this with other
@@ -86,7 +83,7 @@ namespace vmmctl
             // We don't have a choice here
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
             m_hndl = open(name.data(), O_RDWR);
-            if (bsl::unlikely(details::IOCTL_INVALID_HNDL.get() == m_hndl)) {
+            if (bsl::unlikely(IOCTL_INVALID_HNDL.get() == m_hndl)) {
                 bsl::error() << "ioctl open failed\n";
                 return;
             }
@@ -99,7 +96,7 @@ namespace vmmctl
         ///
         ~ioctl() noexcept
         {
-            if (bsl::unlikely(details::IOCTL_INVALID_HNDL.get() != m_hndl)) {
+            if (bsl::unlikely(IOCTL_INVALID_HNDL.get() != m_hndl)) {
                 bsl::discard(close(m_hndl));
             }
             else {
@@ -123,7 +120,7 @@ namespace vmmctl
         ///
         constexpr ioctl(ioctl &&o) noexcept : m_hndl{bsl::move(o.m_hndl)}
         {
-            o.m_hndl = details::IOCTL_INVALID_HNDL.get();
+            o.m_hndl = IOCTL_INVALID_HNDL.get();
         }
 
         /// <!-- description -->
@@ -161,7 +158,7 @@ namespace vmmctl
         [[nodiscard]] constexpr auto
         is_open() const noexcept -> bool
         {
-            return details::IOCTL_INVALID_HNDL.get() != m_hndl;
+            return IOCTL_INVALID_HNDL.get() != m_hndl;
         }
 
         /// <!-- description -->
@@ -188,7 +185,7 @@ namespace vmmctl
         [[nodiscard]] constexpr auto
         send(bsl::safe_integral<REQUEST> const &req) const noexcept -> bool
         {
-            if (bsl::unlikely(details::IOCTL_INVALID_HNDL.get() == m_hndl)) {
+            if (bsl::unlikely(IOCTL_INVALID_HNDL.get() == m_hndl)) {
                 bsl::error() << "failed to send, ioctl not properly initialized\n";
                 return false;
             }
@@ -229,7 +226,7 @@ namespace vmmctl
         {
             bsl::discard(size);
 
-            if (bsl::unlikely(details::IOCTL_INVALID_HNDL.get() == m_hndl)) {
+            if (bsl::unlikely(IOCTL_INVALID_HNDL.get() == m_hndl)) {
                 bsl::error() << "failed to read, ioctl not properly initialized\n";
                 return false;
             }
@@ -273,7 +270,7 @@ namespace vmmctl
         {
             bsl::discard(size);
 
-            if (bsl::unlikely(details::IOCTL_INVALID_HNDL.get() == m_hndl)) {
+            if (bsl::unlikely(IOCTL_INVALID_HNDL.get() == m_hndl)) {
                 bsl::error() << "failed to write, ioctl not properly initialized\n";
                 return false;
             }
@@ -317,7 +314,7 @@ namespace vmmctl
         {
             bsl::discard(size);
 
-            if (bsl::unlikely(details::IOCTL_INVALID_HNDL.get() == m_hndl)) {
+            if (bsl::unlikely(IOCTL_INVALID_HNDL.get() == m_hndl)) {
                 bsl::error() << "failed to read/write, ioctl not properly initialized\n";
                 return false;
             }

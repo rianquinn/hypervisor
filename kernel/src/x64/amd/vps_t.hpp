@@ -25,6 +25,7 @@
 #ifndef VPS_T_HPP
 #define VPS_T_HPP
 
+#include <allocate_tags.hpp>
 #include <mk_interface.hpp>
 #include <vmcb_t.hpp>
 
@@ -42,43 +43,40 @@ namespace mk
     /// @brief defines the value of an invalid VPSID
     constexpr bsl::safe_uint16 INVALID_VPSID{bsl::to_u16(0xFFFFU)};
 
-    namespace details
+    /// <!-- description -->
+    ///   @brief Converts attributes in the form 0xF0FF to the form
+    ///     0x0FFF.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param attrib the attrib to compress
+    ///   @return Returns the compressed version of attrib
+    ///
+    [[nodiscard]] constexpr auto
+    compress_attrib(bsl::safe_uint16 const &attrib) noexcept -> bsl::safe_uint16
     {
-        /// <!-- description -->
-        ///   @brief Converts attributes in the form 0xF0FF to the form
-        ///     0x0FFF.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param attrib the attrib to compress
-        ///   @return Returns the compressed version of attrib
-        ///
-        [[nodiscard]] constexpr auto
-        compress_attrib(bsl::safe_uint16 const &attrib) noexcept -> bsl::safe_uint16
-        {
-            constexpr bsl::safe_uint16 mask1{bsl::to_u16(0x00FFU)};
-            constexpr bsl::safe_uint16 mask2{bsl::to_u16(0xF000U)};
-            constexpr bsl::safe_uint16 shift{bsl::to_u16(4)};
+        constexpr bsl::safe_uint16 mask1{bsl::to_u16(0x00FFU)};
+        constexpr bsl::safe_uint16 mask2{bsl::to_u16(0xF000U)};
+        constexpr bsl::safe_uint16 shift{bsl::to_u16(4)};
 
-            return (attrib & mask1) | ((attrib & mask2) >> shift);
-        }
+        return (attrib & mask1) | ((attrib & mask2) >> shift);
+    }
 
-        /// <!-- description -->
-        ///   @brief Converts attributes in the form 0x0FFF to the form
-        ///     0xF0FF.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param attrib the attrib to decompress
-        ///   @return Returns the decompressed version of attrib
-        ///
-        [[nodiscard]] constexpr auto
-        decompress_attrib(bsl::safe_uint16 const &attrib) noexcept -> bsl::safe_uint16
-        {
-            constexpr bsl::safe_uint16 mask1{bsl::to_u16(0x00FFU)};
-            constexpr bsl::safe_uint16 mask2{bsl::to_u16(0x0F00U)};
-            constexpr bsl::safe_uint16 shift{bsl::to_u16(4)};
+    /// <!-- description -->
+    ///   @brief Converts attributes in the form 0x0FFF to the form
+    ///     0xF0FF.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param attrib the attrib to decompress
+    ///   @return Returns the decompressed version of attrib
+    ///
+    [[nodiscard]] constexpr auto
+    decompress_attrib(bsl::safe_uint16 const &attrib) noexcept -> bsl::safe_uint16
+    {
+        constexpr bsl::safe_uint16 mask1{bsl::to_u16(0x00FFU)};
+        constexpr bsl::safe_uint16 mask2{bsl::to_u16(0x0F00U)};
+        constexpr bsl::safe_uint16 shift{bsl::to_u16(4)};
 
-            return (attrib & mask1) | ((attrib & mask2) << shift);
-        }
+        return (attrib & mask1) | ((attrib & mask2) << shift);
     }
 
     /// @class mk::vps_t
@@ -128,30 +126,30 @@ namespace mk
         constexpr void
         dump(bsl::string_view const &str, bsl::safe_integral<T> const &val) const &noexcept
         {
-            bsl::cstr_type color{bsl::wht};
+            auto rowcolor{bsl::rst};
 
             if (val.is_zero()) {
-                color = bsl::blk;
+                rowcolor = bsl::blk;
             }
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<30s", str};
+            bsl::print() << bsl::rst << bsl::fmt{"<30s", str};
             bsl::print() << bsl::ylw << "| ";
 
             if constexpr (bsl::is_same<T, bsl::uint8>::value) {
-                bsl::print() << color << "       " << bsl::hex(val) << "        ";
+                bsl::print() << rowcolor << "       " << bsl::hex(val) << "        ";
             }
 
             if constexpr (bsl::is_same<T, bsl::uint16>::value) {
-                bsl::print() << color << "      " << bsl::hex(val) << "       ";
+                bsl::print() << rowcolor << "      " << bsl::hex(val) << "       ";
             }
 
             if constexpr (bsl::is_same<T, bsl::uint32>::value) {
-                bsl::print() << color << "    " << bsl::hex(val) << "     ";
+                bsl::print() << rowcolor << "    " << bsl::hex(val) << "     ";
             }
 
             if constexpr (bsl::is_same<T, bsl::uint64>::value) {
-                bsl::print() << color << bsl::hex(val) << ' ';
+                bsl::print() << rowcolor << bsl::hex(val) << ' ';
             }
 
             bsl::print() << bsl::ylw << "| ";
@@ -337,7 +335,7 @@ namespace mk
                 this->deallocate();
             }};
 
-            m_guest_vmcb = m_page_pool->template allocate<vmcb_t>();
+            m_guest_vmcb = m_page_pool->template allocate<vmcb_t>(ALLOCATE_TAG_GUEST_VMCB);
             if (bsl::unlikely(nullptr == m_guest_vmcb)) {
                 bsl::print() << bsl::here();
                 return bsl::errc_failure;
@@ -349,7 +347,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            m_host_vmcb = m_page_pool->template allocate<vmcb_t>();
+            m_host_vmcb = m_page_pool->template allocate<vmcb_t>(ALLOCATE_TAG_HOST_VMCB);
             if (bsl::unlikely(nullptr == m_host_vmcb)) {
                 bsl::print() << bsl::here();
                 return bsl::errc_failure;
@@ -376,7 +374,7 @@ namespace mk
             m_host_vmcb_phys = bsl::safe_uintmax::zero(true);
 
             if (nullptr != m_page_pool) {
-                m_page_pool->deallocate(m_host_vmcb);
+                m_page_pool->deallocate(m_host_vmcb, ALLOCATE_TAG_HOST_VMCB);
                 m_host_vmcb = {};
             }
             else {
@@ -386,7 +384,7 @@ namespace mk
             m_guest_vmcb_phys = bsl::safe_uintmax::zero(true);
 
             if (nullptr != m_page_pool) {
-                m_page_pool->deallocate(m_guest_vmcb);
+                m_page_pool->deallocate(m_guest_vmcb, ALLOCATE_TAG_GUEST_VMCB);
                 m_guest_vmcb = {};
             }
             else {
@@ -463,40 +461,40 @@ namespace mk
             m_guest_vmcb->idtr_base = bsl::to_umax(state->idtr.base).get();
 
             m_guest_vmcb->es_selector = state->es_selector;
-            m_guest_vmcb->es_attrib = details::compress_attrib(state->es_attrib).get();
+            m_guest_vmcb->es_attrib = compress_attrib(state->es_attrib).get();
             m_guest_vmcb->es_limit = state->es_limit;
             m_guest_vmcb->es_base = state->es_base;
 
             m_guest_vmcb->cs_selector = state->cs_selector;
-            m_guest_vmcb->cs_attrib = details::compress_attrib(state->cs_attrib).get();
+            m_guest_vmcb->cs_attrib = compress_attrib(state->cs_attrib).get();
             m_guest_vmcb->cs_limit = state->cs_limit;
             m_guest_vmcb->cs_base = state->cs_base;
 
             m_guest_vmcb->ss_selector = state->ss_selector;
-            m_guest_vmcb->ss_attrib = details::compress_attrib(state->ss_attrib).get();
+            m_guest_vmcb->ss_attrib = compress_attrib(state->ss_attrib).get();
             m_guest_vmcb->ss_limit = state->ss_limit;
             m_guest_vmcb->ss_base = state->ss_base;
 
             m_guest_vmcb->ds_selector = state->ds_selector;
-            m_guest_vmcb->ds_attrib = details::compress_attrib(state->ds_attrib).get();
+            m_guest_vmcb->ds_attrib = compress_attrib(state->ds_attrib).get();
             m_guest_vmcb->ds_limit = state->ds_limit;
             m_guest_vmcb->ds_base = state->ds_base;
 
             m_guest_vmcb->fs_selector = state->fs_selector;
-            m_guest_vmcb->fs_attrib = details::compress_attrib(state->fs_attrib).get();
+            m_guest_vmcb->fs_attrib = compress_attrib(state->fs_attrib).get();
             m_guest_vmcb->fs_limit = state->fs_limit;
 
             m_guest_vmcb->gs_selector = state->gs_selector;
-            m_guest_vmcb->gs_attrib = details::compress_attrib(state->gs_attrib).get();
+            m_guest_vmcb->gs_attrib = compress_attrib(state->gs_attrib).get();
             m_guest_vmcb->gs_limit = state->gs_limit;
 
             m_guest_vmcb->ldtr_selector = state->ldtr_selector;
-            m_guest_vmcb->ldtr_attrib = details::compress_attrib(state->ldtr_attrib).get();
+            m_guest_vmcb->ldtr_attrib = compress_attrib(state->ldtr_attrib).get();
             m_guest_vmcb->ldtr_limit = state->ldtr_limit;
             m_guest_vmcb->ldtr_base = state->ldtr_base;
 
             m_guest_vmcb->tr_selector = state->tr_selector;
-            m_guest_vmcb->tr_attrib = details::compress_attrib(state->tr_attrib).get();
+            m_guest_vmcb->tr_attrib = compress_attrib(state->tr_attrib).get();
             m_guest_vmcb->tr_limit = state->tr_limit;
             m_guest_vmcb->tr_base = state->tr_base;
 
@@ -580,40 +578,40 @@ namespace mk
             state->idtr.base = bsl::to_ptr<bsl::uint64 *>(m_guest_vmcb->idtr_base);
 
             state->es_selector = m_guest_vmcb->es_selector;
-            state->es_attrib = details::decompress_attrib(m_guest_vmcb->es_attrib).get();
+            state->es_attrib = decompress_attrib(m_guest_vmcb->es_attrib).get();
             state->es_limit = m_guest_vmcb->es_limit;
             state->es_base = m_guest_vmcb->es_base;
 
             state->cs_selector = m_guest_vmcb->cs_selector;
-            state->cs_attrib = details::decompress_attrib(m_guest_vmcb->cs_attrib).get();
+            state->cs_attrib = decompress_attrib(m_guest_vmcb->cs_attrib).get();
             state->cs_limit = m_guest_vmcb->cs_limit;
             state->cs_base = m_guest_vmcb->cs_base;
 
             state->ss_selector = m_guest_vmcb->ss_selector;
-            state->ss_attrib = details::decompress_attrib(m_guest_vmcb->ss_attrib).get();
+            state->ss_attrib = decompress_attrib(m_guest_vmcb->ss_attrib).get();
             state->ss_limit = m_guest_vmcb->ss_limit;
             state->ss_base = m_guest_vmcb->ss_base;
 
             state->ds_selector = m_guest_vmcb->ds_selector;
-            state->ds_attrib = details::decompress_attrib(m_guest_vmcb->ds_attrib).get();
+            state->ds_attrib = decompress_attrib(m_guest_vmcb->ds_attrib).get();
             state->ds_limit = m_guest_vmcb->ds_limit;
             state->ds_base = m_guest_vmcb->ds_base;
 
             state->fs_selector = m_guest_vmcb->fs_selector;
-            state->fs_attrib = details::decompress_attrib(m_guest_vmcb->fs_attrib).get();
+            state->fs_attrib = decompress_attrib(m_guest_vmcb->fs_attrib).get();
             state->fs_limit = m_guest_vmcb->fs_limit;
 
             state->gs_selector = m_guest_vmcb->gs_selector;
-            state->gs_attrib = details::decompress_attrib(m_guest_vmcb->gs_attrib).get();
+            state->gs_attrib = decompress_attrib(m_guest_vmcb->gs_attrib).get();
             state->gs_limit = m_guest_vmcb->gs_limit;
 
             state->ldtr_selector = m_guest_vmcb->ldtr_selector;
-            state->ldtr_attrib = details::decompress_attrib(m_guest_vmcb->ldtr_attrib).get();
+            state->ldtr_attrib = decompress_attrib(m_guest_vmcb->ldtr_attrib).get();
             state->ldtr_limit = m_guest_vmcb->ldtr_limit;
             state->ldtr_base = m_guest_vmcb->ldtr_base;
 
             state->tr_selector = m_guest_vmcb->tr_selector;
-            state->tr_attrib = details::decompress_attrib(m_guest_vmcb->tr_attrib).get();
+            state->tr_attrib = decompress_attrib(m_guest_vmcb->tr_attrib).get();
             state->tr_limit = m_guest_vmcb->tr_limit;
             state->tr_base = m_guest_vmcb->tr_base;
 
@@ -1491,7 +1489,7 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
-            bsl::safe_uintmax const exit_reason{details::intrinsic_vmrun(
+            bsl::safe_uintmax const exit_reason{intrinsic_vmrun(
                 m_guest_vmcb, m_guest_vmcb_phys.get(), m_host_vmcb, m_host_vmcb_phys.get())};
 
             if (invalid_exit_reason == exit_reason) {
@@ -1613,7 +1611,7 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<30s", "allocated "};
+            bsl::print() << bsl::rst << bsl::fmt{"<30s", "allocated "};
             bsl::print() << bsl::ylw << "| ";
             if (m_allocated) {
                 bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
@@ -1628,7 +1626,7 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<30s", "active "};
+            bsl::print() << bsl::rst << bsl::fmt{"<30s", "active "};
             bsl::print() << bsl::ylw << "| ";
             if (tls.active_vpsid == m_id) {
                 bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};

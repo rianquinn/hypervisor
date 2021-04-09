@@ -31,7 +31,6 @@
 #include "interrupt_descriptor_table_register_t.h"
 #include "tss_t.h"
 
-#include <static_assert.h>
 #include <types.h>
 
 #pragma pack(push, 1)
@@ -298,9 +297,6 @@ struct state_save_t
     /** @brief stores whether or not an NMI fired (0x318) */
     uint64_t nmi;
 };
-
-/** @brief Check to make sure the state_save_t is the right size. */
-STATIC_ASSERT(sizeof(struct state_save_t) == 0x320, invalid_size);
 
 #pragma pack(pop)
 

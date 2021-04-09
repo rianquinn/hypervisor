@@ -68,15 +68,6 @@ namespace loader
         /// @brief defines the "no-execute" field in the page
         bsl::uint64 nx : static_cast<bsl::uint64>(1);
     };
-
-    namespace details
-    {
-        /// @brief defined the expected size of the pdpte_t struct
-        constexpr bsl::safe_uintmax EXPECTED_PDPTE_T_SIZE{bsl::to_umax(8)};
-
-        /// Check to make sure the pdpte_t is the right size.
-        static_assert(sizeof(pdpte_t) == EXPECTED_PDPTE_T_SIZE);
-    }
 }
 
 #pragma pack(pop)

@@ -36,15 +36,12 @@
 
 namespace mk
 {
-    namespace details
-    {
-        /// @brief defines the size of the reserved1 field in the tls_t
-        constexpr bsl::safe_uintmax TLS_T_RESERVED1_SIZE{bsl::to_umax(0x030)};
-        /// @brief defines the size of the reserved2 field in the tls_t
-        constexpr bsl::safe_uintmax TLS_T_RESERVED2_SIZE{bsl::to_umax(0x088)};
-        /// @brief defines the the total size of the TLS block
-        constexpr bsl::safe_uintmax TLS_T_SIZE{bsl::to_umax(0x300)};
-    }
+    /// @brief defines the size of the reserved1 field in the tls_t
+    constexpr bsl::safe_uintmax TLS_T_RESERVED1_SIZE{bsl::to_umax(0x030)};
+    /// @brief defines the size of the reserved2 field in the tls_t
+    constexpr bsl::safe_uintmax TLS_T_RESERVED2_SIZE{bsl::to_umax(0x088)};
+    /// @brief defines the the total size of the TLS block
+    constexpr bsl::safe_uintmax TLS_T_SIZE{bsl::to_umax(0x300)};
 
     /// @struct mk::tls_t
     ///
@@ -201,7 +198,7 @@ namespace mk
         bsl::uintmax vmexit_loop_sp;
 
         /// @brief reserve the rest of the TLS block for later use.
-        bsl::details::carray<bsl::uint8, details::TLS_T_RESERVED1_SIZE.get()> reserved1;
+        bsl::details::carray<bsl::uint8, TLS_T_RESERVED1_SIZE.get()> reserved1;
 
         /// --------------------------------------------------------------------
         /// Context Information
@@ -254,7 +251,7 @@ namespace mk
         bsl::uintmax first_launch_succeeded;
 
         /// @brief reserve the rest of the TLS block for later use.
-        bsl::details::carray<bsl::uint8, details::TLS_T_RESERVED2_SIZE.get()> reserved2;
+        bsl::details::carray<bsl::uint8, TLS_T_RESERVED2_SIZE.get()> reserved2;
 
         /// --------------------------------------------------------------------
         /// Helpers
@@ -382,7 +379,7 @@ namespace mk
     };
 
     /// @brief make sure the tls_t is the size of a page
-    static_assert(sizeof(tls_t) == details::TLS_T_SIZE);
+    static_assert(sizeof(tls_t) == TLS_T_SIZE);
 }
 
 #pragma pack(pop)

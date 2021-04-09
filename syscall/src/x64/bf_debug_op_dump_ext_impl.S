@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: SPDX-License-Identifier: GPL-2.0 OR MIT */
+
 /**
  * @copyright
  * Copyright (C) 2020 Assured Information Security, Inc.
@@ -24,15 +26,17 @@
  * SOFTWARE.
  */
 
-#ifndef STATIC_ASSERT_H
-#define STATIC_ASSERT_H
+    .code64
+    .intel_syntax noprefix
 
-#define CTASTR2(pre, post) pre##post
-#define CTASTR(pre, post) CTASTR2(pre, post)
-#define STATIC_ASSERT(cond, msg)                                                                   \
-    typedef struct                                                                                 \
-    {                                                                                              \
-        int CTASTR(static_assertion_failed_, msg) : !!(cond);                                      \
-    } CTASTR(static_assertion_failed_, __COUNTER__)
+    .globl  bf_debug_op_dump_ext_impl
+    .type   bf_debug_op_dump_ext_impl, @function
+bf_debug_op_dump_ext_impl:
 
-#endif
+    mov rax, 0x6642000000020007
+    syscall
+
+    ret
+    int 3
+
+    .size bf_debug_op_dump_ext_impl, .-bf_debug_op_dump_ext_impl

@@ -76,15 +76,6 @@ namespace loader
         /// @brief stores the offset to the IO map base address
         bsl::uint16 iomap;
     };
-
-    namespace details
-    {
-        /// @brief defined the expected size of the tss_t struct
-        constexpr bsl::safe_uintmax EXPECTED_TSS_T_SIZE{bsl::to_umax(0x1000)};
-
-        /// Check to make sure the tss_t is the right size.
-        static_assert(!(sizeof(tss_t) > EXPECTED_TSS_T_SIZE));
-    }
 }
 
 #pragma pack(pop)

@@ -279,7 +279,7 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<12s", "allocated "};
+            bsl::print() << bsl::rst << bsl::fmt{"<12s", "allocated "};
             bsl::print() << bsl::ylw << "| ";
             if (m_allocated) {
                 bsl::print() << bsl::grn << bsl::fmt{"^6s", "yes "};
@@ -294,7 +294,7 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<12s", "active "};
+            bsl::print() << bsl::rst << bsl::fmt{"<12s", "active "};
             bsl::print() << bsl::ylw << "| ";
             if (tls.vmid() == m_id) {
                 bsl::print() << bsl::grn << bsl::fmt{"^6s", "yes "};

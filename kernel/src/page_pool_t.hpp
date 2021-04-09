@@ -25,6 +25,9 @@
 #ifndef PAGE_POOL_T_HPP
 #define PAGE_POOL_T_HPP
 
+#include <page_pool_record_t.hpp>
+
+#include <bsl/array.hpp>
 #include <bsl/construct_at.hpp>
 #include <bsl/convert.hpp>
 #include <bsl/cstring.hpp>
@@ -38,11 +41,15 @@
 #include <bsl/safe_integral.hpp>
 #include <bsl/span.hpp>
 #include <bsl/spinlock.hpp>
+#include <bsl/string_view.hpp>
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
 
 namespace mk
 {
+    /// @brief stores the max number of records the page pool can store
+    constexpr bsl::safe_uintmax PAGE_POOL_MAX_RECORDS{bsl::to_umax(25)};
+
     /// @class mk::page_pool_t
     ///
     /// <!-- description -->
@@ -93,8 +100,8 @@ namespace mk
         void *m_head{};
         /// @brief stores the total number of bytes given to the page pool.
         bsl::safe_uintmax m_size{};
-        /// @brief stores the total number of bytes in the page pool.
-        bsl::safe_uintmax m_used{};
+        /// @brief stores information about how memory is allocated
+        bsl::array<page_pool_record_t, PAGE_POOL_MAX_RECORDS.get()> m_rcds{};
         /// @brief safe guards operations on the pool.
         mutable bsl::spinlock m_pool_lock{};
 
@@ -133,7 +140,6 @@ namespace mk
 
             m_head = pool.data();
             m_size = pool.size();
-            m_used = {};
 
             release_on_error.ignore();
             m_initialized = true;
@@ -147,7 +153,10 @@ namespace mk
         constexpr void
         release() &noexcept
         {
-            m_used = {};
+            for (auto const elem : m_rcds) {
+                *elem.data = {};
+            }
+
             m_size = {};
             m_head = {};
 
@@ -200,11 +209,12 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam T the type of pointer to return
+        ///   @param tag the tag to mark the allocation with
         ///   @return Returns a pointer to the newly allocated page
         ///
         template<typename T>
         [[nodiscard]] constexpr auto
-        allocate() &noexcept -> T *
+        allocate(bsl::string_view const &tag) &noexcept -> T *
         {
             bsl::lock_guard lock{m_pool_lock};
 
@@ -213,14 +223,52 @@ namespace mk
                 return nullptr;
             }
 
+            if (tag.empty()) {
+                bsl::error() << "invalid empty tag"    // --
+                             << bsl::endl              // --
+                             << bsl::here();           // --
+
+                return nullptr;
+            }
+
             if (bsl::unlikely(nullptr == m_head)) {
                 bsl::error() << "page pool out of pages\n" << bsl::here();
                 return nullptr;
             }
 
+            page_pool_record_t *record{};
+            for (auto const elem : m_rcds) {
+                if (elem.data->tag.data() == tag.data()) {
+                    record = elem.data;
+                    break;
+                }
+
+                bsl::touch();
+            }
+
+            if (nullptr == record) {
+                for (auto const elem : m_rcds) {
+                    if (elem.data->tag.empty()) {
+                        record = elem.data;
+                        record->tag = tag;
+                        break;
+                    }
+
+                    bsl::touch();
+                }
+            }
+            else {
+                bsl::touch();
+            }
+
+            if (nullptr == record) {
+                bsl::error() << "page pool out of space for tags\n" << bsl::here();
+                return nullptr;
+            }
+
             void *const ptr{m_head};
             m_head = *static_cast<void **>(m_head);
-            m_used += PAGE_SIZE;
+            record->usd += PAGE_SIZE;
 
             bsl::builtin_memset(ptr, '\0', PAGE_SIZE);
 
@@ -238,9 +286,10 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param ptr the pointer to the page to deallocate
+        ///   @param tag the tag the allocation was marked with
         ///
         constexpr void
-        deallocate(void *const ptr) &noexcept
+        deallocate(void *const ptr, bsl::string_view const &tag) &noexcept
         {
             bsl::lock_guard lock{m_pool_lock};
 
@@ -262,9 +311,36 @@ namespace mk
                 return;
             }
 
+            if (tag.empty()) {
+                bsl::error() << "invalid empty tag"    // --
+                             << bsl::endl              // --
+                             << bsl::here();           // --
+
+                return;
+            }
+
+            page_pool_record_t *record{};
+            for (auto const elem : m_rcds) {
+                if (elem.data->tag.data() == tag.data()) {
+                    record = elem.data;
+                    break;
+                }
+
+                bsl::touch();
+            }
+
+            if (nullptr == record) {
+                bsl::error() << "invalid tag: "    // --
+                             << tag                // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
+
+                return;
+            }
+
             *static_cast<void **>(ptr) = m_head;
             m_head = ptr;
-            m_used -= PAGE_SIZE;
+            record->usd -= PAGE_SIZE;
         }
 
         /// <!-- description -->
@@ -331,30 +407,43 @@ namespace mk
             /// Header
             ///
 
-            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::ylw << "+----------------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << bsl::fmt{"^12s", "description "};
+            bsl::print() << bsl::blu << bsl::fmt{"^33s", "overview "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+----------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^23s", "description "};
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::cyn << bsl::fmt{"^8s", "value "};
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
-            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::ylw << "+----------------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::safe_uintmax usd{};
+            for (auto const elem : m_rcds) {
+                usd += elem.data->usd;
+            }
 
             /// Total
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<12s", "total "};
+            bsl::print() << bsl::rst << bsl::fmt{"<23s", "total "};
             bsl::print() << bsl::ylw << "| ";
             if ((m_size / mb).is_zero()) {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", m_size / kb} << " KB ";
+                bsl::print() << bsl::rst << bsl::fmt{"4d", m_size / kb} << " KB ";
             }
             else {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", m_size / mb} << " MB ";
+                bsl::print() << bsl::rst << bsl::fmt{"4d", m_size / mb} << " MB ";
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
@@ -363,13 +452,13 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<12s", "used "};
+            bsl::print() << bsl::rst << bsl::fmt{"<23s", "used "};
             bsl::print() << bsl::ylw << "| ";
-            if ((m_used / mb).is_zero()) {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", m_used / kb} << " KB ";
+            if ((usd / mb).is_zero()) {
+                bsl::print() << bsl::rst << bsl::fmt{"4d", usd / kb} << " KB ";
             }
             else {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", m_used / mb} << " MB ";
+                bsl::print() << bsl::rst << bsl::fmt{"4d", usd / mb} << " MB ";
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
@@ -378,21 +467,67 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<12s", "remaining "};
+            bsl::print() << bsl::rst << bsl::fmt{"<23s", "remaining "};
             bsl::print() << bsl::ylw << "| ";
-            if (((m_size - m_used) / mb).is_zero()) {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", (m_size - m_used) / kb} << " KB ";
+            if (((m_size - usd) / mb).is_zero()) {
+                bsl::print() << bsl::rst << bsl::fmt{"4d", (m_size - usd) / kb} << " KB ";
             }
             else {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", (m_size - m_used) / mb} << " MB ";
+                bsl::print() << bsl::rst << bsl::fmt{"4d", (m_size - usd) / mb} << " MB ";
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
+            /// Tags
+            ///
+
+            bsl::print() << bsl::ylw << "+----------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::rst << bsl::endl;
+            bsl::print() << bsl::ylw << "+----------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::blu << bsl::fmt{"^33s", "breakdown "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+----------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^23s", "description "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::cyn << bsl::fmt{"^8s", "value "};
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            bsl::print() << bsl::ylw << "+----------------------------------+";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            for (auto const elem : m_rcds) {
+                if (elem.data->tag.empty()) {
+                    continue;
+                }
+
+                bsl::print() << bsl::ylw << "| ";
+                bsl::print() << bsl::rst << bsl::fmt{"<23s", elem.data->tag};
+                bsl::print() << bsl::ylw << "| ";
+                if ((elem.data->usd / mb).is_zero()) {
+                    bsl::print() << bsl::rst << bsl::fmt{"4d", elem.data->usd / kb} << " KB ";
+                }
+                else {
+                    bsl::print() << bsl::rst << bsl::fmt{"4d", elem.data->usd / mb} << " MB ";
+                }
+                bsl::print() << bsl::ylw << "| ";
+                bsl::print() << bsl::rst << bsl::endl;
+            }
+
             /// Footer
             ///
 
-            bsl::print() << bsl::ylw << "+-----------------------+";
+            bsl::print() << bsl::ylw << "+----------------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
         }
     };

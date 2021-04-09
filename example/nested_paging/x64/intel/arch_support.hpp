@@ -27,6 +27,8 @@
 
 #include <common_arch_support.hpp>
 #include <mk_interface.hpp>
+#include <mtrrs_t.hpp>
+#include <page_pool_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -38,9 +40,14 @@
 namespace example
 {
     /// @brief stores the MSR bitmap used by this extension
-    inline void const *g_msr_bitmaps{};
+    constinit inline void *g_msr_bitmaps{};
     /// @brief stores the physical address of the MSR bitmap
-    inline bsl::safe_uintmax g_msr_bitmaps_phys{};
+    constinit inline bsl::safe_uintmax g_msr_bitmaps_phys{};
+
+    /// @brief stores the page pool to use for page allocation
+    constinit inline page_pool_t g_page_pool{};
+    /// @brief stores the mtrrs used to create EPT
+    constinit inline mtrrs_t g_mtrrs{};
 
     /// <!-- description -->
     ///   @brief Handle NMIs. This is required by Intel.
@@ -430,6 +437,24 @@ namespace example
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
+
+        // if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
+        //     ret = g_page_pool.initialize(handle);
+        //     if (bsl::unlikely(!ret)) {
+        //         bsl::print<bsl::V>() << bsl::here();
+        //         return ret;
+        //     }
+        // }
+
+        // if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
+        //     ret = g_mtrrs.parse(handle);
+        //     if (bsl::unlikely(!ret)) {
+        //         bsl::print<bsl::V>() << bsl::here();
+        //         return ret;
+        //     }
+
+        //     g_mtrrs.dump();
+        // }
 
         /// NOTE:
         /// - Report success. Specifically, when we return to the root OS,

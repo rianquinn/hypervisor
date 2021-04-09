@@ -34,11 +34,8 @@
 
 namespace mk
 {
-    namespace details
-    {
-        /// @brief the size of reserved field
-        constexpr bsl::safe_uintmax RESERVED_SIZE{bsl::to_umax(0xFFC)};
-    }
+    /// @brief the size of reserved field
+    constexpr bsl::safe_uintmax RESERVED_SIZE{bsl::to_umax(0xFFC)};
 
     /// @brief defines an unusable segment descriptor
     constexpr bsl::safe_uint32 VMCS_UNUSABLE_SEGMENT{bsl::to_u32(0x10000)};
@@ -384,17 +381,8 @@ namespace mk
         bsl::uint32 revision_id;
 
         /// @brief reserved
-        bsl::details::carray<bsl::uint8, details::RESERVED_SIZE.get()> reserved;
+        bsl::details::carray<bsl::uint8, RESERVED_SIZE.get()> reserved;
     };
-
-    namespace details
-    {
-        /// @brief defined the expected size of the pdt_t struct
-        constexpr bsl::safe_uintmax EXPECTED_VMCS_T_SIZE{bsl::to_umax(0x1000)};
-
-        /// Check to make sure the pdt_t is the right size.
-        static_assert(sizeof(vmcs_t) == EXPECTED_VMCS_T_SIZE);
-    }
 }
 
 #pragma pack(pop)

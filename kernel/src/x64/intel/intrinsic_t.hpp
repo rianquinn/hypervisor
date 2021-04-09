@@ -40,282 +40,276 @@
 
 namespace mk
 {
-    namespace details
-    {
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::invlpg
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param val n/a
-        ///
-        extern "C" void intrinsic_invlpg(bsl::uint64 const val) noexcept;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::invlpg
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param val n/a
+    ///
+    extern "C" void intrinsic_invlpg(bsl::uint64 const val) noexcept;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::es_selector
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_es_selector() noexcept -> bsl::uint16;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::es_selector
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_es_selector() noexcept -> bsl::uint16;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::es_selector
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_cs_selector() noexcept -> bsl::uint16;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::es_selector
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_cs_selector() noexcept -> bsl::uint16;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::es_selector
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_ss_selector() noexcept -> bsl::uint16;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::es_selector
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_ss_selector() noexcept -> bsl::uint16;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::es_selector
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_ds_selector() noexcept -> bsl::uint16;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::es_selector
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_ds_selector() noexcept -> bsl::uint16;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::es_selector
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_fs_selector() noexcept -> bsl::uint16;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::es_selector
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_fs_selector() noexcept -> bsl::uint16;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::es_selector
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_gs_selector() noexcept -> bsl::uint16;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::es_selector
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_gs_selector() noexcept -> bsl::uint16;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::tr_selector
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_tr_selector() noexcept -> bsl::uint16;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::tr_selector
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_tr_selector() noexcept -> bsl::uint16;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::cr0
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_cr0() noexcept -> bsl::uint64;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::cr0
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_cr0() noexcept -> bsl::uint64;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::cr3
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_cr3() noexcept -> bsl::uint64;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::cr3
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_cr3() noexcept -> bsl::uint64;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::set_cr3
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param val n/a
-        ///
-        extern "C" void intrinsic_set_cr3(bsl::uint64 const val) noexcept;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::set_cr3
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param val n/a
+    ///
+    extern "C" void intrinsic_set_cr3(bsl::uint64 const val) noexcept;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::cr4
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_cr4() noexcept -> bsl::uint64;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::cr4
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_cr4() noexcept -> bsl::uint64;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::tp
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_tp() noexcept -> bsl::uint64;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::tp
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_tp() noexcept -> bsl::uint64;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::set_tp
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param val n/a
-        ///
-        extern "C" void intrinsic_set_tp(bsl::uint64 const val) noexcept;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::set_tp
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param val n/a
+    ///
+    extern "C" void intrinsic_set_tp(bsl::uint64 const val) noexcept;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::tls_reg
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param reg n/a
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_tls_reg(bsl::uint64 const reg) noexcept
-            -> bsl::uint64;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::tls_reg
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_tls_reg(bsl::uint64 const reg) noexcept -> bsl::uint64;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::set_tls_reg
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param reg n/a
-        ///   @param val n/a
-        ///
-        extern "C" void
-        intrinsic_set_tls_reg(bsl::uint64 const reg, bsl::uint64 const val) noexcept;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::set_tls_reg
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg n/a
+    ///   @param val n/a
+    ///
+    extern "C" void intrinsic_set_tls_reg(bsl::uint64 const reg, bsl::uint64 const val) noexcept;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::halt
-        ///
-        extern "C" void intrinsic_halt() noexcept;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::halt
+    ///
+    extern "C" void intrinsic_halt() noexcept;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::rdmsr
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param msr n/a
-        ///   @param val n/a
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto
-        intrinsic_rdmsr(bsl::uint32 msr, bsl::uint64 *const val) noexcept -> bsl::exit_code;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::rdmsr
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param msr n/a
+    ///   @param val n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_rdmsr(bsl::uint32 msr, bsl::uint64 *const val) noexcept
+        -> bsl::exit_code;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::wrmsr
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param msr n/a
-        ///   @param val n/a
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto
-        intrinsic_wrmsr(bsl::uint32 msr, bsl::uint64 const val) noexcept -> bsl::exit_code;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::wrmsr
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param msr n/a
+    ///   @param val n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_wrmsr(bsl::uint32 msr, bsl::uint64 const val) noexcept
+        -> bsl::exit_code;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::invept
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param desc n/a
-        ///   @param type n/a
-        ///
-        extern "C" void intrinsic_invept(void *const desc, bsl::uint64 const type) noexcept;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::invept
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param desc n/a
+    ///   @param type n/a
+    ///
+    extern "C" void intrinsic_invept(void *const desc, bsl::uint64 const type) noexcept;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::invvpid
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param desc n/a
-        ///   @param type n/a
-        ///
-        extern "C" void intrinsic_invvpid(void *const desc, bsl::uint64 const type) noexcept;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::invvpid
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param desc n/a
+    ///   @param type n/a
+    ///
+    extern "C" void intrinsic_invvpid(void *const desc, bsl::uint64 const type) noexcept;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::vmload
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param phys n/a
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_vmload(void *const phys) noexcept -> bsl::exit_code;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::vmload
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param phys n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_vmload(void *const phys) noexcept -> bsl::exit_code;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::vmclear
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param phys n/a
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_vmclear(void *const phys) noexcept
-            -> bsl::exit_code;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::vmclear
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param phys n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_vmclear(void *const phys) noexcept -> bsl::exit_code;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::vmread16
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param field n/a
-        ///   @param val n/a
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto
-        intrinsic_vmread16(bsl::uint64 field, bsl::uint16 *const val) noexcept -> bsl::exit_code;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::vmread16
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param field n/a
+    ///   @param val n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto
+    intrinsic_vmread16(bsl::uint64 field, bsl::uint16 *const val) noexcept -> bsl::exit_code;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::vmread32
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param field n/a
-        ///   @param val n/a
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto
-        intrinsic_vmread32(bsl::uint64 field, bsl::uint32 *const val) noexcept -> bsl::exit_code;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::vmread32
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param field n/a
+    ///   @param val n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto
+    intrinsic_vmread32(bsl::uint64 field, bsl::uint32 *const val) noexcept -> bsl::exit_code;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::vmread64
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param field n/a
-        ///   @param val n/a
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto
-        intrinsic_vmread64(bsl::uint64 field, bsl::uint64 *const val) noexcept -> bsl::exit_code;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::vmread64
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param field n/a
+    ///   @param val n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto
+    intrinsic_vmread64(bsl::uint64 field, bsl::uint64 *const val) noexcept -> bsl::exit_code;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::vmwrite16
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param field n/a
-        ///   @param val n/a
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto
-        intrinsic_vmwrite16(bsl::uint64 field, bsl::uint16 const val) noexcept -> bsl::exit_code;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::vmwrite16
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param field n/a
+    ///   @param val n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto
+    intrinsic_vmwrite16(bsl::uint64 field, bsl::uint16 const val) noexcept -> bsl::exit_code;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::vmwrite32
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param field n/a
-        ///   @param val n/a
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto
-        intrinsic_vmwrite32(bsl::uint64 field, bsl::uint32 const val) noexcept -> bsl::exit_code;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::vmwrite32
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param field n/a
+    ///   @param val n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto
+    intrinsic_vmwrite32(bsl::uint64 field, bsl::uint32 const val) noexcept -> bsl::exit_code;
 
-        /// <!-- description -->
-        ///   @brief Implements intrinsic_t::vmwrite64
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param field n/a
-        ///   @param val n/a
-        ///   @return n/a
-        ///
-        extern "C" [[nodiscard]] auto
-        intrinsic_vmwrite64(bsl::uint64 field, bsl::uint64 const val) noexcept -> bsl::exit_code;
+    /// <!-- description -->
+    ///   @brief Implements intrinsic_t::vmwrite64
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param field n/a
+    ///   @param val n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto
+    intrinsic_vmwrite64(bsl::uint64 field, bsl::uint64 const val) noexcept -> bsl::exit_code;
 
-        /// <!-- description -->
-        ///   @brief Executes the VMLaunch/VMResume instructions. When this
-        ///     function returns, a "VMExit" has occurred and must be handled.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param vmcs_missing_registers a pointer to struct for where to
-        ///     store the registers not saved in the VMCS
-        ///   @return Returns the exit reason associated with the VMExit
-        ///
-        extern "C" [[nodiscard]] auto intrinsic_vmrun(void *const vmcs_missing_registers) noexcept
-            -> bsl::uintmax;
-    }
+    /// <!-- description -->
+    ///   @brief Executes the VMLaunch/VMResume instructions. When this
+    ///     function returns, a "VMExit" has occurred and must be handled.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param vmcs_missing_registers a pointer to struct for where to
+    ///     store the registers not saved in the VMCS
+    ///   @return Returns the exit reason associated with the VMExit
+    ///
+    extern "C" [[nodiscard]] auto intrinsic_vmrun(void *const vmcs_missing_registers) noexcept
+        -> bsl::uintmax;
 
     /// @class mk::intrinsic_t
     ///
@@ -395,7 +389,7 @@ namespace mk
                 return;
             }
 
-            details::intrinsic_invlpg(val.get());
+            intrinsic_invlpg(val.get());
         }
 
         /// <!-- description -->
@@ -411,7 +405,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_es_selector();
+            return intrinsic_es_selector();
         }
 
         /// <!-- description -->
@@ -427,7 +421,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_cs_selector();
+            return intrinsic_cs_selector();
         }
 
         /// <!-- description -->
@@ -443,7 +437,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_ss_selector();
+            return intrinsic_ss_selector();
         }
 
         /// <!-- description -->
@@ -459,7 +453,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_ds_selector();
+            return intrinsic_ds_selector();
         }
 
         /// <!-- description -->
@@ -475,7 +469,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_fs_selector();
+            return intrinsic_fs_selector();
         }
 
         /// <!-- description -->
@@ -491,7 +485,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_gs_selector();
+            return intrinsic_gs_selector();
         }
 
         /// <!-- description -->
@@ -507,7 +501,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_tr_selector();
+            return intrinsic_tr_selector();
         }
 
         /// <!-- description -->
@@ -523,7 +517,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_cr0();
+            return intrinsic_cr0();
         }
 
         /// <!-- description -->
@@ -539,7 +533,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_cr3();
+            return intrinsic_cr3();
         }
 
         /// <!-- description -->
@@ -564,7 +558,7 @@ namespace mk
                 return;
             }
 
-            details::intrinsic_set_cr3(val.get());
+            intrinsic_set_cr3(val.get());
         }
 
         /// <!-- description -->
@@ -580,7 +574,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_cr4();
+            return intrinsic_cr4();
         }
 
         /// <!-- description -->
@@ -596,7 +590,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_tp();
+            return intrinsic_tp();
         }
 
         /// <!-- description -->
@@ -621,7 +615,7 @@ namespace mk
                 return;
             }
 
-            details::intrinsic_set_tp(val.get());
+            intrinsic_set_tp(val.get());
         }
 
         /// <!-- description -->
@@ -647,7 +641,7 @@ namespace mk
                 return {};
             }
 
-            return details::intrinsic_tls_reg(reg.get());
+            return intrinsic_tls_reg(reg.get());
         }
 
         /// <!-- description -->
@@ -682,7 +676,7 @@ namespace mk
                 return;
             }
 
-            details::intrinsic_set_tls_reg(reg.get(), val.get());
+            intrinsic_set_tls_reg(reg.get(), val.get());
         }
 
         /// <!-- description -->
@@ -695,7 +689,7 @@ namespace mk
                 return;
             }
 
-            details::intrinsic_halt();
+            intrinsic_halt();
         }
 
         /// <!-- description -->
@@ -724,7 +718,7 @@ namespace mk
                 return bsl::safe_uint64::zero(true);
             }
 
-            ret = details::intrinsic_rdmsr(msr.get(), val.data());
+            ret = intrinsic_rdmsr(msr.get(), val.data());
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "rdmsr failed for msr "    // --
                              << bsl::hex(msr)              // --
@@ -773,7 +767,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = details::intrinsic_wrmsr(msr.get(), val.get());
+            ret = intrinsic_wrmsr(msr.get(), val.get());
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "wrmsr failed for msr "    // --
                              << bsl::hex(msr)              // --
@@ -826,7 +820,7 @@ namespace mk
             }
 
             invept_descriptor_t desc{eptp.get(), bsl::ZERO_UMAX.get()};
-            details::intrinsic_invept(&desc, type.get());
+            intrinsic_invept(&desc, type.get());
             return bsl::errc_success;
         }
 
@@ -886,7 +880,7 @@ namespace mk
                 bsl::ZERO_U16.get(),
                 addr.get()};
 
-            details::intrinsic_invvpid(&desc, type.get());
+            intrinsic_invvpid(&desc, type.get());
             return bsl::errc_success;
         }
 
@@ -916,7 +910,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::exit_code const ret{details::intrinsic_vmload(phys)};
+            bsl::exit_code const ret{intrinsic_vmload(phys)};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmload failed for "    // --
                              << phys                    // --
@@ -957,7 +951,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::exit_code const ret{details::intrinsic_vmclear(phys)};
+            bsl::exit_code const ret{intrinsic_vmclear(phys)};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmclear failed for "    // --
                              << phys                     // --
@@ -1006,7 +1000,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::exit_code const ret{details::intrinsic_vmread16(field.get(), val)};
+            bsl::exit_code const ret{intrinsic_vmread16(field.get(), val)};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmread failed for field "    // --
                              << bsl::hex(field)               // --
@@ -1055,7 +1049,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::exit_code const ret{details::intrinsic_vmread32(field.get(), val)};
+            bsl::exit_code const ret{intrinsic_vmread32(field.get(), val)};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmread failed for field "    // --
                              << bsl::hex(field)               // --
@@ -1104,7 +1098,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::exit_code const ret{details::intrinsic_vmread64(field.get(), val)};
+            bsl::exit_code const ret{intrinsic_vmread64(field.get(), val)};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmread failed for field "    // --
                              << bsl::hex(field)               // --
@@ -1141,7 +1135,7 @@ namespace mk
                 return bsl::safe_uint16::zero(true);
             }
 
-            bsl::exit_code const ret{details::intrinsic_vmread16(field.get(), val.data())};
+            bsl::exit_code const ret{intrinsic_vmread16(field.get(), val.data())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 return bsl::safe_uint16::zero(true);
             }
@@ -1171,7 +1165,7 @@ namespace mk
                 return bsl::safe_uint32::zero(true);
             }
 
-            bsl::exit_code const ret{details::intrinsic_vmread32(field.get(), val.data())};
+            bsl::exit_code const ret{intrinsic_vmread32(field.get(), val.data())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 return bsl::safe_uint32::zero(true);
             }
@@ -1201,7 +1195,7 @@ namespace mk
                 return bsl::safe_uint64::zero(true);
             }
 
-            bsl::exit_code const ret{details::intrinsic_vmread64(field.get(), val.data())};
+            bsl::exit_code const ret{intrinsic_vmread64(field.get(), val.data())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 return bsl::safe_uint64::zero(true);
             }
@@ -1244,7 +1238,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::exit_code const ret{details::intrinsic_vmwrite16(field.get(), val.get())};
+            bsl::exit_code const ret{intrinsic_vmwrite16(field.get(), val.get())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmwrite failed for field "    // --
                              << bsl::hex(field)                // --
@@ -1296,7 +1290,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::exit_code const ret{details::intrinsic_vmwrite32(field.get(), val.get())};
+            bsl::exit_code const ret{intrinsic_vmwrite32(field.get(), val.get())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmwrite failed for field "    // --
                              << bsl::hex(field)                // --
@@ -1348,7 +1342,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::exit_code const ret{details::intrinsic_vmwrite64(field.get(), val.get())};
+            bsl::exit_code const ret{intrinsic_vmwrite64(field.get(), val.get())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
                 bsl::error() << "vmwrite failed for field "    // --
                              << bsl::hex(field)                // --

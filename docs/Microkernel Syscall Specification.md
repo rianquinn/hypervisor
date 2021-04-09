@@ -285,6 +285,15 @@ Defines the signature of the fast fail callback handler
 
 **typedef, void(*bf_callback_handler_fail_t)(bf_status_t)**
 
+## 1.7. Invalid ID
+
+The following defines an invalid ID which can be used for all ID types.
+
+**const, bf_uint16_t: BF_INVALID_ID**
+| Value | Description |
+| :---- | :---------- |
+| 0xFFFF | Defines an invalid ID |
+
 ## 1.7. Endianness
 
 This document only applies to 64bit Intel and AMD systems conforming to the amd64 architecture. As such, this document conforms to little-endian.
@@ -807,35 +816,35 @@ This syscall tells the microkernel to output a provided string to the microkerne
 
 ### 2.9.4. bf_debug_op_dump_ext, OP=0x2, IDX=0x7
 
-This syscall tells the microkernel to output a VPS's state to the console device the microkernel is currently using for debugging.
+This syscall tells the microkernel to output an extension's state to the console device the microkernel is currently using for debugging.
 
 **Input:**
 | Register Name | Bits | Description |
 | :------------ | :--- | :---------- |
-| REG0 | 63:0 | The VPSID of the VPS's state to output |
+| REG0 | 63:0 | The EXTID of the extensions's state to output |
 
-**const, bf_uint64_t: BF_DEBUG_OP_DUMP_VPS_IDX_VAL**
+**const, bf_uint64_t: BF_DEBUG_OP_DUMP_EXT_IDX_VAL**
 | Value | Description |
 | :---- | :---------- |
 | 0x0000000000000007 | Defines the syscall index for bf_debug_op_dump_ext |
 
 ### 2.9.4. bf_debug_op_dump_page_pool, OP=0x2, IDX=0x8
 
-This syscall tells the microkernel to output a VPS's state to the console device the microkernel is currently using for debugging.
+This syscall tells the microkernel to output the page pool's stats to the console device the microkernel is currently using for debugging.
 
-**const, bf_uint64_t: BF_DEBUG_OP_DUMP_VPS_IDX_VAL**
+**const, bf_uint64_t: BF_DEBUG_OP_DUMP_PAGE_POOL_IDX_VAL**
 | Value | Description |
 | :---- | :---------- |
-| 0x0000000000000003 | Defines the syscall index for bf_debug_op_dump_page_pool |
+| 0x0000000000000008 | Defines the syscall index for bf_debug_op_dump_page_pool |
 
 ### 2.9.4. bf_debug_op_dump_huge_pool, OP=0x2, IDX=0x9
 
-This syscall tells the microkernel to output a VPS's state to the console device the microkernel is currently using for debugging.
+This syscall tells the microkernel to output the huge pool's stats to the console device the microkernel is currently using for debugging.
 
-**const, bf_uint64_t: BF_DEBUG_OP_DUMP_VPS_IDX_VAL**
+**const, bf_uint64_t: BF_DEBUG_OP_DUMP_HUGE_POOL_IDX_VAL**
 | Value | Description |
 | :---- | :---------- |
-| 0x0000000000000003 | Defines the syscall index for bf_debug_op_dump_huge_pool |
+| 0x0000000000000009 | Defines the syscall index for bf_debug_op_dump_huge_pool |
 
 ## 2.10. Callback Syscalls
 

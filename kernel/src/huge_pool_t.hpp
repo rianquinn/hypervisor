@@ -338,13 +338,13 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<12s", "total "};
+            bsl::print() << bsl::rst << bsl::fmt{"<12s", "total "};
             bsl::print() << bsl::ylw << "| ";
             if ((m_pool.size() / mb).is_zero()) {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", m_pool.size() / kb} << " KB ";
+                bsl::print() << bsl::rst << bsl::fmt{"4d", m_pool.size() / kb} << " KB ";
             }
             else {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", m_pool.size() / mb} << " MB ";
+                bsl::print() << bsl::rst << bsl::fmt{"4d", m_pool.size() / mb} << " MB ";
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
@@ -353,13 +353,13 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<12s", "used "};
+            bsl::print() << bsl::rst << bsl::fmt{"<12s", "used "};
             bsl::print() << bsl::ylw << "| ";
             if ((m_crsr / mb).is_zero()) {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", m_crsr / kb} << " KB ";
+                bsl::print() << bsl::rst << bsl::fmt{"4d", m_crsr / kb} << " KB ";
             }
             else {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", m_crsr / mb} << " MB ";
+                bsl::print() << bsl::rst << bsl::fmt{"4d", m_crsr / mb} << " MB ";
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
@@ -368,13 +368,13 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<12s", "remaining "};
+            bsl::print() << bsl::rst << bsl::fmt{"<12s", "remaining "};
             bsl::print() << bsl::ylw << "| ";
             if (((m_pool.size() - m_crsr) / mb).is_zero()) {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", (m_pool.size() - m_crsr) / kb} << " KB ";
+                bsl::print() << bsl::rst << bsl::fmt{"4d", (m_pool.size() - m_crsr) / kb} << " KB ";
             }
             else {
-                bsl::print() << bsl::wht << bsl::fmt{"4d", (m_pool.size() - m_crsr) / mb} << " MB ";
+                bsl::print() << bsl::rst << bsl::fmt{"4d", (m_pool.size() - m_crsr) / mb} << " MB ";
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;

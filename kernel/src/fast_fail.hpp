@@ -51,11 +51,8 @@ namespace mk
     [[nodiscard]] constexpr auto
     fast_fail(TLS_CONCEPT &tls, EXT_CONCEPT *const ext_fail) noexcept -> bsl::exit_code
     {
-        bsl::print() << bsl::endl           // --
-                     << bsl::bold_red       // --
-                     << "fast failing:"     // --
-                     << bsl::reset_color    // --
-                     << bsl::endl;          // --
+        bsl::print() << bsl::red << "\nfast failing:";
+        bsl::print() << bsl::rst << bsl::endl;
 
         if (nullptr != ext_fail) {
             auto const ret{ext_fail->fail(tls)};

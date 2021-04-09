@@ -50,10 +50,11 @@ namespace bsl::details
 
         safe_uintmax thread_id{mk::get_current_tls()->thread_id};
 
-        o << " ["                                                                      // --
-          << bsl::cyan << bsl::fmt("#018x", thread_id) << bsl::reset_color << " - "    // --
-          << bsl::black << "MK" << bsl::reset_color                                    // --
-          << ']';                                                                      // --
+        o << bsl::rst << '['                             // --
+          << bsl::cyn << bsl::fmt{"#018x", thread_id}    // --
+          << bsl::rst << " - "                           // --
+          << bsl::blk << "MK" << bsl::rst                // --
+          << bsl::rst << ']';                            // --
     }
 }
 

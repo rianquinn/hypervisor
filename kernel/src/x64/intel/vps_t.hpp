@@ -25,6 +25,7 @@
 #ifndef VPS_T_HPP
 #define VPS_T_HPP
 
+#include <allocate_tags.hpp>
 #include <mk_interface.hpp>
 #include <vmcs_missing_registers_t.hpp>
 #include <vmcs_t.hpp>
@@ -47,35 +48,32 @@ namespace mk
     /// @brief defines the value of an invalid VPSID
     constexpr bsl::safe_uint16 INVALID_VPSID{bsl::to_u16(0xFFFFU)};
 
-    namespace details
-    {
-        /// @brief defines the IA32_VMX_BASIC MSR
-        constexpr bsl::safe_uint32 IA32_VMX_BASIC{bsl::to_u32(0x480U)};
-        /// @brief defines the IA32_PAT MSR
-        constexpr bsl::safe_uint32 IA32_PAT{bsl::to_u32(0x277U)};
-        /// @brief defines the IA32_SYSENTER_CS MSR
-        constexpr bsl::safe_uint32 IA32_SYSENTER_CS{bsl::to_u32(0x174U)};
-        /// @brief defines the IA32_SYSENTER_ESP MSR
-        constexpr bsl::safe_uint32 IA32_SYSENTER_ESP{bsl::to_u32(0x175U)};
-        /// @brief defines the IA32_SYSENTER_EIP MSR
-        constexpr bsl::safe_uint32 IA32_SYSENTER_EIP{bsl::to_u32(0x176U)};
-        /// @brief defines the IA32_EFER MSR
-        constexpr bsl::safe_uint32 IA32_EFER{bsl::to_u32(0xC0000080U)};
-        /// @brief defines the IA32_STAR MSR
-        constexpr bsl::safe_uint32 IA32_STAR{bsl::to_u32(0xC0000081U)};
-        /// @brief defines the IA32_LSTAR MSR
-        constexpr bsl::safe_uint32 IA32_LSTAR{bsl::to_u32(0xC0000082U)};
-        /// @brief defines the IA32_CSTAR MSR
-        constexpr bsl::safe_uint32 IA32_CSTAR{bsl::to_u32(0xC0000083U)};
-        /// @brief defines the IA32_FMASK MSR
-        constexpr bsl::safe_uint32 IA32_FMASK{bsl::to_u32(0xC0000084U)};
-        /// @brief defines the IA32_FS_BASE MSR
-        constexpr bsl::safe_uint32 IA32_FS_BASE{bsl::to_u32(0xC0000100U)};
-        /// @brief defines the IA32_GS_BASE MSR
-        constexpr bsl::safe_uint32 IA32_GS_BASE{bsl::to_u32(0xC0000101U)};
-        /// @brief defines the IA32_KERNEL_GS_BASE MSR
-        constexpr bsl::safe_uint32 IA32_KERNEL_GS_BASE{bsl::to_u32(0xC0000102U)};
-    }
+    /// @brief defines the IA32_VMX_BASIC MSR
+    constexpr bsl::safe_uint32 IA32_VMX_BASIC{bsl::to_u32(0x480U)};
+    /// @brief defines the IA32_PAT MSR
+    constexpr bsl::safe_uint32 IA32_PAT{bsl::to_u32(0x277U)};
+    /// @brief defines the IA32_SYSENTER_CS MSR
+    constexpr bsl::safe_uint32 IA32_SYSENTER_CS{bsl::to_u32(0x174U)};
+    /// @brief defines the IA32_SYSENTER_ESP MSR
+    constexpr bsl::safe_uint32 IA32_SYSENTER_ESP{bsl::to_u32(0x175U)};
+    /// @brief defines the IA32_SYSENTER_EIP MSR
+    constexpr bsl::safe_uint32 IA32_SYSENTER_EIP{bsl::to_u32(0x176U)};
+    /// @brief defines the IA32_EFER MSR
+    constexpr bsl::safe_uint32 IA32_EFER{bsl::to_u32(0xC0000080U)};
+    /// @brief defines the IA32_STAR MSR
+    constexpr bsl::safe_uint32 IA32_STAR{bsl::to_u32(0xC0000081U)};
+    /// @brief defines the IA32_LSTAR MSR
+    constexpr bsl::safe_uint32 IA32_LSTAR{bsl::to_u32(0xC0000082U)};
+    /// @brief defines the IA32_CSTAR MSR
+    constexpr bsl::safe_uint32 IA32_CSTAR{bsl::to_u32(0xC0000083U)};
+    /// @brief defines the IA32_FMASK MSR
+    constexpr bsl::safe_uint32 IA32_FMASK{bsl::to_u32(0xC0000084U)};
+    /// @brief defines the IA32_FS_BASE MSR
+    constexpr bsl::safe_uint32 IA32_FS_BASE{bsl::to_u32(0xC0000100U)};
+    /// @brief defines the IA32_GS_BASE MSR
+    constexpr bsl::safe_uint32 IA32_GS_BASE{bsl::to_u32(0xC0000101U)};
+    /// @brief defines the IA32_KERNEL_GS_BASE MSR
+    constexpr bsl::safe_uint32 IA32_KERNEL_GS_BASE{bsl::to_u32(0xC0000102U)};
 
     /// @class mk::vps_t
     ///
@@ -1204,8 +1202,7 @@ namespace mk
             bsl::errc_type ret{};
             auto *const state{tls.mk_state};
 
-            m_vmcs->revision_id =
-                bsl::to_u32_unsafe(m_intrinsic->rdmsr(details::IA32_VMX_BASIC)).get();
+            m_vmcs->revision_id = bsl::to_u32_unsafe(m_intrinsic->rdmsr(IA32_VMX_BASIC)).get();
 
             if (bsl::unlikely(!this->ensure_this_vps_is_loaded(tls))) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -1254,21 +1251,20 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = m_intrinsic->vmwrite64(VMCS_HOST_IA32_PAT, m_intrinsic->rdmsr(details::IA32_PAT));
+            ret = m_intrinsic->vmwrite64(VMCS_HOST_IA32_PAT, m_intrinsic->rdmsr(IA32_PAT));
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret =
-                m_intrinsic->vmwrite64(VMCS_HOST_IA32_EFER, m_intrinsic->rdmsr(details::IA32_EFER));
+            ret = m_intrinsic->vmwrite64(VMCS_HOST_IA32_EFER, m_intrinsic->rdmsr(IA32_EFER));
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
             ret = m_intrinsic->vmwrite64(
-                VMCS_HOST_IA32_SYSENTER_CS, m_intrinsic->rdmsr(details::IA32_SYSENTER_CS));
+                VMCS_HOST_IA32_SYSENTER_CS, m_intrinsic->rdmsr(IA32_SYSENTER_CS));
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -1292,15 +1288,13 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = m_intrinsic->vmwrite64(
-                VMCS_HOST_FS_BASE, m_intrinsic->rdmsr(details::IA32_FS_BASE));
+            ret = m_intrinsic->vmwrite64(VMCS_HOST_FS_BASE, m_intrinsic->rdmsr(IA32_FS_BASE));
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_intrinsic->vmwrite64(
-                VMCS_HOST_GS_BASE, m_intrinsic->rdmsr(details::IA32_GS_BASE));
+            ret = m_intrinsic->vmwrite64(VMCS_HOST_GS_BASE, m_intrinsic->rdmsr(IA32_GS_BASE));
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -1325,14 +1319,14 @@ namespace mk
             }
 
             ret = m_intrinsic->vmwrite64(
-                VMCS_HOST_IA32_SYSENTER_ESP, m_intrinsic->rdmsr(details::IA32_SYSENTER_ESP));
+                VMCS_HOST_IA32_SYSENTER_ESP, m_intrinsic->rdmsr(IA32_SYSENTER_ESP));
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
             ret = m_intrinsic->vmwrite64(
-                VMCS_HOST_IA32_SYSENTER_EIP, m_intrinsic->rdmsr(details::IA32_SYSENTER_EIP));
+                VMCS_HOST_IA32_SYSENTER_EIP, m_intrinsic->rdmsr(IA32_SYSENTER_EIP));
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -1344,16 +1338,16 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            m_vmcs_missing_registers.host_ia32_star =                      // --
-                m_intrinsic->rdmsr(details::IA32_STAR).get();              // --
-            m_vmcs_missing_registers.host_ia32_lstar =                     // --
-                m_intrinsic->rdmsr(details::IA32_LSTAR).get();             // --
-            m_vmcs_missing_registers.host_ia32_cstar =                     // --
-                m_intrinsic->rdmsr(details::IA32_CSTAR).get();             // --
-            m_vmcs_missing_registers.host_ia32_fmask =                     // --
-                m_intrinsic->rdmsr(details::IA32_FMASK).get();             // --
-            m_vmcs_missing_registers.host_ia32_kernel_gs_base =            // --
-                m_intrinsic->rdmsr(details::IA32_KERNEL_GS_BASE).get();    // --
+            m_vmcs_missing_registers.host_ia32_star =              // --
+                m_intrinsic->rdmsr(IA32_STAR).get();               // --
+            m_vmcs_missing_registers.host_ia32_lstar =             // --
+                m_intrinsic->rdmsr(IA32_LSTAR).get();              // --
+            m_vmcs_missing_registers.host_ia32_cstar =             // --
+                m_intrinsic->rdmsr(IA32_CSTAR).get();              // --
+            m_vmcs_missing_registers.host_ia32_fmask =             // --
+                m_intrinsic->rdmsr(IA32_FMASK).get();              // --
+            m_vmcs_missing_registers.host_ia32_kernel_gs_base =    // --
+                m_intrinsic->rdmsr(IA32_KERNEL_GS_BASE).get();     // --
 
             return bsl::errc_success;
         }
@@ -1370,31 +1364,31 @@ namespace mk
         constexpr void
         dump(bsl::string_view const &str, bsl::safe_integral<T> const &val) const &noexcept
         {
-            bsl::cstr_type color{bsl::wht};
+            auto rowcolor{bsl::rst};
 
             if (val.is_zero()) {
-                color = bsl::blk;
+                rowcolor = bsl::blk;
             }
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<40s", str};
+            bsl::print() << bsl::rst << bsl::fmt{"<40s", str};
             bsl::print() << bsl::ylw << "| ";
 
             if (val) {
                 if constexpr (bsl::is_same<T, bsl::uint8>::value) {
-                    bsl::print() << color << "       " << bsl::hex(val) << "        ";
+                    bsl::print() << rowcolor << "       " << bsl::hex(val) << "        ";
                 }
 
                 if constexpr (bsl::is_same<T, bsl::uint16>::value) {
-                    bsl::print() << color << "      " << bsl::hex(val) << "       ";
+                    bsl::print() << rowcolor << "      " << bsl::hex(val) << "       ";
                 }
 
                 if constexpr (bsl::is_same<T, bsl::uint32>::value) {
-                    bsl::print() << color << "    " << bsl::hex(val) << "     ";
+                    bsl::print() << rowcolor << "    " << bsl::hex(val) << "     ";
                 }
 
                 if constexpr (bsl::is_same<T, bsl::uint64>::value) {
-                    bsl::print() << color << bsl::hex(val) << ' ';
+                    bsl::print() << rowcolor << bsl::hex(val) << ' ';
                 }
             }
             else {
@@ -1582,7 +1576,7 @@ namespace mk
                 this->deallocate();
             }};
 
-            m_vmcs = m_page_pool->template allocate<vmcs_t>();
+            m_vmcs = m_page_pool->template allocate<vmcs_t>(ALLOCATE_TAG_VMCS);
             if (bsl::unlikely(nullptr == m_vmcs)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -1625,7 +1619,7 @@ namespace mk
             m_vmcs_phys = bsl::safe_uintmax::zero(true);
 
             if (nullptr != m_page_pool) {
-                m_page_pool->deallocate(m_vmcs);
+                m_page_pool->deallocate(m_vmcs, ALLOCATE_TAG_VMCS);
                 m_vmcs = {};
             }
             else {
@@ -3129,7 +3123,7 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
-            auto const exit_reason{details::intrinsic_vmrun(&m_vmcs_missing_registers)};
+            auto const exit_reason{intrinsic_vmrun(&m_vmcs_missing_registers)};
             if (exit_reason > invalid_exit_reason) {
                 this->dump(tls);
 
@@ -3284,7 +3278,7 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<40s", "allocated "};
+            bsl::print() << bsl::rst << bsl::fmt{"<40s", "allocated "};
             bsl::print() << bsl::ylw << "| ";
             if (m_allocated) {
                 bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
@@ -3299,7 +3293,7 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<40s", "active "};
+            bsl::print() << bsl::rst << bsl::fmt{"<40s", "active "};
             bsl::print() << bsl::ylw << "| ";
             if (tls.active_vpsid == m_id) {
                 bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
@@ -3573,6 +3567,14 @@ namespace mk
             constexpr bsl::safe_uintmax exit_reason_rdmsr{bsl::to_umax(31)};
             constexpr bsl::safe_uintmax exit_reason_wrmsr{bsl::to_umax(32)};
 
+            /// TODO:
+            /// - We should continue to expand on this function to provide
+            ///   even more useful information. For example, we could store
+            ///   all of the register state, and then be able to provide
+            ///   better data for mov to CR/DR, VMCall, IO instructions,
+            ///   IDT/GDT accesses, all of the invalidation functions, etc.
+            ///
+
             bsl::print() << bsl::mag << "vmexit log for vps [" << bsl::hex(m_id) << "]: ";
             bsl::print() << bsl::rst << bsl::endl;
 
@@ -3582,48 +3584,48 @@ namespace mk
 
                 if (!entry->rip.is_zero()) {
                     bsl::print() << bsl::ylw << '[' << bsl::fmt{">2d", entry->exit_reason} << "]";
-                    bsl::print() << bsl::cyn << " rip: " << bsl::wht << bsl::hex(entry->rip);
-                    bsl::print() << bsl::cyn << " rsp: " << bsl::wht << bsl::hex(entry->rsp);
+                    bsl::print() << bsl::cyn << " rip: " << bsl::rst << bsl::hex(entry->rip);
+                    bsl::print() << bsl::cyn << " rsp: " << bsl::rst << bsl::hex(entry->rsp);
 
                     switch (entry->exit_reason.get()) {
                         case exit_reason_cpuid.get(): {
-                            bsl::print() << bsl::cyn << " eax: " << bsl::wht
+                            bsl::print() << bsl::cyn << " eax: " << bsl::rst
                                          << bsl::hex(bsl::to_u32_unsafe(entry->rax));
-                            bsl::print() << bsl::cyn << " ecx: " << bsl::wht
+                            bsl::print() << bsl::cyn << " ecx: " << bsl::rst
                                          << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
                             break;
                         }
 
                         case exit_reason_io.get(): {
-                            bsl::print() << bsl::cyn << " dx: " << bsl::wht
+                            bsl::print() << bsl::cyn << " dx: " << bsl::rst
                                          << bsl::hex(bsl::to_u16_unsafe(entry->rdx));
-                            bsl::print() << bsl::cyn << " exit_qualification: " << bsl::wht
+                            bsl::print() << bsl::cyn << " exit_qualification: " << bsl::rst
                                          << bsl::hex(entry->exit_qualification);
-                            bsl::print() << bsl::cyn << " exit_information: " << bsl::wht
+                            bsl::print() << bsl::cyn << " exit_information: " << bsl::rst
                                          << bsl::hex(bsl::to_u32_unsafe(entry->exit_information));
                             break;
                         }
 
                         case exit_reason_rdmsr.get(): {
-                            bsl::print() << bsl::cyn << " ecx: " << bsl::wht
+                            bsl::print() << bsl::cyn << " ecx: " << bsl::rst
                                          << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
                             break;
                         }
 
                         case exit_reason_wrmsr.get(): {
-                            bsl::print() << bsl::cyn << " ecx: " << bsl::wht
+                            bsl::print() << bsl::cyn << " ecx: " << bsl::rst
                                          << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
-                            bsl::print() << bsl::cyn << " eax: " << bsl::wht
+                            bsl::print() << bsl::cyn << " eax: " << bsl::rst
                                          << bsl::hex(bsl::to_u32_unsafe(entry->rax));
-                            bsl::print() << bsl::cyn << " edx: " << bsl::wht
+                            bsl::print() << bsl::cyn << " edx: " << bsl::rst
                                          << bsl::hex(bsl::to_u32_unsafe(entry->rdx));
                             break;
                         }
 
                         default: {
-                            bsl::print() << bsl::cyn << " exit_qualification: " << bsl::wht
+                            bsl::print() << bsl::cyn << " exit_qualification: " << bsl::rst
                                          << bsl::hex(entry->exit_qualification);
-                            bsl::print() << bsl::cyn << " exit_information: " << bsl::wht
+                            bsl::print() << bsl::cyn << " exit_information: " << bsl::rst
                                          << bsl::hex(bsl::to_u32_unsafe(entry->exit_information));
 
                             break;

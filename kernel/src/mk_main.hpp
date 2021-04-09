@@ -25,6 +25,7 @@
 #ifndef MK_MAIN_HPP
 #define MK_MAIN_HPP
 
+#include <mk_interface.hpp>
 #include <vmexit_loop_entry.hpp>
 
 #include <bsl/debug.hpp>
@@ -219,17 +220,17 @@ namespace mk
                 return bsl::errc_success;
             }
 
-            bsl::print() << bsl::bold_magenta;
+            bsl::print() << bsl::mag;
             bsl::print() << " ___                __ _           _         \n";
             bsl::print() << "| _ ) __ _ _ _ ___ / _| |__ _ _ _ | |__      \n";
             bsl::print() << "| _ \\/ _` | '_/ -_)  _| / _` | ' \\| / /    \n";
             bsl::print() << "|___/\\__,_|_| \\___|_| |_\\__,_|_||_|_\\_\\ \n";
             bsl::print() << "\n";
-            bsl::print() << bsl::bold_green;
+            bsl::print() << bsl::grn;
             bsl::print() << "Please give us a star on: ";
-            bsl::print() << bsl::bold_white;
+            bsl::print() << bsl::rst;
             bsl::print() << "https://github.com/Bareflank/hypervisor\n";
-            bsl::print() << bsl::reset_color;
+            bsl::print() << bsl::rst;
             bsl::print() << "=================================";
             bsl::print() << "=================================";
             bsl::print() << "\n";
@@ -322,7 +323,9 @@ namespace mk
             set_extension_tp(tls);
 
             /// TODO:
-            /// - Verify the incomings args
+            /// - Verify the incomings args. Right now this is a non-issue as
+            ///   we control the loader, but at some point we might want to
+            ///   support third-party loaders, and this could be an issue
             ///
 
             if (bsl::unlikely(!this->initialize(args, tls))) {
@@ -335,30 +338,45 @@ namespace mk
                 return bsl::exit_failure;
             }
 
-            if (tls.ppid() == bsl::to_u16(0)) {
-                // m_page_pool.dump();
-                // m_huge_pool.dump();
+            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.vmid())) {
+                bsl::error() << "bf_vps_op_run was never executed by an extension"    // --
+                             << bsl::endl                                             // --
+                             << bsl::here();                                          // --
 
-                // m_vm_pool.dump(tls, bsl::ZERO_U16);
-                // m_vm_pool.dump(tls, bsl::ONE_U16);
-                // m_vm_pool.dump(tls);
-
-                // m_vp_pool.dump(tls, bsl::ZERO_U16);
-                // m_vp_pool.dump(tls, bsl::ONE_U16);
-                // m_vp_pool.dump(tls);
-
-                // m_vps_pool.dump(tls, bsl::ZERO_U16);
-                // m_vps_pool.dump(tls, bsl::ONE_U16);
-                // m_vps_pool.dump(tls);
-
-                // m_ext_pool.dump(tls, bsl::ZERO_U16);
+                return bsl::exit_failure;
             }
 
-            /// TODO:
-            /// - Need a way to ensure that vps_run was executed before
-            ///   getting here. Otherwise, nothing at this point makes
-            ///   any sense.
-            ///
+            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.vpid())) {
+                bsl::error() << "bf_vps_op_run was never executed by an extension"    // --
+                             << bsl::endl                                             // --
+                             << bsl::here();                                          // --
+
+                return bsl::exit_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vpsid)) {
+                bsl::error() << "bf_vps_op_run was never executed by an extension"    // --
+                             << bsl::endl                                             // --
+                             << bsl::here();                                          // --
+
+                return bsl::exit_failure;
+            }
+
+            if (bsl::unlikely(nullptr == tls.ext_vmexit)) {
+                bsl::error() << "a vmexit handler has not been registered"    // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
+
+                return bsl::exit_failure;
+            }
+
+            if (bsl::unlikely(nullptr == tls.ext_fail)) {
+                bsl::error() << "a fast fail handler has not been registered"    // --
+                             << bsl::endl                                        // --
+                             << bsl::here();                                     // --
+
+                return bsl::exit_failure;
+            }
 
             if (bsl::unlikely(vmexit_loop_entry() != bsl::exit_success)) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -367,28 +385,15 @@ namespace mk
 
             return bsl::exit_success;
 
-            // [x] implement page_pool_t dump
-            // [x] implement huge_pool_t dump
-            // [x] implement vm_pool_t dump
-            // [x] implement vm_t dump
-            // [x] implement vp_pool_t dump
-            // [x] implement vp_t dump
-            // [x] implement vps_pool_t dump
-            // [x] implement vps_t dump
-            // [x] implement ext_t dump
-            // [ ] implement vmexit log dump
-            // [x] implement root_page_table_t dump
-            // [ ] implement esr dump
-            // [ ] implement mtrrs_t dump
-            // [ ] implement debug ops for all dump functions
             // [ ] implement ept
             // [ ] implement validate the input of all syscalls
+            // [ ] implement additional optimizations for release builds
+            // [ ] store online pps in the TLS block
+            // [ ] implement checks for which MSRs can be read/written
+            // [ ] implement checks for VMCS fields can be read/written
 
             // Remaining Tasks (besides todos):
             // [ ] implement -bsl-template-generic-param properly
-            // [ ] implement additional optimizations for release builds
-            // [ ] implement checks for which MSRs can be read/written
-            // [ ] implement checks for VMCS fields can be read/written
             // [ ] implement contants for all of the asm logic
             // [ ] implement some basic unit tests
             // [ ] implement some basic syscall tests

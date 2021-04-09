@@ -624,7 +624,7 @@ namespace mk
 
             for (auto const vps : m_pool) {
                 bsl::print() << bsl::ylw << "| ";
-                bsl::print() << bsl::wht << bsl::hex(vps.data->id()) << " ";
+                bsl::print() << bsl::rst << bsl::hex(vps.data->id()) << " ";
                 bsl::print() << bsl::ylw << "| ";
                 if (vps.data->is_allocated()) {
                     bsl::print() << bsl::grn << bsl::fmt{"^10s", "yes "};

@@ -115,7 +115,7 @@ namespace example
         }
 
         /// NOTE:
-        /// - Set up wht intercept controls. On AMD, we need to intercept
+        /// - Set up intercept controls. On AMD, we need to intercept
         ///   VMRun, and CPUID if we plan to support reporting and stopping.
         ///
 

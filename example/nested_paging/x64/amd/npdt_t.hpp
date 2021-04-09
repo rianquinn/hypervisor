@@ -36,7 +36,7 @@
 namespace example
 {
     /// @brief defined the expected size of the npdt_t struct
-    constexpr bsl::safe_uintmax NUM_PDT_ENTRIES{bsl::to_umax(512)};
+    constexpr bsl::safe_uintmax NUM_NPDT_ENTRIES{bsl::to_umax(512)};
 
     /// @struct example::npdt_t
     ///
@@ -46,17 +46,8 @@ namespace example
     struct npdt_t final
     {
         /// @brief stores the entires in the table
-        bsl::array<npdte_t, NUM_PDT_ENTRIES.get()> entries;
+        bsl::array<npdte_t, NUM_NPDT_ENTRIES.get()> entries;
     };
-
-    namespace details
-    {
-        /// @brief defined the expected size of the npdt_t struct
-        constexpr bsl::safe_uintmax EXPECTED_PDT_T_SIZE{bsl::to_umax(HYPERVISOR_PAGE_SIZE)};
-
-        /// Check to make sure the npdt_t is the right size.
-        static_assert(sizeof(npdt_t) == EXPECTED_PDT_T_SIZE);
-    }
 }
 
 #pragma pack(pop)

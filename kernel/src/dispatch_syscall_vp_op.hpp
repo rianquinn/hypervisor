@@ -34,67 +34,64 @@
 
 namespace mk
 {
-    namespace details
+    /// <!-- description -->
+    ///   @brief Implements the bf_vp_op_create_vp syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
+    ///   @param tls the current TLS block
+    ///   @param vp_pool the VP pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vp_op_create_vp(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) -> syscall::bf_status_t
     {
-        /// <!-- description -->
-        ///   @brief Implements the bf_vp_op_create_vp syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-        ///   @param tls the current TLS block
-        ///   @param vp_pool the VP pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vp_op_create_vp(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) -> syscall::bf_status_t
-        {
-            auto const vpid{vp_pool.allocate()};
-            if (bsl::unlikely(!vpid)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
-            tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vpid)).get();
-            return syscall::BF_STATUS_SUCCESS;
+        auto const vpid{vp_pool.allocate()};
+        if (bsl::unlikely(!vpid)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vp_op_destroy_vp syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-        ///   @param tls the current TLS block
-        ///   @param vp_pool the VP pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vp_op_destroy_vp(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) -> syscall::bf_status_t
-        {
-            auto const vpid{bsl::to_u16_unsafe(tls.ext_reg1)};
-            if (bsl::unlikely(tls.vpid() == vpid)) {
-                bsl::error() << "cannot destory vm "            // --
-                             << bsl::hex(vpid)                  // --
-                             << " as it is currently active"    // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+        constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
+        tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vpid)).get();
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vp_op_destroy_vp syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
+    ///   @param tls the current TLS block
+    ///   @param vp_pool the VP pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vp_op_destroy_vp(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) -> syscall::bf_status_t
+    {
+        auto const vpid{bsl::to_u16_unsafe(tls.ext_reg1)};
+        if (bsl::unlikely(tls.vpid() == vpid)) {
+            bsl::error() << "cannot destory vm "            // --
+                         << bsl::hex(vpid)                  // --
+                         << " as it is currently active"    // --
+                         << bsl::endl                       // --
+                         << bsl::here();                    // --
 
-            if (bsl::unlikely(!vp_pool.deallocate(vpid))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            return syscall::BF_STATUS_SUCCESS;
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
+
+        if (bsl::unlikely(!vp_pool.deallocate(vpid))) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        }
+
+        return syscall::BF_STATUS_SUCCESS;
     }
 
     /// <!-- description -->
@@ -138,7 +135,7 @@ namespace mk
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_VP_OP_CREATE_VP_IDX_VAL.get(): {
-                ret = details::syscall_vp_op_create_vp(tls, vp_pool);
+                ret = syscall_vp_op_create_vp(tls, vp_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -148,7 +145,7 @@ namespace mk
             }
 
             case syscall::BF_VP_OP_DESTROY_VP_IDX_VAL.get(): {
-                ret = details::syscall_vp_op_destroy_vp(tls, vp_pool);
+                ret = syscall_vp_op_destroy_vp(tls, vp_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

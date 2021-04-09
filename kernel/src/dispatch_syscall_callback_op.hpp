@@ -38,127 +38,119 @@
 
 namespace mk
 {
-    namespace details
+    /// <!-- description -->
+    ///   @brief Implements the bf_callback_op_register_bootstrap syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
+    ///   @param tls the current TLS block
+    ///   @param ext the extension that made the syscall
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_callback_op_register_bootstrap(TLS_CONCEPT &tls, EXT_CONCEPT &ext)
+        -> syscall::bf_status_t
     {
-        /// <!-- description -->
-        ///   @brief Implements the bf_callback_op_register_bootstrap syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-        ///   @param tls the current TLS block
-        ///   @param ext the extension that made the syscall
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename EXT_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_callback_op_register_bootstrap(TLS_CONCEPT &tls, EXT_CONCEPT &ext)
-            -> syscall::bf_status_t
-        {
-            if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
-                bsl::error() << "invalid handle: "        // --
-                             << bsl::hex(tls.ext_reg0)    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+        if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
+            bsl::error() << "invalid handle: "        // --
+                         << bsl::hex(tls.ext_reg0)    // --
+                         << bsl::endl                 // --
+                         << bsl::here();              // --
 
-                return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
-            }
-
-            if (bsl::unlikely(ext.bootstrap_ip())) {
-                bsl::error() << "ext ["                                          // --
-                             << bsl::hex(ext.id())                               // --
-                             << "] already registered a bootstrap callback\n"    // --
-                             << bsl::here();                                     // --
-
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            ext.set_bootstrap_ip(tls.ext_reg1);
-            return syscall::BF_STATUS_SUCCESS;
+            return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_callback_op_register_vmexit syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-        ///   @param tls the current TLS block
-        ///   @param ext the extension that made the syscall
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename EXT_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_callback_op_register_vmexit(TLS_CONCEPT &tls, EXT_CONCEPT &ext)
-            -> syscall::bf_status_t
-        {
-            if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
-                bsl::error() << "invalid handle: "        // --
-                             << bsl::hex(tls.ext_reg0)    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+        if (bsl::unlikely(ext.bootstrap_ip())) {
+            bsl::error() << "ext ["                                          // --
+                         << bsl::hex(ext.id())                               // --
+                         << "] already registered a bootstrap callback\n"    // --
+                         << bsl::here();                                     // --
 
-                return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
-            }
-
-            if (bsl::likely(nullptr == tls.ext_vmexit)) {
-                tls.ext_vmexit = &ext;
-            }
-            else {
-                bsl::error() << "ext ["                                                       // --
-                             << bsl::hex(static_cast<EXT_CONCEPT *>(tls.ext_vmexit)->id())    // --
-                             << "] already registered a VMExit callback\n"                    // --
-                             << bsl::here();                                                  // --
-
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            ext.set_vmexit_ip(tls.ext_reg1);
-            return syscall::BF_STATUS_SUCCESS;
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_callback_op_register_fail syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-        ///   @param tls the current TLS block
-        ///   @param ext the extension that made the syscall
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename EXT_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_callback_op_register_fail(TLS_CONCEPT &tls, EXT_CONCEPT &ext)
-            -> syscall::bf_status_t
-        {
-            if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
-                bsl::error() << "invalid handle: "        // --
-                             << bsl::hex(tls.ext_reg0)    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+        ext.set_bootstrap_ip(tls.ext_reg1);
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-                return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_callback_op_register_vmexit syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
+    ///   @param tls the current TLS block
+    ///   @param ext the extension that made the syscall
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_callback_op_register_vmexit(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+    {
+        if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
+            bsl::error() << "invalid handle: "        // --
+                         << bsl::hex(tls.ext_reg0)    // --
+                         << bsl::endl                 // --
+                         << bsl::here();              // --
 
-            if (bsl::likely(nullptr == tls.ext_fail)) {
-                tls.ext_fail = &ext;
-            }
-            else {
-                bsl::error() << "ext ["                                                     // --
-                             << bsl::hex(static_cast<EXT_CONCEPT *>(tls.ext_fail)->id())    // --
-                             << "] already registered a fast fail callback\n"               // --
-                             << bsl::here();                                                // --
-
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            ext.set_fail_ip(tls.ext_reg1);
-            return syscall::BF_STATUS_SUCCESS;
+            return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
         }
+
+        if (bsl::unlikely(nullptr != tls.ext_vmexit)) {
+            bsl::error() << "ext ["                                                       // --
+                         << bsl::hex(static_cast<EXT_CONCEPT *>(tls.ext_vmexit)->id())    // --
+                         << "] already registered a VMExit callback\n"                    // --
+                         << bsl::here();                                                  // --
+
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        }
+
+        tls.ext_vmexit = &ext;
+        ext.set_vmexit_ip(tls.ext_reg1);
+
+        return syscall::BF_STATUS_SUCCESS;
+    }
+
+    /// <!-- description -->
+    ///   @brief Implements the bf_callback_op_register_fail syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
+    ///   @param tls the current TLS block
+    ///   @param ext the extension that made the syscall
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_callback_op_register_fail(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+    {
+        if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
+            bsl::error() << "invalid handle: "        // --
+                         << bsl::hex(tls.ext_reg0)    // --
+                         << bsl::endl                 // --
+                         << bsl::here();              // --
+
+            return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
+        }
+
+        if (bsl::unlikely(nullptr != tls.ext_fail)) {
+            bsl::error() << "ext ["                                                     // --
+                         << bsl::hex(static_cast<EXT_CONCEPT *>(tls.ext_fail)->id())    // --
+                         << "] already registered a fast fail callback\n"               // --
+                         << bsl::here();                                                // --
+
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        }
+
+        tls.ext_fail = &ext;
+        ext.set_fail_ip(tls.ext_reg1);
+        return syscall::BF_STATUS_SUCCESS;
     }
 
     /// <!-- description -->
@@ -185,7 +177,7 @@ namespace mk
             }
 
             case syscall::BF_CALLBACK_OP_REGISTER_BOOTSTRAP_IDX_VAL.get(): {
-                ret = details::syscall_callback_op_register_bootstrap(tls, ext);
+                ret = syscall_callback_op_register_bootstrap(tls, ext);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -195,7 +187,7 @@ namespace mk
             }
 
             case syscall::BF_CALLBACK_OP_REGISTER_VMEXIT_IDX_VAL.get(): {
-                ret = details::syscall_callback_op_register_vmexit(tls, ext);
+                ret = syscall_callback_op_register_vmexit(tls, ext);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -205,7 +197,7 @@ namespace mk
             }
 
             case syscall::BF_CALLBACK_OP_REGISTER_FAIL_IDX_VAL.get(): {
-                ret = details::syscall_callback_op_register_fail(tls, ext);
+                ret = syscall_callback_op_register_fail(tls, ext);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

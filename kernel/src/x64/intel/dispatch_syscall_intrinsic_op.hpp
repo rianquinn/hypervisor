@@ -34,109 +34,106 @@
 
 namespace mk
 {
-    namespace details
+    /// <!-- description -->
+    ///   @brief Implements the bf_intrinsic_op_rdmsr syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
+    ///   @param tls the current TLS block
+    ///   @param intrinsic the intrinsics to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_intrinsic_op_rdmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
+        -> syscall::bf_status_t
     {
-        /// <!-- description -->
-        ///   @brief Implements the bf_intrinsic_op_rdmsr syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-        ///   @param tls the current TLS block
-        ///   @param intrinsic the intrinsics to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_intrinsic_op_rdmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
-            -> syscall::bf_status_t
-        {
-            auto const ret{intrinsic.rdmsr(bsl::to_u32_unsafe(tls.ext_reg1))};
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            tls.ext_reg0 = ret.get();
-            return syscall::BF_STATUS_SUCCESS;
+        auto const ret{intrinsic.rdmsr(bsl::to_u32_unsafe(tls.ext_reg1))};
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_intrinsic_op_wrmsr syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-        ///   @param tls the current TLS block
-        ///   @param intrinsic the intrinsics to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_intrinsic_op_wrmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
-            -> syscall::bf_status_t
-        {
-            auto const ret{intrinsic.wrmsr(bsl::to_u32_unsafe(tls.ext_reg1), tls.ext_reg2)};
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+        tls.ext_reg0 = ret.get();
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            return syscall::BF_STATUS_SUCCESS;
+    /// <!-- description -->
+    ///   @brief Implements the bf_intrinsic_op_wrmsr syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
+    ///   @param tls the current TLS block
+    ///   @param intrinsic the intrinsics to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_intrinsic_op_wrmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
+        -> syscall::bf_status_t
+    {
+        auto const ret{intrinsic.wrmsr(bsl::to_u32_unsafe(tls.ext_reg1), tls.ext_reg2)};
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_intrinsic_op_invept syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-        ///   @param tls the current TLS block
-        ///   @param intrinsic the intrinsics to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_intrinsic_op_invept(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
-            -> syscall::bf_status_t
-        {
-            auto const ret{intrinsic.invept(tls.ext_reg1, tls.ext_reg2)};
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            return syscall::BF_STATUS_SUCCESS;
+    /// <!-- description -->
+    ///   @brief Implements the bf_intrinsic_op_invept syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
+    ///   @param tls the current TLS block
+    ///   @param intrinsic the intrinsics to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_intrinsic_op_invept(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
+        -> syscall::bf_status_t
+    {
+        auto const ret{intrinsic.invept(tls.ext_reg1, tls.ext_reg2)};
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_intrinsic_op_invvpid syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-        ///   @param tls the current TLS block
-        ///   @param intrinsic the intrinsics to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_intrinsic_op_invvpid(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
-            -> syscall::bf_status_t
-        {
-            auto const ret{
-                intrinsic.invvpid(tls.ext_reg1, bsl::to_u16_unsafe(tls.ext_reg2), tls.ext_reg3)};
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            return syscall::BF_STATUS_SUCCESS;
+    /// <!-- description -->
+    ///   @brief Implements the bf_intrinsic_op_invvpid syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
+    ///   @param tls the current TLS block
+    ///   @param intrinsic the intrinsics to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_intrinsic_op_invvpid(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
+        -> syscall::bf_status_t
+    {
+        auto const ret{
+            intrinsic.invvpid(tls.ext_reg1, bsl::to_u16_unsafe(tls.ext_reg2), tls.ext_reg3)};
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
+
+        return syscall::BF_STATUS_SUCCESS;
     }
 
     /// <!-- description -->
@@ -171,7 +168,7 @@ namespace mk
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_INTRINSIC_OP_RDMSR_IDX_VAL.get(): {
-                ret = details::syscall_intrinsic_op_rdmsr(tls, intrinsic);
+                ret = syscall_intrinsic_op_rdmsr(tls, intrinsic);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -181,7 +178,7 @@ namespace mk
             }
 
             case syscall::BF_INTRINSIC_OP_WRMSR_IDX_VAL.get(): {
-                ret = details::syscall_intrinsic_op_wrmsr(tls, intrinsic);
+                ret = syscall_intrinsic_op_wrmsr(tls, intrinsic);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -191,7 +188,7 @@ namespace mk
             }
 
             case syscall::BF_INTRINSIC_OP_INVEPT_IDX_VAL.get(): {
-                ret = details::syscall_intrinsic_op_invept(tls, intrinsic);
+                ret = syscall_intrinsic_op_invept(tls, intrinsic);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -201,7 +198,7 @@ namespace mk
             }
 
             case syscall::BF_INTRINSIC_OP_INVVPID_IDX_VAL.get(): {
-                ret = details::syscall_intrinsic_op_invvpid(tls, intrinsic);
+                ret = syscall_intrinsic_op_invvpid(tls, intrinsic);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

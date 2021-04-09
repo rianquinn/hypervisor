@@ -39,13 +39,10 @@
 
 namespace example
 {
-    namespace details
-    {
-        /// @brief defines the CPUID SVM feature identification index
-        constexpr bsl::safe_uintmax CPUID_SVM_FEATURE_IDENTIFICATION{bsl::to_umax(0x8000000AU)};
-        /// @brief defines the CPUID SVM feature identification bit for NP
-        constexpr bsl::safe_uintmax CPUID_SVM_FEATURE_IDENTIFICATION_NP{bsl::to_umax(0x00000001U)};
-    }
+    /// @brief defines the CPUID SVM feature identification index
+    constexpr bsl::safe_uintmax CPUID_SVM_FEATURE_IDENTIFICATION{bsl::to_umax(0x8000000AU)};
+    /// @brief defines the CPUID SVM feature identification bit for NP
+    constexpr bsl::safe_uintmax CPUID_SVM_FEATURE_IDENTIFICATION_NP{bsl::to_umax(0x00000001U)};
 
     /// @brief stores the page pool to use for page allocation
     constinit inline page_pool_t g_page_pool{};
@@ -136,7 +133,7 @@ namespace example
         }
 
         /// NOTE:
-        /// - Set up wht intercept controls. On AMD, we need to intercept
+        /// - Set up intercept controls. On AMD, we need to intercept
         ///   VMRun, and CPUID if we plan to support reporting and stopping.
         ///
 
@@ -166,11 +163,11 @@ namespace example
         ///   check on the first physical processor and be done.
         ///
 
-        rax = details::CPUID_SVM_FEATURE_IDENTIFICATION;
+        rax = CPUID_SVM_FEATURE_IDENTIFICATION;
         rcx = {};
         intrinsic_cpuid(rax.data(), rbx.data(), rcx.data(), rdx.data());
 
-        if (bsl::unlikely((rdx & details::CPUID_SVM_FEATURE_IDENTIFICATION_NP).is_zero())) {
+        if (bsl::unlikely((rdx & CPUID_SVM_FEATURE_IDENTIFICATION_NP).is_zero())) {
             bsl::error() << "nested paging not supported\n" << bsl::here();
             return bsl::errc_failure;
         }

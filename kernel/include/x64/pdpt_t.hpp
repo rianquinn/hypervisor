@@ -48,15 +48,6 @@ namespace mk
         /// @brief stores the entires in the table
         bsl::array<loader::pdpte_t, NUM_PDPT_ENTRIES.get()> entries;
     };
-
-    namespace details
-    {
-        /// @brief defined the expected size of the pdpt_t struct
-        constexpr bsl::safe_uintmax EXPECTED_PDPT_T_SIZE{bsl::to_umax(0x1000)};
-
-        /// Check to make sure the pdpt_t is the right size.
-        static_assert(sizeof(pdpt_t) == EXPECTED_PDPT_T_SIZE);
-    }
 }
 
 #pragma pack(pop)

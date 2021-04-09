@@ -36,558 +36,538 @@
 
 namespace mk
 {
-    namespace details
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_create_vps syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_create_vps(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
     {
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_create_vps syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_create_vps(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
-            -> syscall::bf_status_t
-        {
-            auto const vpsid{vps_pool.allocate(tls)};
-            if (bsl::unlikely(!vpsid)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
-            tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vpsid)).get();
-            return syscall::BF_STATUS_SUCCESS;
+        auto const vpsid{vps_pool.allocate(tls)};
+        if (bsl::unlikely(!vpsid)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_destroy_vps syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_destroy_vps(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
-            -> syscall::bf_status_t
-        {
-            auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
-            if (bsl::unlikely(tls.active_vpsid == vpsid)) {
-                bsl::error() << "cannot destory vm "            // --
-                             << bsl::hex(vpsid)                 // --
-                             << " as it is currently active"    // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+        constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
+        tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vpsid)).get();
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_destroy_vps syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_destroy_vps(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
+        if (bsl::unlikely(tls.active_vpsid == vpsid)) {
+            bsl::error() << "cannot destory vm "            // --
+                         << bsl::hex(vpsid)                 // --
+                         << " as it is currently active"    // --
+                         << bsl::endl                       // --
+                         << bsl::here();                    // --
 
-            if (bsl::unlikely(!vps_pool.deallocate(vpsid))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            return syscall::BF_STATUS_SUCCESS;
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_init_as_root syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_init_as_root(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
-            -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.state_save_to_vps(
-                tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.root_vp_state)};
-
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!vps_pool.deallocate(vpsid))) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_read8 syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_read8(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.template read<bsl::uint8>(
-                tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_init_as_root syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_init_as_root(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
+        -> syscall::bf_status_t
+    {
+        auto const ret{
+            vps_pool.state_save_to_vps(tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.root_vp_state)};
 
-            constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFFFF00U};
-            tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(ret)).get();
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_read16 syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_read16(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.template read<bsl::uint16>(
-                tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_read8 syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_read8(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.template read<bsl::uint8>(
+            tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
 
-            constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
-            tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(ret)).get();
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_read32 syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_read32(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.template read<bsl::uint32>(
-                tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
+        constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFFFF00U};
+        tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(ret)).get();
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_read16 syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_read16(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.template read<bsl::uint16>(
+            tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
 
-            constexpr bsl::safe_uintmax mask{0xFFFFFFFF00000000U};
-            tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(ret)).get();
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_read64 syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_read64(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.template read<bsl::uint64>(
-                tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
+        constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
+        tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(ret)).get();
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_read32 syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_read32(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.template read<bsl::uint32>(
+            tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
 
-            tls.ext_reg0 = ret.get();
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_write8 syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_write8(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.template write<bsl::uint8>(
-                tls,
-                bsl::to_u16_unsafe(tls.ext_reg1),
-                tls.ext_reg2,
-                bsl::to_u8_unsafe(tls.ext_reg3))};
+        constexpr bsl::safe_uintmax mask{0xFFFFFFFF00000000U};
+        tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(ret)).get();
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_read64 syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_read64(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.template read<bsl::uint64>(
+            tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
 
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_write16 syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_write16(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.template write<bsl::uint16>(
-                tls,
-                bsl::to_u16_unsafe(tls.ext_reg1),
-                tls.ext_reg2,
-                bsl::to_u16_unsafe(tls.ext_reg3))};
+        tls.ext_reg0 = ret.get();
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_write8 syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_write8(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.template write<bsl::uint8>(
+            tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2, bsl::to_u8_unsafe(tls.ext_reg3))};
 
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_write32 syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_write32(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.template write<bsl::uint32>(
-                tls,
-                bsl::to_u16_unsafe(tls.ext_reg1),
-                tls.ext_reg2,
-                bsl::to_u32_unsafe(tls.ext_reg3))};
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_write16 syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_write16(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.template write<bsl::uint16>(
+            tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2, bsl::to_u16_unsafe(tls.ext_reg3))};
 
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_write64 syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_write64(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.template write<bsl::uint64>(
-                tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2, tls.ext_reg3)};
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_write32 syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_write32(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.template write<bsl::uint32>(
+            tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2, bsl::to_u32_unsafe(tls.ext_reg3))};
 
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_read_reg syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_read_reg(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
-            -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.read_reg(
-                tls,
-                bsl::to_u16_unsafe(tls.ext_reg1),
-                static_cast<syscall::bf_reg_t>(tls.ext_reg2))};
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_write64 syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_write64(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.template write<bsl::uint64>(
+            tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2, tls.ext_reg3)};
 
-            tls.ext_reg0 = ret.get();
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_write_reg syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_write_reg(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
-            -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.write_reg(
-                tls,
-                bsl::to_u16_unsafe(tls.ext_reg1),
-                static_cast<syscall::bf_reg_t>(tls.ext_reg2),
-                tls.ext_reg3)};
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_read_reg syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_read_reg(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.read_reg(
+            tls, bsl::to_u16_unsafe(tls.ext_reg1), static_cast<syscall::bf_reg_t>(tls.ext_reg2))};
 
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_run syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
-        ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
-        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param ext_pool the extension pool to use
-        ///   @param vm_pool the VM pool to use
-        ///   @param vp_pool the VP pool to use
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<
-            typename TLS_CONCEPT,
-            typename EXT_POOL_CONCEPT,
-            typename VM_POOL_CONCEPT,
-            typename VP_POOL_CONCEPT,
-            typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_run(
-            TLS_CONCEPT &tls,
-            EXT_POOL_CONCEPT &ext_pool,
-            VM_POOL_CONCEPT &vm_pool,
-            VP_POOL_CONCEPT &vp_pool,
-            VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
-        {
-            auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
-            if (bsl::unlikely(!vps_pool.is_allocated(vpsid))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+        tls.ext_reg0 = ret.get();
+        return syscall::BF_STATUS_SUCCESS;
+    }
 
-            auto const vpid{bsl::to_u16_unsafe(tls.ext_reg2)};
-            if (bsl::unlikely(!vp_pool.is_allocated(vpid))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_write_reg syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_write_reg(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.write_reg(
+            tls,
+            bsl::to_u16_unsafe(tls.ext_reg1),
+            static_cast<syscall::bf_reg_t>(tls.ext_reg2),
+            tls.ext_reg3)};
 
-            auto const vmid{bsl::to_u16_unsafe(tls.ext_reg3)};
-            if (bsl::unlikely(!vm_pool.is_allocated(vmid))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            if (bsl::unlikely(!ext_pool.set_active_vm(tls, vmid))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            tls.active_vpsid = vpsid.get();
-            tls.set_vpid(vpid);
-            tls.set_vmid(vmid);
-
-            return_to_mk(bsl::ZERO_I32.get());
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_run_current syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        [[nodiscard]] inline auto
-        syscall_vps_op_run_current() -> syscall::bf_status_t
-        {
-            return_to_mk(bsl::ZERO_I32.get());
-            return syscall::BF_STATUS_SUCCESS;
+        return syscall::BF_STATUS_SUCCESS;
+    }
+
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_run syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
+    ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
+    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param ext_pool the extension pool to use
+    ///   @param vm_pool the VM pool to use
+    ///   @param vp_pool the VP pool to use
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<
+        typename TLS_CONCEPT,
+        typename EXT_POOL_CONCEPT,
+        typename VM_POOL_CONCEPT,
+        typename VP_POOL_CONCEPT,
+        typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_run(
+        TLS_CONCEPT &tls,
+        EXT_POOL_CONCEPT &ext_pool,
+        VM_POOL_CONCEPT &vm_pool,
+        VP_POOL_CONCEPT &vp_pool,
+        VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
+        if (bsl::unlikely(!vps_pool.is_allocated(vpsid))) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_advance_ip syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_advance_ip(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
-            -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.advance_ip(tls, bsl::to_u16_unsafe(tls.ext_reg1))};
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            return syscall::BF_STATUS_SUCCESS;
+        auto const vpid{bsl::to_u16_unsafe(tls.ext_reg2)};
+        if (bsl::unlikely(!vp_pool.is_allocated(vpid))) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_advance_ip_and_run_current syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_advance_ip_and_run_current(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
-            -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.advance_ip(tls, tls.active_vpsid)};
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            return_to_mk(bsl::ZERO_I32.get());
-            return syscall::BF_STATUS_SUCCESS;
+        auto const vmid{bsl::to_u16_unsafe(tls.ext_reg3)};
+        if (bsl::unlikely(!vm_pool.is_allocated(vmid))) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_promote syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_promote(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
-        {
-            auto const ret{vps_pool.vps_to_state_save(
-                tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.root_vp_state)};
-
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-
-            promote(tls.root_vp_state);
-            return syscall::BF_STATUS_SUCCESS;
+        if (bsl::unlikely(!ext_pool.set_active_vm(tls, vmid))) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        /// <!-- description -->
-        ///   @brief Implements the bf_vps_op_clear_vps syscall
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-        ///   @param tls the current TLS block
-        ///   @param vps_pool the VPS pool to use
-        ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-        ///     code on failure.
-        ///
-        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
-        [[nodiscard]] constexpr auto
-        syscall_vps_op_clear_vps(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
-            -> syscall::bf_status_t
-        {
-            if (bsl::unlikely(!vps_pool.clear(bsl::to_u16_unsafe(tls.ext_reg1)))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+        tls.active_vpsid = vpsid.get();
+        tls.set_vpid(vpid);
+        tls.set_vmid(vmid);
 
-            return syscall::BF_STATUS_SUCCESS;
+        return_to_mk(bsl::ZERO_I32.get());
+        return syscall::BF_STATUS_SUCCESS;
+    }
+
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_run_current syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    [[nodiscard]] inline auto
+    syscall_vps_op_run_current() -> syscall::bf_status_t
+    {
+        return_to_mk(bsl::ZERO_I32.get());
+        return syscall::BF_STATUS_SUCCESS;
+    }
+
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_advance_ip syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_advance_ip(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.advance_ip(tls, bsl::to_u16_unsafe(tls.ext_reg1))};
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
+
+        return syscall::BF_STATUS_SUCCESS;
+    }
+
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_advance_ip_and_run_current syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_advance_ip_and_run_current(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
+        -> syscall::bf_status_t
+    {
+        auto const ret{vps_pool.advance_ip(tls, tls.active_vpsid)};
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        }
+
+        return_to_mk(bsl::ZERO_I32.get());
+        return syscall::BF_STATUS_SUCCESS;
+    }
+
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_promote syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_promote(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        auto const ret{
+            vps_pool.vps_to_state_save(tls, bsl::to_u16_unsafe(tls.ext_reg1), tls.root_vp_state)};
+
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        }
+
+        promote(tls.root_vp_state);
+        return syscall::BF_STATUS_SUCCESS;
+    }
+
+    /// <!-- description -->
+    ///   @brief Implements the bf_vps_op_clear_vps syscall
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls the current TLS block
+    ///   @param vps_pool the VPS pool to use
+    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    ///     code on failure.
+    ///
+    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    [[nodiscard]] constexpr auto
+    syscall_vps_op_clear_vps(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    {
+        if (bsl::unlikely(!vps_pool.clear(bsl::to_u16_unsafe(tls.ext_reg1)))) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        }
+
+        return syscall::BF_STATUS_SUCCESS;
     }
 
     /// <!-- description -->
@@ -648,7 +628,7 @@ namespace mk
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_VPS_OP_CREATE_VPS_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_create_vps(tls, vps_pool);
+                ret = syscall_vps_op_create_vps(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -658,7 +638,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_DESTROY_VPS_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_destroy_vps(tls, vps_pool);
+                ret = syscall_vps_op_destroy_vps(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -668,7 +648,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_INIT_AS_ROOT_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_init_as_root(tls, vps_pool);
+                ret = syscall_vps_op_init_as_root(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -678,7 +658,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_READ8_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_read8(tls, vps_pool);
+                ret = syscall_vps_op_read8(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -688,7 +668,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_READ16_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_read16(tls, vps_pool);
+                ret = syscall_vps_op_read16(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -698,7 +678,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_READ32_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_read32(tls, vps_pool);
+                ret = syscall_vps_op_read32(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -708,7 +688,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_READ64_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_read64(tls, vps_pool);
+                ret = syscall_vps_op_read64(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -718,7 +698,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_WRITE8_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_write8(tls, vps_pool);
+                ret = syscall_vps_op_write8(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -728,7 +708,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_WRITE16_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_write16(tls, vps_pool);
+                ret = syscall_vps_op_write16(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -738,7 +718,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_WRITE32_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_write32(tls, vps_pool);
+                ret = syscall_vps_op_write32(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -748,7 +728,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_WRITE64_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_write64(tls, vps_pool);
+                ret = syscall_vps_op_write64(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -758,7 +738,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_READ_REG_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_read_reg(tls, vps_pool);
+                ret = syscall_vps_op_read_reg(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -768,7 +748,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_WRITE_REG_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_write_reg(tls, vps_pool);
+                ret = syscall_vps_op_write_reg(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -778,7 +758,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_RUN_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_run(tls, ext_pool, vm_pool, vp_pool, vps_pool);
+                ret = syscall_vps_op_run(tls, ext_pool, vm_pool, vp_pool, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -788,7 +768,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_RUN_CURRENT_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_run_current();
+                ret = syscall_vps_op_run_current();
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -798,7 +778,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_ADVANCE_IP_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_advance_ip(tls, vps_pool);
+                ret = syscall_vps_op_advance_ip(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -808,7 +788,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_ADVANCE_IP_AND_RUN_CURRENT_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_advance_ip_and_run_current(tls, vps_pool);
+                ret = syscall_vps_op_advance_ip_and_run_current(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -818,7 +798,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_PROMOTE_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_promote(tls, vps_pool);
+                ret = syscall_vps_op_promote(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -828,7 +808,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_CLEAR_VPS_IDX_VAL.get(): {
-                ret = details::syscall_vps_op_clear_vps(tls, vps_pool);
+                ret = syscall_vps_op_clear_vps(tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

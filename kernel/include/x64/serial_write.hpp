@@ -34,32 +34,29 @@
 
 namespace mk
 {
-    namespace details
-    {
-        /// @brief defines the line status register
-        constexpr bsl::safe_uint16 LSR{bsl::to_u16(5)};
+    /// @brief defines the line status register
+    constexpr bsl::safe_uint16 LSR{bsl::to_u16(5)};
 
-        /// @brief defines the transmit FIFO empty bit in the LSR
-        constexpr bsl::safe_uint8 LSR_TRANSMIT_FIFO_EMPTY{bsl::to_u8(1) << bsl::to_u8(5)};
+    /// @brief defines the transmit FIFO empty bit in the LSR
+    constexpr bsl::safe_uint8 LSR_TRANSMIT_FIFO_EMPTY{bsl::to_u8(1) << bsl::to_u8(5)};
 
-        /// <!-- description -->
-        ///   @brief Reads a byte from the requested serial port register.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param reg the serial port register to read from
-        ///   @return the data read from the requested serial port register
-        ///
-        [[nodiscard]] extern "C" auto serial_in(bsl::uint16 reg) noexcept -> bsl::uint8;
+    /// <!-- description -->
+    ///   @brief Reads a byte from the requested serial port register.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg the serial port register to read from
+    ///   @return the data read from the requested serial port register
+    ///
+    [[nodiscard]] extern "C" auto serial_in(bsl::uint16 reg) noexcept -> bsl::uint8;
 
-        /// <!-- description -->
-        ///   @brief Writes a byte to the requested serial port register.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param reg the serial port register to write to
-        ///   @param c the byte to write to the requested serial port register
-        ///
-        extern "C" void serial_out(bsl::uint16 reg, bsl::char_type const c) noexcept;
-    }
+    /// <!-- description -->
+    ///   @brief Writes a byte to the requested serial port register.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg the serial port register to write to
+    ///   @param c the byte to write to the requested serial port register
+    ///
+    extern "C" void serial_out(bsl::uint16 reg, bsl::char_type const c) noexcept;
 
     /// <!-- description -->
     ///   @brief Outputs a character to the serial port.
@@ -76,16 +73,16 @@ namespace mk
 
         while (true) {
             bsl::safe_uint8 const status{
-                details::serial_in((details::LSR + bsl::to_u16(HYPERVISOR_SERIAL_PORT)).get())};
+                serial_in((LSR + bsl::to_u16(HYPERVISOR_SERIAL_PORT)).get())};
 
-            if ((status & details::LSR_TRANSMIT_FIFO_EMPTY).is_pos()) {
+            if ((status & LSR_TRANSMIT_FIFO_EMPTY).is_pos()) {
                 break;
             }
 
             bsl::touch();
         }
 
-        details::serial_out(bsl::to_u16(HYPERVISOR_SERIAL_PORT).get(), c);
+        serial_out(bsl::to_u16(HYPERVISOR_SERIAL_PORT).get(), c);
     }
 
     /// <!-- description -->

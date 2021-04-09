@@ -46,13 +46,10 @@
 
 namespace vmmctl
 {
-    namespace details
-    {
-        /// @brief defines what an error looks like from a POSIX call.
-        constexpr bsl::safe_int32 IFMAP_POSIX_ERROR{-1};
-        /// @brief defines what an invalid file is.
-        constexpr bsl::safe_int32 IFMAP_INVALID_FILE{-1};
-    }
+    /// @brief defines what an error looks like from a POSIX call.
+    constexpr bsl::safe_int32 IFMAP_POSIX_ERROR{-1};
+    /// @brief defines what an invalid file is.
+    constexpr bsl::safe_int32 IFMAP_INVALID_FILE{-1};
 
     /// @class bsl::ifmap
     ///
@@ -63,7 +60,7 @@ namespace vmmctl
     class ifmap final
     {
         /// @brief stores a handle to the mapped file.
-        bsl::int32 m_file{details::IFMAP_INVALID_FILE.get()};
+        bsl::int32 m_file{IFMAP_INVALID_FILE.get()};
         /// @brief stores a view of the file that is mapped.
         bsl::span<bsl::byte const> m_data{};
 
@@ -112,23 +109,23 @@ namespace vmmctl
             // We don't have a choice here
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
             m_file = open(filename.data(), O_RDONLY);
-            if (bsl::unlikely(details::IFMAP_POSIX_ERROR.get() == m_file)) {
+            if (bsl::unlikely(IFMAP_POSIX_ERROR.get() == m_file)) {
                 bsl::alert() << "failed to open read-only file: "    // --
                              << filename                             // --
                              << bsl::endl;
 
-                m_file = details::IFMAP_INVALID_FILE.get();
+                m_file = IFMAP_INVALID_FILE.get();
                 return;
             }
 
             stat_t s{};
-            if (bsl::unlikely(details::IFMAP_POSIX_ERROR.get() == fstat(m_file, &s))) {
+            if (bsl::unlikely(IFMAP_POSIX_ERROR.get() == fstat(m_file, &s))) {
                 bsl::alert() << "failed to get the size of the read-only file: "    // --
                              << filename                                            // --
                              << bsl::endl;
 
                 bsl::discard(close(m_file));
-                m_file = details::IFMAP_INVALID_FILE.get();
+                m_file = IFMAP_INVALID_FILE.get();
                 return;
             }
 
@@ -150,7 +147,7 @@ namespace vmmctl
                              << bsl::endl;
 
                 bsl::discard(close(m_file));
-                m_file = details::IFMAP_INVALID_FILE.get();
+                m_file = IFMAP_INVALID_FILE.get();
                 return;
             }
 
@@ -162,12 +159,12 @@ namespace vmmctl
         ///
         ~ifmap() noexcept = default;
         // {
-        //     // if (details::IFMAP_INVALID_FILE.get() != m_file) {
+        //     // if (IFMAP_INVALID_FILE.get() != m_file) {
         //     //     // Not given a choice here due to the APIs provided by Linux
         //     //     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast,-warnings-as-errors)
         //     //     bsl::discard(munmap(const_cast<byte *>(m_data.data()), m_data.size().get()));
         //     //     bsl::discard(close(m_file));
-        //     //     m_file = details::IFMAP_INVALID_FILE.get();
+        //     //     m_file = IFMAP_INVALID_FILE.get();
         //     // }
         //     // else {
         //     //     bsl::touch();
@@ -191,7 +188,7 @@ namespace vmmctl
         constexpr ifmap(ifmap &&o) noexcept
             : m_file{bsl::move(o.m_file)}, m_data{bsl::move(o.m_data)}
         {
-            o.m_file = details::IFMAP_INVALID_FILE.get();
+            o.m_file = IFMAP_INVALID_FILE.get();
             o.m_data = {};
         }
 

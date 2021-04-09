@@ -115,7 +115,6 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/platform.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/start_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/start_vmm_per_cpu.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/static_assert.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_and_free_the_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_vmm_per_cpu.h

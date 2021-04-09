@@ -57,12 +57,8 @@ namespace loader
         bsl::uint64 ps : static_cast<bsl::uint64>(1);
         /// @brief defines the "global" field in the page (must be 0)
         bsl::uint64 g : static_cast<bsl::uint64>(1);
-        /// @brief defines our "auto_release_page_pool" field in the page
-        bsl::uint64 auto_release_page_pool : static_cast<bsl::uint64>(1);
-        /// @brief defines our "auto_release_huge_pool" field in the page
-        bsl::uint64 auto_release_huge_pool : static_cast<bsl::uint64>(1);
-        /// @brief defines the "available to software" field in the page
-        bsl::uint64 available1 : static_cast<bsl::uint64>(1);
+        /// @brief defines our "auto_release" field in the page
+        bsl::uint64 auto_release : static_cast<bsl::uint64>(3);
         /// @brief defines the "physical address" field in the page
         bsl::uint64 phys : static_cast<bsl::uint64>(40);
         /// @brief defines the "available to software" field in the page
@@ -72,15 +68,6 @@ namespace loader
         /// @brief defines the "no-execute" field in the page
         bsl::uint64 nx : static_cast<bsl::uint64>(1);
     };
-
-    namespace details
-    {
-        /// @brief defined the expected size of the pte_t struct
-        constexpr bsl::safe_uintmax EXPECTED_PTE_T_SIZE{bsl::to_umax(8)};
-
-        /// Check to make sure the pte_t is the right size.
-        static_assert(sizeof(pte_t) == EXPECTED_PTE_T_SIZE);
-    }
 }
 
 #pragma pack(pop)

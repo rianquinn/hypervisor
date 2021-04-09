@@ -28,6 +28,7 @@
 #include "huge_t.hpp"
 #include "page_t.hpp"
 
+#include <allocate_tags.hpp>
 #include <call_ext.hpp>
 #include <elf64_ehdr_t.hpp>
 #include <elf64_phdr_t.hpp>
@@ -387,11 +388,15 @@ namespace mk
                     if (bytes_to_next_page == PAGE_SIZE) {
                         if ((phdr->p_flags & bfelf::PF_X).is_pos()) {
                             page = bsl::as_writable_t<bsl::byte>(
-                                rpt.allocate_page_rx(phdr->p_vaddr + bytes), PAGE_SIZE);
+                                rpt.allocate_page_rx(
+                                    phdr->p_vaddr + bytes, MAP_PAGE_AUTO_RELEASE_ELF),
+                                PAGE_SIZE);
                         }
                         else {
                             page = bsl::as_writable_t<bsl::byte>(
-                                rpt.allocate_page_rw(phdr->p_vaddr + bytes), PAGE_SIZE);
+                                rpt.allocate_page_rw(
+                                    phdr->p_vaddr + bytes, MAP_PAGE_AUTO_RELEASE_ELF),
+                                PAGE_SIZE);
                         }
 
                         if (bsl::unlikely(!page)) {
@@ -462,7 +467,7 @@ namespace mk
             -> bsl::errc_type
         {
             for (bsl::safe_uintmax bytes{}; bytes < EXT_STACK_SIZE; bytes += PAGE_SIZE) {
-                void *page{rpt.allocate_page_rw(addr + bytes)};
+                void *page{rpt.allocate_page_rw(addr + bytes, MAP_PAGE_AUTO_RELEASE_STACK)};
                 if (bsl::unlikely(nullptr == page)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -521,13 +526,15 @@ namespace mk
             bsl::span<bsl::uint8> page_usr{};
             bsl::span<bsl::uintmax> page_abi{};
 
-            page_usr = bsl::as_writable_t<bsl::uint8>(rpt.allocate_page_rw(addr_usr), PAGE_SIZE);
+            page_usr = bsl::as_writable_t<bsl::uint8>(
+                rpt.allocate_page_rw(addr_usr, MAP_PAGE_AUTO_RELEASE_TLS), PAGE_SIZE);
             if (bsl::unlikely(!page_usr)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            page_abi = bsl::as_writable_t<bsl::uintmax>(rpt.allocate_page_rw(addr_abi), PAGE_SIZE);
+            page_abi = bsl::as_writable_t<bsl::uintmax>(
+                rpt.allocate_page_rw(addr_abi, MAP_PAGE_AUTO_RELEASE_TLS), PAGE_SIZE);
             if (bsl::unlikely(!page_abi)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -1122,7 +1129,8 @@ namespace mk
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
-            auto const *const page{m_page_pool->template allocate<void>()};
+            auto const *const page{
+                m_page_pool->template allocate<void>(ALLOCATE_TAG_BF_MEM_OP_ALLOC_PAGE)};
             if (bsl::unlikely(nullptr == page)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
@@ -1156,7 +1164,8 @@ namespace mk
             ret = m_direct_map_rpts.front().map_page(
                 page_virt,
                 page_phys,
-                MAP_PAGE_READ | MAP_PAGE_WRITE | MAP_PAGE_AUTO_RELEASE_PAGE_POOL);
+                MAP_PAGE_READ | MAP_PAGE_WRITE,
+                MAP_PAGE_AUTO_RELEASE_ALLOC_PAGE);
 
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -1248,7 +1257,8 @@ namespace mk
                 ret = m_direct_map_rpts.front().map_page(
                     huge_virt + i,
                     huge_phys + i,
-                    MAP_PAGE_READ | MAP_PAGE_WRITE | MAP_PAGE_AUTO_RELEASE_HUGE_POOL);
+                    MAP_PAGE_READ | MAP_PAGE_WRITE,
+                    MAP_PAGE_AUTO_RELEASE_ALLOC_HUGE);
 
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
@@ -1333,7 +1343,8 @@ namespace mk
             }
 
             for (bsl::safe_uintmax i{}; i < pages; ++i) {
-                auto const *const page{m_page_pool->template allocate<void>()};
+                auto const *const page{
+                    m_page_pool->template allocate<void>(ALLOCATE_TAG_BF_MEM_OP_ALLOC_HEAP)};
                 if (bsl::unlikely(nullptr == page)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::safe_uintmax::zero(true);
@@ -1354,7 +1365,8 @@ namespace mk
                 ret = m_main_rpt.map_page(
                     page_virt,
                     page_phys,
-                    MAP_PAGE_READ | MAP_PAGE_WRITE | MAP_PAGE_AUTO_RELEASE_PAGE_POOL);
+                    MAP_PAGE_READ | MAP_PAGE_WRITE,
+                    MAP_PAGE_AUTO_RELEASE_ALLOC_HEAP);
 
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
@@ -1420,7 +1432,10 @@ namespace mk
             }
 
             ret = m_current_direct_map_rpt->map_page_unaligned(
-                page_virt, page_virt - min_dm_addr, MAP_PAGE_READ | MAP_PAGE_WRITE);
+                page_virt,
+                page_virt - min_dm_addr,
+                MAP_PAGE_READ | MAP_PAGE_WRITE,
+                MAP_PAGE_NO_AUTO_RELEASE);
 
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -1709,7 +1724,7 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<14s", "started "};
+            bsl::print() << bsl::rst << bsl::fmt{"<14s", "started "};
             bsl::print() << bsl::ylw << "| ";
             if (m_started) {
                 bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
@@ -1724,7 +1739,7 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<14s", "active "};
+            bsl::print() << bsl::rst << bsl::fmt{"<14s", "active "};
             bsl::print() << bsl::ylw << "| ";
             if (tls.extid() == m_id) {
                 bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
@@ -1739,9 +1754,9 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<14s", "entry ip "};
+            bsl::print() << bsl::rst << bsl::fmt{"<14s", "entry ip "};
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::hex(m_entry_ip) << ' ';
+            bsl::print() << bsl::rst << bsl::hex(m_entry_ip) << ' ';
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
@@ -1749,10 +1764,10 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<14s", "bootstrap ip "};
+            bsl::print() << bsl::rst << bsl::fmt{"<14s", "bootstrap ip "};
             bsl::print() << bsl::ylw << "| ";
             if (m_bootstrap_ip) {
-                bsl::print() << bsl::wht << bsl::hex(m_bootstrap_ip) << ' ';
+                bsl::print() << bsl::rst << bsl::hex(m_bootstrap_ip) << ' ';
             }
             else {
                 bsl::print() << bsl::red << bsl::fmt{"^19s", "not registered "};
@@ -1764,10 +1779,10 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<14s", "vmexit ip "};
+            bsl::print() << bsl::rst << bsl::fmt{"<14s", "vmexit ip "};
             bsl::print() << bsl::ylw << "| ";
             if (m_vmexit_ip) {
-                bsl::print() << bsl::wht << bsl::hex(m_vmexit_ip) << ' ';
+                bsl::print() << bsl::rst << bsl::hex(m_vmexit_ip) << ' ';
             }
             else {
                 bsl::print() << bsl::red << bsl::fmt{"^19s", "not registered "};
@@ -1779,10 +1794,10 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<14s", "fail ip "};
+            bsl::print() << bsl::rst << bsl::fmt{"<14s", "fail ip "};
             bsl::print() << bsl::ylw << "| ";
             if (m_fail_ip) {
-                bsl::print() << bsl::wht << bsl::hex(m_fail_ip) << ' ';
+                bsl::print() << bsl::rst << bsl::hex(m_fail_ip) << ' ';
             }
             else {
                 bsl::print() << bsl::red << bsl::fmt{"^19s", "not registered "};
@@ -1794,10 +1809,10 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<14s", "handle "};
+            bsl::print() << bsl::rst << bsl::fmt{"<14s", "handle "};
             bsl::print() << bsl::ylw << "| ";
             if (m_handle) {
-                bsl::print() << bsl::wht << bsl::hex(m_handle) << ' ';
+                bsl::print() << bsl::rst << bsl::hex(m_handle) << ' ';
             }
             else {
                 bsl::print() << bsl::red << bsl::fmt{"^19s", "not opened "};
@@ -1809,10 +1824,10 @@ namespace mk
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::wht << bsl::fmt{"<14s", "heap cursor "};
+            bsl::print() << bsl::rst << bsl::fmt{"<14s", "heap cursor "};
             bsl::print() << bsl::ylw << "| ";
             if (!m_heap_crsr.is_zero()) {
-                bsl::print() << bsl::wht << bsl::hex(m_heap_crsr) << ' ';
+                bsl::print() << bsl::rst << bsl::hex(m_heap_crsr) << ' ';
             }
             else {
                 bsl::print() << bsl::red << bsl::fmt{"^19s", "not allocated "};

@@ -289,6 +289,13 @@ namespace syscall
     using bf_callback_handler_fail_t = void (*)(bf_status_t::value_type);
 
     // -------------------------------------------------------------------------
+    // Invalid ID
+    // -------------------------------------------------------------------------
+
+    /// @brief Defines an invalid ID
+    constexpr bsl::safe_uint16 BF_INVALID_ID{bsl::to_u16(0xFFFFU)};
+
+    // -------------------------------------------------------------------------
     // Syscall Status Codes
     // -------------------------------------------------------------------------
 
@@ -1703,6 +1710,83 @@ namespace syscall
         bsl::cstr_type const str) noexcept
     {
         bf_debug_op_write_str_impl(str);
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_debug_op_dump_ext
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_debug_op_dump_ext.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///
+    extern "C" void bf_debug_op_dump_ext_impl(    // --
+        bf_uint16_t const reg0_in) noexcept;
+
+    /// @brief Defines the syscall index for bf_debug_op_dump_ext
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_DUMP_EXT_IDX_VAL{bsl::to_u64(0x0000000000000007U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to output an extension's
+    ///     state to the console device the microkernel is currently using
+    ///     for debugging.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param extid The EXTID of the extensions's state to output
+    ///
+    inline void
+    bf_debug_op_dump_ext(    // --
+        bsl::safe_uint16 const &extid) noexcept
+    {
+        bf_debug_op_dump_ext_impl(extid.get());
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_debug_op_dump_page_pool
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_debug_op_dump_page_pool.
+    ///
+    extern "C" void bf_debug_op_dump_page_pool_impl() noexcept;
+
+    /// @brief Defines the syscall index for bf_debug_op_dump_page_pool
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_DUMP_PAGE_POOL_IDX_VAL{bsl::to_u64(0x0000000000000008U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to output the page pool's
+    ///     stats to the console device the microkernel is currently using
+    ///     for debugging.
+    ///
+    inline void
+    bf_debug_op_dump_page_pool() noexcept
+    {
+        bf_debug_op_dump_page_pool_impl();
+    }
+
+    // -------------------------------------------------------------------------
+    // bf_debug_op_dump_huge_pool
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_debug_op_dump_huge_pool.
+    ///
+    extern "C" void bf_debug_op_dump_huge_pool_impl() noexcept;
+
+    /// @brief Defines the syscall index for bf_debug_op_dump_huge_pool
+    constexpr bsl::safe_uint64 BF_DEBUG_OP_DUMP_HUGE_POOL_IDX_VAL{bsl::to_u64(0x0000000000000009U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to output the huge pool's
+    ///     stats to the console device the microkernel is currently using
+    ///     for debugging.
+    ///
+    inline void
+    bf_debug_op_dump_huge_pool() noexcept
+    {
+        bf_debug_op_dump_huge_pool_impl();
     }
 
     // -------------------------------------------------------------------------
