@@ -112,82 +112,73 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Given an outputter, index and the index of the last
+        ///   @brief Given index and the index of the last
         ///     present entry in the page table being dumped, this function
         ///     will output a decoration and the index.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of outputter provided
-        ///   @param o the instance of the outputter used to output the value.
         ///   @param index the current index of the entry being dumped
         ///   @param last_index the index of the last present entry in the page
         ///     table being dumped.
         ///
-        template<typename T>
         constexpr void
         output_decoration_and_index(
-            bsl::out<T> const o,
             bsl::safe_uintmax const &index,
             bsl::safe_uintmax const &last_index) const noexcept
         {
-            o << bsl::rst;
+            bsl::print() << bsl::rst;
 
             if (index != last_index) {
-                o << "├── ";
+                bsl::print() << "├── ";
             }
             else {
-                o << "└── ";
+                bsl::print() << "└── ";
             }
 
-            o << "[" << bsl::ylw << bsl::fmt{"#05x", index} << bsl::rst << "] ";
+            bsl::print() << "[" << bsl::ylw << bsl::fmt{"#05x", index} << bsl::rst << "] ";
         }
 
         /// <!-- description -->
-        ///   @brief Given an outputter, and whether or not the page table
+        ///   @brief Given whether or not the page table
         ///     entry is the last entry in the table, this function will
         ///     either output whtspace, or a | and shitespace.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of outputter provided
-        ///   @param o the instance of the outputter used to output the value.
         ///   @param is_last_index true if the entry being outputted is the
         ///     last index in the table.
         ///
-        template<typename T>
         constexpr void
-        output_spacing(bsl::out<T> const o, bool const is_last_index) const noexcept
+        output_spacing(bool const is_last_index) const noexcept
         {
-            o << bsl::rst;
+            bsl::print() << bsl::rst;
 
             if (!is_last_index) {
-                o << "│   ";
+                bsl::print() << "│   ";
             }
             else {
-                o << "    ";
+                bsl::print() << "    ";
             }
         }
 
         /// <!-- description -->
-        ///   @brief Given and outputter and a page table entry, this
+        ///   @brief Given a page table entry, this
         ///     function outputs the flags associated with the entry
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of outputter provided
         ///   @tparam ENTRY_CONCEPT the type of page table entry to output
-        ///   @param o the instance of the outputter used to output the value.
         ///   @param entry the page table entry to output
         ///
-        template<typename T, typename ENTRY_CONCEPT>
+        template<typename ENTRY_CONCEPT>
         constexpr void
-        output_entry_and_flags(bsl::out<T> const o, ENTRY_CONCEPT const *const entry) const noexcept
+        output_entry_and_flags(ENTRY_CONCEPT const *const entry) const noexcept
         {
             bool add_comma{};
 
-            o << bsl::hex(*static_cast<bsl::uint64 const *>(static_cast<void const *>(entry)));
-            o << bsl::rst << " (";
+            bsl::print() << bsl::hex(*static_cast<bsl::uint64 const *>(static_cast<void const *>(entry)));
+            bsl::print() << bsl::rst << " (";
 
             if (bsl::ZERO_UMAX != entry->rw) {
-                o << bsl::grn << "W" << bsl::rst;
+                bsl::print() << bsl::grn << 'W';
                 add_comma = true;
             }
             else {
@@ -196,13 +187,13 @@ namespace mk
 
             if (bsl::ZERO_UMAX != entry->us) {
                 if (add_comma) {
-                    o << ", ";
+                    bsl::print() << bsl::rst << ", ";
                 }
                 else {
                     bsl::touch();
                 }
 
-                o << bsl::grn << "U" << bsl::rst;
+                bsl::print() << bsl::grn << 'U';
                 add_comma = true;
             }
             else {
@@ -211,13 +202,13 @@ namespace mk
 
             if (bsl::ZERO_UMAX != entry->nx) {
                 if (add_comma) {
-                    o << ", ";
+                    bsl::print() << bsl::rst << ", ";
                 }
                 else {
                     bsl::touch();
                 }
 
-                o << bsl::grn << "NX" << bsl::rst;
+                bsl::print() << bsl::grn << "NX";
                 add_comma = true;
             }
             else {
@@ -227,13 +218,13 @@ namespace mk
             if constexpr (bsl::is_same<ENTRY_CONCEPT, loader::pml4te_t>::value) {
                 if (bsl::ZERO_UMAX != entry->alias) {
                     if (add_comma) {
-                        o << ", ";
+                        bsl::print() << bsl::rst << ", ";
                     }
                     else {
                         bsl::touch();
                     }
 
-                    o << bsl::grn << "alias" << bsl::rst;
+                    bsl::print() << bsl::grn << "alias";
                     add_comma = true;
                 }
                 else {
@@ -243,7 +234,7 @@ namespace mk
 
             if constexpr (bsl::is_same<ENTRY_CONCEPT, loader::pte_t>::value) {
                 if (add_comma) {
-                    o << ", ";
+                    bsl::print() << bsl::rst << ", ";
                 }
                 else {
                     bsl::touch();
@@ -251,37 +242,37 @@ namespace mk
 
                 switch (entry->auto_release) {
                     case MAP_PAGE_AUTO_RELEASE_ALLOC_PAGE.get(): {
-                        o << bsl::grn << "auto_release_alloc_page" << bsl::rst;
+                        bsl::print() << bsl::grn << "auto_release_alloc_page";
                         break;
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_ALLOC_HUGE.get(): {
-                        o << bsl::grn << "auto_release_alloc_huge" << bsl::rst;
+                        bsl::print() << bsl::grn << "auto_release_alloc_huge";
                         break;
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_ALLOC_HEAP.get(): {
-                        o << bsl::grn << "auto_release_alloc_heap" << bsl::rst;
+                        bsl::print() << bsl::grn << "auto_release_alloc_heap";
                         break;
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_STACK.get(): {
-                        o << bsl::grn << "auto_release_stack" << bsl::rst;
+                        bsl::print() << bsl::grn << "auto_release_stack";
                         break;
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_TLS.get(): {
-                        o << bsl::grn << "auto_release_tls" << bsl::rst;
+                        bsl::print() << bsl::grn << "auto_release_tls";
                         break;
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_ELF.get(): {
-                        o << bsl::grn << "auto_release_elf" << bsl::rst;
+                        bsl::print() << bsl::grn << "auto_release_elf";
                         break;
                     }
 
                     default: {
-                        o << bsl::grn << "manual" << bsl::rst;
+                        bsl::print() << bsl::grn << "manual";
                         break;
                     }
                 }
@@ -289,7 +280,8 @@ namespace mk
                 add_comma = true;
             }
 
-            o << ")" << bsl::endl;
+            bsl::print() << bsl::rst << ')';
+            bsl::print() << bsl::rst << bsl::endl;
         }
 
         /// <!-- description -->
@@ -312,38 +304,34 @@ namespace mk
         ///   @brief Dumps the provided pml4t_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of outputter provided
-        ///   @param o the instance of the outputter used to output the value.
         ///   @param pml4t the pml4t_t to dump
         ///
-        template<typename T>
         constexpr void
-        dump_pml4t(bsl::out<T> const o, pml4t_t const *const pml4t) const noexcept
+        dump_pml4t(pml4t_t const *const pml4t) const noexcept
         {
             bsl::safe_uintmax const last_index{this->get_last_index(pml4t)};
 
-            o << bsl::blu                  // --
-              << bsl::hex(m_pml4t_phys)    // --
-              << bsl::endl;                // --
+            bsl::print() << bsl::blu << bsl::hex(m_pml4t_phys);
+            bsl::print() << bsl::rst << bsl::endl;
 
             for (auto const elem : pml4t->entries) {
                 if (bsl::ZERO_UMAX == elem.data->p) {
                     continue;
                 }
 
-                this->output_decoration_and_index(o, elem.index, last_index);
+                this->output_decoration_and_index(elem.index, last_index);
 
                 if (bsl::ZERO_UMAX != elem.data->us) {
-                    o << bsl::blu;
+                    bsl::print() << bsl::blu;
+                    this->output_entry_and_flags(elem.data);
                 }
                 else {
-                    o << bsl::blk;
+                    bsl::print() << bsl::blk;
+                    this->output_entry_and_flags(elem.data);
                 }
 
-                this->output_entry_and_flags(o, elem.data);
-
                 if (bsl::ZERO_UMAX != elem.data->us) {
-                    this->dump_pdpt(o, this->get_pdpt(elem.data), elem.index == last_index);
+                    this->dump_pdpt(this->get_pdpt(elem.data), elem.index == last_index);
                 }
                 else {
                     bsl::touch();
@@ -457,16 +445,12 @@ namespace mk
         ///   @brief Dumps the provided pdpt_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of outputter provided
-        ///   @param o the instance of the outputter used to output the value.
         ///   @param pdpt the pdpt_t to dump
         ///   @param is_pml4te_last_index true if the parent pml4te was the
         ///     last pml4te in the table
         ///
-        template<typename T>
         constexpr void
-        dump_pdpt(
-            bsl::out<T> const o, pdpt_t const *const pdpt, bool is_pml4te_last_index) const noexcept
+        dump_pdpt(pdpt_t const *const pdpt, bool is_pml4te_last_index) const noexcept
         {
             bsl::safe_uintmax const last_index{this->get_last_index(pdpt)};
 
@@ -475,14 +459,14 @@ namespace mk
                     continue;
                 }
 
-                this->output_spacing(o, is_pml4te_last_index);
-                this->output_decoration_and_index(o, elem.index, last_index);
+                this->output_spacing(is_pml4te_last_index);
+                this->output_decoration_and_index(elem.index, last_index);
 
-                o << bsl::blu;
-                this->output_entry_and_flags(o, elem.data);
+                bsl::print() << bsl::blu;
+                this->output_entry_and_flags(elem.data);
 
                 this->dump_pdt(
-                    o, this->get_pdt(elem.data), is_pml4te_last_index, elem.index == last_index);
+                    this->get_pdt(elem.data), is_pml4te_last_index, elem.index == last_index);
             }
         }
 
@@ -592,18 +576,14 @@ namespace mk
         ///   @brief Dumps the provided pdt_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of outputter provided
-        ///   @param o the instance of the outputter used to output the value.
         ///   @param pdt the pdt_t to dump
         ///   @param is_pml4te_last_index true if the parent pml4te was the
         ///     last pml4te in the table
         ///   @param is_pdpte_last_index true if the parent pdpte was the
         ///     last pdpte in the table
         ///
-        template<typename T>
         constexpr void
         dump_pdt(
-            bsl::out<T> const o,
             pdt_t const *const pdt,
             bool is_pml4te_last_index,
             bool is_pdpte_last_index) const noexcept
@@ -615,15 +595,14 @@ namespace mk
                     continue;
                 }
 
-                this->output_spacing(o, is_pml4te_last_index);
-                this->output_spacing(o, is_pdpte_last_index);
-                this->output_decoration_and_index(o, elem.index, last_index);
+                this->output_spacing(is_pml4te_last_index);
+                this->output_spacing(is_pdpte_last_index);
+                this->output_decoration_and_index(elem.index, last_index);
 
-                o << bsl::blu;
-                this->output_entry_and_flags(o, elem.data);
+                bsl::print() << bsl::blu;
+                this->output_entry_and_flags(elem.data);
 
                 this->dump_pt(
-                    o,
                     this->get_pt(elem.data),
                     is_pml4te_last_index,
                     is_pdpte_last_index,
@@ -787,8 +766,6 @@ namespace mk
         ///   @brief Dumps the provided pt_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of outputter provided
-        ///   @param o the instance of the outputter used to output the value.
         ///   @param pt the pt_t to dump
         ///   @param is_pml4te_last_index true if the parent pml4te was the
         ///     last pml4te in the table
@@ -797,10 +774,8 @@ namespace mk
         ///   @param is_pdte_last_index true if the parent pdte was the
         ///     last pdte in the table
         ///
-        template<typename T>
         constexpr void
         dump_pt(
-            bsl::out<T> const o,
             pt_t const *const pt,
             bool is_pml4te_last_index,
             bool is_pdpte_last_index,
@@ -813,13 +788,13 @@ namespace mk
                     continue;
                 }
 
-                this->output_spacing(o, is_pml4te_last_index);
-                this->output_spacing(o, is_pdpte_last_index);
-                this->output_spacing(o, is_pdte_last_index);
-                this->output_decoration_and_index(o, elem.index, last_index);
+                this->output_spacing(is_pml4te_last_index);
+                this->output_spacing(is_pdpte_last_index);
+                this->output_spacing(is_pdte_last_index);
+                this->output_decoration_and_index(elem.index, last_index);
 
-                o << bsl::rst;
-                this->output_entry_and_flags(o, elem.data);
+                bsl::print() << bsl::rst;
+                this->output_entry_and_flags(elem.data);
             }
         }
 
@@ -908,11 +883,6 @@ namespace mk
             bsl::safe_uintmax const &auto_release) &noexcept -> void *
         {
             bsl::errc_type ret{};
-
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
-                return nullptr;
-            }
 
             void *page{};
             switch (auto_release.get()) {
@@ -1296,6 +1266,24 @@ namespace mk
                 return bsl::errc_failure;
             }
 
+            if (bsl::unlikely(!page_flags)) {
+                bsl::error() << "invalid flags: "    // --
+                             << bsl::hex(page_flags)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!auto_release)) {
+                bsl::error() << "invalid auto release: "    // --
+                             << bsl::hex(auto_release)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
             if ((page_flags & MAP_PAGE_WRITE).is_pos()) {
                 if ((page_flags & MAP_PAGE_EXECUTE).is_pos()) {
                     bsl::error() << "invalid page_flags: "    // --
@@ -1325,11 +1313,6 @@ namespace mk
                 ///   can only alias these pages. For this reason, mapping
                 ///   must always take place on userspace specific memory
                 ///   and the address spaces must be distinct.
-                /// - This is one of the reasons (not the only reason) why
-                ///   userspace sits in the other half of the canonical
-                ///   address space, and why it has it's own direct map
-                ///   region. This ensures userspace and the kernel do not
-                ///   share the same pml4 entries.
                 ///
 
                 if (pml4te->us == bsl::ZERO_UMAX) {
@@ -1461,6 +1444,38 @@ namespace mk
             bsl::safe_uintmax const &page_virt, bsl::safe_uintmax const &auto_release) &noexcept
             -> void *
         {
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
+                return nullptr;
+            }
+
+            if (bsl::unlikely(page_virt.is_zero())) {
+                bsl::error() << "virtual address is invalid: "    // --
+                             << bsl::hex(page_virt)               // --
+                             << bsl::endl                         // --
+                             << bsl::here();                      // --
+
+                return nullptr;
+            }
+
+            if (bsl::unlikely(!this->is_page_aligned(page_virt))) {
+                bsl::error() << "virtual address is not page aligned: "    // --
+                             << bsl::hex(page_virt)                        // --
+                             << bsl::endl                                  // --
+                             << bsl::here();                               // --
+
+                return nullptr;
+            }
+
+            if (bsl::unlikely(!auto_release)) {
+                bsl::error() << "invalid auto release: "    // --
+                             << bsl::hex(auto_release)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return nullptr;
+            }
+
             return this->allocate_page(page_virt, MAP_PAGE_READ | MAP_PAGE_WRITE, auto_release);
         }
 
@@ -1485,69 +1500,55 @@ namespace mk
             bsl::safe_uintmax const &page_virt, bsl::safe_uintmax const &auto_release) &noexcept
             -> void *
         {
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
+                return nullptr;
+            }
+
+            if (bsl::unlikely(page_virt.is_zero())) {
+                bsl::error() << "virtual address is invalid: "    // --
+                             << bsl::hex(page_virt)               // --
+                             << bsl::endl                         // --
+                             << bsl::here();                      // --
+
+                return nullptr;
+            }
+
+            if (bsl::unlikely(!this->is_page_aligned(page_virt))) {
+                bsl::error() << "virtual address is not page aligned: "    // --
+                             << bsl::hex(page_virt)                        // --
+                             << bsl::endl                                  // --
+                             << bsl::here();                               // --
+
+                return nullptr;
+            }
+
+            if (bsl::unlikely(!auto_release)) {
+                bsl::error() << "invalid auto release: "    // --
+                             << bsl::hex(auto_release)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return nullptr;
+            }
+
             return this->allocate_page(page_virt, MAP_PAGE_READ | MAP_PAGE_EXECUTE, auto_release);
         }
 
         /// <!-- description -->
         ///   @brief Dumps the provided pml4_t
         ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam T the type of outputter provided
-        ///   @param o the instance of the outputter used to output the value.
-        ///
-        template<typename T>
         constexpr void
-        dump(bsl::out<T> const o) const &noexcept
+        dump() const &noexcept
         {
             if (bsl::unlikely(!m_initialized)) {
-                o << "[error]" << bsl::endl;
+                bsl::print() << "[error]" << bsl::endl;
                 return;
             }
 
-            this->dump_pml4t(o, m_pml4t);
+            this->dump_pml4t(m_pml4t);
         }
     };
-
-    /// <!-- description -->
-    ///   @brief Outputs the provided mk::root_page_table_t to the provided
-    ///     output type.
-    ///   @related mk::root_page_table_t
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @tparam T the type of outputter provided
-    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-    ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
-    ///   @tparam HUGE_POOL_CONCEPT defines the type of huge pool to use
-    ///   @tparam PAGE_SIZE defines the size of a page
-    ///   @tparam PAGE_SHIFT defines number of bits in a page
-    ///   @param o the instance of the outputter used to output the value.
-    ///   @param rpt the mk::root_page_table_t to output
-    ///   @return return o
-    ///
-    template<
-        typename T,
-        typename INTRINSIC_CONCEPT,
-        typename PAGE_POOL_CONCEPT,
-        typename HUGE_POOL_CONCEPT,
-        bsl::uintmax PAGE_SIZE,
-        bsl::uintmax PAGE_SHIFT>
-    [[maybe_unused]] constexpr auto
-    operator<<(
-        bsl::out<T> const o,
-        mk::root_page_table_t<
-            INTRINSIC_CONCEPT,
-            PAGE_POOL_CONCEPT,
-            HUGE_POOL_CONCEPT,
-            PAGE_SIZE,
-            PAGE_SHIFT> const &rpt) noexcept -> bsl::out<T>
-    {
-        if constexpr (!o) {
-            return o;
-        }
-
-        rpt.dump(o);
-        return o;
-    }
 }
 
 #endif

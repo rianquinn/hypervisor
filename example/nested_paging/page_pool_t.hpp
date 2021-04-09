@@ -230,7 +230,7 @@ namespace example
                 return;
             }
 
-            if (bsl::to_umax(ptr) < HYPERVISOR_EXT_PAGE_POOL_ADDR) {
+            if (bsl::to_umax(ptr) < bsl::to_umax(HYPERVISOR_EXT_PAGE_POOL_ADDR)) {
                 bsl::error() << "invalid ptr"    // --
                              << ptr              // --
                              << bsl::endl        // --
@@ -262,7 +262,7 @@ namespace example
         virt_to_phys(T const *const virt) const &noexcept -> bsl::safe_uintmax
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_umax(virt) - HYPERVISOR_EXT_PAGE_POOL_ADDR;
+            return bsl::to_umax(virt) - bsl::to_umax(HYPERVISOR_EXT_PAGE_POOL_ADDR);
         }
 
         /// <!-- description -->
@@ -284,7 +284,7 @@ namespace example
         phys_to_virt(bsl::safe_uintmax const &phys) const &noexcept -> T *
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_ptr<T *>(phys + HYPERVISOR_EXT_PAGE_POOL_ADDR);
+            return bsl::to_ptr<T *>(phys + bsl::to_umax(HYPERVISOR_EXT_PAGE_POOL_ADDR));
         }
     };
 }

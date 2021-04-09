@@ -63,20 +63,6 @@
  *     Layout Randomization, so the addresses shown here could have a fudge
  *     factor added to them to add some entropy.
  *
- *        0x00007FFFFFFFFFFF +------------------+
- *                           | MK Direct Map    |
- *        0x0000400000000000 +------------------+
- *                           | Unusable         |
- *        0x000006FFFFFFFFFF +------------------+
- *                           | MK Kernel        |
- *        0x0000060000000000 +------------------+
- *                           | Unusable         |
- *        0x000002FFFFFFFFFF +------------------+
- *                           | MK Stack         |
- *        0x0000020000000000 +------------------+
- *                           | Unusable         |
- *        0x0000000000000000 +------------------+
- *
  * <!-- inputs/outputs -->
  *   @param virt the virtual address to map phys to
  *   @param phys the physical address to map

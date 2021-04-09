@@ -59,8 +59,8 @@ namespace example
         bsl::uint64 ignored2 : static_cast<bsl::uint64>(1);
         /// @brief defines the "physical address" field in the page
         bsl::uint64 phys : static_cast<bsl::uint64>(40);
-        /// @brief defines the "must be zero" field in the page
-        bsl::uint64 mbz2 : static_cast<bsl::uint64>(12);
+        /// @brief defines the "ignored" field in the page
+        bsl::uint64 ignored3 : static_cast<bsl::uint64>(12);
     };
 }
 

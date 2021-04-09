@@ -1842,7 +1842,10 @@ namespace mk
             bsl::print() << bsl::rst << bsl::endl;
 
             if (nullptr != m_current_direct_map_rpt) {
-                bsl::print() << "current direct map: " << *m_current_direct_map_rpt;
+                bsl::print() << bsl::rst << bsl::endl;
+                bsl::print() << bsl::mag << "ext [" << bsl::hex(m_id) << "] direct map dump: ";
+
+                m_current_direct_map_rpt->dump();
             }
         }
     };

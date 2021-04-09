@@ -47,20 +47,26 @@ namespace example
         bsl::uint64 w : static_cast<bsl::uint64>(1);
         /// @brief defines the "execute access" field in the page
         bsl::uint64 e : static_cast<bsl::uint64>(1);
-        /// @brief defines the "must be zero" field in the page
-        bsl::uint64 mbz1 : static_cast<bsl::uint64>(5);
+        /// @brief defines the "memory type" field in the page
+        bsl::uint64 type : static_cast<bsl::uint64>(3);
+        /// @brief defines the "ignore pat" field in the page
+        bsl::uint64 ignore_pat : static_cast<bsl::uint64>(1);
+        /// @brief defines the "page size" field in the page
+        bsl::uint64 ps : static_cast<bsl::uint64>(1);
         /// @brief defines the "accessed" field in the page
         bsl::uint64 a : static_cast<bsl::uint64>(1);
         /// @brief defines the "ignored" field in the page
-        bsl::uint64 ignored1 : static_cast<bsl::uint64>(1);
+        bsl::uint64 d : static_cast<bsl::uint64>(1);
         /// @brief defines the "user execute access" field in the page
         bsl::uint64 e_user : static_cast<bsl::uint64>(1);
         /// @brief defines the "ignored" field in the page
-        bsl::uint64 ignored2 : static_cast<bsl::uint64>(1);
+        bsl::uint64 ignored1 : static_cast<bsl::uint64>(1);
         /// @brief defines the "physical address" field in the page
         bsl::uint64 phys : static_cast<bsl::uint64>(40);
-        /// @brief defines the "must be zero" field in the page
-        bsl::uint64 mbz2 : static_cast<bsl::uint64>(12);
+        /// @brief defines the "ignored" field in the page
+        bsl::uint64 ignored2 : static_cast<bsl::uint64>(11);
+        /// @brief defines the "virtualization exception" field in the page
+        bsl::uint64 ve : static_cast<bsl::uint64>(1);
     };
 }
 

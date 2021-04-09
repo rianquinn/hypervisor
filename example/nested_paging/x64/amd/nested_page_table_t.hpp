@@ -597,6 +597,15 @@ namespace example
                 return bsl::errc_failure;
             }
 
+            if (bsl::unlikely(!page_flags)) {
+                bsl::error() << "invalid flags: "    // --
+                             << bsl::hex(page_flags)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
             auto *const npml4te{m_npml4t->entries.at_if(this->npml4to(page_gpa))};
             if (npml4te->p == bsl::ZERO_UMAX) {
                 if (bsl::unlikely(!this->add_npdpt(npml4te))) {
@@ -728,6 +737,15 @@ namespace example
                              << bsl::hex(page_spa)                                 // --
                              << bsl::endl                                          // --
                              << bsl::here();                                       // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!page_flags)) {
+                bsl::error() << "invalid flags: "    // --
+                             << bsl::hex(page_flags)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
 
                 return bsl::errc_failure;
             }

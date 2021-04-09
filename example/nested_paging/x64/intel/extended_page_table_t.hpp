@@ -36,6 +36,7 @@
 
 #include <map_page_flags.hpp>
 #include <page_pool_t.hpp>
+#include <memory_type.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -108,9 +109,9 @@ namespace example
             }
 
             epml4te->phys = (table_phys >> bsl::to_umax(HYPERVISOR_PAGE_SHIFT)).get();
-            epml4te->p = bsl::ONE_UMAX.get();
-            epml4te->rw = bsl::ONE_UMAX.get();
-            epml4te->us = bsl::ONE_UMAX.get();
+            epml4te->r = bsl::ONE_UMAX.get();
+            epml4te->w = bsl::ONE_UMAX.get();
+            epml4te->e = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -125,7 +126,7 @@ namespace example
         remove_epdpt(epml4te_t *const epml4te) noexcept
         {
             for (auto const elem : get_epdpt(epml4te)->entries) {
-                if (elem.data->p != bsl::ZERO_UMAX) {
+                if (elem.data->r != bsl::ZERO_UMAX) {
                     this->remove_epdt(elem.data);
                 }
                 else {
@@ -210,9 +211,10 @@ namespace example
             }
 
             epdpte->phys = (table_phys >> bsl::to_umax(HYPERVISOR_PAGE_SHIFT)).get();
-            epdpte->p = bsl::ONE_UMAX.get();
-            epdpte->rw = bsl::ONE_UMAX.get();
-            epdpte->us = bsl::ONE_UMAX.get();
+            epdpte->r = bsl::ONE_UMAX.get();
+            epdpte->w = bsl::ONE_UMAX.get();
+            epdpte->e = bsl::ONE_UMAX.get();
+            epdpte->type = MEMORY_TYPE_WB.get();
 
             return bsl::errc_success;
         }
@@ -227,7 +229,7 @@ namespace example
         remove_epdt(epdpte_t *const epdpte) noexcept
         {
             for (auto const elem : get_epdt(epdpte)->entries) {
-                if (elem.data->p != bsl::ZERO_UMAX) {
+                if (elem.data->r != bsl::ZERO_UMAX) {
                     this->remove_ept(elem.data);
                 }
                 else {
@@ -312,9 +314,10 @@ namespace example
             }
 
             epdte->phys = (table_phys >> bsl::to_umax(HYPERVISOR_PAGE_SHIFT)).get();
-            epdte->p = bsl::ONE_UMAX.get();
-            epdte->rw = bsl::ONE_UMAX.get();
-            epdte->us = bsl::ONE_UMAX.get();
+            epdte->r = bsl::ONE_UMAX.get();
+            epdte->w = bsl::ONE_UMAX.get();
+            epdte->e = bsl::ONE_UMAX.get();
+            epdte->type = MEMORY_TYPE_WB.get();
 
             return bsl::errc_success;
         }
@@ -409,7 +412,7 @@ namespace example
             }
 
             for (auto const elem : m_epml4t->entries) {
-                if (elem.data->p == bsl::ZERO_UMAX) {
+                if (elem.data->r == bsl::ZERO_UMAX) {
                     continue;
                 }
 
@@ -545,6 +548,7 @@ namespace example
         ///     physical address to
         ///   @param page_spa the system physical address to map.
         ///   @param page_flags defines how memory should be mapped
+        ///   @param page_type defines the memory type for the mapping
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
@@ -552,7 +556,8 @@ namespace example
         map_4k_page(
             bsl::safe_uintmax const &page_gpa,
             bsl::safe_uintmax const &page_spa,
-            bsl::safe_uintmax const &page_flags) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &page_flags,
+            bsl::safe_uintmax const &page_type) &noexcept -> bsl::errc_type
         {
             bsl::lock_guard lock{m_ept_lock};
 
@@ -597,8 +602,26 @@ namespace example
                 return bsl::errc_failure;
             }
 
+            if (bsl::unlikely(!page_flags)) {
+                bsl::error() << "invalid flags: "    // --
+                             << bsl::hex(page_flags)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!page_type)) {
+                bsl::error() << "invalid type: "    // --
+                             << bsl::hex(page_type)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
             auto *const epml4te{m_epml4t->entries.at_if(this->epml4to(page_gpa))};
-            if (epml4te->p == bsl::ZERO_UMAX) {
+            if (epml4te->r == bsl::ZERO_UMAX) {
                 if (bsl::unlikely(!this->add_epdpt(epml4te))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -612,7 +635,7 @@ namespace example
 
             auto *const epdpt{this->get_epdpt(epml4te)};
             auto *const epdpte{epdpt->entries.at_if(this->epdpto(page_gpa))};
-            if (epdpte->p == bsl::ZERO_UMAX) {
+            if (epdpte->r == bsl::ZERO_UMAX) {
                 if (bsl::unlikely(!this->add_epdt(epdpte))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -626,7 +649,7 @@ namespace example
 
             auto *const epdt{this->get_epdt(epdpte)};
             auto *const epdte{epdt->entries.at_if(this->epdto(page_gpa))};
-            if (epdte->p == bsl::ZERO_UMAX) {
+            if (epdte->r == bsl::ZERO_UMAX) {
                 if (bsl::unlikely(!this->add_ept(epdte))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -640,7 +663,7 @@ namespace example
 
             auto *const ept{this->get_ept(epdte)};
             auto *const epte{ept->entries.at_if(this->epto(page_gpa))};
-            if (bsl::unlikely(epte->p != bsl::ZERO_UMAX)) {
+            if (bsl::unlikely(epte->r != bsl::ZERO_UMAX)) {
                 bsl::error() << "guest physical address "    // --
                              << bsl::hex(page_gpa)           // --
                              << " already mapped"            // --
@@ -651,21 +674,15 @@ namespace example
             }
 
             epte->phys = (page_spa >> bsl::to_umax(HYPERVISOR_PAGE_SHIFT)).get();
-            epte->p = bsl::ONE_UMAX.get();
-            epte->us = bsl::ONE_UMAX.get();
+            epte->r = bsl::ONE_UMAX.get();
+            epte->type = page_type.get();
 
             if (!(page_flags & MAP_PAGE_WRITE).is_zero()) {
-                epte->rw = bsl::ONE_UMAX.get();
-            }
-            else {
-                epte->rw = bsl::ZERO_UMAX.get();
+                epte->w = bsl::ONE_UMAX.get();
             }
 
             if (!(page_flags & MAP_PAGE_EXECUTE).is_zero()) {
-                epte->nx = bsl::ZERO_UMAX.get();
-            }
-            else {
-                epte->nx = bsl::ONE_UMAX.get();
+                epte->e = bsl::ONE_UMAX.get();
             }
 
             return bsl::errc_success;
@@ -680,6 +697,7 @@ namespace example
         ///     physical address to
         ///   @param page_spa the system physical address to map.
         ///   @param page_flags defines how memory should be mapped
+        ///   @param page_type defines the memory type for the mapping
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
@@ -687,7 +705,8 @@ namespace example
         map_2m_page(
             bsl::safe_uintmax const &page_gpa,
             bsl::safe_uintmax const &page_spa,
-            bsl::safe_uintmax const &page_flags) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &page_flags,
+            bsl::safe_uintmax const &page_type) &noexcept -> bsl::errc_type
         {
             bsl::lock_guard lock{m_ept_lock};
 
@@ -732,8 +751,26 @@ namespace example
                 return bsl::errc_failure;
             }
 
+            if (bsl::unlikely(!page_flags)) {
+                bsl::error() << "invalid flags: "    // --
+                             << bsl::hex(page_flags)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!page_type)) {
+                bsl::error() << "invalid type: "    // --
+                             << bsl::hex(page_type)                       // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
             auto *const epml4te{m_epml4t->entries.at_if(this->epml4to(page_gpa))};
-            if (epml4te->p == bsl::ZERO_UMAX) {
+            if (epml4te->r == bsl::ZERO_UMAX) {
                 if (bsl::unlikely(!this->add_epdpt(epml4te))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -747,7 +784,7 @@ namespace example
 
             auto *const epdpt{this->get_epdpt(epml4te)};
             auto *const epdpte{epdpt->entries.at_if(this->epdpto(page_gpa))};
-            if (epdpte->p == bsl::ZERO_UMAX) {
+            if (epdpte->r == bsl::ZERO_UMAX) {
                 if (bsl::unlikely(!this->add_epdt(epdpte))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -761,7 +798,7 @@ namespace example
 
             auto *const epdt{this->get_epdt(epdpte)};
             auto *const epdte{epdt->entries.at_if(this->epdto(page_gpa))};
-            if (bsl::unlikely(epdte->p != bsl::ZERO_UMAX)) {
+            if (bsl::unlikely(epdte->r != bsl::ZERO_UMAX)) {
                 bsl::error() << "guest physical address "    // --
                              << bsl::hex(page_gpa)           // --
                              << " already mapped"            // --
@@ -772,22 +809,16 @@ namespace example
             }
 
             epdte->phys = (page_spa >> bsl::to_umax(HYPERVISOR_PAGE_SHIFT)).get();
-            epdte->p = bsl::ONE_UMAX.get();
-            epdte->us = bsl::ONE_UMAX.get();
+            epdte->r = bsl::ONE_UMAX.get();
+            epdte->type = page_type.get();
             epdte->ps = bsl::ONE_UMAX.get();
 
             if (!(page_flags & MAP_PAGE_WRITE).is_zero()) {
-                epdte->rw = bsl::ONE_UMAX.get();
-            }
-            else {
-                epdte->rw = bsl::ZERO_UMAX.get();
+                epdte->w = bsl::ONE_UMAX.get();
             }
 
             if (!(page_flags & MAP_PAGE_EXECUTE).is_zero()) {
-                epdte->nx = bsl::ZERO_UMAX.get();
-            }
-            else {
-                epdte->nx = bsl::ONE_UMAX.get();
+                epdte->e = bsl::ONE_UMAX.get();
             }
 
             return bsl::errc_success;

@@ -29,6 +29,7 @@
 #include <mk_interface.hpp>
 #include <mtrrs_t.hpp>
 #include <page_pool_t.hpp>
+#include <extended_page_table_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -48,6 +49,8 @@ namespace example
     constinit inline page_pool_t g_page_pool{};
     /// @brief stores the mtrrs used to create EPT
     constinit inline mtrrs_t g_mtrrs{};
+    /// @brief stores the extended page tables
+    constinit inline extended_page_table_t g_ept{};
 
     /// <!-- description -->
     ///   @brief Handle NMIs. This is required by Intel.
@@ -438,23 +441,40 @@ namespace example
             return ret;
         }
 
-        // if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
-        //     ret = g_page_pool.initialize(handle);
-        //     if (bsl::unlikely(!ret)) {
-        //         bsl::print<bsl::V>() << bsl::here();
-        //         return ret;
-        //     }
-        // }
+        /// NOTE:
+        ///
 
-        // if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
-        //     ret = g_mtrrs.parse(handle);
-        //     if (bsl::unlikely(!ret)) {
-        //         bsl::print<bsl::V>() << bsl::here();
-        //         return ret;
-        //     }
+        if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
+            ret = g_page_pool.initialize(handle);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+        }
 
-        //     g_mtrrs.dump();
-        // }
+        /// NOTE:
+        ///
+
+        if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
+            ret = g_mtrrs.parse(handle);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            g_mtrrs.dump();
+        }
+
+        /// NOTE:
+        ///
+
+        if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
+            ret = g_ept.initialize(&g_page_pool);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+        }
 
         /// NOTE:
         /// - Report success. Specifically, when we return to the root OS,
