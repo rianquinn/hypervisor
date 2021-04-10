@@ -35,8 +35,8 @@
 #include "epte_t.hpp"
 
 #include <map_page_flags.hpp>
-#include <page_pool_t.hpp>
 #include <memory_type.hpp>
+#include <page_pool_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -214,7 +214,6 @@ namespace example
             epdpte->r = bsl::ONE_UMAX.get();
             epdpte->w = bsl::ONE_UMAX.get();
             epdpte->e = bsl::ONE_UMAX.get();
-            epdpte->type = MEMORY_TYPE_WB.get();
 
             return bsl::errc_success;
         }
@@ -317,7 +316,6 @@ namespace example
             epdte->r = bsl::ONE_UMAX.get();
             epdte->w = bsl::ONE_UMAX.get();
             epdte->e = bsl::ONE_UMAX.get();
-            epdte->type = MEMORY_TYPE_WB.get();
 
             return bsl::errc_success;
         }
@@ -603,19 +601,19 @@ namespace example
             }
 
             if (bsl::unlikely(!page_flags)) {
-                bsl::error() << "invalid flags: "    // --
-                             << bsl::hex(page_flags)                       // --
-                             << bsl::endl                                // --
-                             << bsl::here();                             // --
+                bsl::error() << "invalid flags: "       // --
+                             << bsl::hex(page_flags)    // --
+                             << bsl::endl               // --
+                             << bsl::here();            // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!page_type)) {
-                bsl::error() << "invalid type: "    // --
-                             << bsl::hex(page_type)                       // --
-                             << bsl::endl                                // --
-                             << bsl::here();                             // --
+                bsl::error() << "invalid type: "       // --
+                             << bsl::hex(page_type)    // --
+                             << bsl::endl              // --
+                             << bsl::here();           // --
 
                 return bsl::errc_failure;
             }
@@ -752,19 +750,19 @@ namespace example
             }
 
             if (bsl::unlikely(!page_flags)) {
-                bsl::error() << "invalid flags: "    // --
-                             << bsl::hex(page_flags)                       // --
-                             << bsl::endl                                // --
-                             << bsl::here();                             // --
+                bsl::error() << "invalid flags: "       // --
+                             << bsl::hex(page_flags)    // --
+                             << bsl::endl               // --
+                             << bsl::here();            // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!page_type)) {
-                bsl::error() << "invalid type: "    // --
-                             << bsl::hex(page_type)                       // --
-                             << bsl::endl                                // --
-                             << bsl::here();                             // --
+                bsl::error() << "invalid type: "       // --
+                             << bsl::hex(page_type)    // --
+                             << bsl::endl              // --
+                             << bsl::here();           // --
 
                 return bsl::errc_failure;
             }

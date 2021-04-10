@@ -3132,7 +3132,6 @@ namespace mk
                              << bsl::endl                                      // --
                              << bsl::here();                                   // --
 
-                bsl::error() << "vmlaunch/vmresume failed\n" << bsl::here();
                 return bsl::safe_uintmax::zero(true);
             }
 

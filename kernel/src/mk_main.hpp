@@ -385,7 +385,6 @@ namespace mk
 
             return bsl::exit_success;
 
-            // [ ] implement ept
             // [ ] implement validate the input of all syscalls
             // [ ] implement additional optimizations for release builds
             // [ ] store online pps in the TLS block

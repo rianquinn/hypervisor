@@ -598,10 +598,10 @@ namespace example
             }
 
             if (bsl::unlikely(!page_flags)) {
-                bsl::error() << "invalid flags: "    // --
-                             << bsl::hex(page_flags)                       // --
-                             << bsl::endl                                // --
-                             << bsl::here();                             // --
+                bsl::error() << "invalid flags: "       // --
+                             << bsl::hex(page_flags)    // --
+                             << bsl::endl               // --
+                             << bsl::here();            // --
 
                 return bsl::errc_failure;
             }
@@ -742,10 +742,10 @@ namespace example
             }
 
             if (bsl::unlikely(!page_flags)) {
-                bsl::error() << "invalid flags: "    // --
-                             << bsl::hex(page_flags)                       // --
-                             << bsl::endl                                // --
-                             << bsl::here();                             // --
+                bsl::error() << "invalid flags: "       // --
+                             << bsl::hex(page_flags)    // --
+                             << bsl::endl               // --
+                             << bsl::here();            // --
 
                 return bsl::errc_failure;
             }

@@ -186,6 +186,33 @@ namespace example
         bsl::safe_uintmax m_ranges_count{};
 
         /// <!-- description -->
+        ///   @brief Returns true if the provided address is 4k page aligned
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param addr the address to query
+        ///   @return Returns true if the provided address is 4k page aligned
+        ///
+        [[nodiscard]] constexpr auto
+        is_page_4k_aligned(bsl::safe_uintmax const &addr) const noexcept -> bool
+        {
+            constexpr bsl::safe_uint64 mask_4k{bsl::to_umax(0xFFFU)};
+            return (addr & mask_4k) == bsl::ZERO_UMAX;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if the provided address is 2m page aligned
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param addr the address to query
+        ///   @return Returns true if the provided address is 2m page aligned
+        ///
+        [[nodiscard]] constexpr auto
+        is_page_2m_aligned(bsl::safe_uintmax const &addr) const noexcept -> bool
+        {
+            constexpr bsl::safe_uint64 mask_2m{bsl::to_umax(0x1FFFFFU)};
+            return (addr & mask_2m) == bsl::ZERO_UMAX;
+        }
+        /// <!-- description -->
         ///   @brief Returns the combination of two memory type based on the
         ///     memory combining rules defined in the AMD/Intel manuals.
         ///
@@ -312,6 +339,24 @@ namespace example
         {
             bsl::errc_type ret{};
             range_t r1{addr, size, type, false};
+
+            if (bsl::unlikely(!this->is_page_4k_aligned(addr))) {
+                bsl::error() << "addr is not 4k page aligned: "    // --
+                             << bsl::hex(addr)                     // --
+                             << bsl::endl                          // --
+                             << bsl::here();                       // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!this->is_page_4k_aligned(size))) {
+                bsl::error() << "size is not 4k page aligned: "    // --
+                             << bsl::hex(size)                     // --
+                             << bsl::endl                          // --
+                             << bsl::here();                       // --
+
+                return bsl::errc_failure;
+            }
 
             for (bsl::safe_uintmax i{}; i < m_ranges_count; ++i) {
                 auto *const r2{m_ranges.at_if(i)};
@@ -1054,7 +1099,8 @@ namespace example
             bsl::safe_uintmax const &physmask,    // --
             bsl::safe_uintmax const &pas) noexcept -> bsl::safe_uintmax
         {
-            return ((~physmask) & ((bsl::ONE_UMAX << pas) - bsl::ONE_UMAX)) + bsl::ONE_UMAX;
+            constexpr bsl::safe_uintmax mask{bsl::to_umax(0xFFFFFFFFFFFFF000U)};
+            return (~(physmask & mask) & ((bsl::ONE_UMAX << pas) - bsl::ONE_UMAX)) + bsl::ONE_UMAX;
         }
 
         /// <!-- description -->
@@ -1372,6 +1418,207 @@ namespace example
             }
 
             return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Creates an identity map in the provided map using the
+        ///     memory types contained in the MTRRs. The resulting identity
+        ///     map will mimic the MTRRs given the range provided
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam MAP_T the type of map to use
+        ///   @param map the map to create the identity map in
+        ///   @param gpa the starting guest physical address
+        ///   @param size the number of bytes from the provided gpa to map
+        ///   @param flags the read/write/execute flags to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        template<typename MAP_T>
+        [[nodiscard]] constexpr auto
+        identity_map_4k(
+            MAP_T &map,
+            bsl::safe_uintmax const &gpa,
+            bsl::safe_uintmax const &size,
+            bsl::safe_uintmax const &flags) -> bsl::errc_type
+        {
+            constexpr bsl::safe_uint64 page_size_4k{bsl::to_umax(0x001000U)};
+
+            bsl::errc_type ret{};
+            bsl::safe_uintmax crsr{gpa};
+
+            if (bsl::unlikely(!gpa)) {
+                bsl::error() << "guest physical address is invalid: "    // --
+                             << bsl::hex(gpa)                            // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!this->is_page_4k_aligned(gpa))) {
+                bsl::error() << "guest physical address is not 2m page aligned: "    // --
+                             << bsl::hex(gpa)                                        // --
+                             << bsl::endl                                            // --
+                             << bsl::here();                                         // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!size)) {
+                bsl::error() << "size is invalid: "    // --
+                             << bsl::hex(size)         // --
+                             << bsl::endl              // --
+                             << bsl::here();           // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!this->is_page_4k_aligned(size))) {
+                bsl::error() << "size is not 2m page aligned: "    // --
+                             << bsl::hex(size)                     // --
+                             << bsl::endl                          // --
+                             << bsl::here();                       // --
+
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < m_ranges_count; ++i) {
+                auto *const range{m_ranges.at_if(i)};
+
+                if (range->addr + range->size < crsr) {
+                    continue;
+                }
+
+                while (crsr < range->addr + range->size) {
+
+                    if (!(crsr < gpa + size)) {
+                        return bsl::errc_success;
+                    }
+
+                    ret = map.map_4k_page(crsr, crsr, flags, range->type);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return ret;
+                    }
+
+                    crsr += page_size_4k;
+                }
+            }
+
+            bsl::error() << "identity map is out of bounds"    // --
+                         << bsl::endl                          // --
+                         << bsl::here();                       // --
+
+            return bsl::errc_failure;
+        }
+
+        /// <!-- description -->
+        ///   @brief Creates an identity map in the provided map using the
+        ///     memory types contained in the MTRRs. The resulting identity
+        ///     map will mimic the MTRRs given the range provided
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam MAP_T the type of map to use
+        ///   @param map the map to create the identity map in
+        ///   @param gpa the starting guest physical address
+        ///   @param size the number of bytes from the provided gpa to map
+        ///   @param flags the read/write/execute flags to use
+        ///   @return Returns bsl::errc_success on success and bsl::errc_failure
+        ///     on failure.
+        ///
+        template<typename MAP_T>
+        [[nodiscard]] constexpr auto
+        identity_map_2m(
+            MAP_T &map,
+            bsl::safe_uintmax const &gpa,
+            bsl::safe_uintmax const &size,
+            bsl::safe_uintmax const &flags) -> bsl::errc_type
+        {
+            constexpr bsl::safe_uint64 page_size_4k{bsl::to_umax(0x001000U)};
+            constexpr bsl::safe_uint64 page_size_2m{bsl::to_umax(0x200000U)};
+
+            bsl::errc_type ret{};
+            bsl::safe_uintmax crsr{gpa};
+
+            if (bsl::unlikely(!gpa)) {
+                bsl::error() << "guest physical address is invalid: "    // --
+                             << bsl::hex(gpa)                            // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!this->is_page_2m_aligned(gpa))) {
+                bsl::error() << "guest physical address is not 2m page aligned: "    // --
+                             << bsl::hex(gpa)                                        // --
+                             << bsl::endl                                            // --
+                             << bsl::here();                                         // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!size)) {
+                bsl::error() << "size is invalid: "    // --
+                             << bsl::hex(size)         // --
+                             << bsl::endl              // --
+                             << bsl::here();           // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!this->is_page_2m_aligned(size))) {
+                bsl::error() << "size is not 2m page aligned: "    // --
+                             << bsl::hex(size)                     // --
+                             << bsl::endl                          // --
+                             << bsl::here();                       // --
+
+                return bsl::errc_failure;
+            }
+
+            for (bsl::safe_uintmax i{}; i < m_ranges_count; ++i) {
+                auto *const range{m_ranges.at_if(i)};
+
+                if (range->addr + range->size < crsr) {
+                    continue;
+                }
+
+                while (crsr < range->addr + range->size) {
+
+                    if (!(crsr < gpa + size)) {
+                        return bsl::errc_success;
+                    }
+
+                    if (this->is_page_2m_aligned(crsr)) {
+                        if (!(crsr + page_size_2m > range->addr + range->size)) {
+
+                            ret = map.map_2m_page(crsr, crsr, flags, range->type);
+                            if (bsl::unlikely(!ret)) {
+                                bsl::print<bsl::V>() << bsl::here();
+                                return ret;
+                            }
+
+                            crsr += page_size_2m;
+                            continue;
+                        }
+                    }
+
+                    ret = map.map_4k_page(crsr, crsr, flags, range->type);
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return ret;
+                    }
+
+                    crsr += page_size_4k;
+                }
+            }
+
+            bsl::error() << "identity map is out of bounds"    // --
+                         << bsl::endl                          // --
+                         << bsl::here();                       // --
+
+            return bsl::errc_failure;
         }
 
         /// <!-- description -->

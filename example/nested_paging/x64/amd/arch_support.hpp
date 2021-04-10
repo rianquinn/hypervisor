@@ -39,11 +39,6 @@
 
 namespace example
 {
-    /// @brief defines the CPUID SVM feature identification index
-    constexpr bsl::safe_uintmax CPUID_SVM_FEATURE_IDENTIFICATION{bsl::to_umax(0x8000000AU)};
-    /// @brief defines the CPUID SVM feature identification bit for NP
-    constexpr bsl::safe_uintmax CPUID_SVM_FEATURE_IDENTIFICATION_NP{bsl::to_umax(0x00000001U)};
-
     /// @brief stores the page pool to use for page allocation
     constinit inline page_pool_t g_page_pool{};
 
@@ -93,6 +88,8 @@ namespace example
                 break;
             }
         }
+
+        syscall::bf_debug_op_dump_vps(vpsid);
 
         bsl::error() << "unknown exit_reason: "    // --
                      << bsl::hex(exit_reason)      // --
@@ -163,11 +160,14 @@ namespace example
         ///   check on the first physical processor and be done.
         ///
 
-        rax = CPUID_SVM_FEATURE_IDENTIFICATION;
+        constexpr bsl::safe_uintmax cpuid_svm_feature_identification{bsl::to_umax(0x8000000AU)};
+        constexpr bsl::safe_uintmax cpuid_svm_feature_identification_np{bsl::to_umax(0x00000001U)};
+
+        rax = cpuid_svm_feature_identification;
         rcx = {};
         intrinsic_cpuid(rax.data(), rbx.data(), rcx.data(), rdx.data());
 
-        if (bsl::unlikely((rdx & CPUID_SVM_FEATURE_IDENTIFICATION_NP).is_zero())) {
+        if (bsl::unlikely((rdx & cpuid_svm_feature_identification_np).is_zero())) {
             bsl::error() << "nested paging not supported\n" << bsl::here();
             return bsl::errc_failure;
         }
@@ -253,6 +253,11 @@ namespace example
                 }
             }
         }
+
+        /// NOTE:
+        /// - Finally, we need to set N_CR3 in the VMCB so that the CPU
+        ///   knows where to find our nested page tables.
+        ///
 
         constexpr bsl::safe_uint64 guest_n_cr3_idx{bsl::to_u64(0x00B0U)};
 

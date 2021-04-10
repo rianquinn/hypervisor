@@ -26,10 +26,11 @@
 #define ARCH_SUPPORT_HPP
 
 #include <common_arch_support.hpp>
+#include <extended_page_table_t.hpp>
+#include <map_page_flags.hpp>
 #include <mk_interface.hpp>
 #include <mtrrs_t.hpp>
 #include <page_pool_t.hpp>
-#include <extended_page_table_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -231,6 +232,8 @@ namespace example
             }
         }
 
+        syscall::bf_debug_op_dump_vps(vpsid);
+
         bsl::error() << "unknown exit_reason: "    // --
                      << bsl::hex(exit_reason)      // --
                      << bsl::endl                  // --
@@ -399,6 +402,7 @@ namespace example
         constexpr bsl::safe_uintmax enable_invpcid{bsl::to_umax(0x00001000U)};
         constexpr bsl::safe_uintmax enable_xsave{bsl::to_umax(0x00100000U)};
         constexpr bsl::safe_uintmax enable_uwait{bsl::to_umax(0x04000000U)};
+        constexpr bsl::safe_uintmax enable_ept{bsl::to_umax(0x00000002U)};
 
         ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_procbased_ctls2, ctls);
         if (bsl::unlikely(!ret)) {
@@ -411,6 +415,7 @@ namespace example
         ctls |= enable_invpcid;
         ctls |= enable_xsave;
         ctls |= enable_uwait;
+        ctls |= enable_ept;
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls2_idx, mask(ctls));
         if (bsl::unlikely(!ret)) {
@@ -442,6 +447,47 @@ namespace example
         }
 
         /// NOTE:
+        /// - The first step in setting up EPT is to determine
+        ///   if we have support for it. We do this on each physical processor
+        ///   we are being started on, but likely you could just do this
+        ///   check on the first physical processor and be done.
+        /// - To determine if we have support for EPT, we need to check to see
+        ///   if attempting to enable EPT above worked. This can be done by
+        ///   checking to see if EPT was actually enabled.
+        ///
+
+        ret = syscall::bf_vps_op_read64(handle, vpsid, vmcs_procbased_ctls2_idx, ctls);
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return ret;
+        }
+
+        if ((ctls & (~enable_ept)).is_zero()) {
+            bsl::error() << "EPT not supported\n" << bsl::here();
+            return bsl::errc_failure;
+        }
+
+        /// NOTE:
+        /// - Before we can set up the extended page tables, we need to set up
+        ///   a page pool. This is needed because not all microkernels will
+        ///   support the free_page() ABI. If we want to change the extended
+        ///   page tables, or make new ones and then release them when we are
+        ///   done, etc, we will need the ability to free a page so that we
+        ///   can use it again. To do this we create our own page pool.
+        ///   Whenever we allocate a page, if the page pool is empty, it will
+        ///   as the microkernel for a page. When memory is freed, it puts
+        ///   the freed page into our page pool so that we can use it the next
+        ///   time an allocation occurs.
+        /// - Note that this approach is basically how malloc/free engines
+        ///   work when you write your own application for Windows/Linux.
+        ///   The allocation engine asks the kernel for memory (usually it
+        ///   asks for heap memory, but that is not a requirement), and then
+        ///   it provides this memory when you run malloc(). We are doing the
+        ///   samething here, but with page granularity.
+        /// - It should also be noted that the microkernel does provide a
+        ///   heap if you want to use it, but in this case we really do want
+        ///   page allocation as you cannot do virtual address to physical
+        ///   address conversions for memory that was allocated on the heap.
         ///
 
         if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
@@ -453,20 +499,28 @@ namespace example
         }
 
         /// NOTE:
+        /// - The next step is to initialize and set up the extended page
+        ///   tables. One issue with this is you need to know how much
+        ///   physical memory to map in. You could determine how much
+        ///   physical address space you will need, or you could use on-demand
+        ///   paging. You could also fill the entire physical address space
+        ///   (up to the MAX value provided by CPUID), but how much memory
+        ///   you need to allocate for the page tables to make that work is
+        ///   up to what granularity you use. In this example, we only
+        ///   provide 2M granularity, so this approach is likely a bad idea.
+        /// - To create the identify map, we will use the MTRRs. On Intel,
+        ///   when EPT is used, the MTRRs are ignored. Due to this, we need
+        ///   to ensure that our EPT identify map has the same layout as the
+        ///   MTRRs, otherwise you will end up with caching issues. The MTRRs
+        ///   class has a complete set of contiguous memory ranges that make
+        ///   up all of physical memory, so it can create the identify map
+        ///   for us as needed. Honestly, this is really the hardest part
+        ///   about setting EPT, and most of the black magic is in that class.
+        /// - By default, we map in 512 GB of memory. Again, this is likely
+        ///   not safe, but is good enough for an example.
         ///
 
-        if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
-            ret = g_mtrrs.parse(handle);
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return ret;
-            }
-
-            g_mtrrs.dump();
-        }
-
-        /// NOTE:
-        ///
+        constexpr bsl::safe_uint64 max_physical_mem{bsl::to_umax(0x8000000000U)};
 
         if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
             ret = g_ept.initialize(&g_page_pool);
@@ -474,6 +528,37 @@ namespace example
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
+
+            ret = g_mtrrs.parse(handle);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            ret = g_mtrrs.identity_map_2m(g_ept, bsl::ZERO_UMAX, max_physical_mem, MAP_PAGE_RWE);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+        }
+
+        /// NOTE:
+        /// - Finally, we need to set EPTP in the VMCS so that the CPU
+        ///   knows where to find our extended page tables.
+        /// - Similar to CR3, we also need to set some bits in the EPTP.
+        ///   In this case we have told the CPU that it has 4 page levels
+        ///   to walk and that the default memory type is WB.
+        ///
+
+        constexpr bsl::safe_uintmax eptp_fields{bsl::to_umax(0x1EU)};
+        constexpr bsl::safe_uintmax vmcs_ept_pointer{bsl::to_umax(0x201AU)};
+
+        bsl::safe_uintmax eptp{g_ept.phys() | eptp_fields};
+
+        ret = syscall::bf_vps_op_write64(handle, vpsid, vmcs_ept_pointer, eptp);
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return ret;
         }
 
         /// NOTE:

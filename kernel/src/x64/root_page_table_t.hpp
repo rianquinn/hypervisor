@@ -123,8 +123,7 @@ namespace mk
         ///
         constexpr void
         output_decoration_and_index(
-            bsl::safe_uintmax const &index,
-            bsl::safe_uintmax const &last_index) const noexcept
+            bsl::safe_uintmax const &index, bsl::safe_uintmax const &last_index) const noexcept
         {
             bsl::print() << bsl::rst;
 
@@ -174,7 +173,8 @@ namespace mk
         {
             bool add_comma{};
 
-            bsl::print() << bsl::hex(*static_cast<bsl::uint64 const *>(static_cast<void const *>(entry)));
+            bsl::print() << bsl::hex(
+                *static_cast<bsl::uint64 const *>(static_cast<void const *>(entry)));
             bsl::print() << bsl::rst << " (";
 
             if (bsl::ZERO_UMAX != entry->rw) {
@@ -583,10 +583,8 @@ namespace mk
         ///     last pdpte in the table
         ///
         constexpr void
-        dump_pdt(
-            pdt_t const *const pdt,
-            bool is_pml4te_last_index,
-            bool is_pdpte_last_index) const noexcept
+        dump_pdt(pdt_t const *const pdt, bool is_pml4te_last_index, bool is_pdpte_last_index)
+            const noexcept
         {
             bsl::safe_uintmax const last_index{this->get_last_index(pdt)};
 
@@ -1267,19 +1265,19 @@ namespace mk
             }
 
             if (bsl::unlikely(!page_flags)) {
-                bsl::error() << "invalid flags: "    // --
-                             << bsl::hex(page_flags)                       // --
-                             << bsl::endl                                // --
-                             << bsl::here();                             // --
+                bsl::error() << "invalid flags: "       // --
+                             << bsl::hex(page_flags)    // --
+                             << bsl::endl               // --
+                             << bsl::here();            // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!auto_release)) {
                 bsl::error() << "invalid auto release: "    // --
-                             << bsl::hex(auto_release)                       // --
-                             << bsl::endl                                // --
-                             << bsl::here();                             // --
+                             << bsl::hex(auto_release)      // --
+                             << bsl::endl                   // --
+                             << bsl::here();                // --
 
                 return bsl::errc_failure;
             }
@@ -1469,9 +1467,9 @@ namespace mk
 
             if (bsl::unlikely(!auto_release)) {
                 bsl::error() << "invalid auto release: "    // --
-                             << bsl::hex(auto_release)                       // --
-                             << bsl::endl                                // --
-                             << bsl::here();                             // --
+                             << bsl::hex(auto_release)      // --
+                             << bsl::endl                   // --
+                             << bsl::here();                // --
 
                 return nullptr;
             }
@@ -1525,9 +1523,9 @@ namespace mk
 
             if (bsl::unlikely(!auto_release)) {
                 bsl::error() << "invalid auto release: "    // --
-                             << bsl::hex(auto_release)                       // --
-                             << bsl::endl                                // --
-                             << bsl::here();                             // --
+                             << bsl::hex(auto_release)      // --
+                             << bsl::endl                   // --
+                             << bsl::here();                // --
 
                 return nullptr;
             }

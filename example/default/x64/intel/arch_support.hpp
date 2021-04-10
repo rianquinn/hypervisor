@@ -221,6 +221,8 @@ namespace example
             }
         }
 
+        syscall::bf_debug_op_dump_vps(vpsid);
+
         bsl::error() << "unknown exit_reason: "    // --
                      << bsl::hex(exit_reason)      // --
                      << bsl::endl                  // --
