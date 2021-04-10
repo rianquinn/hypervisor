@@ -79,8 +79,8 @@ namespace example
         constexpr bsl::safe_uintmax vmcs_procbased_ctls_idx{bsl::to_umax(0x4002U)};
         constexpr bsl::safe_uint32 vmcs_set_nmi_window_exiting{bsl::to_u32(0x400000U)};
 
-        bsl::safe_uint32 val;
         bsl::errc_type ret{};
+        bsl::safe_uint32 val{};
 
         ret = syscall::bf_vps_op_read32(handle, vpsid, vmcs_procbased_ctls_idx, val);
         if (bsl::unlikely(!ret)) {
@@ -125,8 +125,8 @@ namespace example
         constexpr bsl::safe_uintmax vmcs_procbased_ctls_idx{bsl::to_umax(0x4002U)};
         constexpr bsl::safe_uint32 vmcs_clear_nmi_window_exiting{bsl::to_u32(0xFFBFFFFFU)};
 
-        bsl::safe_uint32 val;
         bsl::errc_type ret{};
+        bsl::safe_uint32 val{};
 
         ret = syscall::bf_vps_op_read32(handle, vpsid, vmcs_procbased_ctls_idx, val);
         if (bsl::unlikely(!ret)) {
@@ -177,9 +177,9 @@ namespace example
         bsl::safe_uint64 const &exit_reason) noexcept
     {
         bsl::errc_type ret{};
-        constexpr bsl::safe_uintmax EXIT_REASON_NMI{bsl::to_umax(0x0)};
-        constexpr bsl::safe_uintmax EXIT_REASON_NMI_WINDOW{bsl::to_umax(0x8)};
-        constexpr bsl::safe_uintmax EXIT_REASON_CPUID{bsl::to_umax(0xA)};
+        constexpr bsl::safe_uintmax exit_reason_nmi{bsl::to_umax(0x0)};
+        constexpr bsl::safe_uintmax exit_reason_nmi_window{bsl::to_umax(0x8)};
+        constexpr bsl::safe_uintmax exit_reason_cpuid{bsl::to_umax(0xA)};
 
         /// NOTE:
         /// - At a minimum, we need to handle CPUID and NMIs on Intel. Note
@@ -191,7 +191,7 @@ namespace example
         ///
 
         switch (exit_reason.get()) {
-            case EXIT_REASON_NMI.get(): {
+            case exit_reason_nmi.get(): {
                 ret = handle_vmexit_nmi(handle, vpsid);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
@@ -203,7 +203,7 @@ namespace example
                 return;
             }
 
-            case EXIT_REASON_NMI_WINDOW.get(): {
+            case exit_reason_nmi_window.get(): {
                 ret = handle_vmexit_nmi_window(handle, vpsid);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
@@ -215,7 +215,7 @@ namespace example
                 return;
             }
 
-            case EXIT_REASON_CPUID.get(): {
+            case exit_reason_cpuid.get(): {
                 ret = handle_vmexit_cpuid(handle, vpsid);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
@@ -239,6 +239,24 @@ namespace example
                      << bsl::endl                  // --
                      << bsl::here();               // --
     }
+
+    /// <!-- description -->
+    ///   @brief Returns the controls as their masked versions using the
+    ///     conversion rules defined in the Intel Manual for determining
+    ///     which controls must be enabled, and which controls are not
+    ///     allowed to be enabled.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param val the control to mask
+    ///   @return Returns the masked version of the control
+    ///
+    [[nodiscard]] constexpr auto
+    mask_enabled_and_disabled(bsl::safe_uintmax const &val) noexcept -> bsl::safe_uint32
+    {
+        constexpr bsl::safe_uintmax ctls_mask{bsl::to_umax(0x00000000FFFFFFFFU)};
+        constexpr bsl::safe_uintmax ctls_shift{bsl::to_umax(32)};
+        return bsl::to_u32_unsafe((val & ctls_mask) & (val >> ctls_shift));
+    };
 
     /// <!-- description -->
     ///   @brief Initializes a VPS with architecture specific stuff.
@@ -317,12 +335,6 @@ namespace example
 
         bsl::safe_uintmax ctls{};
 
-        auto mask = [](bsl::safe_uintmax const &val) noexcept -> bsl::safe_uint32 {
-            constexpr bsl::safe_uintmax ctls_mask{bsl::to_umax(0x00000000FFFFFFFFU)};
-            constexpr bsl::safe_uintmax ctls_shift{bsl::to_umax(32)};
-            return bsl::to_u32_unsafe((val & ctls_mask) & (val >> ctls_shift));
-        };
-
         /// NOTE:
         /// - Configure the pin based controls
         ///
@@ -333,7 +345,8 @@ namespace example
             return ret;
         }
 
-        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_pinbased_ctls_idx, mask(ctls));
+        ret = syscall::bf_vps_op_write32(
+            handle, vpsid, vmcs_pinbased_ctls_idx, mask_enabled_and_disabled(ctls));
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
@@ -355,7 +368,8 @@ namespace example
         ctls |= enable_msr_bitmaps;
         ctls |= enable_procbased_ctls2;
 
-        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls_idx, mask(ctls));
+        ret = syscall::bf_vps_op_write32(
+            handle, vpsid, vmcs_procbased_ctls_idx, mask_enabled_and_disabled(ctls));
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
@@ -371,7 +385,8 @@ namespace example
             return ret;
         }
 
-        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_exit_ctls_idx, mask(ctls));
+        ret = syscall::bf_vps_op_write32(
+            handle, vpsid, vmcs_exit_ctls_idx, mask_enabled_and_disabled(ctls));
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
@@ -387,7 +402,8 @@ namespace example
             return ret;
         }
 
-        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_entry_ctls_idx, mask(ctls));
+        ret = syscall::bf_vps_op_write32(
+            handle, vpsid, vmcs_entry_ctls_idx, mask_enabled_and_disabled(ctls));
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
@@ -417,7 +433,8 @@ namespace example
         ctls |= enable_uwait;
         ctls |= enable_ept;
 
-        ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls2_idx, mask(ctls));
+        ret = syscall::bf_vps_op_write32(
+            handle, vpsid, vmcs_procbased_ctls2_idx, mask_enabled_and_disabled(ctls));
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
@@ -438,6 +455,11 @@ namespace example
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
+
+            bsl::touch();
+        }
+        else {
+            bsl::touch();
         }
 
         ret = syscall::bf_vps_op_write64(handle, vpsid, vmcs_msr_bitmaps, g_msr_bitmaps_phys);
@@ -496,6 +518,11 @@ namespace example
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
+
+            bsl::touch();
+        }
+        else {
+            bsl::touch();
         }
 
         /// NOTE:
@@ -540,6 +567,11 @@ namespace example
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
+
+            bsl::touch();
+        }
+        else {
+            bsl::touch();
         }
 
         /// NOTE:

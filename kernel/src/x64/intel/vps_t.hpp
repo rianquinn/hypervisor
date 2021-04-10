@@ -151,6 +151,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
             else {
                 ret = m_intrinsic->vmwrite16(VMCS_GUEST_ES_SELECTOR, state->es_selector);
@@ -177,6 +179,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -221,6 +225,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
             else {
                 ret = m_intrinsic->vmwrite16(VMCS_GUEST_CS_SELECTOR, state->cs_selector);
@@ -247,6 +253,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -291,6 +299,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
             else {
                 ret = m_intrinsic->vmwrite16(VMCS_GUEST_SS_SELECTOR, state->ss_selector);
@@ -317,6 +327,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -361,6 +373,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
             else {
                 ret = m_intrinsic->vmwrite16(VMCS_GUEST_DS_SELECTOR, state->ds_selector);
@@ -387,6 +401,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -431,6 +447,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
             else {
                 ret = m_intrinsic->vmwrite16(VMCS_GUEST_FS_SELECTOR, state->fs_selector);
@@ -457,6 +475,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -501,6 +521,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
             else {
                 ret = m_intrinsic->vmwrite16(VMCS_GUEST_GS_SELECTOR, state->gs_selector);
@@ -527,6 +549,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -572,6 +596,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
             else {
                 ret = m_intrinsic->vmwrite16(VMCS_GUEST_LDTR_SELECTOR, state->ldtr_selector);
@@ -598,6 +624,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -642,6 +670,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
             else {
                 ret = m_intrinsic->vmwrite16(VMCS_GUEST_TR_SELECTOR, state->tr_selector);
@@ -668,6 +698,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -2317,7 +2349,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         read_reg(TLS_CONCEPT &tls, syscall::bf_reg_t const reg) &noexcept -> bsl::safe_uintmax
         {
-            bsl::safe_uint64 index{};
+            bsl::safe_uint64 index{bsl::safe_uint64::zero(true)};
 
             if (bsl::unlikely(!m_allocated)) {
                 bsl::error() << "invalid vps\n" << bsl::here();
@@ -2670,7 +2702,7 @@ namespace mk
 
                 default: {
                     bsl::error() << "unknown by bf_reg_t\n" << bsl::here();
-                    return bsl::safe_uintmax::zero(true);
+                    break;
                 }
             }
 
@@ -2701,7 +2733,7 @@ namespace mk
             TLS_CONCEPT &tls, syscall::bf_reg_t const reg, bsl::safe_uintmax const &val) &noexcept
             -> bsl::errc_type
         {
-            bsl::safe_uint64 index{};
+            bsl::safe_uint64 index{bsl::safe_uint64::zero(true)};
 
             if (bsl::unlikely(!m_allocated)) {
                 bsl::error() << "invalid vps\n" << bsl::here();
@@ -3085,7 +3117,7 @@ namespace mk
 
                 default: {
                     bsl::error() << "unknown by bf_reg_t\n" << bsl::here();
-                    return bsl::errc_failure;
+                    break;
                 }
             }
 
@@ -3125,7 +3157,7 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
-            auto const exit_reason{intrinsic_vmrun(&m_vmcs_missing_registers)};
+            bsl::safe_uintmax const exit_reason{intrinsic_vmrun(&m_vmcs_missing_registers)};
             if (exit_reason > invalid_exit_reason) {
                 this->dump(tls);
 
@@ -3638,6 +3670,9 @@ namespace mk
 
                     bsl::print() << bsl::rst << bsl::endl;
                 }
+                else {
+                    bsl::touch();
+                }
 
                 ++crsr;
                 if (!(crsr < m_vmexit_log.size())) {
@@ -3646,10 +3681,6 @@ namespace mk
                 else {
                     bsl::touch();
                 }
-            }
-            else
-            {
-                bsl::touch();
             }
         }
     };

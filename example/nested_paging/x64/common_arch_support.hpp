@@ -71,6 +71,7 @@ namespace example
                 case loader::CPUID_COMMAND_ECX_STOP.get(): {
 
                     if (vpsid.is_zero()) {
+                        bsl::print() << bsl::endl;
                         syscall::bf_debug_op_dump_page_pool();
                     }
                     else {

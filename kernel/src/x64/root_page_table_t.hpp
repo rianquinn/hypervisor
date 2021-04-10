@@ -292,8 +292,8 @@ namespace mk
         ///   @param virt the virtual address to get the PML4T offset from.
         ///   @return the PML4T offset from the virtual address
         ///
-        [[nodiscard]] constexpr auto
-        pml4to(bsl::safe_uintmax const &virt) const noexcept -> bsl::safe_uintmax
+        [[nodiscard]] static constexpr auto
+        pml4to(bsl::safe_uintmax const &virt) noexcept -> bsl::safe_uintmax
         {
             constexpr bsl::safe_uintmax mask{bsl::to_umax(0x1FF)};
             constexpr bsl::safe_uintmax shift{bsl::to_umax(39)};
@@ -433,8 +433,8 @@ namespace mk
         ///   @param virt the virtual address to get the PDPT offset from.
         ///   @return the PDPT offset from the virtual address
         ///
-        [[nodiscard]] constexpr auto
-        pdpto(bsl::safe_uintmax const &virt) const noexcept -> bsl::safe_uintmax
+        [[nodiscard]] static constexpr auto
+        pdpto(bsl::safe_uintmax const &virt) noexcept -> bsl::safe_uintmax
         {
             constexpr bsl::safe_uintmax mask{bsl::to_umax(0x1FF)};
             constexpr bsl::safe_uintmax shift{bsl::to_umax(30)};
@@ -564,8 +564,8 @@ namespace mk
         ///   @param virt the virtual address to get the PDT offset from.
         ///   @return the PDT offset from the virtual address
         ///
-        [[nodiscard]] constexpr auto
-        pdto(bsl::safe_uintmax const &virt) const noexcept -> bsl::safe_uintmax
+        [[nodiscard]] static constexpr auto
+        pdto(bsl::safe_uintmax const &virt) noexcept -> bsl::safe_uintmax
         {
             constexpr bsl::safe_uintmax mask{bsl::to_umax(0x1FF)};
             constexpr bsl::safe_uintmax shift{bsl::to_umax(21)};
@@ -752,8 +752,8 @@ namespace mk
         ///   @param virt the virtual address to get the PT offset from.
         ///   @return the PT offset from the virtual address
         ///
-        [[nodiscard]] constexpr auto
-        pto(bsl::safe_uintmax const &virt) const noexcept -> bsl::safe_uintmax
+        [[nodiscard]] static constexpr auto
+        pto(bsl::safe_uintmax const &virt) noexcept -> bsl::safe_uintmax
         {
             constexpr bsl::safe_uintmax mask{bsl::to_umax(0x1FF)};
             constexpr bsl::safe_uintmax shift{bsl::to_umax(12)};
@@ -839,8 +839,8 @@ namespace mk
         ///   @param addr the address to query
         ///   @return Returns the page aligned version of the addr
         ///
-        [[nodiscard]] constexpr auto
-        page_aligned(bsl::safe_uintmax const &addr) const noexcept -> bsl::safe_uintmax
+        [[nodiscard]] static constexpr auto
+        page_aligned(bsl::safe_uintmax const &addr) noexcept -> bsl::safe_uintmax
         {
             return (addr & ~(PAGE_SIZE - bsl::ONE_UMAX));
         }
@@ -852,8 +852,8 @@ namespace mk
         ///   @param addr the address to query
         ///   @return Returns true if the provided address is page aligned
         ///
-        [[nodiscard]] constexpr auto
-        is_page_aligned(bsl::safe_uintmax const &addr) const noexcept -> bool
+        [[nodiscard]] static constexpr auto
+        is_page_aligned(bsl::safe_uintmax const &addr) noexcept -> bool
         {
             return (addr & (PAGE_SIZE - bsl::ONE_UMAX)) == bsl::ZERO_UMAX;
         }

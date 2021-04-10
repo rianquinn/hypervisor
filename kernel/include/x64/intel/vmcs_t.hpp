@@ -242,6 +242,7 @@ namespace mk
     /// @brief encoding for: guest_gdtr_limit
     constexpr bsl::safe_uintmax VMCS_GUEST_GDTR_LIMIT{bsl::to_umax(0x4810U)};
     /// @brief encoding for: guest_idtr_limit
+    // NOLINTNEXTLINE(bsl-identifier-typographically-unambiguous)
     constexpr bsl::safe_uintmax VMCS_GUEST_IDTR_LIMIT{bsl::to_umax(0x4812U)};
     /// @brief encoding for: guest_es_access_rights
     constexpr bsl::safe_uintmax VMCS_GUEST_ES_ACCESS_RIGHTS{bsl::to_umax(0x4814U)};
@@ -328,6 +329,7 @@ namespace mk
     /// @brief encoding for: guest_gdtr_base
     constexpr bsl::safe_uintmax VMCS_GUEST_GDTR_BASE{bsl::to_umax(0x6816U)};
     /// @brief encoding for: guest_idtr_base
+    // NOLINTNEXTLINE(bsl-identifier-typographically-unambiguous)
     constexpr bsl::safe_uintmax VMCS_GUEST_IDTR_BASE{bsl::to_umax(0x6818U)};
     /// @brief encoding for: guest_dr7
     constexpr bsl::safe_uintmax VMCS_GUEST_DR7{bsl::to_umax(0x681AU)};

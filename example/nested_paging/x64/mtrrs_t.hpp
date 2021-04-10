@@ -192,8 +192,8 @@ namespace example
         ///   @param addr the address to query
         ///   @return Returns true if the provided address is 4k page aligned
         ///
-        [[nodiscard]] constexpr auto
-        is_page_4k_aligned(bsl::safe_uintmax const &addr) const noexcept -> bool
+        [[nodiscard]] static constexpr auto
+        is_page_4k_aligned(bsl::safe_uintmax const &addr) noexcept -> bool
         {
             constexpr bsl::safe_uint64 mask_4k{bsl::to_umax(0xFFFU)};
             return (addr & mask_4k) == bsl::ZERO_UMAX;
@@ -206,8 +206,8 @@ namespace example
         ///   @param addr the address to query
         ///   @return Returns true if the provided address is 2m page aligned
         ///
-        [[nodiscard]] constexpr auto
-        is_page_2m_aligned(bsl::safe_uintmax const &addr) const noexcept -> bool
+        [[nodiscard]] static constexpr auto
+        is_page_2m_aligned(bsl::safe_uintmax const &addr) noexcept -> bool
         {
             constexpr bsl::safe_uint64 mask_2m{bsl::to_umax(0x1FFFFFU)};
             return (addr & mask_2m) == bsl::ZERO_UMAX;
@@ -1602,6 +1602,11 @@ namespace example
                             crsr += page_size_2m;
                             continue;
                         }
+
+                        bsl::touch();
+                    }
+                    else {
+                        bsl::touch();
                     }
 
                     ret = map.map_4k_page(crsr, crsr, flags, range->type);
@@ -1652,14 +1657,17 @@ namespace example
             ///
 
             for (bsl::safe_uintmax i{}; i < m_ranges_count; ++i) {
-                auto rowcolor{bsl::rst};
-                auto *const range{m_ranges.at_if(i)};
+                auto const *rowcolor{bsl::rst};
+                auto const *const range{m_ranges.at_if(i)};
 
                 bsl::safe_uintmax const srt{range->addr};
                 bsl::safe_uintmax const end{range->addr + range->size - bsl::ONE_UMAX};
 
                 if (MEMORY_TYPE_UC == range->type) {
                     rowcolor = bsl::blk;
+                }
+                else {
+                    bsl::touch();
                 }
 
                 bsl::print() << bsl::ylw << "| ";
