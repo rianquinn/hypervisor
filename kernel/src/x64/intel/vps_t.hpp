@@ -1364,10 +1364,13 @@ namespace mk
         constexpr void
         dump(bsl::string_view const &str, bsl::safe_integral<T> const &val) const &noexcept
         {
-            auto rowcolor{bsl::rst};
+            auto const *rowcolor{bsl::rst};
 
             if (val.is_zero()) {
                 rowcolor = bsl::blk;
+            }
+            else {
+                bsl::touch();
             }
 
             bsl::print() << bsl::ylw << "| ";
@@ -1610,14 +1613,13 @@ namespace mk
         deallocate() &noexcept
         {
             m_vmexit_log_crsr = {};
-
             for (auto const elem : m_vmexit_log) {
                 *elem.data = {};
             }
 
             m_vmcs_missing_registers = {};
-            m_vmcs_phys = bsl::safe_uintmax::zero(true);
 
+            m_vmcs_phys = bsl::safe_uintmax::zero(true);
             if (nullptr != m_page_pool) {
                 m_page_pool->deallocate(m_vmcs, ALLOCATE_TAG_VMCS);
                 m_vmcs = {};
@@ -3150,6 +3152,9 @@ namespace mk
                 if (!(m_vmexit_log_crsr < m_vmexit_log.size())) {
                     m_vmexit_log_crsr = {};
                 }
+                else {
+                    bsl::touch();
+                }
             }
 
             /// TODO:
@@ -3638,6 +3643,13 @@ namespace mk
                 if (!(crsr < m_vmexit_log.size())) {
                     crsr = {};
                 }
+                else {
+                    bsl::touch();
+                }
+            }
+            else
+            {
+                bsl::touch();
             }
         }
     };

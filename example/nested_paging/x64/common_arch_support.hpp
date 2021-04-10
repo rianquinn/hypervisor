@@ -73,6 +73,9 @@ namespace example
                     if (vpsid.is_zero()) {
                         syscall::bf_debug_op_dump_page_pool();
                     }
+                    else {
+                        bsl::touch();
+                    }
 
                     /// NOTE:
                     /// - To support stopping the hypervisor, we need to

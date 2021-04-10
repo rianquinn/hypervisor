@@ -28,6 +28,7 @@
 #include <allocate_tags.hpp>
 #include <mk_interface.hpp>
 #include <vmcb_t.hpp>
+#include <vmexit_log_t.hpp>
 
 #include <bsl/cstr_type.hpp>
 #include <bsl/debug.hpp>
@@ -113,6 +114,10 @@ namespace mk
         vmcb_t *m_host_vmcb{};
         /// @brief stores the physical address of the host VMCB
         bsl::safe_uintmax m_host_vmcb_phys{bsl::safe_uintmax::zero(true)};
+        /// @brief stores the VMExit log
+        bsl::array<vmexit_log_t, VMEXIT_LOG_SIZE> m_vmexit_log{};
+        /// @brief stores the VMExit log circular cursor
+        bsl::safe_uintmax m_vmexit_log_crsr{};
 
         /// <!-- description -->
         ///   @brief Dumps the contents of a field
@@ -126,10 +131,13 @@ namespace mk
         constexpr void
         dump(bsl::string_view const &str, bsl::safe_integral<T> const &val) const &noexcept
         {
-            auto rowcolor{bsl::rst};
+            auto const *rowcolor{bsl::rst};
 
             if (val.is_zero()) {
                 rowcolor = bsl::blk;
+            }
+            else {
+                bsl::touch();
             }
 
             bsl::print() << bsl::ylw << "| ";
@@ -371,8 +379,12 @@ namespace mk
         constexpr void
         deallocate() &noexcept
         {
-            m_host_vmcb_phys = bsl::safe_uintmax::zero(true);
+            m_vmexit_log_crsr = {};
+            for (auto const elem : m_vmexit_log) {
+                *elem.data = {};
+            }
 
+            m_host_vmcb_phys = bsl::safe_uintmax::zero(true);
             if (nullptr != m_page_pool) {
                 m_page_pool->deallocate(m_host_vmcb, ALLOCATE_TAG_HOST_VMCB);
                 m_host_vmcb = {};
@@ -382,7 +394,6 @@ namespace mk
             }
 
             m_guest_vmcb_phys = bsl::safe_uintmax::zero(true);
-
             if (nullptr != m_page_pool) {
                 m_page_pool->deallocate(m_guest_vmcb, ALLOCATE_TAG_GUEST_VMCB);
                 m_guest_vmcb = {};
@@ -1499,6 +1510,27 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
+            if constexpr (!bsl::to_umax(BSL_DEBUG_LEVEL).is_zero()) {
+                *m_vmexit_log.at_if(m_vmexit_log_crsr) = {
+                    exit_reason,
+                    m_guest_vmcb->exitinfo1,
+                    m_guest_vmcb->exitinfo2,
+                    m_guest_vmcb->exitininfo,
+                    m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX),
+                    m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX),
+                    m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX),
+                    m_guest_vmcb->rip,
+                    m_guest_vmcb->rsp};
+
+                ++m_vmexit_log_crsr;
+                if (!(m_vmexit_log_crsr < m_vmexit_log.size())) {
+                    m_vmexit_log_crsr = {};
+                }
+                else {
+                    bsl::touch();
+                }
+            }
+
             /// TODO:
             /// - Add check logic to if an entry failure occurs and output
             ///   what the error was and why.
@@ -1577,11 +1609,12 @@ namespace mk
             constexpr auto guest_instruction_bytes_7{bsl::to_umax(0x7U)};
             constexpr auto guest_instruction_bytes_8{bsl::to_umax(0x8U)};
             constexpr auto guest_instruction_bytes_9{bsl::to_umax(0x9U)};
-            constexpr auto guest_instruction_bytes_A{bsl::to_umax(0xAU)};
-            constexpr auto guest_instruction_bytes_B{bsl::to_umax(0xBU)};
-            constexpr auto guest_instruction_bytes_C{bsl::to_umax(0xCU)};
-            constexpr auto guest_instruction_bytes_D{bsl::to_umax(0xDU)};
-            constexpr auto guest_instruction_bytes_E{bsl::to_umax(0xEU)};
+            constexpr auto guest_instruction_bytes_a{bsl::to_umax(0xAU)};
+            /// NOLINTNEXTLINE(bsl-identifier-typographically-unambiguous)
+            constexpr auto guest_instruction_bytes_b{bsl::to_umax(0xBU)};
+            constexpr auto guest_instruction_bytes_c{bsl::to_umax(0xCU)};
+            constexpr auto guest_instruction_bytes_d{bsl::to_umax(0xDU)};
+            constexpr auto guest_instruction_bytes_e{bsl::to_umax(0xEU)};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::print() << "[error]" << bsl::endl;
@@ -1711,11 +1744,11 @@ namespace mk
             this->dump("guest_instruction_bytes[7]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_7)));
             this->dump("guest_instruction_bytes[8]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_8)));
             this->dump("guest_instruction_bytes[9]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_9)));
-            this->dump("guest_instruction_bytes[A]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_A)));
-            this->dump("guest_instruction_bytes[B]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_B)));
-            this->dump("guest_instruction_bytes[C]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_C)));
-            this->dump("guest_instruction_bytes[D]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_D)));
-            this->dump("guest_instruction_bytes[E]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_E)));
+            this->dump("guest_instruction_bytes[a]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_a)));
+            this->dump("guest_instruction_bytes[b]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_b)));
+            this->dump("guest_instruction_bytes[c]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_c)));
+            this->dump("guest_instruction_bytes[d]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_d)));
+            this->dump("guest_instruction_bytes[e]", bsl::make_safe(*gib.at_if(guest_instruction_bytes_e)));
 
             this->dump("avic_apic_backing_page_ptr ", bsl::make_safe(m_guest_vmcb->avic_apic_backing_page_ptr));
             this->dump("avic_logical_table_ptr ", bsl::make_safe(m_guest_vmcb->avic_logical_table_ptr));
@@ -1802,6 +1835,93 @@ namespace mk
             bsl::print() << bsl::rst << bsl::endl;
 
             // clang-format on
+        }
+
+        /// <!-- description -->
+        ///   @brief Dumps the contents of the VMExit log to the console
+        ///
+        constexpr void
+        dump_vmexit_log() &noexcept
+        {
+            constexpr bsl::safe_uintmax exit_reason_cpuid{bsl::to_umax(0x72U)};
+            constexpr bsl::safe_uintmax exit_reason_ioio{bsl::to_umax(0x7BU)};
+            constexpr bsl::safe_uintmax exit_reason_msr{bsl::to_umax(0x7CU)};
+
+            /// TODO:
+            /// - We should continue to expand on this function to provide
+            ///   even more useful information. For example, we could store
+            ///   all of the register state, and then be able to provide
+            ///   better data for mov to CR/DR, VMCall, IO instructions,
+            ///   IDT/GDT accesses, all of the invalidation functions, etc.
+            ///
+
+            bsl::print() << bsl::mag << "vmexit log for vps [" << bsl::hex(m_id) << "]: ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            auto crsr{m_vmexit_log_crsr};
+            for (bsl::safe_uintmax i{}; i < m_vmexit_log.size(); ++i) {
+                auto const entry{m_vmexit_log.at_if(crsr)};
+
+                if (!entry->rip.is_zero()) {
+                    bsl::print() << bsl::ylw << '[' << bsl::fmt{">#5x", entry->exit_reason} << "]";
+                    bsl::print() << bsl::cyn << " rip: " << bsl::rst << bsl::hex(entry->rip);
+                    bsl::print() << bsl::cyn << " rsp: " << bsl::rst << bsl::hex(entry->rsp);
+
+                    switch (entry->exit_reason.get()) {
+                        case exit_reason_cpuid.get(): {
+                            bsl::print() << bsl::cyn << " eax: " << bsl::rst
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->rax));
+                            bsl::print() << bsl::cyn << " ecx: " << bsl::rst
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
+                            break;
+                        }
+
+                        case exit_reason_ioio.get(): {
+                            bsl::print() << bsl::cyn << " dx: " << bsl::rst
+                                         << bsl::hex(bsl::to_u16_unsafe(entry->rdx));
+                            bsl::print() << bsl::cyn << " exitinfo1: " << bsl::rst
+                                         << bsl::hex(entry->exitinfo1);
+                            bsl::print() << bsl::cyn << " exitinfo2: " << bsl::rst
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->exitinfo2));
+                            break;
+                        }
+
+                        case exit_reason_msr.get(): {
+                            bsl::print() << bsl::cyn << " ecx: " << bsl::rst
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
+                            bsl::print() << bsl::cyn << " eax: " << bsl::rst
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->rax));
+                            bsl::print() << bsl::cyn << " edx: " << bsl::rst
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->rdx));
+                            break;
+                        }
+
+                        default: {
+                            bsl::print() << bsl::cyn << " exitinfo1: " << bsl::rst
+                                         << bsl::hex(entry->exitinfo1);
+                            bsl::print() << bsl::cyn << " exitinfo2: " << bsl::rst
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->exitinfo2));
+                            bsl::print() << bsl::cyn << " exitininfo: " << bsl::rst
+                                         << bsl::hex(bsl::to_u32_unsafe(entry->exitininfo));
+
+                            break;
+                        }
+                    }
+
+                    bsl::print() << bsl::rst << bsl::endl;
+                }
+                else {
+                    bsl::touch();
+                }
+
+                ++crsr;
+                if (!(crsr < m_vmexit_log.size())) {
+                    crsr = {};
+                }
+                else {
+                    bsl::touch();
+                }
+            }
         }
     };
 }

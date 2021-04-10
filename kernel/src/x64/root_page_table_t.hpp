@@ -878,7 +878,7 @@ namespace mk
         allocate_page(
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_uintmax const &auto_release) &noexcept -> void *
+            bsl::safe_int32 const &auto_release) &noexcept -> void *
         {
             bsl::errc_type ret{};
 
@@ -901,7 +901,7 @@ namespace mk
 
                 default: {
                     bsl::error() << "unknown tag\n" << bsl::here();
-                    return nullptr;
+                    break;
                 }
             }
 
@@ -1219,7 +1219,7 @@ namespace mk
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_phys,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_uintmax const &auto_release) &noexcept -> bsl::errc_type
+            bsl::safe_int32 const &auto_release) &noexcept -> bsl::errc_type
         {
             bsl::lock_guard lock{m_rpt_lock};
 
@@ -1275,7 +1275,7 @@ namespace mk
 
             if (bsl::unlikely(!auto_release)) {
                 bsl::error() << "invalid auto release: "    // --
-                             << bsl::hex(auto_release)      // --
+                             << auto_release                // --
                              << bsl::endl                   // --
                              << bsl::here();                // --
 
@@ -1291,6 +1291,11 @@ namespace mk
 
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
+            }
+            else {
+                bsl::touch();
             }
 
             auto *const pml4te{m_pml4t->entries.at_if(this->pml4to(page_virt))};
@@ -1412,7 +1417,7 @@ namespace mk
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_phys,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_uintmax const &auto_release) &noexcept -> bsl::errc_type
+            bsl::safe_int32 const &auto_release) &noexcept -> bsl::errc_type
         {
             return this->map_page(
                 this->page_aligned(page_virt),
@@ -1439,7 +1444,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         allocate_page_rw(
-            bsl::safe_uintmax const &page_virt, bsl::safe_uintmax const &auto_release) &noexcept
+            bsl::safe_uintmax const &page_virt, bsl::safe_int32 const &auto_release) &noexcept
             -> void *
         {
             if (bsl::unlikely(!m_initialized)) {
@@ -1467,7 +1472,7 @@ namespace mk
 
             if (bsl::unlikely(!auto_release)) {
                 bsl::error() << "invalid auto release: "    // --
-                             << bsl::hex(auto_release)      // --
+                             << auto_release                // --
                              << bsl::endl                   // --
                              << bsl::here();                // --
 
@@ -1495,7 +1500,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         allocate_page_rx(
-            bsl::safe_uintmax const &page_virt, bsl::safe_uintmax const &auto_release) &noexcept
+            bsl::safe_uintmax const &page_virt, bsl::safe_int32 const &auto_release) &noexcept
             -> void *
         {
             if (bsl::unlikely(!m_initialized)) {
@@ -1523,7 +1528,7 @@ namespace mk
 
             if (bsl::unlikely(!auto_release)) {
                 bsl::error() << "invalid auto release: "    // --
-                             << bsl::hex(auto_release)      // --
+                             << auto_release                // --
                              << bsl::endl                   // --
                              << bsl::here();                // --
 

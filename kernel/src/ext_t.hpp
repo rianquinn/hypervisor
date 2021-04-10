@@ -740,6 +740,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
+
+                bsl::touch();
             }
 
             return bsl::errc_success;
@@ -1264,6 +1266,8 @@ namespace mk
                     bsl::print<bsl::V>() << bsl::here();
                     return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
                 }
+
+                bsl::touch();
             }
 
             return {huge_virt, huge_phys};
@@ -1846,6 +1850,9 @@ namespace mk
                 bsl::print() << bsl::mag << "ext [" << bsl::hex(m_id) << "] direct map dump: ";
 
                 m_current_direct_map_rpt->dump();
+            }
+            else {
+                bsl::touch();
             }
         }
     };

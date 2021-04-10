@@ -76,8 +76,8 @@ namespace example
         ///   @param gpa the guest physical address to get the NPML4T offset from.
         ///   @return the NPML4T offset from the guest physical address
         ///
-        [[nodiscard]] constexpr auto
-        npml4to(bsl::safe_uintmax const &gpa) const noexcept -> bsl::safe_uintmax
+        [[nodiscard]] static constexpr auto
+        npml4to(bsl::safe_uintmax const &gpa) noexcept -> bsl::safe_uintmax
         {
             constexpr bsl::safe_uintmax mask{bsl::to_umax(0x1FF)};
             constexpr bsl::safe_uintmax shift{bsl::to_umax(39)};
@@ -178,8 +178,8 @@ namespace example
         ///   @param gpa the guest physical address to get the NPDPT offset from.
         ///   @return the NPDPT offset from the guest physical address
         ///
-        [[nodiscard]] constexpr auto
-        npdpto(bsl::safe_uintmax const &gpa) const noexcept -> bsl::safe_uintmax
+        [[nodiscard]] static constexpr auto
+        npdpto(bsl::safe_uintmax const &gpa) noexcept -> bsl::safe_uintmax
         {
             constexpr bsl::safe_uintmax mask{bsl::to_umax(0x1FF)};
             constexpr bsl::safe_uintmax shift{bsl::to_umax(30)};
@@ -280,8 +280,8 @@ namespace example
         ///   @param gpa the guest physical address to get the NPDT offset from.
         ///   @return the NPDT offset from the guest physical address.
         ///
-        [[nodiscard]] constexpr auto
-        npdto(bsl::safe_uintmax const &gpa) const noexcept -> bsl::safe_uintmax
+        [[nodiscard]] static constexpr auto
+        npdto(bsl::safe_uintmax const &gpa) noexcept -> bsl::safe_uintmax
         {
             constexpr bsl::safe_uintmax mask{bsl::to_umax(0x1FF)};
             constexpr bsl::safe_uintmax shift{bsl::to_umax(21)};
@@ -373,8 +373,8 @@ namespace example
         ///   @param gpa the guest physical address to get the NPT offset from.
         ///   @return the NPT offset from the guest physical address
         ///
-        [[nodiscard]] constexpr auto
-        npto(bsl::safe_uintmax const &gpa) const noexcept -> bsl::safe_uintmax
+        [[nodiscard]] static constexpr auto
+        npto(bsl::safe_uintmax const &gpa) noexcept -> bsl::safe_uintmax
         {
             constexpr bsl::safe_uintmax mask{bsl::to_umax(0x1FF)};
             constexpr bsl::safe_uintmax shift{bsl::to_umax(12)};
@@ -388,8 +388,8 @@ namespace example
         ///   @param addr the address to query
         ///   @return Returns true if the provided address is page aligned
         ///
-        [[nodiscard]] constexpr auto
-        is_page_aligned(bsl::safe_uintmax const &addr) const noexcept -> bool
+        [[nodiscard]] static constexpr auto
+        is_page_aligned(bsl::safe_uintmax const &addr) noexcept -> bool
         {
             return (addr & (bsl::to_umax(HYPERVISOR_PAGE_SIZE) - bsl::ONE_UMAX)) == bsl::ZERO_UMAX;
         }

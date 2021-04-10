@@ -71,7 +71,7 @@ namespace example
         /// @brief stores true if initialized() has been executed
         bool m_initialized{};
         /// @brief stores the handle used to communicate with the kernel
-        syscall::bf_handle_t m_handle;
+        syscall::bf_handle_t m_handle{};
         /// @brief stores the head of the page pool stack.
         void *m_head{};
         /// @brief stores the total number of bytes in the page pool.
@@ -193,6 +193,9 @@ namespace example
                     return nullptr;
                 }
 
+                bsl::touch();
+            }
+            else {
                 bsl::touch();
             }
 

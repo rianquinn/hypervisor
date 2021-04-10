@@ -214,6 +214,11 @@ namespace example
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
+
+            bsl::touch();
+        }
+        else {
+            bsl::touch();
         }
 
         /// NOTE:
@@ -251,7 +256,12 @@ namespace example
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
+
+                bsl::touch();
             }
+        }
+        else {
+            bsl::touch();
         }
 
         /// NOTE:
