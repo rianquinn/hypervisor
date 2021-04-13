@@ -115,8 +115,6 @@ map_4k_page(uint64_t const virt, uint64_t phys, uint32_t const flags, struct pml
     pte->phys = (phys >> HYPERVISOR_PAGE_SHIFT);
     pte->p = ((uint64_t)1);
     pte->g = ((uint64_t)1);
-    pte->pwt = ((uint64_t)1);
-    pte->pcd = ((uint64_t)1);
 
     if ((flags & bfelf_pf_w) != 0U) {
         pte->rw = ((uint64_t)1);

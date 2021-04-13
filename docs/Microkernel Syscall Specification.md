@@ -306,7 +306,7 @@ The host PAT has the following layout. Indexes marked as XX are reserved for fut
 **const, bf_uint64_t: BF_HOST_PAT**
 | Value | Description |
 | :---- | :---------- |
-| 0x00XXXX0600XXXX06 | Defines the host PAT value |
+| 0xXXXXXXXX00XXXX06 | Defines the host PAT value |
 
 ## 1.9. Endianness
 

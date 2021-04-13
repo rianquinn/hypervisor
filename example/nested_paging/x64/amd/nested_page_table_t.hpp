@@ -112,8 +112,6 @@ namespace example
             npml4te->p = bsl::ONE_UMAX.get();
             npml4te->rw = bsl::ONE_UMAX.get();
             npml4te->us = bsl::ONE_UMAX.get();
-            npml4te->pwt = bsl::ONE_UMAX.get();
-            npml4te->pcd = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -216,8 +214,6 @@ namespace example
             npdpte->p = bsl::ONE_UMAX.get();
             npdpte->rw = bsl::ONE_UMAX.get();
             npdpte->us = bsl::ONE_UMAX.get();
-            npdpte->pwt = bsl::ONE_UMAX.get();
-            npdpte->pcd = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -320,8 +316,6 @@ namespace example
             npdte->p = bsl::ONE_UMAX.get();
             npdte->rw = bsl::ONE_UMAX.get();
             npdte->us = bsl::ONE_UMAX.get();
-            npdte->pwt = bsl::ONE_UMAX.get();
-            npdte->pcd = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -722,7 +716,7 @@ namespace example
                 npte->nx = bsl::ONE_UMAX.get();
             }
 
-            if (page_type == MEMORY_TYPE_WB) {
+            if (page_type == MEMORY_TYPE_UC) {
                 npte->pwt = bsl::ONE_UMAX.get();
                 npte->pcd = bsl::ONE_UMAX.get();
             }
@@ -896,7 +890,7 @@ namespace example
                 npdte->nx = bsl::ONE_UMAX.get();
             }
 
-            if (page_type == MEMORY_TYPE_WB) {
+            if (page_type == MEMORY_TYPE_UC) {
                 npdte->pwt = bsl::ONE_UMAX.get();
                 npdte->pcd = bsl::ONE_UMAX.get();
             }

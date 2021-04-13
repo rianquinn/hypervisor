@@ -73,8 +73,6 @@ alloc_pdt(struct pdpt_t *const pdpt, uint64_t const virt)
     pdpte->phys = (phys >> HYPERVISOR_PAGE_SHIFT);
     pdpte->p = ((uint64_t)1);
     pdpte->rw = ((uint64_t)1);
-    pdpte->pwt = ((uint64_t)1);
-    pdpte->pcd = ((uint64_t)1);
 
     return pdt;
 
