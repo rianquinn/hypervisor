@@ -83,7 +83,6 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
         ${CMAKE_CURRENT_LIST_DIR}/include/x64/tls_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/dispatch_esr.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/root_page_table_t.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/x64/smap_guard_t.hpp
     )
 endif()
 
@@ -148,7 +147,6 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
         src/x64/return_to_vmexit_loop.S
         src/x64/serial_write.S
         src/x64/set_esr.S
-        src/x64/smap_guard_t.S
         src/x64/vmexit_loop_entry.S
     )
 endif()

@@ -104,9 +104,7 @@ intrinsic_set_tp:
     .type   intrinsic_tls_reg, @function
 intrinsic_tls_reg:
 
-    stac
     mov rax, fs:[rdi]
-    clac
 
     ret
     int 3
@@ -119,9 +117,7 @@ intrinsic_tls_reg:
     .type   intrinsic_set_tls_reg, @function
 intrinsic_set_tls_reg:
 
-    stac
     mov fs:[rdi], rsi
-    clac
 
     ret
     int 3
@@ -296,8 +292,6 @@ skip_load_pat:
     /* General Purpose Register State                                         */
     /**************************************************************************/
 
-    stac
-
     mov rax, fs:[0x800]
     mov [r11 + 0x05F8], rax
 
@@ -321,8 +315,6 @@ skip_load_pat:
     mov r14, fs:[0x868]
     mov r15, fs:[0x870]
 
-    clac
-
     /**************************************************************************/
     /* Run                                                                    */
     /**************************************************************************/
@@ -344,8 +336,6 @@ skip_load_pat:
     /**************************************************************************/
     /* General Purpose Register State                                         */
     /**************************************************************************/
-
-    stac
 
     mov fs:[0x870], r15
     mov fs:[0x868], r14
@@ -369,8 +359,6 @@ skip_load_pat:
 
     mov rax, [r11 + 0x05F8]
     mov fs:[0x800], rax
-
-    clac
 
     /**************************************************************************/
     /* PAT                                                                    */

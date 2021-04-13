@@ -38,7 +38,6 @@ namespace mk
     ///   @brief Dispatches the bf_debug_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam SMAP_GUARD_CONCEPT defines the type of smap guard to use
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
     ///   @tparam HUGE_POOL_CONCEPT defines the type of huge pool to use
@@ -57,7 +56,6 @@ namespace mk
     ///     code on failure.
     ///
     template<
-        typename SMAP_GUARD_CONCEPT,
         typename TLS_CONCEPT,
         typename PAGE_POOL_CONCEPT,
         typename HUGE_POOL_CONCEPT,
@@ -111,7 +109,6 @@ namespace mk
             }
 
             case syscall::BF_DEBUG_OP_WRITE_STR_IDX_VAL.get(): {
-                SMAP_GUARD_CONCEPT unlock{};
                 bsl::print() << bsl::to_ptr<bsl::cstr_type>(tls.ext_reg0);
                 return syscall::BF_STATUS_SUCCESS;
             }

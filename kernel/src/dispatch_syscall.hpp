@@ -47,7 +47,6 @@ namespace mk
     ///     will dispatch syscalls as needed.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam SMAP_GUARD_CONCEPT defines the type of smap guard to use
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
@@ -70,7 +69,6 @@ namespace mk
     ///     code on failure.
     ///
     template<
-        typename SMAP_GUARD_CONCEPT,
         typename TLS_CONCEPT,
         typename INTRINSIC_CONCEPT,
         typename PAGE_POOL_CONCEPT,
@@ -116,7 +114,7 @@ namespace mk
             }
 
             case syscall::BF_DEBUG_OP_VAL.get(): {
-                ret = dispatch_syscall_debug_op<SMAP_GUARD_CONCEPT>(
+                ret = dispatch_syscall_debug_op(
                     tls, page_pool, huge_pool, vps_pool, vp_pool, vm_pool, ext_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();

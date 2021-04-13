@@ -35,7 +35,6 @@ namespace mk
     ///   @brief Dispatches the bf_debug_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam SMAP_GUARD_CONCEPT defines the type of smap guard to use
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
@@ -48,7 +47,6 @@ namespace mk
     ///     code on failure.
     ///
     template<
-        typename SMAP_GUARD_CONCEPT,
         typename TLS_CONCEPT,
         typename VM_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,

@@ -56,6 +56,11 @@
 /** @brief defines the default value of CR4  */
 #define DEFAULT_CR4 ((uint64_t)0x003000E0)
 
+/** @brief defines the default value of CR0 bits that must be off  */
+#define DEFAULT_CR0_OFF ((uint64_t)0xFFFFFFFFFFFFFFFF)
+/** @brief defines the default value of CR4 bits that must be off */
+#define DEFAULT_CR4_OFF ((uint64_t)0xFFFFFFFFFF9FFFFF)
+
 /** @brief defines the MSR_IA32_EFER MSR  */
 #define MSR_IA32_EFER ((uint32_t)0xC0000080)
 /** @brief defines the default value of EFER  */
@@ -642,9 +647,9 @@ alloc_and_copy_mk_state(
     /* Control Registers                                                      */
     /**************************************************************************/
 
-    (*state)->cr0 = intrinsic_scr0() | DEFAULT_CR0;
+    (*state)->cr0 = (intrinsic_scr0() | DEFAULT_CR0) & DEFAULT_CR0_OFF;
     (*state)->cr3 = platform_virt_to_phys(pml4t);
-    (*state)->cr4 = intrinsic_scr4() | DEFAULT_CR4;
+    (*state)->cr4 = (intrinsic_scr0() | DEFAULT_CR4) & DEFAULT_CR4_OFF;
 
     if (((uint64_t)0) == (*state)->cr3) {
         bferror("platform_virt_to_phys failed");

@@ -390,7 +390,6 @@ namespace mk
             // [ ] store online pps in the TLS block
             // [ ] implement checks for which MSRs can be read/written
             // [ ] implement checks for VMCS fields can be read/written
-            // [ ] remove smap
 
             // Remaining Tasks (besides todos):
             // [ ] implement -bsl-template-generic-param properly

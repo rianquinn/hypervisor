@@ -44,13 +44,6 @@
 /** @brief define the CPUID feature bit for VMX */
 #define CPUID_FEATURE_ECX_VMX (((uint32_t)1) << ((uint32_t)5))
 
-/** @brief defines the CPUID leaf for structured extended feature information */
-#define CPUID_LEAF_STRUCT_EXT_FEATURE ((uint32_t)0x7)
-/** @brief define the CPUID feature bit for SMEP */
-#define CPUID_STRUCT_EXT_FEATURE_EBX_SMEP (((uint32_t)1) << ((uint32_t)7))
-/** @brief define the CPUID feature bit for SMAP */
-#define CPUID_STRUCT_EXT_FEATURE_EBX_SMAP (((uint32_t)1) << ((uint32_t)20))
-
 /** @brief defines the MSR address for feature information */
 #define MSR_IA32_FEATURE_CTRL ((uint32_t)0x3A)
 /** @brief defines the MSR feature VMX enabled bit */
@@ -216,38 +209,6 @@ check_the_configuration_of_efer(void)
 
 /**
  * <!-- description -->
- *   @brief Check if the cpu supports needed SMEP/SMAP.
- *
- * <!-- inputs/outputs -->
- *   @return Returns 0 on success, LOADER_FAILURE otherwise.
- */
-static inline int64_t
-check_for_smep_smap(void)
-{
-    uint32_t eax;
-    uint32_t ebx;
-    uint32_t ecx;
-    uint32_t edx;
-
-    eax = CPUID_LEAF_STRUCT_EXT_FEATURE;
-    ecx = 0U;
-    intrinsic_cpuid(&eax, &ebx, &ecx, &edx);
-
-    if ((ebx & CPUID_STRUCT_EXT_FEATURE_EBX_SMEP) == 0U) {
-        bferror_x32("cpu does not support SMEP", ebx);
-        return LOADER_FAILURE;
-    }
-
-    if ((ebx & CPUID_STRUCT_EXT_FEATURE_EBX_SMAP) == 0U) {
-        bferror_x32("cpu does not support SMAP", ebx);
-        return LOADER_FAILURE;
-    }
-
-    return LOADER_SUCCESS;
-}
-
-/**
- * <!-- description -->
  *   @brief This function checks to see if Intel VT-x support is available on
  *     the currently running CPU
  *
@@ -279,11 +240,6 @@ check_for_hve_support(void)
 
     if (check_the_configuration_of_efer()) {
         bferror("check_the_configuration_of_efer failed");
-        return LOADER_FAILURE;
-    }
-
-    if (check_for_smep_smap()) {
-        bferror("check_for_smep_smap failed");
         return LOADER_FAILURE;
     }
 

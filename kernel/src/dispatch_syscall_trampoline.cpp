@@ -25,7 +25,6 @@
 #include <dispatch_syscall.hpp>
 #include <global_resources.hpp>
 #include <mk_interface.hpp>
-#include <smap_guard_t.hpp>
 #include <tls_t.hpp>
 
 namespace mk
@@ -50,7 +49,7 @@ namespace mk
     {
         auto *const ext{static_cast<mk_ext_type *>(tls->ext)};
 
-        return dispatch_syscall<smap_guard_t>(
+        return dispatch_syscall(
                    *tls,
                    g_intrinsic,
                    g_page_pool,
