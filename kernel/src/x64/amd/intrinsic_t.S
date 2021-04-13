@@ -280,11 +280,17 @@ intrinsic_vmrun:
     /* PAT                                                                    */
     /**************************************************************************/
 
+    mov rax, [r11 + 0x0090]
+    and rax, 0x00000001
+    jnz skip_load_pat
+
     mov edi, 0x00000277
     call intrinsic_rdmsr_unsafe
     mov [r13 + 0x0668], rax
     mov rsi, [r11 + 0x0668]
     call intrinsic_wrmsr_unsafe
+
+skip_load_pat:
 
     /**************************************************************************/
     /* General Purpose Register State                                         */
@@ -370,11 +376,17 @@ intrinsic_vmrun:
     /* PAT                                                                    */
     /**************************************************************************/
 
+    mov rax, [r11 + 0x0090]
+    and rax, 0x00000001
+    jnz skip_save_pat
+
     mov edi, 0x00000277
     call intrinsic_rdmsr_unsafe
     mov [r11 + 0x0668], rax
     mov rsi, [r13 + 0x0668]
     call intrinsic_wrmsr_unsafe
+
+skip_save_pat:
 
     /**************************************************************************/
     /* Done                                                                   */
