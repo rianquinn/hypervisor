@@ -35,6 +35,7 @@
 #include "npte_t.hpp"
 
 #include <map_page_flags.hpp>
+#include <memory_type.hpp>
 #include <page_pool_t.hpp>
 
 #include <bsl/convert.hpp>
@@ -111,6 +112,8 @@ namespace example
             npml4te->p = bsl::ONE_UMAX.get();
             npml4te->rw = bsl::ONE_UMAX.get();
             npml4te->us = bsl::ONE_UMAX.get();
+            npml4te->pwt = bsl::ONE_UMAX.get();
+            npml4te->pcd = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -213,6 +216,8 @@ namespace example
             npdpte->p = bsl::ONE_UMAX.get();
             npdpte->rw = bsl::ONE_UMAX.get();
             npdpte->us = bsl::ONE_UMAX.get();
+            npdpte->pwt = bsl::ONE_UMAX.get();
+            npdpte->pcd = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -315,6 +320,8 @@ namespace example
             npdte->p = bsl::ONE_UMAX.get();
             npdte->rw = bsl::ONE_UMAX.get();
             npdte->us = bsl::ONE_UMAX.get();
+            npdte->pwt = bsl::ONE_UMAX.get();
+            npdte->pcd = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -545,6 +552,7 @@ namespace example
         ///     physical address to
         ///   @param page_spa the system physical address to map.
         ///   @param page_flags defines how memory should be mapped
+        ///   @param page_type defines the memory type for the mapping
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
@@ -552,7 +560,8 @@ namespace example
         map_4k_page(
             bsl::safe_uintmax const &page_gpa,
             bsl::safe_uintmax const &page_spa,
-            bsl::safe_uintmax const &page_flags) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &page_flags,
+            bsl::safe_uintmax const &page_type) &noexcept -> bsl::errc_type
         {
             bsl::lock_guard lock{m_npt_lock};
 
@@ -598,6 +607,42 @@ namespace example
             }
 
             if (bsl::unlikely(!page_flags)) {
+                bsl::error() << "invalid flags: "       // --
+                             << bsl::hex(page_flags)    // --
+                             << bsl::endl               // --
+                             << bsl::here();            // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!page_type)) {
+                bsl::error() << "invalid flags: "      // --
+                             << bsl::hex(page_type)    // --
+                             << bsl::endl              // --
+                             << bsl::here();           // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(page_type == MEMORY_TYPE_WC)) {
+                bsl::error() << "invalid flags: "       // --
+                             << bsl::hex(page_flags)    // --
+                             << bsl::endl               // --
+                             << bsl::here();            // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(page_type == MEMORY_TYPE_WT)) {
+                bsl::error() << "invalid flags: "       // --
+                             << bsl::hex(page_flags)    // --
+                             << bsl::endl               // --
+                             << bsl::here();            // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(page_type == MEMORY_TYPE_WP)) {
                 bsl::error() << "invalid flags: "       // --
                              << bsl::hex(page_flags)    // --
                              << bsl::endl               // --
@@ -677,6 +722,11 @@ namespace example
                 npte->nx = bsl::ONE_UMAX.get();
             }
 
+            if (page_type == MEMORY_TYPE_WB) {
+                npte->pwt = bsl::ONE_UMAX.get();
+                npte->pcd = bsl::ONE_UMAX.get();
+            }
+
             return bsl::errc_success;
         }
 
@@ -689,6 +739,7 @@ namespace example
         ///     physical address to
         ///   @param page_spa the system physical address to map.
         ///   @param page_flags defines how memory should be mapped
+        ///   @param page_type defines the memory type for the mapping
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
@@ -696,7 +747,8 @@ namespace example
         map_2m_page(
             bsl::safe_uintmax const &page_gpa,
             bsl::safe_uintmax const &page_spa,
-            bsl::safe_uintmax const &page_flags) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &page_flags,
+            bsl::safe_uintmax const &page_type) &noexcept -> bsl::errc_type
         {
             bsl::lock_guard lock{m_npt_lock};
 
@@ -742,6 +794,42 @@ namespace example
             }
 
             if (bsl::unlikely(!page_flags)) {
+                bsl::error() << "invalid flags: "       // --
+                             << bsl::hex(page_flags)    // --
+                             << bsl::endl               // --
+                             << bsl::here();            // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!page_type)) {
+                bsl::error() << "invalid flags: "      // --
+                             << bsl::hex(page_type)    // --
+                             << bsl::endl              // --
+                             << bsl::here();           // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(page_type == MEMORY_TYPE_WC)) {
+                bsl::error() << "invalid flags: "       // --
+                             << bsl::hex(page_flags)    // --
+                             << bsl::endl               // --
+                             << bsl::here();            // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(page_type == MEMORY_TYPE_WT)) {
+                bsl::error() << "invalid flags: "       // --
+                             << bsl::hex(page_flags)    // --
+                             << bsl::endl               // --
+                             << bsl::here();            // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(page_type == MEMORY_TYPE_WP)) {
                 bsl::error() << "invalid flags: "       // --
                              << bsl::hex(page_flags)    // --
                              << bsl::endl               // --
@@ -806,6 +894,11 @@ namespace example
             }
             else {
                 npdte->nx = bsl::ONE_UMAX.get();
+            }
+
+            if (page_type == MEMORY_TYPE_WB) {
+                npdte->pwt = bsl::ONE_UMAX.get();
+                npdte->pcd = bsl::ONE_UMAX.get();
             }
 
             return bsl::errc_success;

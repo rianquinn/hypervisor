@@ -14,7 +14,9 @@
     - [1.6.5. Bootstrap Callback Handler Type](#165-bootstrap-callback-handler-type)
     - [1.6.6. VMExit Callback Handler Type](#166-vmexit-callback-handler-type)
     - [1.6.7. Fast Fail Callback Handler Type](#167-fast-fail-callback-handler-type)
-  - [1.7. Endianness](#17-endianness)
+  - [1.7. Invalid ID](#17-invalid-id)
+  - [1.8. Host PAT (Intel/AMD Only)](#18-host-pat-intelamd-only)
+  - [1.9. Endianness](#19-endianness)
 - [2. Syscall Interface](#2-syscall-interface)
   - [2.1. Legal Syscall Environments](#21-legal-syscall-environments)
   - [2.2. Syscall Status Codes](#22-syscall-status-codes)
@@ -50,6 +52,9 @@
     - [2.9.5. bf_debug_op_dump_vmexit_log, OP=0x2, IDX=0x4](#295-bf_debug_op_dump_vmexit_log-op0x2-idx0x4)
     - [2.9.6. bf_debug_op_write_c, OP=0x2, IDX=0x5](#296-bf_debug_op_write_c-op0x2-idx0x5)
     - [2.9.7. bf_debug_op_write_str, OP=0x2, IDX=0x6](#297-bf_debug_op_write_str-op0x2-idx0x6)
+    - [2.9.8. bf_debug_op_dump_ext, OP=0x2, IDX=0x7](#298-bf_debug_op_dump_ext-op0x2-idx0x7)
+    - [2.9.9. bf_debug_op_dump_page_pool, OP=0x2, IDX=0x8](#299-bf_debug_op_dump_page_pool-op0x2-idx0x8)
+    - [2.9.10. bf_debug_op_dump_huge_pool, OP=0x2, IDX=0x9](#2910-bf_debug_op_dump_huge_pool-op0x2-idx0x9)
   - [2.10. Callback Syscalls](#210-callback-syscalls)
     - [2.10.1. bf_callback_op_wait, OP=0x3, IDX=0x0](#2101-bf_callback_op_wait-op0x3-idx0x0)
     - [2.10.2. bf_callback_op_register_bootstrap, OP=0x3, IDX=0x2](#2102-bf_callback_op_register_bootstrap-op0x3-idx0x2)
@@ -294,7 +299,16 @@ The following defines an invalid ID which can be used for all ID types.
 | :---- | :---------- |
 | 0xFFFF | Defines an invalid ID |
 
-## 1.7. Endianness
+## 1.8. Host PAT (Intel/AMD Only)
+
+The host PAT has the following layout. Indexes marked as XX are reserved for future use.
+
+**const, bf_uint64_t: BF_HOST_PAT**
+| Value | Description |
+| :---- | :---------- |
+| 0x00XXXX0600XXXX06 | Defines the host PAT value |
+
+## 1.9. Endianness
 
 This document only applies to 64bit Intel and AMD systems conforming to the amd64 architecture. As such, this document conforms to little-endian.
 
@@ -814,7 +828,7 @@ This syscall tells the microkernel to output a provided string to the microkerne
 | :---- | :---------- |
 | 0x0000000000000006 | Defines the syscall index for bf_debug_op_write_str |
 
-### 2.9.4. bf_debug_op_dump_ext, OP=0x2, IDX=0x7
+### 2.9.8. bf_debug_op_dump_ext, OP=0x2, IDX=0x7
 
 This syscall tells the microkernel to output an extension's state to the console device the microkernel is currently using for debugging.
 
@@ -828,7 +842,7 @@ This syscall tells the microkernel to output an extension's state to the console
 | :---- | :---------- |
 | 0x0000000000000007 | Defines the syscall index for bf_debug_op_dump_ext |
 
-### 2.9.4. bf_debug_op_dump_page_pool, OP=0x2, IDX=0x8
+### 2.9.9. bf_debug_op_dump_page_pool, OP=0x2, IDX=0x8
 
 This syscall tells the microkernel to output the page pool's stats to the console device the microkernel is currently using for debugging.
 
@@ -837,7 +851,7 @@ This syscall tells the microkernel to output the page pool's stats to the consol
 | :---- | :---------- |
 | 0x0000000000000008 | Defines the syscall index for bf_debug_op_dump_page_pool |
 
-### 2.9.4. bf_debug_op_dump_huge_pool, OP=0x2, IDX=0x9
+### 2.9.10. bf_debug_op_dump_huge_pool, OP=0x2, IDX=0x9
 
 This syscall tells the microkernel to output the huge pool's stats to the console device the microkernel is currently using for debugging.
 

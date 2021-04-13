@@ -41,8 +41,6 @@ namespace example
 {
     /// @brief stores the page pool to use for page allocation
     constinit inline page_pool_t g_page_pool{};
-    /// @brief stores the mtrrs used to create NPT
-    constinit inline mtrrs_t g_mtrrs{};
     /// @brief stores the nested page tables
     constinit inline nested_page_table_t g_npt{};
 
@@ -251,32 +249,15 @@ namespace example
                 return ret;
             }
 
-            ret = g_mtrrs.parse(handle);
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return ret;
+            for (bsl::safe_uintmax gpa{}; gpa < max_physical_mem; gpa += page_size_2m) {
+                ret = g_npt.map_2m_page(gpa, gpa, MAP_PAGE_RWE, MEMORY_TYPE_WB);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return ret;
+                }
+
+                bsl::touch();
             }
-
-            ret = g_mtrrs.identity_map_2m(g_ept, bsl::ZERO_UMAX, g_mtrrs.max_phys(), MAP_PAGE_RWE);
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return ret;
-            }
-
-
-
-
-
-
-            // for (bsl::safe_uintmax gpa{}; gpa < max_physical_mem; gpa += page_size_2m) {
-            //     ret = g_npt.map_2m_page(gpa, gpa, MAP_PAGE_RWE);
-            //     if (bsl::unlikely(!ret)) {
-            //         bsl::print<bsl::V>() << bsl::here();
-            //         return ret;
-            //     }
-
-            //     bsl::touch();
-            // }
         }
         else {
             bsl::touch();

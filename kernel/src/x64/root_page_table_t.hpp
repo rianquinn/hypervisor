@@ -366,6 +366,8 @@ namespace mk
             pml4te->p = bsl::ONE_UMAX.get();
             pml4te->rw = bsl::ONE_UMAX.get();
             pml4te->us = bsl::ONE_UMAX.get();
+            pml4te->pwt = bsl::ONE_UMAX.get();
+            pml4te->pcd = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -497,6 +499,8 @@ namespace mk
             pdpte->p = bsl::ONE_UMAX.get();
             pdpte->rw = bsl::ONE_UMAX.get();
             pdpte->us = bsl::ONE_UMAX.get();
+            pdpte->pwt = bsl::ONE_UMAX.get();
+            pdpte->pcd = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -635,6 +639,8 @@ namespace mk
             pdte->p = bsl::ONE_UMAX.get();
             pdte->rw = bsl::ONE_UMAX.get();
             pdte->us = bsl::ONE_UMAX.get();
+            pdte->pwt = bsl::ONE_UMAX.get();
+            pdte->pcd = bsl::ONE_UMAX.get();
 
             return bsl::errc_success;
         }
@@ -1374,6 +1380,8 @@ namespace mk
             pte->phys = (page_phys >> PAGE_SHIFT).get();
             pte->p = bsl::ONE_UMAX.get();
             pte->us = bsl::ONE_UMAX.get();
+            pte->pwt = bsl::ONE_UMAX.get();
+            pte->pcd = bsl::ONE_UMAX.get();
             pte->auto_release = auto_release.get();
 
             if (!(page_flags & MAP_PAGE_WRITE).is_zero()) {

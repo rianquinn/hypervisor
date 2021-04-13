@@ -73,6 +73,8 @@ alloc_pdpt(struct pml4t_t *const pml4t, uint64_t const virt)
     pml4te->phys = (phys >> HYPERVISOR_PAGE_SHIFT);
     pml4te->p = ((uint64_t)1);
     pml4te->rw = ((uint64_t)1);
+    pml4te->pwt = ((uint64_t)1);
+    pml4te->pcd = ((uint64_t)1);
 
     return pdpt;
 

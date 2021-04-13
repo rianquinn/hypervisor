@@ -153,7 +153,7 @@
 #define ESR_ATTRIB ((uint16_t)0x8E01)
 
 /** @brief defines the PAT MSR used by the microkernel */
-#define MK_MSR_IA32_PAT ((uint64_t)0x0606060606060606)
+#define MK_MSR_IA32_PAT ((uint64_t)0x0006060600060606)
 
 /** @brief defines the STAR MSR used by the microkernel */
 #define MK_MSR_IA32_STAR ((uint64_t)0x001B001000000000)

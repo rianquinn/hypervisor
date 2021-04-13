@@ -526,20 +526,27 @@ namespace example
         }
 
         /// NOTE:
-        /// - The next step is to initialize and set up the extended page
-        ///   tables. We will use the max physical address defined in the
-        ///   MTRRs to 
-        /// - To create the identify map, we will use the MTRRs. On Intel,
-        ///   when EPT is used, the MTRRs are ignored. Due to this, we need
-        ///   to ensure that our EPT identify map has the same layout as the
-        ///   MTRRs, otherwise you will end up with caching issues. The MTRRs
-        ///   class has a complete set of contiguous memory ranges that make
-        ///   up all of physical memory, so it can create the identify map
-        ///   for us as needed. Honestly, this is really the hardest part
-        ///   about setting EPT, and most of the black magic is in that class.
+        /// - The next step is to initialize and set up the nested page
+        ///   tables. One issue with this is you need to know how much
+        ///   physical memory to map in. You could determine how much
+        ///   physical address space you will need, or you could use on-demand
+        ///   paging. You could also fill the entire physical address space
+        ///   (up to the MAX value provided by CPUID), but how much memory
+        ///   you need to allocate for the page tables to make that work is
+        ///   up to what granularity you use. In this example, we only
+        ///   provide 2M granularity, so this approach is likely a bad idea.
+        /// - Also note that what we are creating here is what we call an
+        ///   identify map. Basically, each guest physical address is mapped
+        ///   to the same system physical address. This is needed (usually)
+        ///   for the root OS. If you plan to create your own guest VMs,
+        ///   you will need a different mapping scheme.
         /// - By default, we map in 512 GB of memory. Again, this is likely
-        ///   not safe, but is good enough for an example.
+        ///   not safe, but is good enough for an example. If the MTRRs report
+        ///   that there is less physical memory than 512GB, we use the value
+        ///   returned by the MTRRs instead.
         ///
+
+        constexpr bsl::safe_uint64 max_physical_mem{bsl::to_umax(0x8000000000U)};
 
         if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
             ret = g_ept.initialize(&g_page_pool);
@@ -554,7 +561,8 @@ namespace example
                 return ret;
             }
 
-            ret = g_mtrrs.identity_map_2m(g_ept, bsl::ZERO_UMAX, g_mtrrs.max_phys(), MAP_PAGE_RWE);
+            ret = g_mtrrs.identity_map_2m(
+                g_ept, bsl::ZERO_UMAX, g_mtrrs.max_phys().min(max_physical_mem), MAP_PAGE_RWE);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
