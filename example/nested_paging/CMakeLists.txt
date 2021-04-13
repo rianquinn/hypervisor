@@ -38,6 +38,11 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
     )
     list(APPEND HEADERS
         ${CMAKE_CURRENT_LIST_DIR}/x64/common_arch_support.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/intrinsic_cpuid.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/map_page_flags.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/memory_type.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/mtrrs_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/range_t.hpp
     )
 endif()
 
@@ -47,6 +52,15 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
     )
     list(APPEND HEADERS
         ${CMAKE_CURRENT_LIST_DIR}/x64/amd/arch_support.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/amd/nested_page_table_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/amd/npdpt_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/amd/npdpte_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/amd/npdt_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/amd/npdte_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/amd/npml4t_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/amd/npml4te_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/amd/npt_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/amd/npte_t.hpp
     )
 elseif(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     target_include_directories(example_nested_paging PRIVATE
@@ -54,6 +68,15 @@ elseif(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     )
     list(APPEND HEADERS
         ${CMAKE_CURRENT_LIST_DIR}/x64/intel/arch_support.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/intel/epdpt_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/intel/epdpte_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/intel/epdt_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/intel/epdte_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/intel/epml4t_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/intel/epml4te_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/intel/ept_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/intel/epte_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/x64/intel/extended_page_table_t.hpp
     )
 else()
     message(FATAL_ERROR "Unsupported HYPERVISOR_TARGET_ARCH: ${HYPERVISOR_TARGET_ARCH}")

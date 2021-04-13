@@ -1440,7 +1440,7 @@ namespace example
             MAP_T &map,
             bsl::safe_uintmax const &gpa,
             bsl::safe_uintmax const &size,
-            bsl::safe_uintmax const &flags) -> bsl::errc_type
+            bsl::safe_uintmax const &flags) &noexcept -> bsl::errc_type
         {
             constexpr bsl::safe_uint64 page_size_4k{bsl::to_umax(0x001000U)};
 
@@ -1533,7 +1533,7 @@ namespace example
             MAP_T &map,
             bsl::safe_uintmax const &gpa,
             bsl::safe_uintmax const &size,
-            bsl::safe_uintmax const &flags) -> bsl::errc_type
+            bsl::safe_uintmax const &flags) &noexcept -> bsl::errc_type
         {
             constexpr bsl::safe_uint64 page_size_4k{bsl::to_umax(0x001000U)};
             constexpr bsl::safe_uint64 page_size_2m{bsl::to_umax(0x200000U)};
@@ -1619,11 +1619,35 @@ namespace example
                 }
             }
 
+            if (crsr == gpa + size) {
+                return bsl::errc_success;
+            }
+
             bsl::error() << "identity map is out of bounds"    // --
                          << bsl::endl                          // --
                          << bsl::here();                       // --
 
             return bsl::errc_failure;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the max physical address in the MTRRs on success,
+        ///     or bsl::safe_uintmax::zero(true) on failure.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns the max physical address in the MTRRs on success,
+        ///     or bsl::safe_uintmax::zero(true) on failure.
+        ///
+        [[nodiscard]] constexpr auto
+        max_phys() &noexcept -> bsl::safe_uintmax
+        {
+            if (m_ranges_count.is_zero()) {
+                bsl::error() << "mtrrs has not been parsed yet\n" << bsl::here();
+                return bsl::safe_uintmax::zero(true);
+            }
+
+            auto const *const range{m_ranges.at_if(m_ranges_count - bsl::ONE_UMAX)};
+            return range->addr + range->size;
         }
 
         /// <!-- description -->
