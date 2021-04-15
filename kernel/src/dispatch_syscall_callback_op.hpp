@@ -63,6 +63,14 @@ namespace mk
             return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
         }
 
+        if (bsl::unlikely(ext.is_started())) {
+            bsl::error() << "bootstrap registration must occur before calling bf_callback_op_wait"        // --
+                         << bsl::endl                 // --
+                         << bsl::here();              // --
+
+            return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
+        }
+
         if (bsl::unlikely(ext.bootstrap_ip())) {
             bsl::error() << "ext ["                                          // --
                          << bsl::hex(ext.id())                               // --
@@ -94,6 +102,14 @@ namespace mk
         if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
             bsl::error() << "invalid handle: "        // --
                          << bsl::hex(tls.ext_reg0)    // --
+                         << bsl::endl                 // --
+                         << bsl::here();              // --
+
+            return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
+        }
+
+        if (bsl::unlikely(!ext.is_started())) {
+            bsl::error() << "vmexit registration must occur from the bootstrap handler"        // --
                          << bsl::endl                 // --
                          << bsl::here();              // --
 
@@ -139,6 +155,14 @@ namespace mk
             return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
         }
 
+        if (bsl::unlikely(!ext.is_started())) {
+            bsl::error() << "fast fail registration must occur from the bootstrap handler"        // --
+                         << bsl::endl                 // --
+                         << bsl::here();              // --
+
+            return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
+        }
+
         if (bsl::unlikely(nullptr != tls.ext_fail)) {
             bsl::error() << "ext ["                                                     // --
                          << bsl::hex(static_cast<EXT_CONCEPT *>(tls.ext_fail)->id())    // --
@@ -172,7 +196,14 @@ namespace mk
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_CALLBACK_OP_WAIT_IDX_VAL.get(): {
-                return_to_mk(bsl::ZERO_I32.get());
+                if (ext.is_started()) {
+                    return_to_mk(bsl::exit_failure);
+                }
+                else {
+                    return_to_mk(bsl::exit_success);
+                }
+
+                // Unreachable
                 return syscall::BF_STATUS_SUCCESS;
             }
 

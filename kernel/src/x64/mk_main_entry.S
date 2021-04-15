@@ -71,6 +71,8 @@ mk_main_entry:
     lea rax, [rip + dispatch_syscall_fast_fail_entry]
     mov gs:[0x1B0], rax
 
+    mov rax, [rdi + 0x002]
+    mov gs:[0x23A], rax
     mov rax, [rdi + 0x008]
     mov gs:[0x228], rax
     mov rax, [rdi + 0x010]

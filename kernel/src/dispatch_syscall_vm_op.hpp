@@ -86,7 +86,23 @@ namespace mk
     syscall_vm_op_destroy_vm(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool)
         -> syscall::bf_status_t
     {
+        /// TODO:
+        /// - This does not prevent you from destroying a VM that is
+        ///   active on a different PP. Note that we will need to create
+        ///   a TLS pool to solve this. Setting the active VM will
+        ///   require holding a lock so that we don't set the active VM
+        ///   on one core that is being destroyed.
+        ///
+
         auto const vmid{bsl::to_u16_unsafe(tls.ext_reg1)};
+        if (bsl::unlikely(vmid.is_zero())) {
+            bsl::error() << "cannot destory the root vm"    // --
+                         << bsl::endl                       // --
+                         << bsl::here();                    // --
+
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        }
+
         if (bsl::unlikely(tls.vmid() == vmid)) {
             bsl::error() << "cannot destory vm "            // --
                          << bsl::hex(vmid)                  // --

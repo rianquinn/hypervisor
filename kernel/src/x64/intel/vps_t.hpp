@@ -3270,6 +3270,7 @@ namespace mk
                 return ret;
             }
 
+            m_vmcs_missing_registers->launched = {};
             return ret;
         }
 

@@ -224,8 +224,8 @@ namespace mk
 
         /// @brief stores the ID of the active VPS (0x238)
         bsl::uint16 active_vpsid;
-        /// @brief reserved.
-        bsl::uint16 reserved_id1;
+        /// @brief stores the total number of online PPs (0x23A)
+        bsl::uint16 online_pps;
         /// @brief reserved.
         bsl::uint16 reserved_id2;
         /// @brief reserved.

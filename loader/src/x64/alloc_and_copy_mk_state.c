@@ -649,7 +649,7 @@ alloc_and_copy_mk_state(
 
     (*state)->cr0 = (intrinsic_scr0() | DEFAULT_CR0) & DEFAULT_CR0_OFF;
     (*state)->cr3 = platform_virt_to_phys(pml4t);
-    (*state)->cr4 = (intrinsic_scr0() | DEFAULT_CR4) & DEFAULT_CR4_OFF;
+    (*state)->cr4 = (intrinsic_scr4() | DEFAULT_CR4) & DEFAULT_CR4_OFF;
 
     if (((uint64_t)0) == (*state)->cr3) {
         bferror("platform_virt_to_phys failed");

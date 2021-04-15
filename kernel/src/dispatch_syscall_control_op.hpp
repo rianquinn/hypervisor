@@ -48,7 +48,9 @@ namespace mk
     {
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_CONTROL_OP_EXIT_IDX_VAL.get(): {
-                return_to_mk(bsl::ONE_I32.get());
+                return_to_mk(bsl::exit_failure);
+
+                // Unreachable
                 return syscall::BF_STATUS_SUCCESS;
             }
 

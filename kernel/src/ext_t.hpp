@@ -112,8 +112,6 @@ namespace mk
         bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
         /// @brief stores an extension's ELF file
         bsl::span<bsl::byte const> m_elf_file{};
-        /// @brief stores the total number of online PPs
-        bsl::safe_uint16 m_online_pps{bsl::safe_uint16::zero(true)};
         /// @brief stores the root page table for the microkernel.
         ROOT_PAGE_TABLE_CONCEPT const *m_system_rpt{};
 
@@ -484,14 +482,17 @@ namespace mk
         ///     root page table.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param rpt the root page table to add too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_stacks(ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept -> bsl::errc_type
+        add_stacks(TLS_CONCEPT &tls, ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept -> bsl::errc_type
         {
-            for (bsl::safe_uintmax pp{}; pp < bsl::to_umax(m_online_pps); ++pp) {
+            for (bsl::safe_uintmax pp{}; pp < bsl::to_umax(tls.online_pps); ++pp) {
                 auto const offs{(EXT_STACK_SIZE + PAGE_SIZE) * pp};
                 auto const addr{(EXT_STACK_ADDR + offs)};
 
@@ -565,14 +566,17 @@ namespace mk
         ///     root page table.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param rpt the root page table to add too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_tls_blocks(ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept -> bsl::errc_type
+        add_tls_blocks(TLS_CONCEPT &tls, ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept -> bsl::errc_type
         {
-            for (bsl::safe_uintmax pp{}; pp < bsl::to_umax(m_online_pps); ++pp) {
+            for (bsl::safe_uintmax pp{}; pp < bsl::to_umax(tls.online_pps); ++pp) {
                 auto const offs{(EXT_TLS_SIZE + PAGE_SIZE) * pp};
                 auto const addr{(EXT_TLS_ADDR + offs)};
 
@@ -592,12 +596,15 @@ namespace mk
         ///     of this extension.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param rpt the root page table to initialize
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize_rpt(ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept -> bsl::errc_type
+        initialize_rpt(TLS_CONCEPT &tls, ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(!rpt.initialize(m_intrinsic, m_page_pool, m_huge_pool))) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -618,12 +625,12 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!this->add_stacks(rpt))) {
+            if (bsl::unlikely(!this->add_stacks(tls, rpt))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!this->add_tls_blocks(rpt))) {
+            if (bsl::unlikely(!this->add_tls_blocks(tls, rpt))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
@@ -825,24 +832,26 @@ namespace mk
         ///   @brief Initializes this ext_t
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param page_pool the page pool to use
         ///   @param huge_pool the huge pool to use
         ///   @param i the ID for this ext_t
         ///   @param ext_elf_file the ELF file for this ext_t
-        ///   @param online_pps the total number of PPs that are online
         ///   @param system_rpt the system RPT provided by the loader
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         initialize(
+            TLS_CONCEPT &tls,
             INTRINSIC_CONCEPT *const intrinsic,
             PAGE_POOL_CONCEPT *const page_pool,
             HUGE_POOL_CONCEPT *const huge_pool,
             bsl::safe_uint16 const &i,
             bsl::span<bsl::byte const> const &ext_elf_file,
-            bsl::safe_uint16 const &online_pps,
             ROOT_PAGE_TABLE_CONCEPT const *const system_rpt) &noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(m_initialized)) {
@@ -884,14 +893,8 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            m_online_pps = online_pps;
-            if (bsl::unlikely(!online_pps)) {
-                bsl::error() << "invalid online_pps\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
             m_system_rpt = system_rpt;
-            if (bsl::unlikely(!this->initialize_rpt(m_main_rpt))) {
+            if (bsl::unlikely(!this->initialize_rpt(tls, m_main_rpt))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
@@ -930,7 +933,6 @@ namespace mk
 
             m_main_rpt.release();
             m_system_rpt = {};
-            m_online_pps = bsl::safe_uint16::zero(true);
             m_elf_file = {};
             m_id = bsl::safe_uint16::zero(true);
             m_huge_pool = {};
@@ -1110,6 +1112,20 @@ namespace mk
         is_handle_valid(bsl::safe_uintmax const &handle) const &noexcept -> bool
         {
             return handle == m_handle;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if the extension's main function has
+        ///     completed it's execution.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns true if the extension's main function has
+        ///     completed it's execution.
+        ///
+        [[nodiscard]] constexpr auto
+        is_started() const &noexcept -> bool
+        {
+            return m_started;
         }
 
         /// <!-- description -->
@@ -1599,6 +1615,11 @@ namespace mk
         [[nodiscard]] constexpr auto
         start(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
         {
+            if (bsl::unlikely(!m_initialized)) {
+                bsl::error() << "ext_t not initialized\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
             auto const arg{bsl::to_umax(syscall::BF_ALL_SPECS_SUPPORTED_VAL)};
             auto const ret{this->execute(tls, m_entry_ip, *m_current_direct_map_rpt, arg)};
             if (bsl::unlikely(!ret)) {
@@ -1625,6 +1646,14 @@ namespace mk
         [[nodiscard]] constexpr auto
         bootstrap(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
         {
+            if (bsl::unlikely(!m_bootstrap_ip)) {
+                bsl::error() << "a bootstrap handler has not been registered"    // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
+
+                return bsl::errc_failure;
+            }
+
             auto const arg{bsl::to_umax(tls.ppid())};
             auto const ret{this->execute(tls, m_bootstrap_ip, *m_current_direct_map_rpt, arg)};
             if (bsl::unlikely(!ret)) {

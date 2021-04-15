@@ -77,6 +77,12 @@ namespace mk
     [[nodiscard]] constexpr auto
     syscall_vps_op_destroy_vps(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
     {
+        /// TODO:
+        /// - This does not prevent you from destroying a VPS that is
+        ///   active on a different PP. To solve this, we will need to
+        ///   ensure that a VPS is tied to a specific PP. Mig
+        ///
+
         auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
         if (bsl::unlikely(tls.active_vpsid == vpsid)) {
             bsl::error() << "cannot destory vm "            // --
@@ -425,6 +431,14 @@ namespace mk
         VP_POOL_CONCEPT &vp_pool,
         VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
     {
+        /// TODO:
+        /// - Need to make sure that the VP and VPS is not active on any
+        ///   other PPs. A shared active VM is fine and expected. Also
+        ///   note that we will have to share a lock with any destroy
+        ///   APIs so that we are not setting an active VP or VPS while
+        ///   they are in the middle of being destroyed.
+        ///
+
         auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
         if (bsl::unlikely(!vps_pool.is_allocated(vpsid))) {
             bsl::print<bsl::V>() << bsl::here();
@@ -452,7 +466,9 @@ namespace mk
         tls.set_vpid(vpid);
         tls.set_vmid(vmid);
 
-        return_to_mk(bsl::ZERO_I32.get());
+        return_to_mk(bsl::exit_success);
+
+        // Unreachable
         return syscall::BF_STATUS_SUCCESS;
     }
 
@@ -466,7 +482,9 @@ namespace mk
     [[nodiscard]] inline auto
     syscall_vps_op_run_current() -> syscall::bf_status_t
     {
-        return_to_mk(bsl::ZERO_I32.get());
+        return_to_mk(bsl::exit_success);
+
+        // Unreachable
         return syscall::BF_STATUS_SUCCESS;
     }
 
@@ -516,7 +534,9 @@ namespace mk
             return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        return_to_mk(bsl::ZERO_I32.get());
+        return_to_mk(bsl::exit_success);
+
+        // Unreachable
         return syscall::BF_STATUS_SUCCESS;
     }
 

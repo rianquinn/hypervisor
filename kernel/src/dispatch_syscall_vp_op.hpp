@@ -75,6 +75,14 @@ namespace mk
     [[nodiscard]] constexpr auto
     syscall_vp_op_destroy_vp(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) -> syscall::bf_status_t
     {
+        /// TODO:
+        /// - This does not prevent you from destroying a VP that is
+        ///   active on a different PP. Note that we will need to create
+        ///   a TLS pool to solve this. Setting the active VP will
+        ///   require holding a lock so that we don't set the active VP
+        ///   on one core that is being destroyed.
+        ///
+
         auto const vpid{bsl::to_u16_unsafe(tls.ext_reg1)};
         if (bsl::unlikely(tls.vpid() == vpid)) {
             bsl::error() << "cannot destory vm "            // --

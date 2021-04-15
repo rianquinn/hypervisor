@@ -284,7 +284,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = m_ext_pool.initialize(args->ext_elf_files, args->online_pps);
+            ret = m_ext_pool.initialize(tls, args->ext_elf_files);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -387,7 +387,6 @@ namespace mk
 
             // [ ] implement validate the input of all syscalls
             // [ ] implement additional optimizations for release builds
-            // [ ] store online pps in the TLS block
             // [ ] implement checks for which MSRs can be read/written
             // [ ] implement checks for VMCS fields can be read/written
 

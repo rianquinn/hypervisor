@@ -106,17 +106,17 @@ namespace mk
         ///   @brief Initializes this ext_pool_t
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @tparam EXT_ELF_FILES_CONCEPT the type of array containing the
         ///     ext_elf_files provided by the loader
+        ///   @param tls the current TLS block
         ///   @param ext_elf_files the ext_elf_files provided by the loader
-        ///   @param online_pps the total number of PPs that are online
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
-        template<typename EXT_ELF_FILES_CONCEPT>
+        template<typename TLS_CONCEPT, typename EXT_ELF_FILES_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize(EXT_ELF_FILES_CONCEPT const &ext_elf_files, bsl::safe_uint16 const &online_pps)
-            &noexcept -> bsl::errc_type
+        initialize(TLS_CONCEPT &tls, EXT_ELF_FILES_CONCEPT const &ext_elf_files) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -135,12 +135,12 @@ namespace mk
                 }
 
                 ret = ext.data->initialize(
+                    tls,
                     &m_intrinsic,
                     &m_page_pool,
                     &m_huge_pool,
                     bsl::to_u16(ext.index),
                     *ext_elf_files.at_if(ext.index),
-                    online_pps,
                     &m_system_rpt);
 
                 if (bsl::unlikely(!ret)) {
