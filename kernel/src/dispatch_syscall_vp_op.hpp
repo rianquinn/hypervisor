@@ -64,28 +64,33 @@ namespace mk
     ///   @brief Implements the bf_vp_op_destroy_vp syscall
     ///
     /// <!-- inputs/outputs -->
+    ///   @tparam TLS_POOL_CONCEPT defines the type of TLS pool to use
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
+    ///   @param tls_pool the TLS pool to use
     ///   @param tls the current TLS block
     ///   @param vp_pool the VP pool to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT>
+    template<typename TLS_POOL_CONCEPT, typename TLS_CONCEPT, typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vp_op_destroy_vp(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) -> syscall::bf_status_t
+    syscall_vp_op_destroy_vp(TLS_POOL_CONCEPT &tls_pool, TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool)
+        -> syscall::bf_status_t
     {
-        /// TODO:
-        /// - This does not prevent you from destroying a VP that is
-        ///   active on a different PP. Note that we will need to create
-        ///   a TLS pool to solve this. Setting the active VP will
-        ///   require holding a lock so that we don't set the active VP
-        ///   on one core that is being destroyed.
-        ///
-
         auto const vpid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        if (bsl::unlikely(tls.vpid() == vpid)) {
+        if (bsl::unlikely(tls.active_vpid == vpid)) {
             bsl::error() << "cannot destory vm "            // --
+                         << bsl::hex(vpid)                  // --
+                         << " as it is currently active"    // --
+                         << bsl::endl                       // --
+                         << bsl::here();                    // --
+
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        }
+
+        if (bsl::unlikely(tls_pool.is_vp_active(vpid))) {
+            bsl::error() << "cannot destory vp "            // --
                          << bsl::hex(vpid)                  // --
                          << " as it is currently active"    // --
                          << bsl::endl                       // --
@@ -106,19 +111,28 @@ namespace mk
     ///   @brief Dispatches the bf_vp_op syscalls
     ///
     /// <!-- inputs/outputs -->
+    ///   @tparam TLS_POOL_CONCEPT defines the type of TLS pool to use
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
+    ///   @param tls_pool the TLS pool to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @param vp_pool the VP pool to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT, typename VP_POOL_CONCEPT>
+    template<
+        typename TLS_POOL_CONCEPT,
+        typename TLS_CONCEPT,
+        typename EXT_CONCEPT,
+        typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_vp_op(TLS_CONCEPT &tls, EXT_CONCEPT const &ext, VP_POOL_CONCEPT &vp_pool)
-        -> syscall::bf_status_t
+    dispatch_syscall_vp_op(
+        TLS_POOL_CONCEPT &tls_pool,
+        TLS_CONCEPT &tls,
+        EXT_CONCEPT const &ext,
+        VP_POOL_CONCEPT &vp_pool) -> syscall::bf_status_t
     {
         syscall::bf_status_t ret{};
 
@@ -153,7 +167,7 @@ namespace mk
             }
 
             case syscall::BF_VP_OP_DESTROY_VP_IDX_VAL.get(): {
-                ret = syscall_vp_op_destroy_vp(tls, vp_pool);
+                ret = syscall_vp_op_destroy_vp(tls_pool, tls, vp_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

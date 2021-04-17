@@ -42,27 +42,14 @@ namespace mk
     /// <!-- description -->
     ///   @brief TODO
     ///
-    /// <!-- template parameters -->
-    ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
-    ///
-    template<typename PAGE_POOL_CONCEPT>
     class vm_t final
     {
-        /// @brief stores true if initialized() has been executed
-        bool m_initialized{};
-        /// @brief stores true if initialized() has been executed
-        bool m_allocated{};
-        /// @brief stores a reference to the page pool to use
-        PAGE_POOL_CONCEPT *m_page_pool{};
-        /// @brief stores the ID associated with this vm_t
-        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
         /// @brief stores the next vm_t in the vm_pool_t linked list
         vm_t *m_next{};
+        /// @brief stores the ID associated with this vm_t
+        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
 
     public:
-        /// @brief an alias for PAGE_POOL_CONCEPT
-        using page_pool_type = PAGE_POOL_CONCEPT;
-
         /// <!-- description -->
         ///   @brief Default constructor
         ///
@@ -72,16 +59,14 @@ namespace mk
         ///   @brief Initializes this vm_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @param page_pool the page pool to use
         ///   @param i the ID for this vm_t
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(PAGE_POOL_CONCEPT *const page_pool, bsl::safe_uint16 const &i) &noexcept
-            -> bsl::errc_type
+        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(m_initialized)) {
+            if (bsl::unlikely(m_id)) {
                 bsl::error() << "vm_t already initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -90,21 +75,14 @@ namespace mk
                 this->release();
             }};
 
-            m_page_pool = page_pool;
-            if (bsl::unlikely(nullptr == m_page_pool)) {
-                bsl::error() << "invalid page_pool\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            m_id = i;
             if (bsl::unlikely(!i)) {
                 bsl::error() << "invalid id\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             release_on_error.ignore();
-            m_initialized = true;
 
+            m_id = i;
             return bsl::errc_success;
         }
 
@@ -114,10 +92,10 @@ namespace mk
         constexpr void
         release() &noexcept
         {
-            m_next = {};
+            this->deallocate();
+
             m_id = bsl::safe_uint16::zero(true);
-            m_page_pool = {};
-            m_initialized = {};
+            m_next = {};
         }
 
         /// <!-- description -->
@@ -130,17 +108,16 @@ namespace mk
         [[nodiscard]] constexpr auto
         allocate() &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely(!m_id)) {
                 bsl::error() << "vm_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(m_allocated)) {
+            if (bsl::unlikely(this->is_allocated())) {
                 bsl::error() << "vm_t already allocated\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            m_allocated = true;
             return bsl::errc_success;
         }
 
@@ -149,9 +126,7 @@ namespace mk
         ///
         constexpr void
         deallocate() &noexcept
-        {
-            m_allocated = {};
-        }
+        {}
 
         /// <!-- description -->
         ///   @brief Returns true if this vm_t is allocated, false otherwise
@@ -162,7 +137,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_allocated() const &noexcept -> bool
         {
-            return m_allocated;
+            return this == m_next;
         }
 
         /// <!-- description -->
@@ -251,7 +226,13 @@ namespace mk
         constexpr void
         dump(TLS_CONCEPT &tls) const &noexcept
         {
-            if (bsl::unlikely(!m_initialized)) {
+            bsl::discard(tls);
+
+            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
+                return;
+            }
+
+            if (bsl::unlikely(!m_id)) {
                 bsl::print() << "[error]" << bsl::endl;
                 return;
             }
@@ -281,22 +262,7 @@ namespace mk
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::fmt{"<12s", "allocated "};
             bsl::print() << bsl::ylw << "| ";
-            if (m_allocated) {
-                bsl::print() << bsl::grn << bsl::fmt{"^6s", "yes "};
-            }
-            else {
-                bsl::print() << bsl::red << bsl::fmt{"^6s", "no "};
-            }
-            bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::rst << bsl::endl;
-
-            /// Active
-            ///
-
-            bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::rst << bsl::fmt{"<12s", "active "};
-            bsl::print() << bsl::ylw << "| ";
-            if (tls.vmid() == m_id) {
+            if (this->is_allocated()) {
                 bsl::print() << bsl::grn << bsl::fmt{"^6s", "yes "};
             }
             else {

@@ -41,27 +41,18 @@ namespace mk
     /// <!-- description -->
     ///   @brief TODO
     ///
-    /// <!-- template parameters -->
-    ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
-    ///
-    template<typename PAGE_POOL_CONCEPT>
     class vp_t final
     {
-        /// @brief stores true if initialized() has been executed
-        bool m_initialized{};
-        /// @brief stores true if initialized() has been executed
-        bool m_allocated{};
-        /// @brief stores a reference to the page pool to use
-        PAGE_POOL_CONCEPT *m_page_pool{};
-        /// @brief stores the ID associated with this vp_t
-        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
         /// @brief stores the next vp_t in the vp_pool_t linked list
         vp_t *m_next{};
+        /// @brief stores the ID associated with this vp_t
+        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
+        /// @brief stores the ID of the VM this vp_t is assigned to
+        bsl::safe_uint16 m_assigned_vmid{bsl::safe_uint16::zero(true)};
+        /// @brief stores the ID of the PP this vp_t is assigned to
+        bsl::safe_uint16 m_assigned_ppid{bsl::safe_uint16::zero(true)};
 
     public:
-        /// @brief an alias for PAGE_POOL_CONCEPT
-        using page_pool_type = PAGE_POOL_CONCEPT;
-
         /// <!-- description -->
         ///   @brief Default constructor
         ///
@@ -71,16 +62,14 @@ namespace mk
         ///   @brief Initializes this vp_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @param page_pool the page pool to use
         ///   @param i the ID for this vp_t
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(PAGE_POOL_CONCEPT *const page_pool, bsl::safe_uint16 const &i) &noexcept
-            -> bsl::errc_type
+        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(m_initialized)) {
+            if (bsl::unlikely(m_id)) {
                 bsl::error() << "vp_t already initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -89,21 +78,14 @@ namespace mk
                 this->release();
             }};
 
-            m_page_pool = page_pool;
-            if (bsl::unlikely(nullptr == m_page_pool)) {
-                bsl::error() << "invalid page_pool\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            m_id = i;
             if (bsl::unlikely(!i)) {
                 bsl::error() << "invalid id\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             release_on_error.ignore();
-            m_initialized = true;
 
+            m_id = i;
             return bsl::errc_success;
         }
 
@@ -113,10 +95,10 @@ namespace mk
         constexpr void
         release() &noexcept
         {
-            m_next = {};
+            this->deallocate();
+
             m_id = bsl::safe_uint16::zero(true);
-            m_page_pool = {};
-            m_initialized = {};
+            m_next = {};
         }
 
         /// <!-- description -->
@@ -129,17 +111,16 @@ namespace mk
         [[nodiscard]] constexpr auto
         allocate() &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely(!m_id)) {
                 bsl::error() << "vp_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(m_allocated)) {
+            if (bsl::unlikely(this->is_allocated())) {
                 bsl::error() << "vp_t already allocated\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            m_allocated = true;
             return bsl::errc_success;
         }
 
@@ -149,7 +130,8 @@ namespace mk
         constexpr void
         deallocate() &noexcept
         {
-            m_allocated = {};
+            m_assigned_ppid = bsl::safe_uint16::zero(true);
+            m_assigned_vmid = bsl::safe_uint16::zero(true);
         }
 
         /// <!-- description -->
@@ -161,7 +143,93 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_allocated() const &noexcept -> bool
         {
-            return m_allocated;
+            return this == m_next;
+        }
+
+        /// <!-- description -->
+        ///   @brief Assigns this vp_t to a VM
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vmid the VM this vp_t is assigned to
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        assign_vm(bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!this->is_allocated())) {
+                bsl::error() << "invalid vp\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!vmid)) {
+                bsl::error() << "invalid vmid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            m_assigned_vmid = vmid;
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Assigns this vp_t to a PP
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param ppid the PP this vp_t is assigned to
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        assign_pp(bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!this->is_allocated())) {
+                bsl::error() << "invalid vp\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!ppid)) {
+                bsl::error() << "invalid ppid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            m_assigned_ppid = ppid;
+            return bsl::errc_success;
+        }
+
+        /// TODO:
+        /// - Add a migrate function. Note that once assigned, you can
+        ///   only migrate the PP. Migration should also require that
+        ///   the VP and all VPSs be migrated at the same time. This way,
+        ///   the VP and VPSs always have the same PP. The would also always
+        ///   have the same VM based on how assignment works which is done
+        ///   by the run API. So basically, the migration function would
+        ///   take a VPID, a PPID, and then it would loop through all of
+        ///   the VPSs that are assigned to the VP, clear them and assign
+        ///   them to a new PP.
+        ///
+
+        /// <!-- description -->
+        ///   @brief Returns the ID of the VM this vp_t is assigned to
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns the ID of the VM this vp_t is assigned to
+        ///
+        [[nodiscard]] constexpr auto
+        assigned_vm() const &noexcept -> bsl::safe_uint16
+        {
+            return m_assigned_vmid;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the ID of the PP this vp_t is assigned to
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns the ID of the PP this vp_t is assigned to
+        ///
+        [[nodiscard]] constexpr auto
+        assigned_pp() const &noexcept -> bsl::safe_uint16
+        {
+            return m_assigned_ppid;
         }
 
         /// <!-- description -->
@@ -250,7 +318,13 @@ namespace mk
         constexpr void
         dump(TLS_CONCEPT &tls) const &noexcept
         {
-            if (bsl::unlikely(!m_initialized)) {
+            bsl::discard(tls);
+
+            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
+                return;
+            }
+
+            if (bsl::unlikely(!m_id)) {
                 bsl::print() << "[error]" << bsl::endl;
                 return;
             }
@@ -261,17 +335,17 @@ namespace mk
             /// Header
             ///
 
-            bsl::print() << bsl::ylw << "+---------------------+";
+            bsl::print() << bsl::ylw << "+--------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::cyn << bsl::fmt{"^12s", "description "};
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << bsl::fmt{"^6s", "value "};
+            bsl::print() << bsl::cyn << bsl::fmt{"^11s", "value "};
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
-            bsl::print() << bsl::ylw << "+---------------------+";
+            bsl::print() << bsl::ylw << "+--------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
             /// Allocated
@@ -280,26 +354,41 @@ namespace mk
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::fmt{"<12s", "allocated "};
             bsl::print() << bsl::ylw << "| ";
-            if (m_allocated) {
-                bsl::print() << bsl::grn << bsl::fmt{"^6s", "yes "};
+            if (this->is_allocated()) {
+                bsl::print() << bsl::grn << bsl::fmt{"^11s", "yes "};
             }
             else {
-                bsl::print() << bsl::red << bsl::fmt{"^6s", "no "};
+                bsl::print() << bsl::red << bsl::fmt{"^11s", "no "};
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
-            /// Active
+            /// Assigned VM
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::rst << bsl::fmt{"<12s", "active "};
+            bsl::print() << bsl::rst << bsl::fmt{"<12s", "assigned vm "};
             bsl::print() << bsl::ylw << "| ";
-            if (tls.vpid() == m_id) {
-                bsl::print() << bsl::grn << bsl::fmt{"^6s", "yes "};
+            if (m_assigned_vmid) {
+                bsl::print() << bsl::grn << "  " << bsl::hex(m_assigned_vmid) << "   ";
             }
             else {
-                bsl::print() << bsl::red << bsl::fmt{"^6s", "no "};
+                bsl::print() << bsl::red << bsl::fmt{"^11s", "unassigned "};
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Assigned VM
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::fmt{"<12s", "assigned pp "};
+            bsl::print() << bsl::ylw << "| ";
+            if (m_assigned_ppid) {
+                bsl::print() << bsl::grn << "  " << bsl::hex(m_assigned_ppid) << "   ";
+            }
+            else {
+                bsl::print() << bsl::red << bsl::fmt{"^11s", "unassigned "};
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
@@ -307,7 +396,7 @@ namespace mk
             /// Footer
             ///
 
-            bsl::print() << bsl::ylw << "+---------------------+";
+            bsl::print() << bsl::ylw << "+--------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
         }
     };

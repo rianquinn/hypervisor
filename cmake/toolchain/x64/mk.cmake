@@ -43,7 +43,7 @@ string(CONCAT HYPERVISOR_MK_CXX_FLAGS
 string(CONCAT HYPERVISOR_MK_LINK_FLAGS
     "-static "
     "-nostdlib "
-    "-z noexecstack "
+    "-z separate-loadable-segments "
     "-T ${CMAKE_BINARY_DIR}/toolchain/x64/mk.ld "
 )
 

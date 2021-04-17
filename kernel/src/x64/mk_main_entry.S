@@ -31,22 +31,45 @@
     .type   mk_main_entry, @function
 mk_main_entry:
 
+    /**
+     * NOTE:
+     * - The first thing we need to do is save off RDI for the fast fail
+     *   handler. If it is called, it will need the args that this function
+     *   was provided, so we leave this on the stack for it. Since the state
+     *   save has the correct stack pointer, we can leave it in this state
+     *   as a safe return that uses the Root VP state will use the correct
+     *   stack pointer, while a failure will use the current stack pointer
+     *   with this return address on it.
+     */
+
     push rdi
 
     /**
-     * TODO:
-     * - Comment this code
+     * NOTE:
+     * - The next thing to do is get the TLS block for this PP. Each PP has
+     *   it's own TLS block (both in the microkernel, and in each extension)
+     *   which means that our definition of a thread is similar to that of
+     *   Intel's and AMD's, meaning each logical core is a thread.
+     * - The loader will tell us in the args that it provided what the PPID
+     *   is. Remember that this entry point will be called for each PP, so it
+     *   is called more than once. Once we have the PPID, we can calculate
+     *   which TLS block to grab based on the size of each TLS block.
      */
 
-    mov r10, [rdi]
-    mov rdx, 0x000000000000FFFF
-    and r10, rdx
+    xor rbx, rbx
+    mov bx, [rdi]
 
-    mov rax, r10
+    mov rax, rbx
     mov rdx, 0x300
     mul rdx
     lea rsi, [rip + g_tls_blocks]
     add rsi, rax
+
+    /**
+     * NOTE:
+     * - Next we program GS with the location of the TLS block so that we
+     *   can index into the TLS block using GS.
+     */
 
     mov ecx, 0xC0000101
     mov rax, rsi
@@ -54,15 +77,32 @@ mk_main_entry:
     shr rdx, 32
     wrmsr
 
-    push rsi
-    push rdi
-
-    mov rax, r10
-    mov rdx, 0xFFFFFFFFFFFF0000
-    or  rax, rdx
+    /**
+     * NOTE:
+     * - From here we need to set the "self" pointer in the TLS block as
+     *   well as the PPID to the TLS block so that we always know what the
+     *   PPID is no matter where we are.
+     */
 
     mov gs:[0x200], rsi
-    mov gs:[0x208], rax
+    mov gs:[0x208], bx
+
+    /**
+     * NOTE:
+     * - To start, there are no active extensions, VPs or VPSs. By default,
+     *   the active VM is 0, which allows extensions to work with memory
+     *   management interfaces while they are bootstrapping.
+     */
+
+    mov rax, 0xFFFFFFFF0000FFFF
+    mov gs:[0x238], rax
+
+    /**
+     * NOTE:
+     * - Next we set some of the fast fail entry points in the TLS block.
+     *   These will be used when an error or exception occurs so that
+     *   we can gracefully handle issues.
+     */
 
     lea rax, [rip + mk_main_fast_fail_entry]
     mov gs:[0x190], rax
@@ -71,16 +111,51 @@ mk_main_entry:
     lea rax, [rip + dispatch_syscall_fast_fail_entry]
     mov gs:[0x1B0], rax
 
-    mov rax, [rdi + 0x002]
-    mov gs:[0x23A], rax
+    /**
+     * NOTE:
+     * - Next we need to set the number of online PPs on the system.
+     *   The microkernel will need to know this so that it can properly set
+     *   up it's internal resources.
+     */
+
+    mov ax, [rdi + 0x002]
+    mov gs:[0x20A], ax
+
+    /**
+     * NOTE:
+     * - Next we store the location of the MK and Root VP state save areas
+     *   that the loader created for us. For the most part, we only really
+     *   need the Root VP state as we will use this to return back to the
+     *   Root VP once we start the hypervisor on this PP, but just in case,
+     *   we also provide the MK state as well. In general, the microkernel
+     *   is really unware of the state that the loader gives it.
+     */
+
     mov rax, [rdi + 0x008]
     mov gs:[0x228], rax
     mov rax, [rdi + 0x010]
     mov gs:[0x230], rax
 
+    /**
+     * NOTE:
+     * - Next we store the pointer to the debug ring that the loader has
+     *   set up for us. This is needed so that we have somewhere to put
+     *   debug information.
+     */
+
     lea rax, [rip + g_debug_ring]
     mov rdx, [rdi + 0x018]
     mov [rax], rdx
+
+    /**
+     * NOTE:
+     * - Before we can continue, we need to save off the arguments for
+     *   the mk_main_trampoline function. These will be poped right before
+     *   calling this function.
+     */
+
+    push rsi
+    push rdi
 
     /**
      * NOTE:
@@ -168,11 +243,27 @@ mk_main_entry:
     lea rsi, [rip + dispatch_esr_entry_19]
     call set_esr
 
+    /**
+     * NOTE:
+     * - Next, we need to store the syscall handler location. This will be
+     *   used by extensions to make syscalls.
+     */
+
     mov ecx, 0xC0000082
     lea rax, [rip + dispatch_syscall_entry]
     mov rdx, rax
     shr rdx, 32
     wrmsr
+
+    /**
+     * NOTE:
+     * - Next we transfer the NMI pending bit. If this is set, we need to hand
+     *   it to the extension so that it can handle the NMI appropriately as
+     *   the microkernel has no way of handling NMIs, so basically any NMI
+     *   that might fire at any point during the loading process has to be
+     *   recorded and transfered all the way to the extension so that it can
+     *   handle it properly.
+     */
 
     pop rdi
 
@@ -184,6 +275,15 @@ mk_main_entry:
     mov [rdx + 0x318], rax
 
     pop rsi
+
+    /**
+     * NOTE:
+     * - This next block of assembly is seen throughout the assembly code.
+     *   Basically, it stores the information needed for fast failing. Each
+     *   time we enter a new context like calling into an extension, handling
+     *   a syscall, etc, we need to swap around the fast fail handler and RSP
+     *   so that we know where to return to in the event of an error.
+     */
 
     mov gs:[0x198], rsp
     mov rax, gs:[0x190]
@@ -211,3 +311,35 @@ mk_main_fast_fail_entry:
     jmp promote
 
     .size mk_main_fast_fail_entry, .-mk_main_fast_fail_entry
+
+
+
+    .globl  memcpy
+    .type   memcpy, @function
+memcpy:
+
+    mov     rax, rdi
+    mov     rcx, rdx
+    rep     movsb
+
+    ret
+    int 3
+
+    .size memcpy, .-memcpy
+
+
+
+    .globl  memset
+    .type   memset, @function
+memset:
+
+    mov     r10, rdi
+    mov     rax, rsi
+    mov     rcx, rdx
+    rep     stosb
+    mov     rax, r10
+
+    ret
+    int 3
+
+    .size memset, .-memset

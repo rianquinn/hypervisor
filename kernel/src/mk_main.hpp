@@ -114,7 +114,7 @@ namespace mk
             constexpr bsl::safe_uintmax stack_addr{EXT_STACK_ADDR};
             constexpr bsl::safe_uintmax stack_size{EXT_STACK_SIZE};
 
-            auto const offs{(stack_size + PAGE_SIZE) * bsl::to_umax(tls.ppid())};
+            auto const offs{(stack_size + PAGE_SIZE) * bsl::to_umax(tls.ppid)};
             tls.sp = (stack_addr + offs + stack_size).get();
         }
 
@@ -133,7 +133,7 @@ namespace mk
             constexpr bsl::safe_uintmax tls_addr{EXT_TLS_ADDR};
             constexpr bsl::safe_uintmax tls_size{EXT_TLS_SIZE};
 
-            auto const offs{(tls_size + PAGE_SIZE) * bsl::to_umax(tls.ppid())};
+            auto const offs{(tls_size + PAGE_SIZE) * bsl::to_umax(tls.ppid)};
             tls.tp = (tls_addr + offs + PAGE_SIZE).get();
 
             m_intrinsic.set_tp(tls.tp);
@@ -338,7 +338,7 @@ namespace mk
                 return bsl::exit_failure;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.vmid())) {
+            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vmid)) {
                 bsl::error() << "bf_vps_op_run was never executed by an extension"    // --
                              << bsl::endl                                             // --
                              << bsl::here();                                          // --
@@ -346,7 +346,7 @@ namespace mk
                 return bsl::exit_failure;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.vpid())) {
+            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vpid)) {
                 bsl::error() << "bf_vps_op_run was never executed by an extension"    // --
                              << bsl::endl                                             // --
                              << bsl::here();                                          // --
@@ -385,18 +385,10 @@ namespace mk
 
             return bsl::exit_success;
 
-            // [ ] implement validate the input of all syscalls
-            // [ ] implement additional optimizations for release builds
             // [ ] implement checks for which MSRs can be read/written
             // [ ] implement checks for VMCS fields can be read/written
-
-            // Remaining Tasks (besides todos):
-            // [ ] implement -bsl-template-generic-param properly
             // [ ] implement contants for all of the asm logic
-            // [ ] implement some basic unit tests
-            // [ ] implement some basic syscall tests
             // [ ] implement configuration validation
-            // [ ] implement reproduceable builds
         }
     };
 }

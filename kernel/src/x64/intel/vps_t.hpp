@@ -88,18 +88,16 @@ namespace mk
     template<typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT, bsl::uintmax VMEXIT_LOG_SIZE>
     class vps_t final
     {
-        /// @brief stores true if initialized() has been executed
-        bool m_initialized{};
-        /// @brief stores true if initialized() has been executed
-        bool m_allocated{};
         /// @brief stores a reference to the intrinsics to use
         INTRINSIC_CONCEPT *m_intrinsic{};
         /// @brief stores a reference to the page pool to use
         PAGE_POOL_CONCEPT *m_page_pool{};
-        /// @brief stores the ID associated with this vps_t
-        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
         /// @brief stores the next vps_t in the vp_pool_t linked list
         vps_t *m_next{};
+        /// @brief stores the ID associated with this vps_t
+        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
+        /// @brief stores the ID of the VP this vps_t is assigned to
+        bsl::safe_uint16 m_assigned_vpid{bsl::safe_uint16::zero(true)};
 
         /// @brief stores a pointer to the guest vmcs being managed by this VPS
         vmcs_t *m_vmcs{};
@@ -107,10 +105,11 @@ namespace mk
         bsl::safe_uintmax m_vmcs_phys{bsl::safe_uintmax::zero(true)};
         /// @brief stores the rest of the state the vmcs doesn't
         vmcs_missing_registers_t m_vmcs_missing_registers{};
-        /// @brief stores the VMExit log
-        bsl::array<vmexit_log_t, VMEXIT_LOG_SIZE> m_vmexit_log{};
-        /// @brief stores the VMExit log circular cursor
-        bsl::safe_uintmax m_vmexit_log_crsr{};
+
+        // /// @brief stores the VMExit log
+        // bsl::array<vmexit_log_t, VMEXIT_LOG_SIZE> m_vmexit_log{};
+        // /// @brief stores the VMExit log circular cursor
+        // bsl::safe_uintmax m_vmexit_log_crsr{};
 
         /// <!-- description -->
         ///   @brief Stores the provided ES segment state info in the VPS.
@@ -1461,7 +1460,7 @@ namespace mk
             PAGE_POOL_CONCEPT *const page_pool,
             bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(m_initialized)) {
+            if (bsl::unlikely(m_id)) {
                 bsl::error() << "vm_t already initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1482,15 +1481,14 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            m_id = i;
             if (bsl::unlikely(!i)) {
                 bsl::error() << "invalid id\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             release_on_error.ignore();
-            m_initialized = true;
 
+            m_id = i;
             return bsl::errc_success;
         }
 
@@ -1502,11 +1500,10 @@ namespace mk
         {
             this->deallocate();
 
-            m_next = {};
             m_id = bsl::safe_uint16::zero(true);
+            m_next = {};
             m_page_pool = {};
             m_intrinsic = {};
-            m_initialized = {};
         }
 
         /// <!-- description -->
@@ -1597,12 +1594,12 @@ namespace mk
         [[nodiscard]] constexpr auto
         allocate(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(m_allocated)) {
+            if (bsl::unlikely(this->is_allocated())) {
                 bsl::error() << "vps_t already allocated\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1628,13 +1625,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            /// TODO:
-            /// - Extensions should not be able to touch host state fields.
-            ///
-
             deallocate_on_error.ignore();
-            m_allocated = true;
-
             return bsl::errc_success;
         }
 
@@ -1660,7 +1651,7 @@ namespace mk
                 bsl::touch();
             }
 
-            m_allocated = {};
+            m_assigned_vpid = bsl::safe_uint16::zero(true);
         }
 
         /// <!-- description -->
@@ -1672,7 +1663,44 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_allocated() const &noexcept -> bool
         {
-            return m_allocated;
+            return this == m_next;
+        }
+
+        /// <!-- description -->
+        ///   @brief Assigns this vps_t to a VP
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpid the VP this vps_t is assigned to
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        assign(bsl::safe_uint16 const &vpid) &noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!this->is_allocated())) {
+                bsl::error() << "invalid vps\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!vpid)) {
+                bsl::error() << "invalid vpid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            m_assigned_vpid = vpid;
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the ID of the VP this vps_t is assigned to
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns the ID of the VP this vps_t is assigned to
+        ///
+        [[nodiscard]] constexpr auto
+        assigned_vp() const &noexcept -> bsl::safe_uint16
+        {
+            return m_assigned_vpid;
         }
 
         /// <!-- description -->
@@ -1693,7 +1721,7 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1914,7 +1942,7 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -2146,7 +2174,7 @@ namespace mk
             bsl::errc_type ret{};
             bsl::safe_integral<FIELD_TYPE> val{};
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::safe_integral<FIELD_TYPE>::zero(true);
             }
@@ -2218,7 +2246,7 @@ namespace mk
 
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -2351,7 +2379,7 @@ namespace mk
         {
             bsl::safe_uint64 index{bsl::safe_uint64::zero(true)};
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::safe_uintmax::zero(true);
             }
@@ -2735,7 +2763,7 @@ namespace mk
         {
             bsl::safe_uint64 index{bsl::safe_uint64::zero(true)};
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -3147,9 +3175,11 @@ namespace mk
         {
             constexpr bsl::safe_uintmax invalid_exit_reason{bsl::to_umax(0xFFFFFFFFFFFFFF00U)};
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "invalid vps\n" << bsl::here();
-                return bsl::safe_uintmax::zero(true);
+            if constexpr (!BSL_RELEASE_BUILD) {
+                if (bsl::unlikely(!this->is_allocated())) {
+                    bsl::error() << "invalid vps\n" << bsl::here();
+                    return bsl::safe_uintmax::zero(true);
+                }
             }
 
             if (bsl::unlikely(!this->ensure_this_vps_is_loaded(tls))) {
@@ -3214,7 +3244,7 @@ namespace mk
             bsl::safe_uint64 rip{};
             bsl::safe_uint64 len{};
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -3225,21 +3255,27 @@ namespace mk
             }
 
             ret = m_intrinsic->vmread64(VMCS_GUEST_RIP, rip.data());
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+            if constexpr (!BSL_RELEASE_BUILD) {
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
             }
 
             ret = m_intrinsic->vmread64(VMCS_VMEXIT_INSTRUCTION_LENGTH, len.data());
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+            if constexpr (!BSL_RELEASE_BUILD) {
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
             }
 
             ret = m_intrinsic->vmwrite64(VMCS_GUEST_RIP, rip + len);
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return ret;
+            if constexpr (!BSL_RELEASE_BUILD) {
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return ret;
+                }
             }
 
             return ret;
@@ -3259,7 +3295,7 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -3287,7 +3323,7 @@ namespace mk
         {
             // clang-format off
 
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely(!m_id)) {
                 bsl::print() << "[error]" << bsl::endl;
                 return;
             }
@@ -3311,13 +3347,13 @@ namespace mk
             bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
-            /// Control Area
+            /// Allocated
             ///
 
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::fmt{"<40s", "allocated "};
             bsl::print() << bsl::ylw << "| ";
-            if (m_allocated) {
+            if (this->is_allocated()) {
                 bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
             }
             else {
@@ -3326,17 +3362,17 @@ namespace mk
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
-            /// Active
+            /// Assigned VM
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::rst << bsl::fmt{"<40s", "active "};
+            bsl::print() << bsl::rst << bsl::fmt{"<40s", "assigned vp "};
             bsl::print() << bsl::ylw << "| ";
-            if (tls.active_vpsid == m_id) {
-                bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
+            if (m_assigned_vpid) {
+                bsl::print() << bsl::grn << "      " << bsl::hex(m_assigned_vpid) << "       ";
             }
             else {
-                bsl::print() << bsl::red << bsl::fmt{"^19s", "no "};
+                bsl::print() << bsl::red << bsl::fmt{"^19s", "unassigned "};
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
@@ -3347,7 +3383,7 @@ namespace mk
             bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
-            if (!m_allocated) {
+            if (!this->is_allocated()) {
                 return;
             }
 

@@ -66,26 +66,34 @@ namespace mk
     ///   @brief Implements the bf_vps_op_destroy_vps syscall
     ///
     /// <!-- inputs/outputs -->
+    ///   @tparam TLS_POOL_CONCEPT defines the type of TLS pool to use
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls_pool the TLS pool to use
     ///   @param tls the current TLS block
     ///   @param vps_pool the VPS pool to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename TLS_POOL_CONCEPT, typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vps_op_destroy_vps(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+    syscall_vps_op_destroy_vps(
+        TLS_POOL_CONCEPT &tls_pool, TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
+        -> syscall::bf_status_t
     {
-        /// TODO:
-        /// - This does not prevent you from destroying a VPS that is
-        ///   active on a different PP. To solve this, we will need to
-        ///   ensure that a VPS is tied to a specific PP. Mig
-        ///
-
         auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
         if (bsl::unlikely(tls.active_vpsid == vpsid)) {
             bsl::error() << "cannot destory vm "            // --
+                         << bsl::hex(vpsid)                 // --
+                         << " as it is currently active"    // --
+                         << bsl::endl                       // --
+                         << bsl::here();                    // --
+
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        }
+
+        if (bsl::unlikely(tls_pool.is_vps_active(vpsid))) {
+            bsl::error() << "cannot destory vps "           // --
                          << bsl::hex(vpsid)                 // --
                          << " as it is currently active"    // --
                          << bsl::endl                       // --
@@ -405,12 +413,12 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-    ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
+    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
-    ///   @param ext_pool the extension pool to use
+    ///   @param ext the extension that made the syscall
     ///   @param vm_pool the VM pool to use
     ///   @param vp_pool the VP pool to use
     ///   @param vps_pool the VPS pool to use
@@ -419,28 +427,25 @@ namespace mk
     ///
     template<
         typename TLS_CONCEPT,
-        typename EXT_POOL_CONCEPT,
+        typename EXT_CONCEPT,
         typename VM_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,
         typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_run(
         TLS_CONCEPT &tls,
-        EXT_POOL_CONCEPT &ext_pool,
+        EXT_CONCEPT &ext,
         VM_POOL_CONCEPT &vm_pool,
         VP_POOL_CONCEPT &vp_pool,
         VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
     {
         /// TODO:
-        /// - Need to make sure that the VP and VPS is not active on any
-        ///   other PPs. A shared active VM is fine and expected. Also
-        ///   note that we will have to share a lock with any destroy
-        ///   APIs so that we are not setting an active VP or VPS while
-        ///   they are in the middle of being destroyed.
+        /// - If this function fails, we need to set the state back to
+        ///   what it was before we started this function.
         ///
 
-        auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        if (bsl::unlikely(!vps_pool.is_allocated(vpsid))) {
+        auto const vmid{bsl::to_u16_unsafe(tls.ext_reg3)};
+        if (bsl::unlikely(!vm_pool.is_allocated(vmid))) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
@@ -451,20 +456,92 @@ namespace mk
             return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        auto const vmid{bsl::to_u16_unsafe(tls.ext_reg3)};
-        if (bsl::unlikely(!vm_pool.is_allocated(vmid))) {
+        if (auto const vp_assigned_vm{vp_pool.assigned_vm(vpid)}) {
+            if (bsl::unlikely(vp_assigned_vm != vmid)) {
+                bsl::error() << "attempt to run vp "                   // --
+                             << bsl::hex(vpid)                         // --
+                             << " on vm "                              // --
+                             << bsl::hex(vmid)                         // --
+                             << " that was already assigned to vm "    // --
+                             << bsl::hex(vp_assigned_vm)               // --
+                             << " was denied"                          // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
+
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+
+            bsl::touch();
+        }
+        else {
+            if (bsl::unlikely(!vp_pool.assign_vm(vpid, vmid))) {
+                bsl::print<bsl::V>() << bsl::here();
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+        }
+
+        if (auto const vp_assigned_pp{vp_pool.assigned_pp(vpid)}) {
+            if (bsl::unlikely(vp_assigned_pp != tls.ppid)) {
+                bsl::error() << "attempt to run vp "                      // --
+                             << bsl::hex(vpid)                            // --
+                             << " on pp "                                 // --
+                             << bsl::hex(tls.ppid)                        // --
+                             << " that was already assigned to pp "       // --
+                             << bsl::hex(vp_assigned_pp)                  // --
+                             << " was denied (use migrate to do this)"    // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
+
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+
+            bsl::touch();
+        }
+        else {
+            if (bsl::unlikely(!vp_pool.assign_pp(vpid, tls.ppid))) {
+                bsl::print<bsl::V>() << bsl::here();
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+        }
+
+        auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
+        if (bsl::unlikely(!vps_pool.is_allocated(vpsid))) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        if (bsl::unlikely(!ext_pool.set_active_vm(tls, vmid))) {
+        if (auto const vps_assigned_vp{vps_pool.assigned_vp(vpsid)}) {
+            if (bsl::unlikely(vps_assigned_vp != vpid)) {
+                bsl::error() << "attempt to run vps "                  // --
+                             << bsl::hex(vpsid)                        // --
+                             << " on vp "                              // --
+                             << bsl::hex(vpid)                         // --
+                             << " that was already assigned to vp "    // --
+                             << bsl::hex(vps_assigned_vp)              // --
+                             << " was denied"                          // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
+
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+
+            bsl::touch();
+        }
+        else {
+            if (bsl::unlikely(!vps_pool.assign_vp(vpsid, vpid))) {
+                bsl::print<bsl::V>() << bsl::here();
+                return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            }
+        }
+
+        if (bsl::unlikely(!ext.set_active_vm(tls, vmid))) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
+        tls.active_vmid = vmid.get();
+        tls.active_vpid = vpid.get();
         tls.active_vpsid = vpsid.get();
-        tls.set_vpid(vpid);
-        tls.set_vmid(vmid);
 
         return_to_mk(bsl::exit_success);
 
@@ -594,14 +671,14 @@ namespace mk
     ///   @brief Dispatches the bf_vps_op syscalls
     ///
     /// <!-- inputs/outputs -->
+    ///   @tparam TLS_POOL_CONCEPT defines the type of TLS pool to use
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-    ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+    ///   @param tls_pool the TLS pool to use
     ///   @param tls the current TLS block
-    ///   @param ext_pool the extension pool to use
     ///   @param ext the extension that made the syscall
     ///   @param vm_pool the VM pool to use
     ///   @param vp_pool the VP pool to use
@@ -610,16 +687,16 @@ namespace mk
     ///     code on failure.
     ///
     template<
+        typename TLS_POOL_CONCEPT,
         typename TLS_CONCEPT,
-        typename EXT_POOL_CONCEPT,
         typename EXT_CONCEPT,
         typename VM_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,
         typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_vps_op(
+        TLS_POOL_CONCEPT &tls_pool,
         TLS_CONCEPT &tls,
-        EXT_POOL_CONCEPT &ext_pool,
         EXT_CONCEPT &ext,
         VM_POOL_CONCEPT &vm_pool,
         VP_POOL_CONCEPT &vp_pool,
@@ -658,7 +735,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_DESTROY_VPS_IDX_VAL.get(): {
-                ret = syscall_vps_op_destroy_vps(tls, vps_pool);
+                ret = syscall_vps_op_destroy_vps(tls_pool, tls, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -778,7 +855,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_RUN_IDX_VAL.get(): {
-                ret = syscall_vps_op_run(tls, ext_pool, vm_pool, vp_pool, vps_pool);
+                ret = syscall_vps_op_run(tls, ext, vm_pool, vp_pool, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

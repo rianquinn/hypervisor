@@ -39,7 +39,7 @@ namespace mk
     /// @class mk::ext_pool_t
     ///
     /// <!-- description -->
-    ///   @brief TODO
+    ///   @brief Defines the microkernel's extension pool
     ///
     /// <!-- template parameters -->
     ///   @tparam EXT_CONCEPT the type of ext_t that this class manages.
@@ -116,7 +116,8 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename EXT_ELF_FILES_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize(TLS_CONCEPT &tls, EXT_ELF_FILES_CONCEPT const &ext_elf_files) &noexcept -> bsl::errc_type
+        initialize(TLS_CONCEPT &tls, EXT_ELF_FILES_CONCEPT const &ext_elf_files) &noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -256,34 +257,6 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Sets the active VM for each extension. This will cause
-        ///     the extension to set VM specific resources up including the
-        ///     direct map.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @param tls the current TLS block
-        ///   @param vmid the VMID of the VM to set as active
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        template<typename TLS_CONCEPT>
-        [[nodiscard]] constexpr auto
-        set_active_vm(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
-        {
-            for (auto const ext : m_pool) {
-                if (bsl::unlikely(!ext.data->set_active_vm(tls, vmid))) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
-                }
-
-                bsl::touch();
-            }
-
-            return bsl::errc_success;
-        }
-
-        /// <!-- description -->
         ///   @brief Starts this ext_pool_t by calling all of the
         ///     extension's _start entry points.
         ///
@@ -347,6 +320,10 @@ namespace mk
         constexpr void
         dump(TLS_CONCEPT &tls, bsl::safe_uint16 const &extid) &noexcept
         {
+            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
+                return;
+            }
+
             auto *const ext{m_pool.at_if(bsl::to_umax(extid))};
             if (bsl::unlikely(nullptr == ext)) {
                 bsl::error() << "invalid extid: "    // --

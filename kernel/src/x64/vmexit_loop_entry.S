@@ -51,7 +51,7 @@ vmexit_loop_entry:
 
     push rax
 
-    mov rax, gs:[0x270]
+    mov rax, gs:[0x268]
     cmp rax, 0x0
     jne skip_first_launch_logic
 
@@ -83,7 +83,7 @@ install_fast_fail_and_continue_loop:
      */
 
     mov rax, 0x1
-    mov gs:[0x270], rax
+    mov gs:[0x268], rax
 
     lea rax, [rip + fast_fail_entry]
     mov gs:[0x180], rax

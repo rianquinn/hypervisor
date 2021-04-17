@@ -31,7 +31,7 @@
 extern "C"
 {
     /// @brief provides the stack guard
-    constinit bsl::uintmax __stack_chk_guard{0xDEADBEEFDEADBEEF};    // NOLINT
+    __attribute__((used)) bsl::uintmax __stack_chk_guard{0xDEADBEEFDEADBEEF};    // NOLINT
 
     /// <!-- description -->
     ///   @brief Used to detect if stack corruption occurs.
@@ -41,41 +41,6 @@ extern "C"
     {
         bsl::fputs("stack smashing detected\n");
         syscall::bf_control_op_exit();
-    }
-
-    /// TODO:
-    /// - Find out how the compiler is compiling memset and memcpy and make
-    ///   sure there isn't a faster way to implement these (without SSE).
-    ///
-
-    /// <!-- description -->
-    ///   @brief Same as std::memset.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param dst a pointer to the memory to set
-    ///   @param ch the value to set the memory to
-    ///   @param num the total number of bytes to set
-    ///   @return Returns the same result as std::memset.
-    ///
-    [[maybe_unused]] extern "C" auto
-    memset(void *const dst, bsl::char_type const ch, bsl::uintmax const num) noexcept -> void *
-    {
-        return bsl::builtin_memset(dst, ch, num);
-    }
-
-    /// <!-- description -->
-    ///   @brief Same as std::memcpy.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param dst a pointer to the memory to copy to
-    ///   @param src a pointer to the memory to copy from
-    ///   @param count the total number of bytes to copy
-    ///   @return Returns the same result as std::memcpy.
-    ///
-    [[maybe_unused]] extern "C" auto
-    memcpy(void *const dst, void const *const src, bsl::uintmax const count) noexcept -> void *
-    {
-        return bsl::builtin_memcpy(dst, src, count);
     }
 }
 

@@ -39,39 +39,39 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
     ///   @tparam HUGE_POOL_CONCEPT defines the type of huge pool to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
-    ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
     ///   @param tls the current TLS block
+    ///   @param ext_pool the extension pool to use
     ///   @param page_pool the page pool to use
     ///   @param huge_pool the huge pool to use
     ///   @param vps_pool the VPS pool to use
     ///   @param vp_pool the VP pool to use
     ///   @param vm_pool the VM pool to use
-    ///   @param ext_pool the extension pool to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
     template<
         typename TLS_CONCEPT,
+        typename EXT_POOL_CONCEPT,
         typename PAGE_POOL_CONCEPT,
         typename HUGE_POOL_CONCEPT,
         typename VPS_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,
-        typename VM_POOL_CONCEPT,
-        typename EXT_POOL_CONCEPT>
+        typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_debug_op(
         TLS_CONCEPT &tls,
+        EXT_POOL_CONCEPT &ext_pool,
         PAGE_POOL_CONCEPT &page_pool,
         HUGE_POOL_CONCEPT &huge_pool,
         VPS_POOL_CONCEPT &vps_pool,
         VP_POOL_CONCEPT &vp_pool,
-        VM_POOL_CONCEPT &vm_pool,
-        EXT_POOL_CONCEPT &ext_pool) noexcept -> syscall::bf_status_t
+        VM_POOL_CONCEPT &vm_pool) noexcept -> syscall::bf_status_t
     {
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_DEBUG_OP_OUT_IDX_VAL.get(): {

@@ -52,7 +52,7 @@ namespace mk
             return bsl::exit_failure;
         }
 
-        if (bsl::unlikely(!ext->map_page_direct(bsl::to_umax(tls.esr_cr2)))) {
+        if (bsl::unlikely(!ext->map_page_direct(tls, bsl::to_umax(tls.esr_cr2)))) {
             return bsl::exit_failure;
         }
 

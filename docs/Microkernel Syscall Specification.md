@@ -642,19 +642,7 @@ The following defines the specification IDs used when opening a handle. These pr
 
 The microkernel defines a "thread" the same way both Intel and AMD define a thread (i.e., a logical core). For example, some Intel CPUs have 4 cores and 8 threads when hyper-threading is enabled, or 4 cores and 4 threads when hyper-threading is disabled. Each logical core is given one "thread" and that thread always executes on that logical core. The microkernel defines these logical cores as physical processors (i.e., PP).
 
-Each thread is given an ID as follows:
-
-**thread_id:**
-| Bits | Name | Description |
-| :--- | :--- | :---------- |
-| 63:48 | extid | Contains the currently running extension's ID |
-| 47:32 | vmid | Contains the currently running VM's ID |
-| 31:16 | vpid | Contains the currently running VP's ID |
-| 15:0 | ppid | Contains the ID of the PP this thread is assigned to |
-
-Although there is only one thread per PP, a thread's ID changes based on the active extension, VM and VP. If a thread's ID changes, it's TLS block **does not change**, meaning an extension is given one TLS block per PP, regardless of which VM or VP is active. This allows an extension to use the thread ID to determine not only which PP it is currently executing on, but which VM and VP are currently active (the TLS also contains a separate location for determine the active VPDID as well if needed), while still allowing the extension to have per PP TLS blocks.
-
-In addition, the layout of the TLS block uses a scheme similar to the ELF TLS specification, but with some modifications. Unlike the ELF TLS specification, each TLS block is limited to two pages. The lower half of the page is dedicated to "thread_local" storage. The upper half is defined by this specification, and provides access to registers shared between the microkernel and the extension to improve performance. For example, access to a VM's general purpose registers is available from the TLS block. Each TLS register defined by this specific is an offset into the upper half of the TLS block (which can be located using the fs segment register on Intel/AMD).
+The layout of the TLS block provided to each extension uses a scheme similar to the ELF TLS specification, but with some modifications. Unlike the ELF TLS specification, each TLS block is limited to two pages. The lower half of the page is dedicated to "thread_local" storage. The upper half is defined by this specification, and provides access to registers shared between the microkernel and the extension to improve performance. For example, access to a VM's general purpose registers is available from the TLS block. Each TLS register defined by this specific is an offset into the upper half of the TLS block (which can be located using the fs segment register on Intel/AMD).
 
 ### 2.6.1. TLS Offsets
 
@@ -676,8 +664,11 @@ In addition, the layout of the TLS block uses a scheme similar to the ELF TLS sp
 | TLS_OFFSET_R13 | 0x860U | stores the offset for r13 |
 | TLS_OFFSET_R14 | 0x868U | stores the offset for r14 |
 | TLS_OFFSET_R15 | 0x870U | stores the offset for r15 |
-| TLS_OFFSET_ACTIVE_VPSID | 0xFF0U | stores the offset for the active vpsid |
-| TLS_OFFSET_THREAD_ID | 0xFF8U | stores the offset for the thread id |
+| TLS_OFFSET_ACTIVE_EXTID | 0xFF0U | stores the offset of the active extid |
+| TLS_OFFSET_ACTIVE_VMID | 0xFF2U | stores the offset of the active vmid |
+| TLS_OFFSET_ACTIVE_VPID | 0xFF4U | stores the offset of the active vpid |
+| TLS_OFFSET_ACTIVE_VPSID | 0xFF6U | stores the offset of the active vpsid |
+| TLS_OFFSET_ACTIVE_PPID | 0xFF8U | stores the offset of the active ppid |
 
 ## 2.7. Control Syscalls
 

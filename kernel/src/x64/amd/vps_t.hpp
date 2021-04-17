@@ -93,18 +93,16 @@ namespace mk
     template<typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT, bsl::uintmax VMEXIT_LOG_SIZE>
     class vps_t final
     {
-        /// @brief stores true if initialized() has been executed
-        bool m_initialized{};
-        /// @brief stores true if initialized() has been executed
-        bool m_allocated{};
         /// @brief stores a reference to the intrinsics to use
         INTRINSIC_CONCEPT *m_intrinsic{};
         /// @brief stores a reference to the page pool to use
         PAGE_POOL_CONCEPT *m_page_pool{};
-        /// @brief stores the ID associated with this vps_t
-        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
         /// @brief stores the next vps_t in the vp_pool_t linked list
         vps_t *m_next{};
+        /// @brief stores the ID associated with this vps_t
+        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
+        /// @brief stores the ID of the VP this vps_t is assigned to
+        bsl::safe_uint16 m_assigned_vpid{bsl::safe_uint16::zero(true)};
 
         /// @brief stores a pointer to the guest VMCB being managed by this VPS
         vmcb_t *m_guest_vmcb{};
@@ -114,10 +112,10 @@ namespace mk
         vmcb_t *m_host_vmcb{};
         /// @brief stores the physical address of the host VMCB
         bsl::safe_uintmax m_host_vmcb_phys{bsl::safe_uintmax::zero(true)};
-        /// @brief stores the VMExit log
-        bsl::array<vmexit_log_t, VMEXIT_LOG_SIZE> m_vmexit_log{};
-        /// @brief stores the VMExit log circular cursor
-        bsl::safe_uintmax m_vmexit_log_crsr{};
+        // /// @brief stores the VMExit log
+        // bsl::array<vmexit_log_t, 1> m_vmexit_log{};
+        // /// @brief stores the VMExit log circular cursor
+        // bsl::safe_uintmax m_vmexit_log_crsr{};
 
         /// <!-- description -->
         ///   @brief Dumps the contents of a field
@@ -191,7 +189,7 @@ namespace mk
             PAGE_POOL_CONCEPT *const page_pool,
             bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(m_initialized)) {
+            if (bsl::unlikely(m_id)) {
                 bsl::error() << "vm_t already initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -212,15 +210,14 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            m_id = i;
             if (bsl::unlikely(!i)) {
                 bsl::error() << "invalid id\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             release_on_error.ignore();
-            m_initialized = true;
 
+            m_id = i;
             return bsl::errc_success;
         }
 
@@ -232,11 +229,10 @@ namespace mk
         {
             this->deallocate();
 
-            m_next = {};
             m_id = bsl::safe_uint16::zero(true);
+            m_next = {};
             m_page_pool = {};
             m_intrinsic = {};
-            m_initialized = {};
         }
 
         /// <!-- description -->
@@ -329,12 +325,12 @@ namespace mk
         {
             bsl::discard(tls);
 
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(m_allocated)) {
+            if (bsl::unlikely(this->is_allocated())) {
                 bsl::error() << "vps_t already allocated\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -368,8 +364,6 @@ namespace mk
             }
 
             deallocate_on_error.ignore();
-            m_allocated = true;
-
             return bsl::errc_success;
         }
 
@@ -379,10 +373,10 @@ namespace mk
         constexpr void
         deallocate() &noexcept
         {
-            m_vmexit_log_crsr = {};
-            for (auto const elem : m_vmexit_log) {
-                *elem.data = {};
-            }
+            // m_vmexit_log_crsr = {};
+            // for (auto const elem : m_vmexit_log) {
+            //     *elem.data = {};
+            // }
 
             m_host_vmcb_phys = bsl::safe_uintmax::zero(true);
             if (nullptr != m_page_pool) {
@@ -402,7 +396,7 @@ namespace mk
                 bsl::touch();
             }
 
-            m_allocated = {};
+            m_assigned_vpid = bsl::safe_uint16::zero(true);
         }
 
         /// <!-- description -->
@@ -414,7 +408,44 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_allocated() const &noexcept -> bool
         {
-            return m_allocated;
+            return this == m_next;
+        }
+
+        /// <!-- description -->
+        ///   @brief Assigns this vps_t to a VP
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpid the VP this vps_t is assigned to
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        assign_vp(bsl::safe_uint16 const &vpid) &noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!this->is_allocated())) {
+                bsl::error() << "invalid vps\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!vpid)) {
+                bsl::error() << "invalid vpid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            m_assigned_vpid = vpid;
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the ID of the VP this vps_t is assigned to
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns the ID of the VP this vps_t is assigned to
+        ///
+        [[nodiscard]] constexpr auto
+        assigned_vp() const &noexcept -> bsl::safe_uint16
+        {
+            return m_assigned_vpid;
         }
 
         /// <!-- description -->
@@ -435,7 +466,7 @@ namespace mk
         {
             bsl::discard(tls);
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -552,7 +583,7 @@ namespace mk
         {
             bsl::discard(tls);
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -671,7 +702,7 @@ namespace mk
         {
             bsl::discard(tls);
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::safe_integral<FIELD_TYPE>::zero(true);
             }
@@ -714,7 +745,7 @@ namespace mk
         {
             bsl::discard(tls);
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -762,7 +793,7 @@ namespace mk
         {
             bsl::discard(tls);
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::safe_uintmax::zero(true);
             }
@@ -1089,7 +1120,7 @@ namespace mk
         {
             bsl::discard(tls);
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1495,9 +1526,11 @@ namespace mk
         {
             constexpr bsl::safe_uintmax invalid_exit_reason{bsl::to_umax(0xFFFFFFFFFFFFFFFFU)};
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "invalid vps\n" << bsl::here();
-                return bsl::safe_uintmax::zero(true);
+            if constexpr (!BSL_RELEASE_BUILD) {
+                if (bsl::unlikely(!this->is_allocated())) {
+                    bsl::error() << "invalid vps\n" << bsl::here();
+                    return bsl::safe_uintmax::zero(true);
+                }
             }
 
             bsl::safe_uintmax const exit_reason{intrinsic_vmrun(
@@ -1510,26 +1543,28 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
-            if constexpr (!bsl::to_umax(BSL_DEBUG_LEVEL).is_zero()) {
-                *m_vmexit_log.at_if(m_vmexit_log_crsr) = {
-                    exit_reason,
-                    m_guest_vmcb->exitinfo1,
-                    m_guest_vmcb->exitinfo2,
-                    m_guest_vmcb->exitininfo,
-                    m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX),
-                    m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX),
-                    m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX),
-                    m_guest_vmcb->rip,
-                    m_guest_vmcb->rsp};
+            // if constexpr (!BSL_RELEASE_BUILD) {
+            //     if constexpr (!bsl::to_umax(BSL_DEBUG_LEVEL).is_zero()) {
+            //         *m_vmexit_log.at_if(m_vmexit_log_crsr) = {
+            //             exit_reason,
+            //             m_guest_vmcb->exitinfo1,
+            //             m_guest_vmcb->exitinfo2,
+            //             m_guest_vmcb->exitininfo,
+            //             m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX),
+            //             m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX),
+            //             m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX),
+            //             m_guest_vmcb->rip,
+            //             m_guest_vmcb->rsp};
 
-                ++m_vmexit_log_crsr;
-                if (!(m_vmexit_log_crsr < m_vmexit_log.size())) {
-                    m_vmexit_log_crsr = {};
-                }
-                else {
-                    bsl::touch();
-                }
-            }
+            //         ++m_vmexit_log_crsr;
+            //         if (!(m_vmexit_log_crsr < m_vmexit_log.size())) {
+            //             m_vmexit_log_crsr = {};
+            //         }
+            //         else {
+            //             bsl::touch();
+            //         }
+            //     }
+            // }
 
             /// TODO:
             /// - Add check logic to if an entry failure occurs and output
@@ -1554,7 +1589,7 @@ namespace mk
         {
             bsl::discard(tls);
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1577,7 +1612,7 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(!m_allocated)) {
+            if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1597,6 +1632,12 @@ namespace mk
         constexpr void
         dump(TLS_CONCEPT &tls) const &noexcept
         {
+            bsl::discard(tls);
+
+            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
+                return;
+            }
+
             // clang-format off
 
             constexpr auto guest_instruction_bytes_0{bsl::to_umax(0x0U)};
@@ -1616,7 +1657,7 @@ namespace mk
             constexpr auto guest_instruction_bytes_d{bsl::to_umax(0xDU)};
             constexpr auto guest_instruction_bytes_e{bsl::to_umax(0xEU)};
 
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely(!m_id)) {
                 bsl::print() << "[error]" << bsl::endl;
                 return;
             }
@@ -1640,13 +1681,13 @@ namespace mk
             bsl::print() << bsl::ylw << "+----------------------------------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
-            /// Control Area
+            /// Allocated
             ///
 
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::fmt{"<30s", "allocated "};
             bsl::print() << bsl::ylw << "| ";
-            if (m_allocated) {
+            if (this->is_allocated()) {
                 bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
             }
             else {
@@ -1655,17 +1696,17 @@ namespace mk
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
-            /// Active
+            /// Assigned VM
             ///
 
             bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::rst << bsl::fmt{"<30s", "active "};
+            bsl::print() << bsl::rst << bsl::fmt{"<30s", "assigned vp "};
             bsl::print() << bsl::ylw << "| ";
-            if (tls.active_vpsid == m_id) {
-                bsl::print() << bsl::grn << bsl::fmt{"^19s", "yes "};
+            if (m_assigned_vpid) {
+                bsl::print() << bsl::grn << "      " << bsl::hex(m_assigned_vpid) << "       ";
             }
             else {
-                bsl::print() << bsl::red << bsl::fmt{"^19s", "no "};
+                bsl::print() << bsl::red << bsl::fmt{"^19s", "unassigned "};
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
@@ -1676,7 +1717,7 @@ namespace mk
             bsl::print() << bsl::ylw << "+----------------------------------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
-            if (!m_allocated) {
+            if (!this->is_allocated()) {
                 return;
             }
 
@@ -1843,85 +1884,89 @@ namespace mk
         constexpr void
         dump_vmexit_log() &noexcept
         {
-            constexpr bsl::safe_uintmax exit_reason_cpuid{bsl::to_umax(0x72U)};
-            constexpr bsl::safe_uintmax exit_reason_ioio{bsl::to_umax(0x7BU)};
-            constexpr bsl::safe_uintmax exit_reason_msr{bsl::to_umax(0x7CU)};
-
-            /// TODO:
-            /// - We should continue to expand on this function to provide
-            ///   even more useful information. For example, we could store
-            ///   all of the register state, and then be able to provide
-            ///   better data for mov to CR/DR, VMCall, IO instructions,
-            ///   IDT/GDT accesses, all of the invalidation functions, etc.
-            ///
-
-            bsl::print() << bsl::mag << "vmexit log for vps [" << bsl::hex(m_id) << "]: ";
-            bsl::print() << bsl::rst << bsl::endl;
-
-            auto crsr{m_vmexit_log_crsr};
-            for (bsl::safe_uintmax i{}; i < m_vmexit_log.size(); ++i) {
-                auto const entry{m_vmexit_log.at_if(crsr)};
-
-                if (!entry->rip.is_zero()) {
-                    bsl::print() << bsl::ylw << '[' << bsl::fmt{">#5x", entry->exit_reason} << "]";
-                    bsl::print() << bsl::cyn << " rip: " << bsl::rst << bsl::hex(entry->rip);
-                    bsl::print() << bsl::cyn << " rsp: " << bsl::rst << bsl::hex(entry->rsp);
-
-                    switch (entry->exit_reason.get()) {
-                        case exit_reason_cpuid.get(): {
-                            bsl::print() << bsl::cyn << " eax: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->rax));
-                            bsl::print() << bsl::cyn << " ecx: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
-                            break;
-                        }
-
-                        case exit_reason_ioio.get(): {
-                            bsl::print() << bsl::cyn << " dx: " << bsl::rst
-                                         << bsl::hex(bsl::to_u16_unsafe(entry->rdx));
-                            bsl::print() << bsl::cyn << " exitinfo1: " << bsl::rst
-                                         << bsl::hex(entry->exitinfo1);
-                            bsl::print() << bsl::cyn << " exitinfo2: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->exitinfo2));
-                            break;
-                        }
-
-                        case exit_reason_msr.get(): {
-                            bsl::print() << bsl::cyn << " ecx: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
-                            bsl::print() << bsl::cyn << " eax: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->rax));
-                            bsl::print() << bsl::cyn << " edx: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->rdx));
-                            break;
-                        }
-
-                        default: {
-                            bsl::print() << bsl::cyn << " exitinfo1: " << bsl::rst
-                                         << bsl::hex(entry->exitinfo1);
-                            bsl::print() << bsl::cyn << " exitinfo2: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->exitinfo2));
-                            bsl::print() << bsl::cyn << " exitininfo: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->exitininfo));
-
-                            break;
-                        }
-                    }
-
-                    bsl::print() << bsl::rst << bsl::endl;
-                }
-                else {
-                    bsl::touch();
-                }
-
-                ++crsr;
-                if (!(crsr < m_vmexit_log.size())) {
-                    crsr = {};
-                }
-                else {
-                    bsl::touch();
-                }
+            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
+                return;
             }
+
+            //     constexpr bsl::safe_uintmax exit_reason_cpuid{bsl::to_umax(0x72U)};
+            //     constexpr bsl::safe_uintmax exit_reason_ioio{bsl::to_umax(0x7BU)};
+            //     constexpr bsl::safe_uintmax exit_reason_msr{bsl::to_umax(0x7CU)};
+
+            //     /// TODO:
+            //     /// - We should continue to expand on this function to provide
+            //     ///   even more useful information. For example, we could store
+            //     ///   all of the register state, and then be able to provide
+            //     ///   better data for mov to CR/DR, VMCall, IO instructions,
+            //     ///   IDT/GDT accesses, all of the invalidation functions, etc.
+            //     ///
+
+            //     bsl::print() << bsl::mag << "vmexit log for vps [" << bsl::hex(m_id) << "]: ";
+            //     bsl::print() << bsl::rst << bsl::endl;
+
+            //     auto crsr{m_vmexit_log_crsr};
+            //     for (bsl::safe_uintmax i{}; i < m_vmexit_log.size(); ++i) {
+            //         auto const entry{m_vmexit_log.at_if(crsr)};
+
+            //         if (!entry->rip.is_zero()) {
+            //             bsl::print() << bsl::ylw << '[' << bsl::fmt{">#5x", entry->exit_reason} << "]";
+            //             bsl::print() << bsl::cyn << " rip: " << bsl::rst << bsl::hex(entry->rip);
+            //             bsl::print() << bsl::cyn << " rsp: " << bsl::rst << bsl::hex(entry->rsp);
+
+            //             switch (entry->exit_reason.get()) {
+            //                 case exit_reason_cpuid.get(): {
+            //                     bsl::print() << bsl::cyn << " eax: " << bsl::rst
+            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->rax));
+            //                     bsl::print() << bsl::cyn << " ecx: " << bsl::rst
+            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
+            //                     break;
+            //                 }
+
+            //                 case exit_reason_ioio.get(): {
+            //                     bsl::print() << bsl::cyn << " dx: " << bsl::rst
+            //                                  << bsl::hex(bsl::to_u16_unsafe(entry->rdx));
+            //                     bsl::print() << bsl::cyn << " exitinfo1: " << bsl::rst
+            //                                  << bsl::hex(entry->exitinfo1);
+            //                     bsl::print() << bsl::cyn << " exitinfo2: " << bsl::rst
+            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->exitinfo2));
+            //                     break;
+            //                 }
+
+            //                 case exit_reason_msr.get(): {
+            //                     bsl::print() << bsl::cyn << " ecx: " << bsl::rst
+            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
+            //                     bsl::print() << bsl::cyn << " eax: " << bsl::rst
+            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->rax));
+            //                     bsl::print() << bsl::cyn << " edx: " << bsl::rst
+            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->rdx));
+            //                     break;
+            //                 }
+
+            //                 default: {
+            //                     bsl::print() << bsl::cyn << " exitinfo1: " << bsl::rst
+            //                                  << bsl::hex(entry->exitinfo1);
+            //                     bsl::print() << bsl::cyn << " exitinfo2: " << bsl::rst
+            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->exitinfo2));
+            //                     bsl::print() << bsl::cyn << " exitininfo: " << bsl::rst
+            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->exitininfo));
+
+            //                     break;
+            //                 }
+            //             }
+
+            //             bsl::print() << bsl::rst << bsl::endl;
+            //         }
+            //         else {
+            //             bsl::touch();
+            //         }
+
+            //         ++crsr;
+            //         if (!(crsr < m_vmexit_log.size())) {
+            //             crsr = {};
+            //         }
+            //         else {
+            //             bsl::touch();
+            //         }
+            //     }
         }
     };
 }

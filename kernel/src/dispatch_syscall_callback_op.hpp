@@ -64,9 +64,10 @@ namespace mk
         }
 
         if (bsl::unlikely(ext.is_started())) {
-            bsl::error() << "bootstrap registration must occur before calling bf_callback_op_wait"        // --
-                         << bsl::endl                 // --
-                         << bsl::here();              // --
+            bsl::error()
+                << "bootstrap registration must occur before calling bf_callback_op_wait"    // --
+                << bsl::endl                                                                 // --
+                << bsl::here();                                                              // --
 
             return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
         }
@@ -109,9 +110,9 @@ namespace mk
         }
 
         if (bsl::unlikely(!ext.is_started())) {
-            bsl::error() << "vmexit registration must occur from the bootstrap handler"        // --
-                         << bsl::endl                 // --
-                         << bsl::here();              // --
+            bsl::error() << "vmexit registration must occur from the bootstrap handler"    // --
+                         << bsl::endl                                                      // --
+                         << bsl::here();                                                   // --
 
             return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
         }
@@ -156,9 +157,9 @@ namespace mk
         }
 
         if (bsl::unlikely(!ext.is_started())) {
-            bsl::error() << "fast fail registration must occur from the bootstrap handler"        // --
-                         << bsl::endl                 // --
-                         << bsl::here();              // --
+            bsl::error() << "fast fail registration must occur from the bootstrap handler"    // --
+                         << bsl::endl                                                         // --
+                         << bsl::here();                                                      // --
 
             return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
         }

@@ -291,37 +291,3 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     g_st->ConOut->OutputString(g_st->ConOut, L"bareflank successfully started\r\n");
     return EFI_SUCCESS;
 }
-
-/**
- * <!-- description -->
- *   @brief Same as std::memcpy.
- *
- * <!-- inputs/outputs -->
- *   @param dst a pointer to the memory to copy to
- *   @param src a pointer to the memory to copy from
- *   @param count the total number of bytes to copy
- *   @return Returns the same result as std::memcpy.
- */
-void *
-memcpy(void *const dst, void const *const src, uint64_t const count)
-{
-    g_st->BootServices->CopyMem(dst, ((VOID *)src), count);
-    return dst;
-}
-
-/**
- * <!-- description -->
- *   @brief Same as std::memset.
- *
- * <!-- inputs/outputs -->
- *   @param dst a pointer to the memory to set
- *   @param ch the value to set the memory to
- *   @param num the total number of bytes to set
- *   @return Returns the same result as std::memset.
- */
-void *
-memset(void *const dst, char const ch, uint64_t const num)
-{
-    g_st->BootServices->SetMem(dst, num, ((UINT8)ch));
-    return dst;
-}

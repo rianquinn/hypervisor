@@ -50,15 +50,16 @@ namespace mk
         auto *const ext{static_cast<mk_ext_type *>(tls->ext)};
 
         return dispatch_syscall(
+                   g_tls_pool,
                    *tls,
+                   g_ext_pool,
+                   *ext,
                    g_intrinsic,
                    g_page_pool,
                    g_huge_pool,
                    g_vps_pool,
                    g_vp_pool,
-                   g_vm_pool,
-                   *ext,
-                   g_ext_pool)
+                   g_vm_pool)
             .get();
     }
 }

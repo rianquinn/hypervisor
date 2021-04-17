@@ -33,11 +33,8 @@
     .type   bf_tls_vpid_impl, @function
 bf_tls_vpid_impl:
 
-    mov rax, fs:[0xFF8]
-    mov rdx, 0x00000000FFFF0000
-
-    and rax, rdx
-    shr rax, 16
+    xor rax, rax
+    mov ax, fs:[0xFF4]
 
     ret
     int 3

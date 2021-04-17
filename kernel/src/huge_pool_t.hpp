@@ -54,10 +54,6 @@ namespace mk
     ///     allocator works. We simply use a cursor that is always increasing.
     ///     Once you allocate all of the memory, that is it.
     ///
-    ///   TODO:
-    ///   - Implement this allocator using a buddy allocator. This way free
-    ///     could be supported.
-    ///
     /// <!-- template parameters -->
     ///   @tparam PAGE_SIZE defines the size of a page
     ///   @tparam MK_HUGE_POOL_ADDR defines the base address of the huge pool

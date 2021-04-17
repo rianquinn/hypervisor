@@ -48,13 +48,19 @@ namespace bsl::details
             return;
         }
 
-        auto const thread_id{syscall::bf_tls_thread_id()};
-
-        o << bsl::rst << '['                             // --
-          << bsl::cyn << bsl::fmt{"#018x", thread_id}    // --
-          << bsl::rst << " - "                           // --
-          << bsl::blu << "US" << bsl::rst                // --
-          << bsl::rst << ']';                            // --
+        o << bsl::rst << " ["                                        // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_extid()}    // --
+          << bsl::rst << ":"                                         // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vmid()}     // --
+          << bsl::rst << ":"                                         // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vpid()}     // --
+          << bsl::rst << ":"                                         // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vpsid()}    // --
+          << bsl::rst << ":"                                         // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_ppid()}     // --
+          << bsl::rst << ":"                                         // --
+          << bsl::blu << "US"                                        // --
+          << bsl::rst << ']';                                        // --
     }
 }
 

@@ -42,16 +42,13 @@ namespace mk
     ///
     /// <!-- template parameters -->
     ///   @tparam VM_CONCEPT the type of vm_t that this class manages.
-    ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
     ///   @tparam MAX_VMS the max number of VMs supported
     ///
-    template<typename VM_CONCEPT, typename PAGE_POOL_CONCEPT, bsl::uintmax MAX_VMS>
+    template<typename VM_CONCEPT, bsl::uintmax MAX_VMS>
     class vm_pool_t final
     {
         /// @brief stores true if initialized() has been executed
         bool m_initialized;
-        /// @brief stores a reference to the page pool to use
-        PAGE_POOL_CONCEPT &m_page_pool;
         /// @brief stores the first VM_CONCEPT in the VM_CONCEPT linked list
         VM_CONCEPT *m_head;
         /// @brief stores the VM_CONCEPTs in the VM_CONCEPT linked list
@@ -62,17 +59,12 @@ namespace mk
     public:
         /// @brief an alias for VM_CONCEPT
         using vm_type = VM_CONCEPT;
-        /// @brief an alias for PAGE_POOL_CONCEPT
-        using page_pool_type = PAGE_POOL_CONCEPT;
 
         /// <!-- description -->
         ///   @brief Creates a vm_pool_t
         ///
-        /// <!-- inputs/outputs -->
-        ///   @param page_pool the page pool to use
-        ///
-        explicit constexpr vm_pool_t(PAGE_POOL_CONCEPT &page_pool) noexcept
-            : m_initialized{}, m_page_pool{page_pool}, m_head{}, m_pool{}, m_pool_lock{}
+        explicit constexpr vm_pool_t() noexcept    // --
+            : m_initialized{}, m_head{}, m_pool{}, m_pool_lock{}
         {}
 
         /// <!-- description -->
@@ -98,7 +90,7 @@ namespace mk
 
             VM_CONCEPT *prev{};
             for (auto const vm : m_pool) {
-                ret = vm.data->initialize(&m_page_pool, bsl::to_u16(vm.index));
+                ret = vm.data->initialize(bsl::to_u16(vm.index));
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -238,7 +230,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (vm->next() != vm) {
+            if (!vm->is_allocated()) {
                 bsl::error() << "vm with id "             // --
                              << bsl::hex(vmid)            // --
                              << " was never allocated"    // --
@@ -288,69 +280,6 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Dumps the vm_t
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @param tls the current TLS block
-        ///
-        template<typename TLS_CONCEPT>
-        constexpr void
-        dump(TLS_CONCEPT &tls) const &noexcept
-        {
-            bsl::print() << bsl::mag << "vm pool dump: ";
-            bsl::print() << bsl::rst << bsl::endl;
-
-            /// Header
-            ///
-
-            bsl::print() << bsl::ylw << "+-----------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
-
-            bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << bsl::fmt{"^7s", "id "};
-            bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << bsl::fmt{"^10s", "allocated "};
-            bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::cyn << bsl::fmt{"^7s", "active "};
-            bsl::print() << bsl::ylw << "| ";
-            bsl::print() << bsl::rst << bsl::endl;
-
-            bsl::print() << bsl::ylw << "+-----------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
-
-            /// VMs
-            ///
-
-            for (auto const vm : m_pool) {
-                bsl::print() << bsl::ylw << "| ";
-                bsl::print() << bsl::rst << bsl::hex(vm.data->id()) << " ";
-                bsl::print() << bsl::ylw << "| ";
-                if (vm.data->is_allocated()) {
-                    bsl::print() << bsl::grn << bsl::fmt{"^10s", "yes "};
-                }
-                else {
-                    bsl::print() << bsl::red << bsl::fmt{"^10s", "no "};
-                }
-                bsl::print() << bsl::ylw << "| ";
-                if (tls.vmid() == vm.data->id()) {
-                    bsl::print() << bsl::grn << bsl::fmt{"^7s", "yes "};
-                }
-                else {
-                    bsl::print() << bsl::red << bsl::fmt{"^7s", "no "};
-                }
-                bsl::print() << bsl::ylw << "| ";
-                bsl::print() << bsl::rst << bsl::endl;
-            }
-
-            /// Footer
-            ///
-
-            bsl::print() << bsl::ylw << "+-----------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
-        }
-
-        /// <!-- description -->
         ///   @brief Dumps the requested VM
         ///
         /// <!-- inputs/outputs -->
@@ -362,6 +291,10 @@ namespace mk
         constexpr void
         dump(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
         {
+            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
+                return;
+            }
+
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "invalid vmid: "    // --

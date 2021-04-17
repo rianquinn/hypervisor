@@ -39,7 +39,7 @@ namespace mk
     /// @brief defines the size of the reserved1 field in the tls_t
     constexpr bsl::safe_uintmax TLS_T_RESERVED1_SIZE{bsl::to_umax(0x030)};
     /// @brief defines the size of the reserved2 field in the tls_t
-    constexpr bsl::safe_uintmax TLS_T_RESERVED2_SIZE{bsl::to_umax(0x088)};
+    constexpr bsl::safe_uintmax TLS_T_RESERVED2_SIZE{bsl::to_umax(0x090)};
     /// @brief defines the the total size of the TLS block
     constexpr bsl::safe_uintmax TLS_T_SIZE{bsl::to_umax(0x300)};
 
@@ -207,10 +207,16 @@ namespace mk
         /// @brief stores the virtual address of this TLS block (0x200).
         tls_t *self;
 
-        /// @brief stores the thread ID for this TLS block (0x208).
-        bsl::uintmax thread_id;
+        /// @brief stores the currently active VMID (0x208)
+        bsl::uint16 ppid;
+        /// @brief stores the total number of online PPs (0x20A)
+        bsl::uint16 online_pps;
+        /// @brief reserved (0x20C)
+        bsl::uint16 reserved_padding_1;
+        /// @brief reserved (0x20E)
+        bsl::uint16 reserved_padding_2;
 
-        /// @brief stores the currently running extension (0x210)
+        /// @brief stores the currently active extension (0x210)
         void *ext;
         /// @brief stores the extension registered for VMExits (0x218)
         void *ext_vmexit;
@@ -222,14 +228,14 @@ namespace mk
         /// @brief stores the loader provided state for the root VP (0x230)
         loader::state_save_t *root_vp_state;
 
-        /// @brief stores the ID of the active VPS (0x238)
+        /// @brief stores the currently active extension ID (0x238)
+        bsl::uint16 active_extid;
+        /// @brief stores the currently active VMID (0x23A)
+        bsl::uint16 active_vmid;
+        /// @brief stores the currently active VPID (0x23C)
+        bsl::uint16 active_vpid;
+        /// @brief stores the currently active VPSID (0x23E)
         bsl::uint16 active_vpsid;
-        /// @brief stores the total number of online PPs (0x23A)
-        bsl::uint16 online_pps;
-        /// @brief reserved.
-        bsl::uint16 reserved_id2;
-        /// @brief reserved.
-        bsl::uint16 reserved_id3;
 
         /// @brief stores the sp used by extensions for callbacks (0x240).
         bsl::uintmax sp;
@@ -244,138 +250,11 @@ namespace mk
         /// @brief used to singal an NMI has fired (0x260).
         bsl::uintmax nmi_pending;
 
-        /// @brief on Intel, stores the currently loaded VPS (0x268).
-        void *loaded_vps;
-
-        /// @brief stores whether or not the first launch succeeded (0x270).
+        /// @brief stores whether or not the first launch succeeded (0x268).
         bsl::uintmax first_launch_succeeded;
 
         /// @brief reserve the rest of the TLS block for later use.
         bsl::details::carray<bsl::uint8, TLS_T_RESERVED2_SIZE.get()> reserved2;
-
-        /// --------------------------------------------------------------------
-        /// Helpers
-        /// --------------------------------------------------------------------
-
-        /// <!-- description -->
-        ///   @brief Returns the extension ID
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns the extension ID
-        ///
-        [[nodiscard]] constexpr auto
-        extid() const noexcept -> bsl::safe_uint16
-        {
-            constexpr bsl::safe_uintmax mask{bsl::to_umax(0xFFFF000000000000U)};
-            constexpr bsl::safe_uintmax shift{bsl::to_umax(48)};
-
-            return bsl::to_u16((thread_id & mask) >> shift);
-        }
-
-        /// <!-- description -->
-        ///   @brief Returns the virtual machine ID
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns the virtual machine ID
-        ///
-        [[nodiscard]] constexpr auto
-        vmid() const noexcept -> bsl::safe_uint16
-        {
-            constexpr bsl::safe_uintmax mask{bsl::to_umax(0x0000FFFF00000000U)};
-            constexpr bsl::safe_uintmax shift{bsl::to_umax(32)};
-
-            return bsl::to_u16((thread_id & mask) >> shift);
-        }
-
-        /// <!-- description -->
-        ///   @brief Returns the virtual processor ID
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns the virtual processor ID
-        ///
-        [[nodiscard]] constexpr auto
-        vpid() const noexcept -> bsl::safe_uint16
-        {
-            constexpr bsl::safe_uintmax mask{bsl::to_umax(0x00000000FFFF0000U)};
-            constexpr bsl::safe_uintmax shift{bsl::to_umax(16)};
-
-            return bsl::to_u16((thread_id & mask) >> shift);
-        }
-
-        /// <!-- description -->
-        ///   @brief Returns the physical processor ID
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns the physical processor ID
-        ///
-        [[nodiscard]] constexpr auto
-        ppid() const noexcept -> bsl::safe_uint16
-        {
-            constexpr bsl::safe_uintmax mask{bsl::to_umax(0x000000000000FFFFU)};
-            constexpr bsl::safe_uintmax shift{bsl::to_umax(0)};
-
-            return bsl::to_u16((thread_id & mask) >> shift);
-        }
-
-        /// <!-- description -->
-        ///   @brief Sets the current extension ID
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param val the value to set the current extension ID to
-        ///
-        constexpr void
-        set_extid(bsl::safe_uint16 const &val) noexcept
-        {
-            constexpr bsl::safe_uintmax mask{bsl::to_umax(0x0000FFFFFFFFFFFFU)};
-            constexpr bsl::safe_uintmax shift{bsl::to_umax(48)};
-
-            thread_id = ((thread_id & mask) | (bsl::to_umax(val) << shift)).get();
-        }
-
-        /// <!-- description -->
-        ///   @brief Sets the current virtual machine ID
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param val the value to set the current virtual machine ID to
-        ///
-        constexpr void
-        set_vmid(bsl::safe_uint16 const &val) noexcept
-        {
-            constexpr bsl::safe_uintmax mask{bsl::to_umax(0xFFFF0000FFFFFFFFU)};
-            constexpr bsl::safe_uintmax shift{bsl::to_umax(32)};
-
-            thread_id = ((thread_id & mask) | (bsl::to_umax(val) << shift)).get();
-        }
-
-        /// <!-- description -->
-        ///   @brief Sets the current virtual processor ID
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param val the value to set the current virtual processor ID to
-        ///
-        constexpr void
-        set_vpid(bsl::safe_uint16 const &val) noexcept
-        {
-            constexpr bsl::safe_uintmax mask{bsl::to_umax(0xFFFFFFFF0000FFFFU)};
-            constexpr bsl::safe_uintmax shift{bsl::to_umax(16)};
-
-            thread_id = ((thread_id & mask) | (bsl::to_umax(val) << shift)).get();
-        }
-
-        /// <!-- description -->
-        ///   @brief Sets the current physical processor ID
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param val the value to set the current physical processor ID to
-        ///
-        constexpr void
-        set_ppid(bsl::safe_uint16 const &val) noexcept
-        {
-            constexpr bsl::safe_uintmax mask{bsl::to_umax(0xFFFFFFFFFFFF0000U)};
-            constexpr bsl::safe_uintmax shift{bsl::to_umax(0)};
-
-            thread_id = ((thread_id & mask) | (bsl::to_umax(val) << shift)).get();
-        }
     };
 
     /// @brief make sure the tls_t is the size of a page

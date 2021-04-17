@@ -50,6 +50,12 @@ target_sources(runtime PRIVATE
 
 hypervisor_add_header_depends(src/_start.cpp ${HEADERS})
 
+if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+    target_sources(runtime PRIVATE
+        src/x64/memops.S
+    )
+endif()
+
 target_link_libraries(runtime PUBLIC
     bsl
     syscall

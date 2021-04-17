@@ -32,6 +32,8 @@
 #include <mk_main.hpp>
 #include <page_pool_t.hpp>
 #include <root_page_table_t.hpp>
+#include <tls_pool_t.hpp>
+#include <tls_t.hpp>
 #include <vm_pool_t.hpp>
 #include <vm_t.hpp>
 #include <vp_pool_t.hpp>
@@ -46,8 +48,19 @@
 ///   type. This ensures testing is simple.
 ///
 
+extern "C"
+{
+    /// @brief stores the TLS blocks used by the microkernel.
+    extern bsl::array<mk::tls_t, bsl::to_umax(HYPERVISOR_MAX_PPS).get()> g_tls_blocks;
+}
+
 namespace mk
 {
+    /// @brief defines the TLS pool type to use
+    using mk_tls_pool_type = tls_pool_t<            // --
+        tls_t,                                      // --
+        bsl::to_umax(HYPERVISOR_MAX_PPS).get()>;    // --
+
     /// @brief defines the intrinsic type
     using mk_intrinsic_type = intrinsic_t;
 
@@ -75,23 +88,19 @@ namespace mk
         bsl::to_umax(HYPERVISOR_MAX_VPSS).get()>;    // --
 
     /// @brief defines the VP type to use
-    using mk_vp_type = vp_t<    // --
-        mk_page_pool_type>;     // --
+    using mk_vp_type = vp_t;    // --
 
     /// @brief defines the VP pool type to use
     using mk_vp_pool_type = vp_pool_t<              // --
         mk_vp_type,                                 // --
-        mk_page_pool_type,                          // --
         bsl::to_umax(HYPERVISOR_MAX_VPS).get()>;    // --
 
     /// @brief defines the VM type to use
-    using mk_vm_type = vm_t<    // --
-        mk_page_pool_type>;     // --
+    using mk_vm_type = vm_t;    // --
 
     /// @brief defines the VM pool type to use
     using mk_vm_pool_type = vm_pool_t<              // --
         mk_vm_type,                                 // --
-        mk_page_pool_type,                          // --
         bsl::to_umax(HYPERVISOR_MAX_VMS).get()>;    // --
 
     /// @brief defines the root page table type
@@ -151,6 +160,9 @@ namespace mk
         bsl::to_umax(HYPERVISOR_EXT_TLS_ADDR).get(),      // --
         bsl::to_umax(HYPERVISOR_EXT_TLS_SIZE).get()>;     // --
 
+    /// @brief stores the vm_t pool used by the microkernel
+    constinit inline mk_tls_pool_type g_tls_pool{g_tls_blocks};
+
     /// @brief stores the intrinsics used by the microkernel
     constinit inline mk_intrinsic_type g_intrinsic{};
 
@@ -164,10 +176,10 @@ namespace mk
     constinit inline mk_vps_pool_type g_vps_pool{g_intrinsic, g_page_pool};
 
     /// @brief stores the vp_t pool used by the microkernel
-    constinit inline mk_vp_pool_type g_vp_pool{g_page_pool};
+    constinit inline mk_vp_pool_type g_vp_pool{};
 
     /// @brief stores the vm_t pool used by the microkernel
-    constinit inline mk_vm_pool_type g_vm_pool{g_page_pool};
+    constinit inline mk_vm_pool_type g_vm_pool{};
 
     /// @brief stores the system RPT provided by the loader
     constinit inline mk_root_page_table_type g_system_rpt{};

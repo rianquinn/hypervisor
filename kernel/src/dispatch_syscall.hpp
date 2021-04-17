@@ -47,48 +47,52 @@ namespace mk
     ///     will dispatch syscalls as needed.
     ///
     /// <!-- inputs/outputs -->
+    ///   @tparam TLS_POOL_CONCEPT defines the type of TLS pool to use
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
+    ///   @tparam EXT_CONCEPT defines the type of extension to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
     ///   @tparam HUGE_POOL_CONCEPT defines the type of huge pool to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
-    ///   @tparam EXT_CONCEPT defines the type of extension to use
-    ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
+    ///   @param tls_pool the TLS pool to use
     ///   @param tls the current TLS block
+    ///   @param ext_pool the extension pool to use
+    ///   @param ext the extension that made the syscall
     ///   @param intrinsic the intrinsics to use
     ///   @param page_pool the page pool to use
     ///   @param huge_pool the huge pool to use
     ///   @param vps_pool the VPS pool to use
     ///   @param vp_pool the VP pool to use
     ///   @param vm_pool the VM pool to use
-    ///   @param ext the extension that made the syscall
-    ///   @param ext_pool the extension pool to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
     template<
+        typename TLS_POOL_CONCEPT,
         typename TLS_CONCEPT,
+        typename EXT_POOL_CONCEPT,
+        typename EXT_CONCEPT,
         typename INTRINSIC_CONCEPT,
         typename PAGE_POOL_CONCEPT,
         typename HUGE_POOL_CONCEPT,
         typename VPS_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,
-        typename VM_POOL_CONCEPT,
-        typename EXT_CONCEPT,
-        typename EXT_POOL_CONCEPT>
+        typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall(
+        TLS_POOL_CONCEPT &tls_pool,
         TLS_CONCEPT &tls,
+        EXT_POOL_CONCEPT &ext_pool,
+        EXT_CONCEPT &ext,
         INTRINSIC_CONCEPT &intrinsic,
         PAGE_POOL_CONCEPT &page_pool,
         HUGE_POOL_CONCEPT &huge_pool,
         VPS_POOL_CONCEPT &vps_pool,
         VP_POOL_CONCEPT &vp_pool,
-        VM_POOL_CONCEPT &vm_pool,
-        EXT_CONCEPT &ext,
-        EXT_POOL_CONCEPT &ext_pool) noexcept -> syscall::bf_status_t
+        VM_POOL_CONCEPT &vm_pool) noexcept -> syscall::bf_status_t
     {
         syscall::bf_status_t ret{};
 
@@ -115,7 +119,7 @@ namespace mk
 
             case syscall::BF_DEBUG_OP_VAL.get(): {
                 ret = dispatch_syscall_debug_op(
-                    tls, page_pool, huge_pool, vps_pool, vp_pool, vm_pool, ext_pool);
+                    tls, ext_pool, page_pool, huge_pool, vps_pool, vp_pool, vm_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -135,7 +139,7 @@ namespace mk
             }
 
             case syscall::BF_VM_OP_VAL.get(): {
-                ret = dispatch_syscall_vm_op(tls, ext_pool, ext, vm_pool);
+                ret = dispatch_syscall_vm_op(tls_pool, tls, ext_pool, ext, vm_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -145,7 +149,7 @@ namespace mk
             }
 
             case syscall::BF_VP_OP_VAL.get(): {
-                ret = dispatch_syscall_vp_op(tls, ext, vp_pool);
+                ret = dispatch_syscall_vp_op(tls_pool, tls, ext, vp_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -155,7 +159,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_VAL.get(): {
-                ret = dispatch_syscall_vps_op(tls, ext_pool, ext, vm_pool, vp_pool, vps_pool);
+                ret = dispatch_syscall_vps_op(tls_pool, tls, ext, vm_pool, vp_pool, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

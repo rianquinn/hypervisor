@@ -593,10 +593,16 @@ namespace syscall
     constexpr bsl::safe_uintmax TLS_OFFSET_R14{bsl::to_umax(0x868U)};
     /// @brief stores the offset for r15
     constexpr bsl::safe_uintmax TLS_OFFSET_R15{bsl::to_umax(0x870U)};
-    /// @brief stores the offset for the active vpsid
-    constexpr bsl::safe_uintmax TLS_OFFSET_ACTIVE_VPSID{bsl::to_umax(0xFF0U)};
-    /// @brief stores the offset for the thread id
-    constexpr bsl::safe_uintmax TLS_OFFSET_THREAD_ID{bsl::to_umax(0xFF8U)};
+    /// @brief stores the offset of the active extid
+    constexpr bsl::safe_uintmax TLS_OFFSET_ACTIVE_EXTID{bsl::to_umax(0xFF0U)};
+    /// @brief stores the offset of the active vmid
+    constexpr bsl::safe_uintmax TLS_OFFSET_ACTIVE_VMID{bsl::to_umax(0xFF2U)};
+    /// @brief stores the offset of the active vpid
+    constexpr bsl::safe_uintmax TLS_OFFSET_ACTIVE_VPID{bsl::to_umax(0xFF4U)};
+    /// @brief stores the offset of the active vpsid
+    constexpr bsl::safe_uintmax TLS_OFFSET_ACTIVE_VPSID{bsl::to_umax(0xFF6U)};
+    /// @brief stores the offset of the active ppid
+    constexpr bsl::safe_uintmax TLS_OFFSET_ACTIVE_PPID{bsl::to_umax(0xFF8U)};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_rax.
@@ -839,28 +845,12 @@ namespace syscall
     extern "C" void bf_tls_set_r15_impl(bf_uint64_t const val) noexcept;
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_tls_ppid.
+    ///   @brief Implements the ABI for bf_tls_extid.
     ///
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_tls_ppid_impl() noexcept -> bf_uint16_t;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_tls_vpsid.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_tls_vpsid_impl() noexcept -> bf_uint16_t;
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_tls_vpid.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @return n/a
-    ///
-    extern "C" [[nodiscard]] auto bf_tls_vpid_impl() noexcept -> bf_uint16_t;
+    extern "C" [[nodiscard]] auto bf_tls_extid_impl() noexcept -> bf_uint16_t;
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_vmid.
@@ -871,20 +861,28 @@ namespace syscall
     extern "C" [[nodiscard]] auto bf_tls_vmid_impl() noexcept -> bf_uint16_t;
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_tls_extid.
+    ///   @brief Implements the ABI for bf_tls_vpid.
     ///
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_tls_extid_impl() noexcept -> bf_uint16_t;
+    extern "C" [[nodiscard]] auto bf_tls_vpid_impl() noexcept -> bf_uint16_t;
 
     /// <!-- description -->
-    ///   @brief Implements the ABI for bf_tls_thread_id.
+    ///   @brief Implements the ABI for bf_tls_vpsid.
     ///
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto bf_tls_thread_id_impl() noexcept -> bf_uint64_t;
+    extern "C" [[nodiscard]] auto bf_tls_vpsid_impl() noexcept -> bf_uint16_t;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_tls_ppid.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_tls_ppid_impl() noexcept -> bf_uint16_t;
 
     // -------------------------------------------------------------------------
     // TLS
@@ -1311,18 +1309,6 @@ namespace syscall
     }
 
     /// <!-- description -->
-    ///   @brief Returns the value of tls.thread_id
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @return Returns the value of tls.thread_id
-    ///
-    [[nodiscard]] inline auto
-    bf_tls_thread_id() noexcept -> bsl::safe_uintmax
-    {
-        return {bf_tls_thread_id_impl()};
-    }
-
-    /// <!-- description -->
     ///   @brief Returns the value of tls.extid
     ///
     /// <!-- inputs/outputs -->
@@ -1359,18 +1345,6 @@ namespace syscall
     }
 
     /// <!-- description -->
-    ///   @brief Returns the value of tls.ppid
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @return Returns the value of tls.ppid
-    ///
-    [[nodiscard]] inline auto
-    bf_tls_ppid() noexcept -> bsl::safe_uint16
-    {
-        return {bf_tls_ppid_impl()};
-    }
-
-    /// <!-- description -->
     ///   @brief Returns the value of tls.vpsid
     ///
     /// <!-- inputs/outputs -->
@@ -1380,6 +1354,18 @@ namespace syscall
     bf_tls_vpsid() noexcept -> bsl::safe_uint16
     {
         return {bf_tls_vpsid_impl()};
+    }
+
+    /// <!-- description -->
+    ///   @brief Returns the value of tls.ppid
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return Returns the value of tls.ppid
+    ///
+    [[nodiscard]] inline auto
+    bf_tls_ppid() noexcept -> bsl::safe_uint16
+    {
+        return {bf_tls_ppid_impl()};
     }
 
     // -------------------------------------------------------------------------

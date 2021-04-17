@@ -1,5 +1,3 @@
-/* SPDX-License-Identifier: SPDX-License-Identifier: GPL-2.0 OR MIT */
-
 /**
  * @copyright
  * Copyright (C) 2020 Assured Information Security, Inc.
@@ -29,14 +27,32 @@
     .code64
     .intel_syntax noprefix
 
-    .globl  bf_tls_extid_impl
-    .type   bf_tls_extid_impl, @function
-bf_tls_extid_impl:
+    .globl  memcpy
+    .type   memcpy, @function
+memcpy:
 
-    xor rax, rax
-    mov ax, fs:[0xFF0]
+    mov     rax, rdi
+    mov     rcx, rdx
+    rep     movsb
 
     ret
     int 3
 
-    .size bf_tls_extid_impl, .-bf_tls_extid_impl
+    .size memcpy, .-memcpy
+
+
+
+    .globl  memset
+    .type   memset, @function
+memset:
+
+    mov     r10, rdi
+    mov     rax, rsi
+    mov     rcx, rdx
+    rep     stosb
+    mov     rax, r10
+
+    ret
+    int 3
+
+    .size memset, .-memset

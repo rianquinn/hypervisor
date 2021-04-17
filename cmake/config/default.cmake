@@ -230,7 +230,7 @@ bf_add_config(
 bf_add_config(
     CONFIG_NAME HYPERVISOR_MAX_VPSS_PER_VP
     CONFIG_TYPE STRING
-    DEFAULT_VAL "2"
+    DEFAULT_VAL "1"
     DESCRIPTION "Defines the hypervisor's max number of virtual processor states per VP supported"
     SKIP_VALIDATION
 )
