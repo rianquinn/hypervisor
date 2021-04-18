@@ -35,6 +35,13 @@
 #include <span_t.h>
 #include <start_vmm.h>
 #include <start_vmm_args_t.h>
+#include <arch_init.h>
+
+/**
+ * NOTE:
+ * - We always return EFI_SUCCESS, even on failure as on some systems,
+ *   returning something else will cause the system to halt.
+ */
 
 /** @brief defines the global pointer to the EFI_SYSTEM_TABLE */
 EFI_SYSTEM_TABLE *g_st = NULL;
@@ -235,7 +242,7 @@ load_images_and_start(void)
 
     if (start_vmm(&start_args)) {
         bferror("start_vmm failed");
-        return EFI_LOAD_ERROR;
+        return EFI_SUCCESS;
     }
 
     return EFI_SUCCESS;
@@ -269,11 +276,12 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         return EFI_UNSUPPORTED;
     }
 
+    arch_init();
     serial_init();
 
     if (loader_init()) {
         bferror("loader_init failed");
-        return EFI_LOAD_ERROR;
+        return EFI_SUCCESS;
     }
 
     status = locate_protocols();

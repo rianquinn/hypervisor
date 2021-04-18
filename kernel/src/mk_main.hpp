@@ -462,10 +462,10 @@ namespace mk
         [[nodiscard]] constexpr auto
         process(MK_ARGS_CONCEPT *const args, TLS_CONCEPT &tls) &noexcept -> bsl::exit_code
         {
-            if (bsl::unlikely(!this->verify_args(args, tls))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return bsl::exit_failure;
-            }
+            // if (bsl::unlikely(!this->verify_args(args, tls))) {
+            //     bsl::print<bsl::V>() << bsl::here();
+            //     return bsl::exit_failure;
+            // }
 
             set_extension_sp(tls);
             set_extension_tp(tls);
@@ -527,10 +527,13 @@ namespace mk
 
             return bsl::exit_success;
 
+            // [ ] make sure that verify actually works
             // [ ] implement general_purpose_regs_t
             // [ ] implement failure state logic for the run API
             // [ ] implement an ERRC type for the direct map logic.
             // [ ] implement migration APIs
+            // [ ] implement allow SMEP/SMAP to be turned back on, but
+            //     turn on the AC bit at all times
             // [ ] implement checks for which MSRs can be read/written
             // [ ] implement checks for VMCS fields can be read/written
             // [ ] implement contants for all of the asm logic

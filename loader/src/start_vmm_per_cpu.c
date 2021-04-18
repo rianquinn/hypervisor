@@ -58,6 +58,7 @@
 #include <platform.h>
 #include <send_command_report_on.h>
 #include <types.h>
+#include <dump_vmm_on_error_if_needed.h>
 
 /**
  * <!-- description -->
@@ -184,6 +185,7 @@ start_vmm_per_cpu(uint32_t const cpu)
 #endif
 
     if (demote(g_mk_args[cpu], g_mk_state[cpu], g_root_vp_state[cpu])) {
+        dump_vmm_on_error_if_needed();
         bferror("demote failed");
         goto demote_failed;
     }

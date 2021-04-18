@@ -1,5 +1,3 @@
-/* SPDX-License-Identifier: SPDX-License-Identifier: GPL-2.0 OR MIT */
-
 /**
  * @copyright
  * Copyright (C) 2020 Assured Information Security, Inc.
@@ -557,3 +555,13 @@ platform_on_each_cpu(platform_per_cpu_func const func, uint32_t const order)
 
     return ret;
 }
+
+/**
+ * <!-- description -->
+ *   @brief Dumps the contents of the ring buffer in the event of the
+ *     VMM failing to boot. This is only needed on platforms that do not
+ *     have a separate dump capability like UEFI
+ */
+void
+dump_vmm_on_error_if_needed(void)
+{}

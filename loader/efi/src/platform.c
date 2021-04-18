@@ -32,6 +32,7 @@
 #include <efi/efi_types.h>
 #include <platform.h>
 #include <work_on_cpu_callback_args.h>
+#include <g_mk_debug_ring.h>
 
 /**
  * <!-- description -->
@@ -91,30 +92,9 @@ platform_alloc(uint64_t size)
  *     Returns a nullptr on failure.
  */
 void *
-platform_alloc_contiguous(uint64_t size)
+platform_alloc_contiguous(uint64_t const size)
 {
-    EFI_STATUS status = EFI_SUCCESS;
-    EFI_PHYSICAL_ADDRESS ret = ((EFI_PHYSICAL_ADDRESS)0);
-
-    if (((uint64_t)0) == size) {
-        bferror("invalid number of bytes (i.e., size)");
-        return NULL;
-    }
-
-    if (((uint64_t)0) != (size & (HYPERVISOR_PAGE_SIZE - ((uint64_t)1)))) {
-        size += HYPERVISOR_PAGE_SIZE;
-        size &= ~(HYPERVISOR_PAGE_SIZE - ((uint64_t)1));
-    }
-
-    status = g_st->BootServices->AllocatePages(
-        AllocateAnyPages, EfiRuntimeServicesData, size / HYPERVISOR_PAGE_SIZE, &ret);
-    if (EFI_ERROR(status)) {
-        bferror_x64("AllocatePages failed", status);
-        return NULL;
-    }
-
-    g_st->BootServices->SetMem((void *)ret, size, ((UINT8)0));
-    return (void *)ret;
+    return platform_alloc(size);
 }
 
 /**
@@ -130,13 +110,16 @@ platform_alloc_contiguous(uint64_t size)
  *     may or may not be ignored depending on the platform.
  */
 void
-platform_free(void const *const ptr, uint64_t const size)
+platform_free(void const *const ptr, uint64_t size)
 {
-    (void)size;
+    // if (((uint64_t)0) != (size & (HYPERVISOR_PAGE_SIZE - ((uint64_t)1)))) {
+    //     size += HYPERVISOR_PAGE_SIZE;
+    //     size &= ~(HYPERVISOR_PAGE_SIZE - ((uint64_t)1));
+    // }
 
-    if (NULL != ptr) {
-        g_st->BootServices->FreePool((VOID *)ptr);
-    }
+    // if (NULL != ptr) {
+    //     g_st->BootServices->FreePages((VOID *)ptr, size / HYPERVISOR_PAGE_SIZE);
+    // }
 }
 
 /**
@@ -154,11 +137,7 @@ platform_free(void const *const ptr, uint64_t const size)
 void
 platform_free_contiguous(void const *const ptr, uint64_t const size)
 {
-    (void)size;
-
-    if (NULL != ptr) {
-        g_st->BootServices->FreePool((VOID *)ptr);
-    }
+    platform_free(ptr, size);
 }
 
 /**
@@ -420,4 +399,37 @@ platform_on_each_cpu(platform_per_cpu_func const func, uint32_t const order)
     }
 
     return ret;
+}
+
+/**
+ * <!-- description -->
+ *   @brief Dumps the contents of the ring buffer in the event of the
+ *     VMM failing to boot. This is only needed on platforms that do not
+ *     have a separate dump capability like UEFI
+ */
+void
+dump_vmm_on_error_if_needed(void)
+{
+    uint64_t epos = g_mk_debug_ring->epos;
+    uint64_t spos = g_mk_debug_ring->spos;
+
+    if (!(HYPERVISOR_DEBUG_RING_SIZE > epos)) {
+        epos = ((uint64_t)0);
+    }
+
+    if (spos == epos) {
+        console_write("no debug data to dump\r\n");
+        return;
+    }
+
+    while (spos != epos) {
+        if (!(HYPERVISOR_DEBUG_RING_SIZE > spos)) {
+            spos = ((uint64_t)0);
+        }
+
+        console_write_c(g_mk_debug_ring->buf[spos]);
+        ++spos;
+    }
+
+    console_write("\r\n");
 }

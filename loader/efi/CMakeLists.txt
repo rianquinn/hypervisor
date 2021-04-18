@@ -338,6 +338,7 @@ hypervisor_add_header_depends(../src/vmm_status.c ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     target_sources(bareflank_efi_loader PUBLIC
+		src/x64/arch_init.c
 		src/x64/demote.S
 		src/x64/esr_default.S
 		src/x64/esr_df.S
@@ -346,6 +347,7 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 		src/x64/esr_pf.S
 		src/x64/intrinsic_cpuid.S
 		src/x64/intrinsic_inb.S
+		src/x64/intrinsic_lcr0.S
 		src/x64/intrinsic_lcr4.S
 		src/x64/intrinsic_outb.S
 		src/x64/intrinsic_rdmsr.S
@@ -414,6 +416,7 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 		../src/x64/set_idt_descriptor.c
     )
 
+	hypervisor_add_header_depends(src/x64/arch_init.c ${HEADERS})
 	hypervisor_add_header_depends(../src/x64/alloc_and_copy_mk_code_aliases.c ${HEADERS})
 	hypervisor_add_header_depends(../src/x64/alloc_and_copy_mk_state.c ${HEADERS})
 	hypervisor_add_header_depends(../src/x64/alloc_and_copy_root_vp_state.c ${HEADERS})
@@ -468,6 +471,8 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
     target_sources(bareflank_efi_loader PUBLIC
 		src/x64/amd/disable_interrupts.S
 		src/x64/amd/enable_interrupts.S
+		src/x64/amd/setup_cr0.c
+		src/x64/amd/setup_cr4.c
 		../src/x64/amd/enable_hve.c
 		../src/x64/amd/disable_hve.c
 		../src/x64/amd/check_for_hve_support.c
@@ -481,10 +486,14 @@ elseif(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
 		src/x64/intel/enable_interrupts.S
 		src/x64/intel/intrinsic_vmxoff.S
 		src/x64/intel/intrinsic_vmxon.S
+		src/x64/intel/setup_cr0.c
+		src/x64/intel/setup_cr4.c
 		../src/x64/intel/enable_hve.c
 		../src/x64/intel/disable_hve.c
 		../src/x64/intel/check_for_hve_support.c
     )
+	hypervisor_add_header_depends(src/x64/intel/setup_cr0.c ${HEADERS})
+	hypervisor_add_header_depends(src/x64/intel/setup_cr4.c ${HEADERS})
 	hypervisor_add_header_depends(../src/x64/intel/enable_hve.c ${HEADERS})
 	hypervisor_add_header_depends(../src/x64/intel/disable_hve.c ${HEADERS})
 	hypervisor_add_header_depends(../src/x64/intel/check_for_hve_support.c ${HEADERS})

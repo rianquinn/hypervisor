@@ -28,6 +28,8 @@
 #include <debug.h>
 #include <intrinsic_cpuid.h>
 #include <intrinsic_rdmsr.h>
+#include <intrinsic_scr0.h>
+#include <intrinsic_scr4.h>
 #include <types.h>
 
 /** @brief defines the CPUID leaf for vendor information */
@@ -66,6 +68,18 @@
 #define EFER_LMA (((uint64_t)1) << ((uint64_t)10))
 /** @brief defines the EFER_LME MSR field */
 #define EFER_LME (((uint64_t)1) << ((uint64_t)8))
+
+/** @brief defines the MSR_VMX_CR0_FIXED0 MSR  */
+#define MSR_VMX_CR0_FIXED0 ((uint32_t)0x00000486)
+/** @brief defines the MSR_VMX_CR0_FIXED1 MSR  */
+#define MSR_VMX_CR0_FIXED1 ((uint32_t)0x00000487)
+/** @brief defines the MSR_VMX_CR4_FIXED0 MSR  */
+#define MSR_VMX_CR4_FIXED0 ((uint32_t)0x00000488)
+/** @brief defines the MSR_VMX_CR4_FIXED1 MSR  */
+#define MSR_VMX_CR4_FIXED1 ((uint32_t)0x00000489)
+
+/** @brief defines the VME CR4 field */
+#define CR4_VMXE (((uint64_t)1) << ((uint64_t)13))
 
 /**
  * <!-- description -->
@@ -209,6 +223,58 @@ check_the_configuration_of_efer(void)
 
 /**
  * <!-- description -->
+ *   @brief Check the configuration CR0
+ *
+ * <!-- inputs/outputs -->
+ *   @return Returns 0 on success, LOADER_FAILURE otherwise.
+ */
+static inline int64_t
+check_cr0(void)
+{
+    uint64_t cr0 = intrinsic_scr0();
+    uint64_t ia32_vmx_cr0_fixed0 = intrinsic_rdmsr(MSR_VMX_CR0_FIXED0);
+    uint64_t ia32_vmx_cr0_fixed1 = intrinsic_rdmsr(MSR_VMX_CR0_FIXED1);
+
+    if (0 != ((~cr0 & ia32_vmx_cr0_fixed0) | (cr0 & ~ia32_vmx_cr0_fixed1))) {
+        bferror("cr0 is not properly configured");
+        bferror_x64(" - cr0", cr0);
+        bferror_x64(" - ia32_vmx_cr0_fixed0", ia32_vmx_cr0_fixed0);
+        bferror_x64(" - ia32_vmx_cr0_fixed1", ia32_vmx_cr0_fixed1);
+
+        return LOADER_FAILURE;
+    }
+
+    return LOADER_SUCCESS;
+}
+
+/**
+ * <!-- description -->
+ *   @brief Check the configuration CR4
+ *
+ * <!-- inputs/outputs -->
+ *   @return Returns 0 on success, LOADER_FAILURE otherwise.
+ */
+static inline int64_t
+check_cr4(void)
+{
+    uint64_t cr4 = intrinsic_scr4() | CR4_VMXE;
+    uint64_t ia32_vmx_cr4_fixed0 = intrinsic_rdmsr(MSR_VMX_CR4_FIXED0);
+    uint64_t ia32_vmx_cr4_fixed1 = intrinsic_rdmsr(MSR_VMX_CR4_FIXED1);
+
+    if (0 != ((~cr4 & ia32_vmx_cr4_fixed0) | (cr4 & ~ia32_vmx_cr4_fixed1))) {
+        bferror("cr4 is not properly configured");
+        bferror_x64(" - cr4", cr4);
+        bferror_x64(" - ia32_vmx_cr4_fixed0", ia32_vmx_cr4_fixed0);
+        bferror_x64(" - ia32_vmx_cr4_fixed1", ia32_vmx_cr4_fixed1);
+
+        return LOADER_FAILURE;
+    }
+
+    return LOADER_SUCCESS;
+}
+
+/**
+ * <!-- description -->
  *   @brief This function checks to see if Intel VT-x support is available on
  *     the currently running CPU
  *
@@ -240,6 +306,16 @@ check_for_hve_support(void)
 
     if (check_the_configuration_of_efer()) {
         bferror("check_the_configuration_of_efer failed");
+        return LOADER_FAILURE;
+    }
+
+    if (check_cr0()) {
+        bferror("check_cr0 failed");
+        return LOADER_FAILURE;
+    }
+
+    if (check_cr4()) {
+        bferror("check_cr4 failed");
         return LOADER_FAILURE;
     }
 

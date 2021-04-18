@@ -49,7 +49,7 @@ static inline void
 console_write(char const *const str)
 {
     uint64_t i = 0;
-    char buf[4] = {0};
+    char buf[4];
 
     /**
      * NOTE:
@@ -65,6 +65,9 @@ console_write(char const *const str)
 
     while (str[i] != '\0') {
         buf[0] = str[i];
+        buf[1] = 0;
+        buf[2] = 0;
+        buf[3] = 0;
         if (g_st->ConOut->OutputString(g_st->ConOut, ((CHAR16 *)buf))) {
             return;
         }
@@ -72,6 +75,40 @@ console_write(char const *const str)
         ++i;
     }
 }
+
+static inline void
+console_write_c(char const c)
+{
+    char buf[4];
+
+    if (c == '\n') {
+        console_write("\r\n");
+        return;
+    }
+
+    if (c == '\r') {
+        return;
+    }
+
+    /**
+     * NOTE:
+     * - We cannot simply send the string to OutputString as it is expecting
+     *   a unicode string.
+     * - The minimum sized unicode string is one character (2 bytes) and a
+     *   second character for the \0, which is why we have a 4 byte array.
+     *   One byte to store the character we wish to print, and a second to
+     *   tell OutputString to stop.
+     * - This, of course would not be needed if EFI has a character output
+     *   function, which is basically what this function needs to emulate.
+     */
+
+    buf[0] = c;
+    buf[1] = 0;
+    buf[2] = 0;
+    buf[3] = 0;
+    g_st->ConOut->OutputString(g_st->ConOut, ((CHAR16 *)buf));
+}
+
 
 /**
  * <!-- description -->
