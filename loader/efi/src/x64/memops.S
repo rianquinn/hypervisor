@@ -28,7 +28,6 @@
     .intel_syntax noprefix
 
     .globl  memcpy
-    .type   memcpy, @function
 memcpy:
 
     mov     rax, rdi
@@ -38,12 +37,9 @@ memcpy:
     ret
     int 3
 
-    .size memcpy, .-memcpy
-
 
 
     .globl  memset
-    .type   memset, @function
 memset:
 
     mov     r10, rdi
@@ -54,5 +50,3 @@ memset:
 
     ret
     int 3
-
-    .size memset, .-memset

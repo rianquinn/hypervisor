@@ -48,12 +48,12 @@
  */
 struct mk_args_t
 {
-    /** @brief stores the current pp (0x000) */
-    uint16_t pp;
+    /** @brief stores the current ppid (0x000) */
+    uint16_t ppid;
     /** @brief stores the number of online pps (0x002) */
     uint16_t online_pps;
     /** @brief reserved (0x004) */
-    uint32_t reserved2;
+    uint32_t reserved;
     /** @brief stores the location of the microkernel's state (0x008) */
     struct state_save_t *mk_state;
     /** @brief stores the location of the root vp state (0x010) */

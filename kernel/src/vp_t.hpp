@@ -39,7 +39,7 @@ namespace mk
     /// @class mk::vp_t
     ///
     /// <!-- description -->
-    ///   @brief TODO
+    ///   @brief Defines the microkernel's notion of a VP
     ///
     class vp_t final
     {
@@ -197,15 +197,10 @@ namespace mk
         }
 
         /// TODO:
-        /// - Add a migrate function. Note that once assigned, you can
-        ///   only migrate the PP. Migration should also require that
-        ///   the VP and all VPSs be migrated at the same time. This way,
-        ///   the VP and VPSs always have the same PP. The would also always
-        ///   have the same VM based on how assignment works which is done
-        ///   by the run API. So basically, the migration function would
-        ///   take a VPID, a PPID, and then it would loop through all of
-        ///   the VPSs that are assigned to the VP, clear them and assign
-        ///   them to a new PP.
+        /// - Add a migrate function (and associated syscall API). You should
+        ///   only be allowed to migrate a VP to a specific PP. Once this
+        ///   occurs, each VPS that is assigned to this VP will also need to
+        ///   be migrated as well.
         ///
 
         /// <!-- description -->
@@ -329,7 +324,9 @@ namespace mk
                 return;
             }
 
-            bsl::print() << bsl::mag << "vp [" << bsl::hex(m_id) << "] dump: ";
+            bsl::print() << bsl::mag << "vp [";
+            bsl::print() << bsl::rst << bsl::hex(m_id);
+            bsl::print() << bsl::mag << "] dump: ";
             bsl::print() << bsl::rst << bsl::endl;
 
             /// Header

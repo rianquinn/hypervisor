@@ -48,6 +48,7 @@ namespace mk
     extern "C" [[nodiscard]] auto
     vmexit_loop_trampoline(tls_t *const tls) noexcept -> bsl::exit_code
     {
-        return vmexit_loop(*tls, *static_cast<mk_ext_type *>(tls->ext_vmexit), g_vps_pool);
+        return vmexit_loop(
+            *tls, *static_cast<mk_ext_type *>(tls->ext_vmexit), g_vps_pool, g_vmexit_log);
     }
 }

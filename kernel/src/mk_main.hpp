@@ -73,6 +73,8 @@ namespace mk
         typename VM_POOL_CONCEPT,
         typename EXT_POOL_CONCEPT,
         bsl::uintmax PAGE_SIZE,
+        bsl::uintmax MK_CODE_SIZE,
+        bsl::uintmax EXT_CODE_SIZE,
         bsl::uintmax EXT_STACK_ADDR,
         bsl::uintmax EXT_STACK_SIZE,
         bsl::uintmax EXT_TLS_ADDR,
@@ -139,58 +141,6 @@ namespace mk
             m_intrinsic.set_tp(tls.tp);
         }
 
-    public:
-        /// @brief an alias for INTRINSIC_CONCEPT
-        using intrinsic_type = INTRINSIC_CONCEPT;
-        /// @brief an alias for PAGE_POOL_CONCEPT
-        using page_pool_type = PAGE_POOL_CONCEPT;
-        /// @brief an alias for HUGE_POOL_CONCEPT
-        using huge_pool_type = HUGE_POOL_CONCEPT;
-        /// @brief an alias for ROOT_PAGE_TABLE_CONCEPT
-        using root_page_table_type = ROOT_PAGE_TABLE_CONCEPT;
-        /// @brief an alias for VPS_POOL_CONCEPT
-        using vps_pool_type = VPS_POOL_CONCEPT;
-        /// @brief an alias for VP_POOL_CONCEPT
-        using vp_pool_type = VP_POOL_CONCEPT;
-        /// @brief an alias for VM_POOL_CONCEPT
-        using vm_pool_type = VM_POOL_CONCEPT;
-        /// @brief an alias for EXT_POOL_CONCEPT
-        using ext_pool_type = EXT_POOL_CONCEPT;
-
-        /// <!-- description -->
-        ///   @brief Creates the microkernel's main class given the global
-        ///     resources that the microkernel will rely on.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param intrinsic the intrinsics to use
-        ///   @param page_pool the page pool to use
-        ///   @param huge_pool the huge pool to use
-        ///   @param system_rpt the system RPT provided by the loader
-        ///   @param vps_pool the vps pool to use
-        ///   @param vp_pool the vp pool to use
-        ///   @param vm_pool the vm pool to use
-        ///   @param ext_pool the extension pool to use
-        ///
-        constexpr mk_main(
-            INTRINSIC_CONCEPT &intrinsic,
-            PAGE_POOL_CONCEPT &page_pool,
-            HUGE_POOL_CONCEPT &huge_pool,
-            ROOT_PAGE_TABLE_CONCEPT &system_rpt,
-            VPS_POOL_CONCEPT &vps_pool,
-            VP_POOL_CONCEPT &vp_pool,
-            VM_POOL_CONCEPT &vm_pool,
-            EXT_POOL_CONCEPT &ext_pool) noexcept
-            : m_intrinsic{intrinsic}
-            , m_page_pool{page_pool}
-            , m_huge_pool{huge_pool}
-            , m_system_rpt{system_rpt}
-            , m_vps_pool{vps_pool}
-            , m_vp_pool{vp_pool}
-            , m_vm_pool{vm_pool}
-            , m_ext_pool{ext_pool}
-            , m_initialized{}
-        {}
-
         /// <!-- description -->
         ///   @brief Initialize all of the global resources the microkernel
         ///     depends on.
@@ -200,9 +150,8 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param args the loader provided arguments to the microkernel.
         ///   @param tls the current TLS block
-        ///   @return If the user provided command succeeds, this function
-        ///     will return bsl::exit_success, otherwise this function
-        ///     will return bsl::exit_failure.
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
         ///
         template<typename MK_ARGS_CONCEPT, typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -301,6 +250,200 @@ namespace mk
         }
 
         /// <!-- description -->
+        ///   @brief Verifies that the args and the resulting TLS block
+        ///     make sense. The trampoline code has to fill in a lot of
+        ///     the TLS block to bootstrap, so this provides some simple
+        ///     sanity checks where possible.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam MK_ARGS_CONCEPT the type of mk_args to use
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param args the loader provided arguments to the microkernel.
+        ///   @param tls the current TLS block
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        template<typename MK_ARGS_CONCEPT, typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        verify_args(MK_ARGS_CONCEPT *const args, TLS_CONCEPT &tls) noexcept -> bsl::errc_type
+        {
+            if (tls.ppid != args->ppid) {
+                bsl::error() << "the tls.ppid ["                      // --
+                             << bsl::hex(tls.ppid)                    // --
+                             << "] doesn't match the args->ppid ["    // --
+                             << bsl::hex(args->ppid)                  // --
+                             << "]"                                   // --
+                             << bsl::endl                             // --
+                             << bsl::here();                          // --
+
+                return bsl::errc_failure;
+            }
+
+            if (tls.online_pps != args->online_pps) {
+                bsl::error() << "the tls.online_pps ["                      // --
+                             << bsl::hex(tls.online_pps)                    // --
+                             << "] doesn't match the args->online_pps ["    // --
+                             << bsl::hex(args->online_pps)                  // --
+                             << "]"                                         // --
+                             << bsl::endl                                   // --
+                             << bsl::here();                                // --
+
+                return bsl::errc_failure;
+            }
+
+            if (!(args->ppid < args->online_pps)) {
+                bsl::error() << "the args->ppid ["                         // --
+                             << bsl::hex(args->ppid)                       // --
+                             << "] is not less than args->online_pps ["    // --
+                             << bsl::hex(args->online_pps)                 // --
+                             << "]"                                        // --
+                             << bsl::endl                                  // --
+                             << bsl::here();                               // --
+
+                return bsl::errc_failure;
+            }
+
+            if (nullptr == args->mk_state) {
+                bsl::error() << "args->mk_state is null\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (nullptr == args->root_vp_state) {
+                bsl::error() << "args->root_vp_state is null\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (nullptr == args->debug_ring) {
+                bsl::error() << "args->debug_ring is null\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (args->mk_elf_file.empty()) {
+                bsl::error() << "args->mk_elf_file is empty\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (args->mk_elf_file.size().is_zero()) {
+                bsl::error() << "args->mk_elf_file's size is zero\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (!(args->mk_elf_file.size() < MK_CODE_SIZE)) {
+                bsl::error() << "args->mk_elf_file's size is too big\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (args->ext_elf_files.front().empty()) {
+                bsl::error() << "args->ext_elf_files.front() is empty\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (args->ext_elf_files.front().size().is_zero()) {
+                bsl::error() << "args->ext_elf_files.front()'s size is zero\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (!(args->ext_elf_files.front().size() < MK_CODE_SIZE)) {
+                bsl::error() << "args->ext_elf_files.front()'s size is too big\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (nullptr == args->rpt) {
+                bsl::error() << "args->rpt is null\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::ZERO_UMAX == args->rpt_phys) {
+                bsl::error() << "args->rpt_phys is 0\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (args->page_pool.empty()) {
+                bsl::error() << "args->page_pool is empty\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (args->page_pool.size().is_zero()) {
+                bsl::error() << "args->page_pool's size is zero\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (args->page_pool.size() < PAGE_SIZE) {
+                bsl::error() << "args->page_pool's size is too small\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (args->huge_pool.empty()) {
+                bsl::error() << "args->huge_pool is empty\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (args->huge_pool.size().is_zero()) {
+                bsl::error() << "args->huge_pool's size is zero\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (args->huge_pool.size() < PAGE_SIZE) {
+                bsl::error() << "args->huge_pool's size is too small\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            return bsl::errc_success;
+        }
+
+    public:
+        /// @brief an alias for INTRINSIC_CONCEPT
+        using intrinsic_type = INTRINSIC_CONCEPT;
+        /// @brief an alias for PAGE_POOL_CONCEPT
+        using page_pool_type = PAGE_POOL_CONCEPT;
+        /// @brief an alias for HUGE_POOL_CONCEPT
+        using huge_pool_type = HUGE_POOL_CONCEPT;
+        /// @brief an alias for ROOT_PAGE_TABLE_CONCEPT
+        using root_page_table_type = ROOT_PAGE_TABLE_CONCEPT;
+        /// @brief an alias for VPS_POOL_CONCEPT
+        using vps_pool_type = VPS_POOL_CONCEPT;
+        /// @brief an alias for VP_POOL_CONCEPT
+        using vp_pool_type = VP_POOL_CONCEPT;
+        /// @brief an alias for VM_POOL_CONCEPT
+        using vm_pool_type = VM_POOL_CONCEPT;
+        /// @brief an alias for EXT_POOL_CONCEPT
+        using ext_pool_type = EXT_POOL_CONCEPT;
+
+        /// <!-- description -->
+        ///   @brief Creates the microkernel's main class given the global
+        ///     resources that the microkernel will rely on.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param intrinsic the intrinsics to use
+        ///   @param page_pool the page pool to use
+        ///   @param huge_pool the huge pool to use
+        ///   @param system_rpt the system RPT provided by the loader
+        ///   @param vps_pool the vps pool to use
+        ///   @param vp_pool the vp pool to use
+        ///   @param vm_pool the vm pool to use
+        ///   @param ext_pool the extension pool to use
+        ///
+        constexpr mk_main(
+            INTRINSIC_CONCEPT &intrinsic,
+            PAGE_POOL_CONCEPT &page_pool,
+            HUGE_POOL_CONCEPT &huge_pool,
+            ROOT_PAGE_TABLE_CONCEPT &system_rpt,
+            VPS_POOL_CONCEPT &vps_pool,
+            VP_POOL_CONCEPT &vp_pool,
+            VM_POOL_CONCEPT &vm_pool,
+            EXT_POOL_CONCEPT &ext_pool) noexcept
+            : m_intrinsic{intrinsic}
+            , m_page_pool{page_pool}
+            , m_huge_pool{huge_pool}
+            , m_system_rpt{system_rpt}
+            , m_vps_pool{vps_pool}
+            , m_vp_pool{vp_pool}
+            , m_vm_pool{vm_pool}
+            , m_ext_pool{ext_pool}
+            , m_initialized{}
+        {}
+
+        /// <!-- description -->
         ///   @brief Process the mk_args_t provided by the loader.
         ///     If the user provided command succeeds, this function
         ///     will return bsl::exit_success, otherwise this function
@@ -319,14 +462,13 @@ namespace mk
         [[nodiscard]] constexpr auto
         process(MK_ARGS_CONCEPT *const args, TLS_CONCEPT &tls) &noexcept -> bsl::exit_code
         {
+            if (bsl::unlikely(!this->verify_args(args, tls))) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::exit_failure;
+            }
+
             set_extension_sp(tls);
             set_extension_tp(tls);
-
-            /// TODO:
-            /// - Verify the incomings args. Right now this is a non-issue as
-            ///   we control the loader, but at some point we might want to
-            ///   support third-party loaders, and this could be an issue
-            ///
 
             if (bsl::unlikely(!this->initialize(args, tls))) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -385,10 +527,13 @@ namespace mk
 
             return bsl::exit_success;
 
+            // [ ] implement general_purpose_regs_t
+            // [ ] implement failure state logic for the run API
+            // [ ] implement an ERRC type for the direct map logic.
+            // [ ] implement migration APIs
             // [ ] implement checks for which MSRs can be read/written
             // [ ] implement checks for VMCS fields can be read/written
             // [ ] implement contants for all of the asm logic
-            // [ ] implement configuration validation
         }
     };
 }

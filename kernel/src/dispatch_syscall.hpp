@@ -57,6 +57,7 @@ namespace mk
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
+    ///   @tparam VMEXIT_LOG_CONCEPT defines the type of VMExit log to use
     ///   @param tls_pool the TLS pool to use
     ///   @param tls the current TLS block
     ///   @param ext_pool the extension pool to use
@@ -67,6 +68,7 @@ namespace mk
     ///   @param vps_pool the VPS pool to use
     ///   @param vp_pool the VP pool to use
     ///   @param vm_pool the VM pool to use
+    ///   @param log the VMExit log to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
@@ -80,7 +82,8 @@ namespace mk
         typename HUGE_POOL_CONCEPT,
         typename VPS_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,
-        typename VM_POOL_CONCEPT>
+        typename VM_POOL_CONCEPT,
+        typename VMEXIT_LOG_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall(
         TLS_POOL_CONCEPT &tls_pool,
@@ -92,7 +95,8 @@ namespace mk
         HUGE_POOL_CONCEPT &huge_pool,
         VPS_POOL_CONCEPT &vps_pool,
         VP_POOL_CONCEPT &vp_pool,
-        VM_POOL_CONCEPT &vm_pool) noexcept -> syscall::bf_status_t
+        VM_POOL_CONCEPT &vm_pool,
+        VMEXIT_LOG_CONCEPT &log) noexcept -> syscall::bf_status_t
     {
         syscall::bf_status_t ret{};
 
@@ -119,7 +123,7 @@ namespace mk
 
             case syscall::BF_DEBUG_OP_VAL.get(): {
                 ret = dispatch_syscall_debug_op(
-                    tls, ext_pool, page_pool, huge_pool, vps_pool, vp_pool, vm_pool);
+                    tls, ext_pool, page_pool, huge_pool, vps_pool, vp_pool, vm_pool, log);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

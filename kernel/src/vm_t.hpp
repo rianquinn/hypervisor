@@ -40,7 +40,7 @@ namespace mk
     /// @class mk::vm_t
     ///
     /// <!-- description -->
-    ///   @brief TODO
+    ///   @brief Defines the microkernel's notion of a VM.
     ///
     class vm_t final
     {
@@ -237,7 +237,9 @@ namespace mk
                 return;
             }
 
-            bsl::print() << bsl::mag << "vm [" << bsl::hex(m_id) << "] dump: ";
+            bsl::print() << bsl::mag << "vm [";
+            bsl::print() << bsl::rst << bsl::hex(m_id);
+            bsl::print() << bsl::mag << "] dump: ";
             bsl::print() << bsl::rst << bsl::endl;
 
             /// Header

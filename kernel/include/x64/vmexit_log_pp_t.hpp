@@ -22,38 +22,30 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VMEXIT_LOG_T
-#define VMEXIT_LOG_T
+#ifndef VMEXIT_LOG_PP_T
+#define VMEXIT_LOG_PP_T
+
+#include <vmexit_log_record_t.hpp>
 
 #include <bsl/safe_integral.hpp>
 
 namespace mk
 {
-    /// @struct mk::vmexit_log_t
+    /// @class mk::vmexit_log_pp_t
     ///
     /// <!-- description -->
-    ///   @brief Stores information about each VMExit
+    ///   @brief Stores information about each VMExit per PP
     ///
-    struct vmexit_log_t final
+    /// <!-- template parameters -->
+    ///   @tparam VMEXIT_LOG_SIZE defines the max number of VMExit log entries
+    ///
+    template<bsl::uintmax VMEXIT_LOG_SIZE>
+    struct vmexit_log_pp_t final
     {
-        /// @brief stores the exit reason
-        bsl::safe_uintmax exit_reason;
-        /// @brief stores the exit info 1
-        bsl::safe_uintmax exitinfo1;
-        /// @brief stores the exit info 2
-        bsl::safe_uintmax exitinfo2;
-        /// @brief stores the exit in info
-        bsl::safe_uintmax exitininfo;
-        /// @brief stores rax
-        bsl::safe_uintmax rax;
-        /// @brief stores rcx
-        bsl::safe_uintmax rcx;
-        /// @brief stores rdx
-        bsl::safe_uintmax rdx;
-        /// @brief stores rip
-        bsl::safe_uintmax rip;
-        /// @brief stores rsp
-        bsl::safe_uintmax rsp;
+        /// @brief stores the VMExit log
+        bsl::array<vmexit_log_record_t, VMEXIT_LOG_SIZE> log;
+        /// @brief stores the VMExit log circular cursor
+        bsl::safe_uintmax crsr;
     };
 }
 

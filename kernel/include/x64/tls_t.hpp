@@ -211,10 +211,10 @@ namespace mk
         bsl::uint16 ppid;
         /// @brief stores the total number of online PPs (0x20A)
         bsl::uint16 online_pps;
-        /// @brief reserved (0x20C)
-        bsl::uint16 reserved_padding_1;
+        /// @brief stores the VPSID whose VMCS is loaded on Intel (0x20C)
+        bsl::uint16 loaded_vpsid;
         /// @brief reserved (0x20E)
-        bsl::uint16 reserved_padding_2;
+        bsl::uint16 reserved_padding;
 
         /// @brief stores the currently active extension (0x210)
         void *ext;

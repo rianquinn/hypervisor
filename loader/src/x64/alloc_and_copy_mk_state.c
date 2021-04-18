@@ -288,7 +288,7 @@ alloc_and_copy_mk_state(
      *   offsets hardcoded in hardware.
      * - UEFI also has the issue that TR is never set (it is left to 0),
      *   which means promote will fail if you attempt to set it back to 0.
-     * - This is not a trivial todo and should only be fixed if Windows/Linux
+     * - This is not a trivial and should only be fixed if Windows/Linux
      *   stop using the same CS/SS, or another operating system is added to
      *   the support list that doesn't have the same CS/SS.
      */
@@ -655,12 +655,6 @@ alloc_and_copy_mk_state(
         bferror("platform_virt_to_phys failed");
         goto platform_virt_to_phys_cr3_failed;
     }
-
-    /**
-     * TODO:
-     * - Do a complete analysis of CR0 and CR4 and turn on features if we
-     *   can detect support for them. This includes XSAVE.
-     */
 
     /**************************************************************************/
     /* MSRs                                                                   */

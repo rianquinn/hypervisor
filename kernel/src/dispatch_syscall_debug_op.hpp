@@ -45,6 +45,7 @@ namespace mk
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
+    ///   @tparam VMEXIT_LOG_CONCEPT defines the type of VMExit log to use
     ///   @param tls the current TLS block
     ///   @param ext_pool the extension pool to use
     ///   @param page_pool the page pool to use
@@ -52,6 +53,7 @@ namespace mk
     ///   @param vps_pool the VPS pool to use
     ///   @param vp_pool the VP pool to use
     ///   @param vm_pool the VM pool to use
+    ///   @param log the VMExit log to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
@@ -62,7 +64,8 @@ namespace mk
         typename HUGE_POOL_CONCEPT,
         typename VPS_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,
-        typename VM_POOL_CONCEPT>
+        typename VM_POOL_CONCEPT,
+        typename VMEXIT_LOG_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_debug_op(
         TLS_CONCEPT &tls,
@@ -71,7 +74,8 @@ namespace mk
         HUGE_POOL_CONCEPT &huge_pool,
         VPS_POOL_CONCEPT &vps_pool,
         VP_POOL_CONCEPT &vp_pool,
-        VM_POOL_CONCEPT &vm_pool) noexcept -> syscall::bf_status_t
+        VM_POOL_CONCEPT &vm_pool,
+        VMEXIT_LOG_CONCEPT &log) noexcept -> syscall::bf_status_t
     {
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_DEBUG_OP_OUT_IDX_VAL.get(): {
@@ -99,7 +103,7 @@ namespace mk
             }
 
             case syscall::BF_DEBUG_OP_DUMP_VMEXIT_LOG_IDX_VAL.get(): {
-                vps_pool.dump_vmexit_log(bsl::to_u16_unsafe(tls.ext_reg0));
+                log.dump(bsl::to_u16_unsafe(tls.ext_reg0));
                 return syscall::BF_STATUS_SUCCESS;
             }
 

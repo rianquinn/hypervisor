@@ -78,14 +78,13 @@ namespace mk
     /// @class mk::vps_t
     ///
     /// <!-- description -->
-    ///   @brief TODO
+    ///   @brief Defines the microkernel's notion of a VPS.
     ///
     /// <!-- template parameters -->
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
-    ///   @tparam VMEXIT_LOG_SIZE defines the max number of VMExit log entries
     ///
-    template<typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT, bsl::uintmax VMEXIT_LOG_SIZE>
+    template<typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT>
     class vps_t final
     {
         /// @brief stores a reference to the intrinsics to use
@@ -105,11 +104,6 @@ namespace mk
         bsl::safe_uintmax m_vmcs_phys{bsl::safe_uintmax::zero(true)};
         /// @brief stores the rest of the state the vmcs doesn't
         vmcs_missing_registers_t m_vmcs_missing_registers{};
-
-        // /// @brief stores the VMExit log
-        // bsl::array<vmexit_log_t, VMEXIT_LOG_SIZE> m_vmexit_log{};
-        // /// @brief stores the VMExit log circular cursor
-        // bsl::safe_uintmax m_vmexit_log_crsr{};
 
         /// <!-- description -->
         ///   @brief Stores the provided ES segment state info in the VPS.
@@ -1199,7 +1193,7 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (this == tls.loaded_vps) {
+            if (m_id == tls.loaded_vpsid) {
                 return bsl::errc_success;
             }
 
@@ -1209,7 +1203,7 @@ namespace mk
                 return ret;
             }
 
-            tls.loaded_vps = this;
+            tls.loaded_vpsid = m_id.get();
             return ret;
         }
 
@@ -1635,10 +1629,10 @@ namespace mk
         constexpr void
         deallocate() &noexcept
         {
-            m_vmexit_log_crsr = {};
-            for (auto const elem : m_vmexit_log) {
-                *elem.data = {};
-            }
+            // m_vmexit_log_crsr = {};
+            // for (auto const elem : m_vmexit_log) {
+            //     *elem.data = {};
+            // }
 
             m_vmcs_missing_registers = {};
 
@@ -1675,7 +1669,7 @@ namespace mk
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        assign(bsl::safe_uint16 const &vpid) &noexcept -> bsl::errc_type
+        assign_vp(bsl::safe_uint16 const &vpid) &noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(!this->is_allocated())) {
                 bsl::error() << "invalid vps\n" << bsl::here();
@@ -3165,13 +3159,15 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam VMEXIT_LOG_CONCEPT defines the type of VMExit log to use
         ///   @param tls the current TLS block
+        ///   @param log the VMExit log to use
         ///   @return Returns the VMExit reason on success, or
         ///     bsl::safe_uintmax::zero(true) on failure.
         ///
-        template<typename TLS_CONCEPT>
+        template<typename TLS_CONCEPT, typename VMEXIT_LOG_CONCEPT>
         [[nodiscard]] constexpr auto
-        run(TLS_CONCEPT &tls) &noexcept -> bsl::safe_uintmax
+        run(TLS_CONCEPT &tls, VMEXIT_LOG_CONCEPT &log) &noexcept -> bsl::safe_uintmax
         {
             constexpr bsl::safe_uintmax invalid_exit_reason{bsl::to_umax(0xFFFFFFFFFFFFFF00U)};
 
@@ -3199,23 +3195,34 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
-            if constexpr (!bsl::to_umax(BSL_DEBUG_LEVEL).is_zero()) {
-                *m_vmexit_log.at_if(m_vmexit_log_crsr) = {
-                    exit_reason,
-                    m_intrinsic->vmread64_quiet(VMCS_EXIT_QUALIFICATION),
-                    m_intrinsic->vmread64_quiet(VMCS_VMEXIT_INSTRUCTION_INFORMATION),
-                    m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX),
-                    m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX),
-                    m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX),
-                    m_intrinsic->vmread64_quiet(VMCS_GUEST_RIP),
-                    m_intrinsic->vmread64_quiet(VMCS_GUEST_RSP)};
-
-                ++m_vmexit_log_crsr;
-                if (!(m_vmexit_log_crsr < m_vmexit_log.size())) {
-                    m_vmexit_log_crsr = {};
-                }
-                else {
-                    bsl::touch();
+            if constexpr (!BSL_RELEASE_BUILD) {
+                if constexpr (!(BSL_DEBUG_LEVEL < bsl::VV)) {
+                    log.add(
+                        tls.ppid,
+                        {tls.active_vmid,
+                         tls.active_vpid,
+                         tls.active_vpsid,
+                         exit_reason,
+                         m_intrinsic->vmread64_quiet(VMCS_EXIT_QUALIFICATION),
+                         m_intrinsic->vmread64_quiet(VMCS_VMEXIT_INSTRUCTION_INFORMATION),
+                         bsl::ZERO_UMAX,
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15),
+                         m_intrinsic->vmread64_quiet(VMCS_GUEST_RSP),
+                         m_intrinsic->vmread64_quiet(VMCS_GUEST_RIP)});
                 }
             }
 
@@ -3255,27 +3262,21 @@ namespace mk
             }
 
             ret = m_intrinsic->vmread64(VMCS_GUEST_RIP, rip.data());
-            if constexpr (!BSL_RELEASE_BUILD) {
-                if (bsl::unlikely(!ret)) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
-                }
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
             }
 
             ret = m_intrinsic->vmread64(VMCS_VMEXIT_INSTRUCTION_LENGTH, len.data());
-            if constexpr (!BSL_RELEASE_BUILD) {
-                if (bsl::unlikely(!ret)) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
-                }
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
             }
 
             ret = m_intrinsic->vmwrite64(VMCS_GUEST_RIP, rip + len);
-            if constexpr (!BSL_RELEASE_BUILD) {
-                if (bsl::unlikely(!ret)) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return ret;
-                }
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
             }
 
             return ret;
@@ -3306,7 +3307,7 @@ namespace mk
                 return ret;
             }
 
-            m_vmcs_missing_registers->launched = {};
+            m_vmcs_missing_registers.launched = {};
             return ret;
         }
 
@@ -3321,6 +3322,12 @@ namespace mk
         constexpr void
         dump(TLS_CONCEPT &tls) &noexcept
         {
+            bsl::discard(tls);
+
+            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
+                return;
+            }
+
             // clang-format off
 
             if (bsl::unlikely(!m_id)) {
@@ -3328,7 +3335,9 @@ namespace mk
                 return;
             }
 
-            bsl::print() << bsl::mag << "vps [" << bsl::hex(m_id) << "] dump: ";
+            bsl::print() << bsl::mag << "vps [";
+            bsl::print() << bsl::rst << bsl::hex(m_id);
+            bsl::print() << bsl::mag << "] dump: ";
             bsl::print() << bsl::rst << bsl::endl;
 
             /// Header
@@ -3627,98 +3636,6 @@ namespace mk
             bsl::print() << bsl::rst << bsl::endl;
 
             // clang-format on
-        }
-
-        /// <!-- description -->
-        ///   @brief Dumps the contents of the VMExit log to the console
-        ///
-        constexpr void
-        dump_vmexit_log() &noexcept
-        {
-            constexpr bsl::safe_uintmax exit_reason_cpuid{bsl::to_umax(10)};
-            constexpr bsl::safe_uintmax exit_reason_io{bsl::to_umax(30)};
-            constexpr bsl::safe_uintmax exit_reason_rdmsr{bsl::to_umax(31)};
-            constexpr bsl::safe_uintmax exit_reason_wrmsr{bsl::to_umax(32)};
-
-            /// TODO:
-            /// - We should continue to expand on this function to provide
-            ///   even more useful information. For example, we could store
-            ///   all of the register state, and then be able to provide
-            ///   better data for mov to CR/DR, VMCall, IO instructions,
-            ///   IDT/GDT accesses, all of the invalidation functions, etc.
-            ///
-
-            bsl::print() << bsl::mag << "vmexit log for vps [" << bsl::hex(m_id) << "]: ";
-            bsl::print() << bsl::rst << bsl::endl;
-
-            auto crsr{m_vmexit_log_crsr};
-            for (bsl::safe_uintmax i{}; i < m_vmexit_log.size(); ++i) {
-                auto const entry{m_vmexit_log.at_if(crsr)};
-
-                if (!entry->rip.is_zero()) {
-                    bsl::print() << bsl::ylw << '[' << bsl::fmt{">2d", entry->exit_reason} << "]";
-                    bsl::print() << bsl::cyn << " rip: " << bsl::rst << bsl::hex(entry->rip);
-                    bsl::print() << bsl::cyn << " rsp: " << bsl::rst << bsl::hex(entry->rsp);
-
-                    switch (entry->exit_reason.get()) {
-                        case exit_reason_cpuid.get(): {
-                            bsl::print() << bsl::cyn << " eax: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->rax));
-                            bsl::print() << bsl::cyn << " ecx: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
-                            break;
-                        }
-
-                        case exit_reason_io.get(): {
-                            bsl::print() << bsl::cyn << " dx: " << bsl::rst
-                                         << bsl::hex(bsl::to_u16_unsafe(entry->rdx));
-                            bsl::print() << bsl::cyn << " exit_qualification: " << bsl::rst
-                                         << bsl::hex(entry->exit_qualification);
-                            bsl::print() << bsl::cyn << " exit_information: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->exit_information));
-                            break;
-                        }
-
-                        case exit_reason_rdmsr.get(): {
-                            bsl::print() << bsl::cyn << " ecx: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
-                            break;
-                        }
-
-                        case exit_reason_wrmsr.get(): {
-                            bsl::print() << bsl::cyn << " ecx: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
-                            bsl::print() << bsl::cyn << " eax: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->rax));
-                            bsl::print() << bsl::cyn << " edx: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->rdx));
-                            break;
-                        }
-
-                        default: {
-                            bsl::print() << bsl::cyn << " exit_qualification: " << bsl::rst
-                                         << bsl::hex(entry->exit_qualification);
-                            bsl::print() << bsl::cyn << " exit_information: " << bsl::rst
-                                         << bsl::hex(bsl::to_u32_unsafe(entry->exit_information));
-
-                            break;
-                        }
-                    }
-
-                    bsl::print() << bsl::rst << bsl::endl;
-                }
-                else {
-                    bsl::touch();
-                }
-
-                ++crsr;
-                if (!(crsr < m_vmexit_log.size())) {
-                    crsr = {};
-                }
-                else {
-                    bsl::touch();
-                }
-            }
         }
     };
 }

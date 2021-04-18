@@ -362,7 +362,7 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 		src/x64/intrinsic_sss.S
 		src/x64/intrinsic_str.S
 		src/x64/intrinsic_wrmsr.S
-		src/x64/memops .S
+		src/x64/memops.S
 		src/x64/promote.S
 		../src/x64/alloc_and_copy_mk_code_aliases.c
 		../src/x64/alloc_and_copy_mk_state.c

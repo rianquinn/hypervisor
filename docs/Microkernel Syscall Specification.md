@@ -778,12 +778,12 @@ This syscall tells the microkernel to output a VPS's state to the console device
 
 ### 2.9.5. bf_debug_op_dump_vmexit_log, OP=0x2, IDX=0x4
 
-This syscall tells the microkernel to output the VMExit log. The VMExit log is a chronological log of the "X" number of exits that have occurred. The total number of "X" logs is implementation-defined and not under the control of software.
+This syscall tells the microkernel to output the VMExit log. The VMExit log is a chronological log of the "X" number of exits that have occurred on a specific physical processor.
 
 **Input:**
 | Register Name | Bits | Description |
 | :------------ | :--- | :---------- |
-| REG0 | 63:0 | The VPSID of the VPS to dump the log from |
+| REG0 | 63:0 | The PPID of the PP to dump the log from |
 
 **const, bf_uint64_t: BF_DEBUG_OP_DUMP_VMEXIT_LOG_IDX_VAL**
 | Value | Description |
@@ -911,6 +911,8 @@ This syscall tells the microkernel that the extension would like to receive call
 
 A Virtual Machine or VM virtually represents a physical computer. Although the microkernel has an internal representation of a VM, it doesn't understand what a VM is outside of resource management, and it is up to the extension to define what a VM is and how it should operate.
 
+One important resource within the microkernel that changes when a VM changes is the direct map each extension is given. When a VM changes, the direct map an extension uses to access physical memory also changes.
+
 ### 2.11.1. Virtual Machine ID (VMID)
 
 The Virtual Machine ID  (VMID) is a 16bit number that uniquely identifies a VM.
@@ -953,7 +955,9 @@ This syscall tells the microkernel to destroy a VM given an ID.
 
 ## 2.12. Virtual Processor Syscalls
 
-TODO
+A Virtual Processor or VP virtually represents a logical core. Although the microkernel has an internal representation of a VP, it doesn't understand what a VP is outside of resource management, and it is up to the extension to define what a VM is and how it should operate.
+
+Once a VP is run, it is assigned to the VM it was run on, and cannot be run on any other VM for the remainder of it's lifetime. A VP is also assigned to a specific PP (physical processor). Unlike the assigned VM, the assigned PP can be changed by migrating the VP to another PP.
 
 ### 2.12.1. Virtual Processor ID (VPID)
 
@@ -997,7 +1001,9 @@ This syscall tells the microkernel to destroy a VP given an ID.
 
 ### 2.12.4. Virtual Processor State Syscalls
 
-TODO
+A Virtual Processor State or VPS encapsulates the state associated with a virtual process. For example, on Intel this would be the VMCS, the registers that must be saved that the VMCS does not manage, and the general purpose registers.
+
+Once a VPS is run, it is assigned to the VP it was run on, and cannot be run on any other VP for the remainder of it's lifetime. Since a VP is also assigned to a specific PP (physical processor), so is the VPS. When a VP is migrated, all VPSs assigned to that VP are also migrated.
 
 ### 2.12.5. Virtual Processor State ID (VPSID)
 

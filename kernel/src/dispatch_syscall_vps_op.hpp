@@ -444,6 +444,18 @@ namespace mk
         ///   what it was before we started this function.
         ///
 
+        /// TODO:
+        /// - Right now, when we run and the VPS changes, we are not saving
+        ///   the general purpose registers that are in the TLS block to the
+        ///   VPS before changing. What this means is that the general purpose
+        ///   register state would be leaked between each VPS as the change
+        ///   occurs.
+        /// - To solve this, we need a general_purpose_regs_t that is shared
+        ///   by Intel and AMD, that each VPS has. When a VPS switch occurs,
+        ///   we will need to save the TLS state to the VPS and via versa.
+        ///   This only needs to be done when the VPS changes.
+        ///
+
         auto const vmid{bsl::to_u16_unsafe(tls.ext_reg3)};
         if (bsl::unlikely(!vm_pool.is_allocated(vmid))) {
             bsl::print<bsl::V>() << bsl::here();

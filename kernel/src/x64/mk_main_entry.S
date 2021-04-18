@@ -123,6 +123,17 @@ mk_main_entry:
 
     /**
      * NOTE:
+     * - Next we need to invalidate the loaded VPSID. This is only used on
+     *   Intel CPUs and is used to determine which VMCS is currently loaded.
+     *   We cannot use the active VPSID here because an extension can read
+     *   and write to any VPS it wants, even if it is not active.
+     */
+
+    mov ax, 0xFFFF
+    mov gs:[0x20C], ax
+
+    /**
+     * NOTE:
      * - Next we store the location of the MK and Root VP state save areas
      *   that the loader created for us. For the most part, we only really
      *   need the Root VP state as we will use this to return back to the

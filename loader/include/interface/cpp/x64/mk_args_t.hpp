@@ -48,12 +48,12 @@ namespace loader
     ///
     struct mk_args_t final
     {
-        /// @brief reserved (0x000)
-        bsl::uint16 reserved1;
+        /// @brief stores the current ppid (0x000)
+        bsl::uint16 ppid;
         /// @brief stores the number of online pps (0x002)
         bsl::uint16 online_pps;
         /// @brief reserved (0x004)
-        bsl::uint32 reserved2;
+        bsl::uint32 reserved;
         /// @brief stores the location of the microkernel's state (0x008)
         state_save_t *mk_state;
         /// @brief stores the location of the root vp state (0x010)

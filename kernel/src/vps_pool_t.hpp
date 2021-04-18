@@ -40,7 +40,7 @@ namespace mk
     /// @class mk::vps_pool_t
     ///
     /// <!-- description -->
-    ///   @brief TODO
+    ///   @brief Defines the microkernel's VPS pool
     ///
     /// <!-- template parameters -->
     ///   @tparam VPS_CONCEPT the type of vps_t that this class manages.
@@ -571,14 +571,17 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam VMEXIT_LOG_CONCEPT defines the type of VMExit log to use
         ///   @param tls the current TLS block
+        ///   @param log the VMExit log to use
         ///   @param vpsid the ID of the VPS to run
         ///   @return Returns the VMExit reason on success, or
         ///     bsl::safe_uintmax::zero(true) on failure.
         ///
-        template<typename TLS_CONCEPT>
+        template<typename TLS_CONCEPT, typename VMEXIT_LOG_CONCEPT>
         [[nodiscard]] constexpr auto
-        run(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpsid) &noexcept -> bsl::safe_uintmax
+        run(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpsid, VMEXIT_LOG_CONCEPT &log) &noexcept
+            -> bsl::safe_uintmax
         {
             auto *const vps{m_pool.at_if(bsl::to_umax(vpsid))};
             if (bsl::unlikely(nullptr == vps)) {
@@ -590,7 +593,7 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
-            return vps->run(tls);
+            return vps->run(tls, log);
         }
 
         /// <!-- description -->
@@ -673,32 +676,6 @@ namespace mk
             }
 
             vps->dump(tls);
-        }
-
-        /// <!-- description -->
-        ///   @brief Dumps the VMExit log from the requested VPS
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param vpsid the ID of the VPS whose VMExit log should be dumped
-        ///
-        constexpr void
-        dump_vmexit_log(bsl::safe_uint16 const &vpsid) &noexcept
-        {
-            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
-                return;
-            }
-
-            auto *const vps{m_pool.at_if(bsl::to_umax(vpsid))};
-            if (bsl::unlikely(nullptr == vps)) {
-                bsl::error() << "invalid vpsid: "    // --
-                             << bsl::hex(vpsid)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
-
-                return;
-            }
-
-            vps->dump_vmexit_log();
         }
     };
 }

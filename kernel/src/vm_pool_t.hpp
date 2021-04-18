@@ -38,7 +38,7 @@ namespace mk
     /// @class mk::vm_pool_t
     ///
     /// <!-- description -->
-    ///   @brief TODO
+    ///   @brief Defines the microkernel's VM pool
     ///
     /// <!-- template parameters -->
     ///   @tparam VM_CONCEPT the type of vm_t that this class manages.

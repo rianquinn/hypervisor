@@ -28,6 +28,6 @@ add_subdirectory(../../loader loader)
 add_subdirectory(../../runtime runtime)
 add_subdirectory(../../syscall syscall)
 
-if (DEFINED HYPERVISOR_EXTENSIONS_DIR OR NOT HYPERVISOR_BUILD_EXAMPLES_OVERRIDE)
+if(DEFINED HYPERVISOR_EXTENSIONS_DIR)
     add_subdirectory(${HYPERVISOR_EXTENSIONS_DIR} extension)
 endif()

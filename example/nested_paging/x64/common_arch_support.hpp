@@ -73,6 +73,7 @@ namespace example
                     if (vpsid.is_zero()) {
                         bsl::print() << bsl::endl;
                         syscall::bf_debug_op_dump_page_pool();
+                        syscall::bf_debug_op_dump_vmexit_log(vpsid);
                     }
                     else {
                         bsl::touch();
@@ -107,9 +108,9 @@ namespace example
                 }
 
                 case loader::CPUID_COMMAND_ECX_REPORT_ON.get(): {
-                    bsl::debug() << bsl::rst << "host os is"                      // --
-                                 << bsl::grn << " now "                           // --
-                                 << bsl::rst << "in a vm (default example)\n";    // --
+                    bsl::debug() << bsl::rst << "host os is"                            // --
+                                 << bsl::grn << " now "                                 // --
+                                 << bsl::rst << "in a vm (nested_paging example)\n";    // --
 
                     return bsl::errc_success;
                 }

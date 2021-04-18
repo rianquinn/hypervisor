@@ -83,14 +83,13 @@ namespace mk
     /// @class mk::vps_t
     ///
     /// <!-- description -->
-    ///   @brief TODO
+    ///   @brief Defines the microkernel's notion of a VPS.
     ///
     /// <!-- template parameters -->
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
-    ///   @tparam VMEXIT_LOG_SIZE defines the max number of VMExit log entries
     ///
-    template<typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT, bsl::uintmax VMEXIT_LOG_SIZE>
+    template<typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT>
     class vps_t final
     {
         /// @brief stores a reference to the intrinsics to use
@@ -112,10 +111,6 @@ namespace mk
         vmcb_t *m_host_vmcb{};
         /// @brief stores the physical address of the host VMCB
         bsl::safe_uintmax m_host_vmcb_phys{bsl::safe_uintmax::zero(true)};
-        // /// @brief stores the VMExit log
-        // bsl::array<vmexit_log_t, 1> m_vmexit_log{};
-        // /// @brief stores the VMExit log circular cursor
-        // bsl::safe_uintmax m_vmexit_log_crsr{};
 
         /// <!-- description -->
         ///   @brief Dumps the contents of a field
@@ -1543,28 +1538,36 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
-            // if constexpr (!BSL_RELEASE_BUILD) {
-            //     if constexpr (!bsl::to_umax(BSL_DEBUG_LEVEL).is_zero()) {
-            //         *m_vmexit_log.at_if(m_vmexit_log_crsr) = {
-            //             exit_reason,
-            //             m_guest_vmcb->exitinfo1,
-            //             m_guest_vmcb->exitinfo2,
-            //             m_guest_vmcb->exitininfo,
-            //             m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX),
-            //             m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX),
-            //             m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX),
-            //             m_guest_vmcb->rip,
-            //             m_guest_vmcb->rsp};
-
-            //         ++m_vmexit_log_crsr;
-            //         if (!(m_vmexit_log_crsr < m_vmexit_log.size())) {
-            //             m_vmexit_log_crsr = {};
-            //         }
-            //         else {
-            //             bsl::touch();
-            //         }
-            //     }
-            // }
+            if constexpr (!BSL_RELEASE_BUILD) {
+                if constexpr (!(BSL_DEBUG_LEVEL < bsl::VV)) {
+                    log.add(
+                        tls.ppid,
+                        {tls.active_vmid,
+                         tls.active_vpid,
+                         tls.active_vpsid,
+                         exit_reason,
+                         m_guest_vmcb->exitinfo1,
+                         m_guest_vmcb->exitinfo2,
+                         m_guest_vmcb->exitininfo,
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14),
+                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15),
+                         m_guest_vmcb->rsp,
+                         m_guest_vmcb->rip});
+                }
+            }
 
             /// TODO:
             /// - Add check logic to if an entry failure occurs and output
@@ -1662,7 +1665,9 @@ namespace mk
                 return;
             }
 
-            bsl::print() << bsl::mag << "vps [" << bsl::hex(m_id) << "] dump: ";
+            bsl::print() << bsl::mag << "vps [";
+            bsl::print() << bsl::rst << bsl::hex(m_id);
+            bsl::print() << bsl::mag << "] dump: ";
             bsl::print() << bsl::rst << bsl::endl;
 
             /// Header
@@ -1876,97 +1881,6 @@ namespace mk
             bsl::print() << bsl::rst << bsl::endl;
 
             // clang-format on
-        }
-
-        /// <!-- description -->
-        ///   @brief Dumps the contents of the VMExit log to the console
-        ///
-        constexpr void
-        dump_vmexit_log() &noexcept
-        {
-            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
-                return;
-            }
-
-            //     constexpr bsl::safe_uintmax exit_reason_cpuid{bsl::to_umax(0x72U)};
-            //     constexpr bsl::safe_uintmax exit_reason_ioio{bsl::to_umax(0x7BU)};
-            //     constexpr bsl::safe_uintmax exit_reason_msr{bsl::to_umax(0x7CU)};
-
-            //     /// TODO:
-            //     /// - We should continue to expand on this function to provide
-            //     ///   even more useful information. For example, we could store
-            //     ///   all of the register state, and then be able to provide
-            //     ///   better data for mov to CR/DR, VMCall, IO instructions,
-            //     ///   IDT/GDT accesses, all of the invalidation functions, etc.
-            //     ///
-
-            //     bsl::print() << bsl::mag << "vmexit log for vps [" << bsl::hex(m_id) << "]: ";
-            //     bsl::print() << bsl::rst << bsl::endl;
-
-            //     auto crsr{m_vmexit_log_crsr};
-            //     for (bsl::safe_uintmax i{}; i < m_vmexit_log.size(); ++i) {
-            //         auto const entry{m_vmexit_log.at_if(crsr)};
-
-            //         if (!entry->rip.is_zero()) {
-            //             bsl::print() << bsl::ylw << '[' << bsl::fmt{">#5x", entry->exit_reason} << "]";
-            //             bsl::print() << bsl::cyn << " rip: " << bsl::rst << bsl::hex(entry->rip);
-            //             bsl::print() << bsl::cyn << " rsp: " << bsl::rst << bsl::hex(entry->rsp);
-
-            //             switch (entry->exit_reason.get()) {
-            //                 case exit_reason_cpuid.get(): {
-            //                     bsl::print() << bsl::cyn << " eax: " << bsl::rst
-            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->rax));
-            //                     bsl::print() << bsl::cyn << " ecx: " << bsl::rst
-            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
-            //                     break;
-            //                 }
-
-            //                 case exit_reason_ioio.get(): {
-            //                     bsl::print() << bsl::cyn << " dx: " << bsl::rst
-            //                                  << bsl::hex(bsl::to_u16_unsafe(entry->rdx));
-            //                     bsl::print() << bsl::cyn << " exitinfo1: " << bsl::rst
-            //                                  << bsl::hex(entry->exitinfo1);
-            //                     bsl::print() << bsl::cyn << " exitinfo2: " << bsl::rst
-            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->exitinfo2));
-            //                     break;
-            //                 }
-
-            //                 case exit_reason_msr.get(): {
-            //                     bsl::print() << bsl::cyn << " ecx: " << bsl::rst
-            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->rcx));
-            //                     bsl::print() << bsl::cyn << " eax: " << bsl::rst
-            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->rax));
-            //                     bsl::print() << bsl::cyn << " edx: " << bsl::rst
-            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->rdx));
-            //                     break;
-            //                 }
-
-            //                 default: {
-            //                     bsl::print() << bsl::cyn << " exitinfo1: " << bsl::rst
-            //                                  << bsl::hex(entry->exitinfo1);
-            //                     bsl::print() << bsl::cyn << " exitinfo2: " << bsl::rst
-            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->exitinfo2));
-            //                     bsl::print() << bsl::cyn << " exitininfo: " << bsl::rst
-            //                                  << bsl::hex(bsl::to_u32_unsafe(entry->exitininfo));
-
-            //                     break;
-            //                 }
-            //             }
-
-            //             bsl::print() << bsl::rst << bsl::endl;
-            //         }
-            //         else {
-            //             bsl::touch();
-            //         }
-
-            //         ++crsr;
-            //         if (!(crsr < m_vmexit_log.size())) {
-            //             crsr = {};
-            //         }
-            //         else {
-            //             bsl::touch();
-            //         }
-            //     }
         }
     };
 }

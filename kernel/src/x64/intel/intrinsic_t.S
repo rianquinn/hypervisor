@@ -596,10 +596,10 @@ intrinsic_vmrun:
     /* CR2/DR6                                                                */
     /**************************************************************************/
 
-    mov rax, [r15 + 0x078]
+    mov rax, [r15 + 0x000]
     mov cr2, rax
 
-    mov rax, [r15 + 0x080]
+    mov rax, [r15 + 0x008]
     mov dr6, rax
 
     /**************************************************************************/
@@ -607,23 +607,23 @@ intrinsic_vmrun:
     /**************************************************************************/
 
     mov edi, 0xC0000081
-    mov rsi, [r15 + 0x088]
+    mov rsi, [r15 + 0x010]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000082
-    mov rsi, [r15 + 0x090]
+    mov rsi, [r15 + 0x018]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000083
-    mov rsi, [r15 + 0x098]
+    mov rsi, [r15 + 0x020]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000084
-    mov rsi, [r15 + 0x0A0]
+    mov rsi, [r15 + 0x028]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000102
-    mov rsi, [r15 + 0x0A8]
+    mov rsi, [r15 + 0x030]
     call intrinsic_wrmsr_unsafe
 
     /**************************************************************************/
@@ -650,7 +650,7 @@ nmis_complete:
     mov rax, 0x6C14
     vmwrite rax, rsp
 
-    mov rax, [r15 + 0x0D8]
+    mov rax, [r15 + 0x060]
     cmp rax, 0x1
 
     mov rax, fs:[0x800]
@@ -699,32 +699,32 @@ intrinsic_vmrun_failure:
 
     mov edi, 0xC0000102
     call intrinsic_rdmsr_unsafe
-    mov [r15 + 0x0A8], rax
-    mov rsi, [r15 + 0x0D0]
+    mov [r15 + 0x030], rax
+    mov rsi, [r15 + 0x058]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000084
     call intrinsic_rdmsr_unsafe
-    mov [r15 + 0x0A0], rax
-    mov rsi, [r15 + 0x0C8]
+    mov [r15 + 0x028], rax
+    mov rsi, [r15 + 0x050]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000083
     call intrinsic_rdmsr_unsafe
-    mov [r15 + 0x098], rax
-    mov rsi, [r15 + 0x0C0]
+    mov [r15 + 0x020], rax
+    mov rsi, [r15 + 0x048]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000082
     call intrinsic_rdmsr_unsafe
-    mov [r15 + 0x090], rax
-    mov rsi, [r15 + 0x0B8]
+    mov [r15 + 0x018], rax
+    mov rsi, [r15 + 0x040]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000081
     call intrinsic_rdmsr_unsafe
-    mov [r15 + 0x088], rax
-    mov rsi, [r15 + 0x0B0]
+    mov [r15 + 0x010], rax
+    mov rsi, [r15 + 0x038]
     call intrinsic_wrmsr_unsafe
 
     /**************************************************************************/
@@ -732,10 +732,10 @@ intrinsic_vmrun_failure:
     /**************************************************************************/
 
     mov rax, dr6
-    mov [r15 + 0x080], rax
+    mov [r15 + 0x008], rax
 
     mov rax, cr2
-    mov [r15 + 0x078], rax
+    mov [r15 + 0x000], rax
 
     /**************************************************************************/
     /* Done                                                                   */
@@ -790,7 +790,7 @@ intrinsic_vmexit:
     /**************************************************************************/
 
     mov rax, 0x1
-    mov [r15 + 0x0D8], rax
+    mov [r15 + 0x060], rax
 
     /**************************************************************************/
     /* NMIs                                                                   */
@@ -805,32 +805,32 @@ intrinsic_vmexit:
 
     mov edi, 0xC0000102
     call intrinsic_rdmsr_unsafe
-    mov [r15 + 0x0A8], rax
-    mov rsi, [r15 + 0x0D0]
+    mov [r15 + 0x030], rax
+    mov rsi, [r15 + 0x058]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000084
     call intrinsic_rdmsr_unsafe
-    mov [r15 + 0x0A0], rax
-    mov rsi, [r15 + 0x0C8]
+    mov [r15 + 0x028], rax
+    mov rsi, [r15 + 0x050]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000083
     call intrinsic_rdmsr_unsafe
-    mov [r15 + 0x098], rax
-    mov rsi, [r15 + 0x0C0]
+    mov [r15 + 0x020], rax
+    mov rsi, [r15 + 0x048]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000082
     call intrinsic_rdmsr_unsafe
-    mov [r15 + 0x090], rax
-    mov rsi, [r15 + 0x0B8]
+    mov [r15 + 0x018], rax
+    mov rsi, [r15 + 0x040]
     call intrinsic_wrmsr_unsafe
 
     mov edi, 0xC0000081
     call intrinsic_rdmsr_unsafe
-    mov [r15 + 0x088], rax
-    mov rsi, [r15 + 0x0B0]
+    mov [r15 + 0x010], rax
+    mov rsi, [r15 + 0x038]
     call intrinsic_wrmsr_unsafe
 
     /**************************************************************************/
@@ -838,10 +838,10 @@ intrinsic_vmexit:
     /**************************************************************************/
 
     mov rax, dr6
-    mov [r15 + 0x080], rax
+    mov [r15 + 0x008], rax
 
     mov rax, cr2
-    mov [r15 + 0x078], rax
+    mov [r15 + 0x000], rax
 
     /**************************************************************************/
     /* Done                                                                   */

@@ -1757,7 +1757,9 @@ namespace mk
                 return;
             }
 
-            bsl::print() << bsl::mag << "ext [" << bsl::hex(m_id) << "] dump: ";
+            bsl::print() << bsl::mag << "ext [";
+            bsl::print() << bsl::rst << bsl::hex(m_id);
+            bsl::print() << bsl::mag << "] dump: ";
             bsl::print() << bsl::rst << bsl::endl;
 
             /// Header
@@ -1908,7 +1910,11 @@ namespace mk
             }
 
             bsl::print() << bsl::rst << bsl::endl;
-            bsl::print() << bsl::mag << "ext [" << bsl::hex(m_id) << "] direct map dump: ";
+
+            bsl::print() << bsl::mag << "ext [";
+            bsl::print() << bsl::rst << bsl::hex(m_id);
+            bsl::print() << bsl::mag << "] direct map dump: ";
+            bsl::print() << bsl::rst << bsl::endl;
 
             direct_map_rpt->dump();
         }

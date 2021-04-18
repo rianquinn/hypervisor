@@ -1625,17 +1625,16 @@ namespace syscall
     /// <!-- description -->
     ///   @brief This syscall tells the microkernel to output the VMExit log.
     ///     The VMExit log is a chronological log of the "X" number of exits
-    ///     that have occurred. The total number of "X" logs is
-    ///     implementation-defined and not under the control of software.
+    ///     that have occurred on a specific physical processor.
     ///
     /// <!-- inputs/outputs -->
-    ///   @param vpsid The VPSID of the VPS to dump the log from
+    ///   @param ppid The PPID of the PP to dump the log from
     ///
     inline void
     bf_debug_op_dump_vmexit_log(    // --
-        bsl::safe_uint16 const &vpsid) noexcept
+        bsl::safe_uint16 const &ppid) noexcept
     {
-        bf_debug_op_dump_vmexit_log_impl(vpsid.get());
+        bf_debug_op_dump_vmexit_log_impl(ppid.get());
     }
 
     // -------------------------------------------------------------------------

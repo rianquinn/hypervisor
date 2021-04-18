@@ -24,7 +24,6 @@ include(${bsl_SOURCE_DIR}/cmake/function/bf_add_config.cmake)
 option(HYPERVISOR_BUILD_LOADER "Turns on/off building the loader" ON)
 option(HYPERVISOR_BUILD_VMMCTL "Turns on/off building the vmmctl" ON)
 option(HYPERVISOR_BUILD_MICROKERNEL "Turns on/off building the microkernel" ON)
-option(HYPERVISOR_BUILD_EXAMPLES "Turns on/off building the examples" ON)
 option(HYPERVISOR_BUILD_EFI "Turns on/off building the EFI loader" OFF)
 
 if (NOT DEFINED HYPERVISOR_TARGET_ARCH)
@@ -112,7 +111,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL ${HYPERVISOR_DEFAULT_CXX_LINKER}
     DESCRIPTION "Define the linker to use for cross-compiling"
-    SKIP_VALIDATION
+    OPTIONS ld.lld
 )
 
 bf_add_config(
@@ -120,7 +119,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL ${HYPERVISOR_DEFAULT_EFI_LINKER}
     DESCRIPTION "Define the linker to use for linking EFI applications"
-    SKIP_VALIDATION
+    OPTIONS lld-link
 )
 
 bf_add_config(
@@ -136,7 +135,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "BSL_PAGE_SIZE"
     DESCRIPTION "Defines the hypervisor's page size in bytes"
-    SKIP_VALIDATION
+    OPTIONS BSL_PAGE_SIZE
 )
 
 bf_add_config(
@@ -144,7 +143,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "12"
     DESCRIPTION "Defines the hypervisor's page size in bytes (as a shift)"
-    SKIP_VALIDATION
+    OPTIONS 12
 )
 
 bf_add_config(
@@ -176,7 +175,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x800000"
     DESCRIPTION "Defines the hypervisor's max ELF file size supported"
-    SKIP_VALIDATION
+    OPTIONS 0x800000
 )
 
 bf_add_config(
@@ -224,21 +223,13 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "HYPERVISOR_MAX_PPS"
     DESCRIPTION "Defines the hypervisor's max number of virtual processors per VM supported"
-    SKIP_VALIDATION
-)
-
-bf_add_config(
-    CONFIG_NAME HYPERVISOR_MAX_VPSS_PER_VP
-    CONFIG_TYPE STRING
-    DEFAULT_VAL "1"
-    DESCRIPTION "Defines the hypervisor's max number of virtual processor states per VP supported"
-    SKIP_VALIDATION
+    OPTIONS HYPERVISOR_MAX_PPS
 )
 
 bf_add_config(
     CONFIG_NAME HYPERVISOR_MAX_VPSS
     CONFIG_TYPE STRING
-    DEFAULT_VAL "HYPERVISOR_MAX_VPS * HYPERVISOR_MAX_VPSS_PER_VP"
+    DEFAULT_VAL "HYPERVISOR_MAX_VPS"
     DESCRIPTION "Defines the hypervisor's max number of virtual processor states"
     SKIP_VALIDATION
 )
@@ -248,7 +239,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x0000400000000000"
     DESCRIPTION "Defines an microkernel's default direct map address"
-    SKIP_VALIDATION
+    OPTIONS 0x0000400000000000
 )
 
 bf_add_config(
@@ -256,7 +247,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x0000200000000000"
     DESCRIPTION "Defines an microkernel's default direct map size in bytes"
-    SKIP_VALIDATION
+    OPTIONS 0x0000200000000000
 )
 
 bf_add_config(
@@ -264,7 +255,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x0000008000000000"
     DESCRIPTION "Defines the microkernel's default stack address"
-    SKIP_VALIDATION
+    OPTIONS 0x0000008000000000
 )
 
 bf_add_config(
@@ -280,7 +271,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x0000028000000000"
     DESCRIPTION "Defines the microkernel's default code address"
-    SKIP_VALIDATION
+    OPTIONS 0x0000028000000000
 )
 
 bf_add_config(
@@ -288,7 +279,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "HYPERVISOR_MAX_ELF_FILE_SIZE"
     DESCRIPTION "Defines the microkernel's default code max size in bytes"
-    SKIP_VALIDATION
+    OPTIONS HYPERVISOR_MAX_ELF_FILE_SIZE
 )
 
 bf_add_config(
@@ -296,7 +287,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "HYPERVISOR_MK_DIRECT_MAP_ADDR"
     DESCRIPTION "Defines the hypervisor's default page pool address"
-    SKIP_VALIDATION
+    OPTIONS HYPERVISOR_MK_DIRECT_MAP_ADDR
 )
 
 bf_add_config(
@@ -312,7 +303,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "HYPERVISOR_MK_DIRECT_MAP_ADDR"
     DESCRIPTION "Defines the microkernel's default huge pool address"
-    SKIP_VALIDATION
+    OPTIONS HYPERVISOR_MK_DIRECT_MAP_ADDR
 )
 
 bf_add_config(
@@ -328,7 +319,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x0000600000000000"
     DESCRIPTION "Defines an extension's default direct map address"
-    SKIP_VALIDATION
+    OPTIONS 0x0000600000000000
 )
 
 bf_add_config(
@@ -336,7 +327,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x0000200000000000"
     DESCRIPTION "Defines an extension's default direct map size in bytes"
-    SKIP_VALIDATION
+    OPTIONS 0x0000200000000000
 )
 
 bf_add_config(
@@ -344,7 +335,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x0000308000000000"
     DESCRIPTION "Defines an extension's default stack address"
-    SKIP_VALIDATION
+    OPTIONS 0x0000308000000000
 )
 
 bf_add_config(
@@ -360,7 +351,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x0000328000000000"
     DESCRIPTION "Defines an extension's default code address"
-    SKIP_VALIDATION
+    OPTIONS 0x0000328000000000
 )
 
 bf_add_config(
@@ -368,7 +359,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "HYPERVISOR_MAX_ELF_FILE_SIZE"
     DESCRIPTION "Defines an extension's default code max size in bytes"
-    SKIP_VALIDATION
+    OPTIONS HYPERVISOR_MAX_ELF_FILE_SIZE
 )
 
 bf_add_config(
@@ -376,7 +367,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x0000338000000000"
     DESCRIPTION "Defines an extension's default TLS address"
-    SKIP_VALIDATION
+    OPTIONS 0x0000338000000000
 )
 
 bf_add_config(
@@ -392,7 +383,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "HYPERVISOR_EXT_DIRECT_MAP_ADDR"
     DESCRIPTION "Defines an extension's default page pool address"
-    SKIP_VALIDATION
+    OPTIONS HYPERVISOR_EXT_DIRECT_MAP_ADDR
 )
 
 bf_add_config(
@@ -400,7 +391,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "HYPERVISOR_MK_PAGE_POOL_SIZE"
     DESCRIPTION "Defines an extension's default page pool max size in bytes"
-    SKIP_VALIDATION
+    OPTIONS HYPERVISOR_MK_PAGE_POOL_SIZE
 )
 
 bf_add_config(
@@ -408,7 +399,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "HYPERVISOR_EXT_DIRECT_MAP_ADDR"
     DESCRIPTION "Defines an extension's default huge pool address"
-    SKIP_VALIDATION
+    OPTIONS HYPERVISOR_EXT_DIRECT_MAP_ADDR
 )
 
 bf_add_config(
@@ -416,7 +407,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "HYPERVISOR_MK_HUGE_POOL_SIZE"
     DESCRIPTION "Defines an extension's default huge pool max size in bytes"
-    SKIP_VALIDATION
+    OPTIONS HYPERVISOR_MK_HUGE_POOL_SIZE
 )
 
 bf_add_config(
@@ -424,7 +415,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "0x0000348000000000"
     DESCRIPTION "Defines an extension's default heap pool address in bytes"
-    SKIP_VALIDATION
+    OPTIONS 0x0000348000000000
 )
 
 bf_add_config(
@@ -432,5 +423,5 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL "HYPERVISOR_MK_PAGE_POOL_SIZE"
     DESCRIPTION "Defines an extension's default heap pool max size"
-    SKIP_VALIDATION
+    OPTIONS HYPERVISOR_MK_PAGE_POOL_SIZE
 )

@@ -36,6 +36,7 @@
 #include <tls_t.hpp>
 #include <vm_pool_t.hpp>
 #include <vm_t.hpp>
+#include <vmexit_log_t.hpp>
 #include <vp_pool_t.hpp>
 #include <vp_t.hpp>
 #include <vps_pool_t.hpp>
@@ -54,12 +55,19 @@ extern "C"
     extern bsl::array<mk::tls_t, bsl::to_umax(HYPERVISOR_MAX_PPS).get()> g_tls_blocks;
 }
 
+// bsl::to_umax(HYPERVISOR_VMEXIT_LOG_SIZE).get()
+
 namespace mk
 {
     /// @brief defines the TLS pool type to use
     using mk_tls_pool_type = tls_pool_t<            // --
         tls_t,                                      // --
         bsl::to_umax(HYPERVISOR_MAX_PPS).get()>;    // --
+
+    /// @brief defines the TLS pool type to use
+    using mk_vmexit_log_type = vmexit_log_t<               // --
+        bsl::to_umax(HYPERVISOR_VMEXIT_LOG_SIZE).get(),    // --
+        bsl::to_umax(HYPERVISOR_MAX_PPS).get()>;           // --
 
     /// @brief defines the intrinsic type
     using mk_intrinsic_type = intrinsic_t;
@@ -75,10 +83,9 @@ namespace mk
         bsl::to_umax(HYPERVISOR_MK_HUGE_POOL_ADDR).get()>;    // --
 
     /// @brief defines the VPS type to use
-    using mk_vps_type = vps_t<                              // --
-        mk_intrinsic_type,                                  // --
-        mk_page_pool_type,                                  // --
-        bsl::to_umax(HYPERVISOR_VMEXIT_LOG_SIZE).get()>;    // --
+    using mk_vps_type = vps_t<    // --
+        mk_intrinsic_type,        // --
+        mk_page_pool_type>;       // --
 
     /// @brief defines the VPS pool type to use
     using mk_vps_pool_type = vps_pool_t<             // --
@@ -155,13 +162,18 @@ namespace mk
         mk_vm_pool_type,                                  // --
         mk_ext_pool_type,                                 // --
         bsl::to_umax(HYPERVISOR_PAGE_SIZE).get(),         // --
+        bsl::to_umax(HYPERVISOR_MK_CODE_SIZE).get(),      // --
+        bsl::to_umax(HYPERVISOR_EXT_CODE_SIZE).get(),     // --
         bsl::to_umax(HYPERVISOR_EXT_STACK_ADDR).get(),    // --
         bsl::to_umax(HYPERVISOR_EXT_STACK_SIZE).get(),    // --
         bsl::to_umax(HYPERVISOR_EXT_TLS_ADDR).get(),      // --
         bsl::to_umax(HYPERVISOR_EXT_TLS_SIZE).get()>;     // --
 
-    /// @brief stores the vm_t pool used by the microkernel
+    /// @brief stores the TLS pool used by the microkernel
     constinit inline mk_tls_pool_type g_tls_pool{g_tls_blocks};
+
+    /// @brief stores the vmexit log used by the microkernel
+    constinit inline mk_vmexit_log_type g_vmexit_log{};
 
     /// @brief stores the intrinsics used by the microkernel
     constinit inline mk_intrinsic_type g_intrinsic{};

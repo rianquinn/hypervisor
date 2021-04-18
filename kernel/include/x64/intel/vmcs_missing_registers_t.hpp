@@ -40,65 +40,34 @@ namespace mk
     ///
     struct vmcs_missing_registers_t final
     {
-        /// @brief TODO remove me
-        bsl::uintmax ignored_rax;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_rbx;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_rcx;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_rdx;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_rbp;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_rsi;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_rdi;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_r8;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_r9;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_r10;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_r11;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_r12;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_r13;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_r14;
-        /// @brief TODO remove me
-        bsl::uintmax ignored_r15;
-
-        /// @brief stores the value of cr2 (0x078)
+        /// @brief stores the value of cr2 (0x000)
         bsl::uintmax cr2;
-        /// @brief stores the value of dr6 (0x080)
+        /// @brief stores the value of dr6 (0x008)
         bsl::uintmax dr6;
 
-        /// @brief stores the guest value of ia32_star (0x088)
+        /// @brief stores the guest value of ia32_star (0x010)
         bsl::uintmax guest_ia32_star;
-        /// @brief stores the guest value of ia32_lstar (0x090)
+        /// @brief stores the guest value of ia32_lstar (0x018)
         bsl::uintmax guest_ia32_lstar;
-        /// @brief stores the guest value of ia32_cstar (0x098)
+        /// @brief stores the guest value of ia32_cstar (0x020)
         bsl::uintmax guest_ia32_cstar;
-        /// @brief stores the guest value of ia32_fmask (0x0A0)
+        /// @brief stores the guest value of ia32_fmask (0x028)
         bsl::uintmax guest_ia32_fmask;
-        /// @brief stores the guest value of ia32_kernel_gs_base (0x0A8)
+        /// @brief stores the guest value of ia32_kernel_gs_base (0x030)
         bsl::uintmax guest_ia32_kernel_gs_base;
 
-        /// @brief stores the host value of ia32_star (0x0B0)
+        /// @brief stores the host value of ia32_star (0x038)
         bsl::uintmax host_ia32_star;
-        /// @brief stores the host value of ia32_lstar (0x0B8)
+        /// @brief stores the host value of ia32_lstar (0x040)
         bsl::uintmax host_ia32_lstar;
-        /// @brief stores the host value of ia32_cstar (0x0C0)
+        /// @brief stores the host value of ia32_cstar (0x048)
         bsl::uintmax host_ia32_cstar;
-        /// @brief stores the host value of ia32_fmask (0x0C8)
+        /// @brief stores the host value of ia32_fmask (0x050)
         bsl::uintmax host_ia32_fmask;
-        /// @brief stores the host value of ia32_kernel_gs_base (0x0D0)
+        /// @brief stores the host value of ia32_kernel_gs_base (0x058)
         bsl::uintmax host_ia32_kernel_gs_base;
 
-        /// @brief stores the launch status of the hypervisor (0x0D8)
+        /// @brief stores the launch status of the hypervisor (0x060)
         bsl::uintmax launched;
     };
 }

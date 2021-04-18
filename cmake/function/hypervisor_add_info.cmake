@@ -90,18 +90,6 @@ macro(hypervisor_add_info)
         )
     endif()
 
-    if(HYPERVISOR_BUILD_EXAMPLES)
-        add_custom_command(TARGET info
-            COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_BUILD_EXAMPLES      ${BF_COLOR_GRN}enabled${BF_COLOR_RST}"
-            VERBATIM
-        )
-    else()
-        add_custom_command(TARGET info
-            COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_BUILD_EXAMPLES      ${BF_COLOR_RED}disabled${BF_COLOR_RST}"
-            VERBATIM
-        )
-    endif()
-
     if(HYPERVISOR_BUILD_EFI)
         add_custom_command(TARGET info
             COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_BUILD_EFI           ${BF_COLOR_GRN}enabled${BF_COLOR_RST}"
@@ -191,11 +179,6 @@ macro(hypervisor_add_info)
 
     add_custom_command(TARGET info
         COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_MAX_VPS_PER_VM      ${BF_COLOR_CYN}${HYPERVISOR_MAX_VPS_PER_VM}${BF_COLOR_RST}"
-        VERBATIM
-    )
-
-    add_custom_command(TARGET info
-        COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_MAX_VPSS_PER_VP     ${BF_COLOR_CYN}${HYPERVISOR_MAX_VPSS_PER_VP}${BF_COLOR_RST}"
         VERBATIM
     )
 

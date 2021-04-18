@@ -130,7 +130,7 @@ start_vmm_per_cpu(uint32_t const cpu)
         goto map_mk_args_failed;
     }
 
-    g_mk_args[cpu]->pp = ((uint16_t)cpu);
+    g_mk_args[cpu]->ppid = ((uint16_t)cpu);
 
     /**
      * NOTE:
