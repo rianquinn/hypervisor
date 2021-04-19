@@ -169,6 +169,7 @@ namespace example
         constexpr bsl::safe_uintmax EXIT_REASON_NMI{bsl::to_umax(0x0)};
         constexpr bsl::safe_uintmax EXIT_REASON_NMI_WINDOW{bsl::to_umax(0x8)};
         constexpr bsl::safe_uintmax EXIT_REASON_CPUID{bsl::to_umax(0xA)};
+        constexpr bsl::safe_uintmax EXIT_REASON_RDMSR{bsl::to_umax(0x1F)};
 
         /// NOTE:
         /// - At a minimum, we need to handle CPUID and NMIs on Intel. Note
@@ -211,6 +212,12 @@ namespace example
                     return;
                 }
 
+                bsl::discard(syscall::bf_vps_op_advance_ip_and_run_current(handle));
+                bsl::print<bsl::V>() << bsl::here();
+                return;
+            }
+
+            case EXIT_REASON_RDMSR.get(): {
                 bsl::discard(syscall::bf_vps_op_advance_ip_and_run_current(handle));
                 bsl::print<bsl::V>() << bsl::here();
                 return;
