@@ -24,6 +24,7 @@
  * SOFTWARE.
  */
 
+#include <arch_init.h>
 #include <constants.h>
 #include <debug.h>
 #include <efi/efi_mp_services_protocol.h>
@@ -33,7 +34,6 @@
 #include <g_mk_debug_ring.h>
 #include <platform.h>
 #include <work_on_cpu_callback_args.h>
-#include <arch_init.h>
 
 /**
  * <!-- description -->
@@ -113,14 +113,14 @@ platform_alloc_contiguous(uint64_t const size)
 void
 platform_free(void const *const ptr, uint64_t size)
 {
-    // if (((uint64_t)0) != (size & (HYPERVISOR_PAGE_SIZE - ((uint64_t)1)))) {
-    //     size += HYPERVISOR_PAGE_SIZE;
-    //     size &= ~(HYPERVISOR_PAGE_SIZE - ((uint64_t)1));
-    // }
+    if (((uint64_t)0) != (size & (HYPERVISOR_PAGE_SIZE - ((uint64_t)1)))) {
+        size += HYPERVISOR_PAGE_SIZE;
+        size &= ~(HYPERVISOR_PAGE_SIZE - ((uint64_t)1));
+    }
 
-    // if (NULL != ptr) {
-    //     g_st->BootServices->FreePages((VOID *)ptr, size / HYPERVISOR_PAGE_SIZE);
-    // }
+    if (NULL != ptr) {
+        g_st->BootServices->FreePages((EFI_PHYSICAL_ADDRESS)ptr, size / HYPERVISOR_PAGE_SIZE);
+    }
 }
 
 /**

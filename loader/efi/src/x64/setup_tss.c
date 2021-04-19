@@ -42,10 +42,8 @@
 /** @brief defines our custom TR limit */
 #define UEFI_TR_LIMIT ((uint32_t)(sizeof(struct tss_t) - ((uint64_t)1)))
 
-/** @brief stores the new GDT that UEFI will use */
-struct global_descriptor_table_register_t g_new_gdtr = {0};
-/** @brief stores the selector for the TR in our new GDT  */
-uint16_t g_tr_selector = ((uint16_t)0);
+/** @brief stores the old GDT that UEFI will use */
+struct global_descriptor_table_register_t g_old_gdtr = {0};
 
 /**
  * <!-- description -->
@@ -66,17 +64,21 @@ setup_tss(void)
      *   the current GDT, but with TR added.
      * - This seems to be an issue on both AMD and Intel, and also seems to
      *   be an issue on multiple systems from different vendors.
-     * - One issue is the on Intel, you cannot start a VM with TR set to 0.
+     * - One issue is that on Intel, you cannot start a VM with TR set to 0.
      *   Any attempt to do so will cause a VM entry failure.
      * - Another issue is that when you attempt to return (i.e. promote) from
      *   the microkernel, the promote logic doesn't have a TR to flip the
      *   TSS busy bit for. As a result, it has to leave the TR set to the
      *   microkernel's TR which leaks it's resources.
-     * - Looking at the GDT for
+     * - UEFI also seems to copy the GDT from one core to another as it starts
+     *   each AP. This means that we need to cache the original GDT so that
+     *   we can use it for reference. Otherwise, on other cores, you would
+     *   get the GDT you created on the BSP, which already has a TSS and it
+     *   cannot be shared (due to the TSS busy bit).
      */
 
     struct tss_t *tss;
-    struct global_descriptor_table_register_t old_gdtr;
+    struct global_descriptor_table_register_t gdtr;
 
     if (intrinsic_str() != ((uint16_t)0)) {
 
@@ -90,23 +92,12 @@ setup_tss(void)
         return LOADER_SUCCESS;
     }
 
-    intrinsic_sgdt(&old_gdtr);
-
-    if (old_gdtr.base == g_new_gdtr.base) {
-
-        /**
-         * NOTE:
-         * - UEFI will use the BSP's GDT on any AP that is started. This
-         *   detects when that happens, as this means that we already are
-         *   using our new GDT, and we just need to set TR and we are done.
-         */
-
-        intrinsic_ltr(g_tr_selector);
-        return LOADER_SUCCESS;
+    if (((void *)0) == g_old_gdtr.base) {
+        intrinsic_sgdt(&g_old_gdtr);
+        g_old_gdtr.limit += ((uint16_t)1);
     }
 
-    old_gdtr.limit += ((uint16_t)1);
-    if (old_gdtr.limit > ((uint16_t)0xFF0)) {
+    if (g_old_gdtr.limit > ((uint16_t)0xFF0)) {
         bferror("system unsupported. existing GDT is too large");
         return LOADER_FAILURE;
     }
@@ -118,13 +109,13 @@ setup_tss(void)
      *   available entry in the old GDT.
      */
 
-    g_new_gdtr.base = (uint64_t *)platform_alloc(HYPERVISOR_PAGE_SIZE);
-    if (((void *)0) == g_new_gdtr.base) {
+    gdtr.base = (uint64_t *)platform_alloc(HYPERVISOR_PAGE_SIZE);
+    if (((void *)0) == gdtr.base) {
         bferror("platform_alloc failed");
         goto platform_alloc_gdt_failed;
     }
 
-    g_new_gdtr.limit = (uint16_t)(HYPERVISOR_PAGE_SIZE - ((uint64_t)1));
+    gdtr.limit = (uint16_t)(HYPERVISOR_PAGE_SIZE - ((uint64_t)1));
 
     /**
      * TODO:
@@ -153,12 +144,11 @@ setup_tss(void)
      *   old GDT and then add the TSS.
      */
 
-    g_tr_selector = old_gdtr.limit;
-    g_st->BootServices->CopyMem(g_new_gdtr.base, old_gdtr.base, old_gdtr.limit);
+    g_st->BootServices->CopyMem(gdtr.base, g_old_gdtr.base, g_old_gdtr.limit);
 
     ret = set_gdt_descriptor(    // --
-        &g_new_gdtr,               // --
-        g_tr_selector,          // --
+        &gdtr,                   // --
+        g_old_gdtr.limit,        // --
         (uint64_t)tss,           // --
         UEFI_TR_LIMIT,           // --
         UEFI_TR_ATTRIB);
@@ -176,15 +166,15 @@ setup_tss(void)
      *   all identical.
      */
 
-    intrinsic_lgdt(&g_new_gdtr);
-    intrinsic_ltr(g_tr_selector);
+    intrinsic_lgdt(&gdtr);
+    intrinsic_ltr(g_old_gdtr.limit);
 
     return LOADER_SUCCESS;
 
 set_descriptor_failed:
     platform_free(tss, HYPERVISOR_PAGE_SIZE);
 platform_alloc_tss_failed:
-    platform_free(g_new_gdtr.base, HYPERVISOR_PAGE_SIZE);
+    platform_free(gdtr.base, HYPERVISOR_PAGE_SIZE);
 platform_alloc_gdt_failed:
 
     return LOADER_FAILURE;

@@ -669,6 +669,7 @@ The layout of the TLS block provided to each extension uses a scheme similar to 
 | TLS_OFFSET_ACTIVE_VPID | 0xFF4U | stores the offset of the active vpid |
 | TLS_OFFSET_ACTIVE_VPSID | 0xFF6U | stores the offset of the active vpsid |
 | TLS_OFFSET_ACTIVE_PPID | 0xFF8U | stores the offset of the active ppid |
+| TLS_OFFSET_ONLINE_PPS | 0xFFAU | stores the number of PPs that are online |
 
 ## 2.7. Control Syscalls
 

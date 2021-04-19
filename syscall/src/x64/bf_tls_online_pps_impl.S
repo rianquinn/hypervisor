@@ -27,14 +27,14 @@
     .code64
     .intel_syntax noprefix
 
-    .globl  bf_tls_online_pps_impl
-    .type   bf_tls_online_pps_impl, @function
-bf_tls_online_pps_impl:
+    .globl  bf_tls_ppid_impl
+    .type   bf_tls_ppid_impl, @function
+bf_tls_ppid_impl:
 
     xor rax, rax
-    mov ax, fs:[0xFFA]
+    mov ax, fs:[0xFF8]
 
     ret
     int 3
 
-    .size bf_tls_online_pps_impl, .-bf_tls_online_pps_impl
+    .size bf_tls_ppid_impl, .-bf_tls_ppid_impl

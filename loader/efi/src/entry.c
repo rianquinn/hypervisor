@@ -31,11 +31,11 @@
 #include <efi/efi_system_table.h>
 #include <efi/efi_types.h>
 #include <loader_init.h>
+#include <platform.h>
 #include <serial_init.h>
 #include <span_t.h>
 #include <start_vmm.h>
 #include <start_vmm_args_t.h>
-#include <platform.h>
 
 /**
  * NOTE:

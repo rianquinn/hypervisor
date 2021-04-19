@@ -70,15 +70,6 @@ namespace example
             switch (bsl::to_u32_unsafe(rcx).get()) {
                 case loader::CPUID_COMMAND_ECX_STOP.get(): {
 
-                    if (vpsid.is_zero()) {
-                        bsl::print() << bsl::endl;
-                        syscall::bf_debug_op_dump_page_pool();
-                        syscall::bf_debug_op_dump_vmexit_log(vpsid);
-                    }
-                    else {
-                        bsl::touch();
-                    }
-
                     /// NOTE:
                     /// - To support stopping the hypervisor, we need to
                     ///   report success by setting RAX to 0, and advancing
@@ -111,6 +102,14 @@ namespace example
                     bsl::debug() << bsl::rst << "host os is"                            // --
                                  << bsl::grn << " now "                                 // --
                                  << bsl::rst << "in a vm (nested_paging example)\n";    // --
+
+                    if (vpsid + bsl::ONE_U16 == syscall::bf_tls_online_pps()) {
+                        bsl::print() << bsl::endl;
+                        syscall::bf_debug_op_dump_page_pool();
+                    }
+                    else {
+                        bsl::touch();
+                    }
 
                     return bsl::errc_success;
                 }

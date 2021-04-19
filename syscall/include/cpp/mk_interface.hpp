@@ -603,6 +603,8 @@ namespace syscall
     constexpr bsl::safe_uintmax TLS_OFFSET_ACTIVE_VPSID{bsl::to_umax(0xFF6U)};
     /// @brief stores the offset of the active ppid
     constexpr bsl::safe_uintmax TLS_OFFSET_ACTIVE_PPID{bsl::to_umax(0xFF8U)};
+    /// @brief stores the number of PPs that are online
+    constexpr bsl::safe_uintmax TLS_OFFSET_ONLINE_PPS{bsl::to_umax(0xFFAU)};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_rax.
@@ -883,6 +885,14 @@ namespace syscall
     ///   @return n/a
     ///
     extern "C" [[nodiscard]] auto bf_tls_ppid_impl() noexcept -> bf_uint16_t;
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_tls_online_pps.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_tls_online_pps_impl() noexcept -> bf_uint16_t;
 
     // -------------------------------------------------------------------------
     // TLS
@@ -1366,6 +1376,18 @@ namespace syscall
     bf_tls_ppid() noexcept -> bsl::safe_uint16
     {
         return {bf_tls_ppid_impl()};
+    }
+
+    /// <!-- description -->
+    ///   @brief Returns the value of tls.online_pps
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @return Returns the value of tls.online_pps
+    ///
+    [[nodiscard]] inline auto
+    bf_tls_online_pps() noexcept -> bsl::safe_uint16
+    {
+        return {bf_tls_online_pps_impl()};
     }
 
     // -------------------------------------------------------------------------

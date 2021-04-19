@@ -28,6 +28,7 @@
 #include <alloc_and_copy_root_vp_state.h>
 #include <alloc_mk_args.h>
 #include <alloc_mk_stack.h>
+#include <check_for_hve_support.h>
 #include <constants.h>
 #include <debug.h>
 #include <demote.h>
@@ -58,7 +59,6 @@
 #include <platform.h>
 #include <send_command_report_on.h>
 #include <types.h>
-#include <check_for_hve_support.h>
 
 /**
  * <!-- description -->
