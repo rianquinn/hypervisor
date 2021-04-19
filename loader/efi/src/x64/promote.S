@@ -81,6 +81,26 @@ promote:
     mov rsp, [r15 + 0x080]
 
     /**************************************************************************/
+    /* Clear TSS Busy                                                         */
+    /**************************************************************************/
+
+    /**
+     * NOTE:
+     * - The TR in the GDT used by the root OS is marked as busy, and as
+     *   a result, cannot be loaded without first marking it as available.
+     */
+
+    mov rdx, [r15 + 0x0A2]
+
+    xor rax, rax
+    mov ax, [r15 + 0x130]
+
+    add rdx, rax
+
+    mov rax, 0xFFFFFDFFFFFFFFFF
+    and [rdx], rax
+
+    /**************************************************************************/
     /* GDT                                                                    */
     /**************************************************************************/
 
@@ -122,15 +142,8 @@ promote:
     mov dx, [r15 + 0x120]
     lldt dx
 
-    /**
-     * NOTE:
-     * - UEFI doesn't load the TR register with a valid value, and therefore
-     *   the selector is NULL. For this reason, we can leave the TR register
-     *   with garbage data as it is never used.
-     */
-
-    /** mov dx, [r15 + 0x130] */
-    /** ltr dx */
+    mov dx, [r15 + 0x130]
+    ltr dx
 
     lea rax, [rip + gdt_and_cs_loaded]
     push rax

@@ -26,8 +26,8 @@
 
 #include <debug.h>
 #include <intrinsic_lcr4.h>
-#include <intrinsic_scr4.h>
 #include <intrinsic_rdmsr.h>
+#include <intrinsic_scr4.h>
 #include <types.h>
 
 /** @brief defines the MSR_VMX_CR4_FIXED0 MSR  */
@@ -43,7 +43,7 @@
  *   @brief Ensures that CR4 is set up properly.
  */
 void
-setup_cr4()
+setup_cr4(void)
 {
     uint64_t cr4 = intrinsic_scr4();
     uint64_t ia32_vmx_cr4_fixed0 = intrinsic_rdmsr(MSR_VMX_CR4_FIXED0);

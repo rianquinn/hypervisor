@@ -24,23 +24,13 @@
  * SOFTWARE.
  */
 
-#include <setup_cr0.h>
-#include <setup_cr4.h>
-#include <setup_tss.h>
+#ifndef SETUP_CR0_H
+#define SETUP_CR0_H
 
 /**
  * <!-- description -->
- *   @brief Sets up the CPU above and beyond what UEFI has provided.
- *
- * <!-- inputs/outputs -->
- *   @return returns EFI_SUCCESS on success, and a non-EFI_SUCCESS value on
- *     failure.
+ *   @brief Ensures that CR0 is set up properly.
  */
-EFI_STATUS
-arch_init(void)
-{
-    setup_cr0();
-    setup_cr4();
+void setup_cr0(void);
 
-    return setup_tss();
-}
+#endif

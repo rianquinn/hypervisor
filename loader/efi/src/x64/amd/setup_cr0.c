@@ -29,6 +29,5 @@
  *   @brief Ensures that CR0 is set up properly.
  */
 void
-setup_cr0()
-{
-}
+setup_cr0(void)
+{}

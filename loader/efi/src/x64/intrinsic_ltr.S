@@ -24,13 +24,13 @@
  * SOFTWARE.
  */
 
-#ifndef SETUP_CR0_H
-#define SETUP_CR0_H
+    .code64
+    .intel_syntax noprefix
 
-/**
- * <!-- description -->
- *   @brief Ensures that CR0 is set up properly.
- */
-void setup_cr0();
+    .globl  intrinsic_ltr
+intrinsic_ltr:
 
-#endif
+    ltr cx
+
+    ret
+    int 3

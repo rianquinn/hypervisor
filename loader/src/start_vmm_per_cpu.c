@@ -35,6 +35,7 @@
 #include <dump_mk_stack.h>
 #include <dump_mk_state.h>
 #include <dump_root_vp_state.h>
+#include <dump_vmm_on_error_if_needed.h>
 #include <free_mk_args.h>
 #include <free_mk_stack.h>
 #include <free_mk_state.h>
@@ -58,7 +59,6 @@
 #include <platform.h>
 #include <send_command_report_on.h>
 #include <types.h>
-#include <dump_vmm_on_error_if_needed.h>
 
 /**
  * <!-- description -->

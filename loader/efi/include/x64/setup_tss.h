@@ -24,13 +24,19 @@
  * SOFTWARE.
  */
 
-#ifndef SETUP_CR4_H
-#define SETUP_CR4_H
+#ifndef SETUP_TSS_H
+#define SETUP_TSS_H
+
+#include <efi/efi_status.h>
 
 /**
  * <!-- description -->
- *   @brief Ensures that CR4 is set up properly.
+ *   @brief Ensures that TSS is set up properly.
+ *
+ * <!-- inputs/outputs -->
+ *   @return returns EFI_SUCCESS on success, and a non-EFI_SUCCESS value on
+ *     failure.
  */
-void setup_cr4();
+EFI_STATUS setup_tss();
 
 #endif

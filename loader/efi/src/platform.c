@@ -30,9 +30,9 @@
 #include <efi/efi_status.h>
 #include <efi/efi_system_table.h>
 #include <efi/efi_types.h>
+#include <g_mk_debug_ring.h>
 #include <platform.h>
 #include <work_on_cpu_callback_args.h>
-#include <g_mk_debug_ring.h>
 
 /**
  * <!-- description -->

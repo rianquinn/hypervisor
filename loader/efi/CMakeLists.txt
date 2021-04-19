@@ -349,6 +349,8 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 		src/x64/intrinsic_inb.S
 		src/x64/intrinsic_lcr0.S
 		src/x64/intrinsic_lcr4.S
+		src/x64/intrinsic_lgdt.S
+		src/x64/intrinsic_ltr.S
 		src/x64/intrinsic_outb.S
 		src/x64/intrinsic_rdmsr.S
 		src/x64/intrinsic_scr0.S
@@ -366,6 +368,7 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 		src/x64/intrinsic_wrmsr.S
 		src/x64/memops.S
 		src/x64/promote.S
+		src/x64/setup_tss.c
 		../src/x64/alloc_and_copy_mk_code_aliases.c
 		../src/x64/alloc_and_copy_mk_state.c
 		../src/x64/alloc_and_copy_root_vp_state.c
@@ -417,6 +420,7 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
     )
 
 	hypervisor_add_header_depends(src/x64/arch_init.c ${HEADERS})
+	hypervisor_add_header_depends(src/x64/setup_tss.c ${HEADERS})
 	hypervisor_add_header_depends(../src/x64/alloc_and_copy_mk_code_aliases.c ${HEADERS})
 	hypervisor_add_header_depends(../src/x64/alloc_and_copy_mk_state.c ${HEADERS})
 	hypervisor_add_header_depends(../src/x64/alloc_and_copy_root_vp_state.c ${HEADERS})

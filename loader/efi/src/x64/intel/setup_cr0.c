@@ -26,8 +26,8 @@
 
 #include <debug.h>
 #include <intrinsic_lcr0.h>
-#include <intrinsic_scr0.h>
 #include <intrinsic_rdmsr.h>
+#include <intrinsic_scr0.h>
 #include <types.h>
 
 /** @brief defines the MSR_VMX_CR0_FIXED0 MSR  */
@@ -40,7 +40,7 @@
  *   @brief Ensures that CR0 is set up properly.
  */
 void
-setup_cr0()
+setup_cr0(void)
 {
     uint64_t cr0 = intrinsic_scr0();
     uint64_t ia32_vmx_cr0_fixed0 = intrinsic_rdmsr(MSR_VMX_CR0_FIXED0);

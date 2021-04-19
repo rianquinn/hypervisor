@@ -24,13 +24,19 @@
  * SOFTWARE.
  */
 
-#ifndef SETUP_CR4_H
-#define SETUP_CR4_H
+#ifndef INTRINSIC_LGDT_H
+#define INTRINSIC_LGDT_H
+
+#include <global_descriptor_table_register_t.h>
 
 /**
  * <!-- description -->
- *   @brief Ensures that CR4 is set up properly.
+ *   @brief Executes the LGDT instruction given a pointer to a
+ *     global_descriptor_table_register_t.
+ *
+ * <!-- inputs/outputs -->
+ *   @param gdtr a pointer to a global_descriptor_table_register_t
  */
-void setup_cr4();
+void intrinsic_lgdt(struct global_descriptor_table_register_t *const gdtr);
 
 #endif

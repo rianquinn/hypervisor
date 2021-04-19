@@ -30,8 +30,10 @@
     .globl  memcpy
 memcpy:
 
-    mov     rax, rdi
-    mov     rcx, rdx
+    mov     rdi, rcx
+    mov     rsi, rdx
+    mov     rax, rcx
+    mov     rcx, r8
     rep     movsb
 
     ret
@@ -42,9 +44,10 @@ memcpy:
     .globl  memset
 memset:
 
-    mov     r10, rdi
-    mov     rax, rsi
-    mov     rcx, rdx
+    mov     r10, rcx
+    mov     rdi, rcx
+    mov     rax, rdx
+    mov     rcx, r8
     rep     stosb
     mov     rax, r10
 

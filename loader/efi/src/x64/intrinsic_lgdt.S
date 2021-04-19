@@ -24,23 +24,13 @@
  * SOFTWARE.
  */
 
-#include <setup_cr0.h>
-#include <setup_cr4.h>
-#include <setup_tss.h>
+    .code64
+    .intel_syntax noprefix
 
-/**
- * <!-- description -->
- *   @brief Sets up the CPU above and beyond what UEFI has provided.
- *
- * <!-- inputs/outputs -->
- *   @return returns EFI_SUCCESS on success, and a non-EFI_SUCCESS value on
- *     failure.
- */
-EFI_STATUS
-arch_init(void)
-{
-    setup_cr0();
-    setup_cr4();
+    .globl  intrinsic_lgdt
+intrinsic_lgdt:
 
-    return setup_tss();
-}
+    lgdt [rcx]
+
+    ret
+    int 3

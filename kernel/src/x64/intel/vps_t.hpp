@@ -3389,38 +3389,38 @@ namespace mk
             /// Guest Missing Fields
             ///
 
-            bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
+            // bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
+            // bsl::print() << bsl::rst << bsl::endl;
 
             if (!this->is_allocated()) {
                 return;
             }
 
-            this->dump("rax ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX));
-            this->dump("rbx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX));
-            this->dump("rcx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX));
-            this->dump("rdx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX));
-            this->dump("rbp ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP));
-            this->dump("rsi ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI));
-            this->dump("rdi ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI));
-            this->dump("r8 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8));
-            this->dump("r9 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9));
-            this->dump("r10 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10));
-            this->dump("r11 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11));
-            this->dump("r12 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12));
-            this->dump("r13 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13));
-            this->dump("r14 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14));
-            this->dump("r15 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15));
+            // this->dump("rax ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX));
+            // this->dump("rbx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX));
+            // this->dump("rcx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX));
+            // this->dump("rdx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX));
+            // this->dump("rbp ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP));
+            // this->dump("rsi ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI));
+            // this->dump("rdi ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI));
+            // this->dump("r8 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8));
+            // this->dump("r9 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9));
+            // this->dump("r10 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10));
+            // this->dump("r11 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11));
+            // this->dump("r12 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12));
+            // this->dump("r13 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13));
+            // this->dump("r14 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14));
+            // this->dump("r15 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15));
 
             /// 16 Bit Control Fields
             ///
 
-            bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
+            // bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
+            // bsl::print() << bsl::rst << bsl::endl;
 
-            this->dump("virtual_processor_identifier ", m_intrinsic->vmread16_quiet(VMCS_VIRTUAL_PROCESSOR_IDENTIFIER));
-            this->dump("posted_interrupt_notification_vector ", m_intrinsic->vmread16_quiet(VMCS_POSTED_INTERRUPT_NOTIFICATION_VECTOR));
-            this->dump("eptp_index ", m_intrinsic->vmread16_quiet(VMCS_EPTP_INDEX));
+            // this->dump("virtual_processor_identifier ", m_intrinsic->vmread16_quiet(VMCS_VIRTUAL_PROCESSOR_IDENTIFIER));
+            // this->dump("posted_interrupt_notification_vector ", m_intrinsic->vmread16_quiet(VMCS_POSTED_INTERRUPT_NOTIFICATION_VECTOR));
+            // this->dump("eptp_index ", m_intrinsic->vmread16_quiet(VMCS_EPTP_INDEX));
 
             /// 16 Bit Guest Fields
             ///
@@ -3442,105 +3442,105 @@ namespace mk
             /// 64 Bit Control Fields
             ///
 
-            bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
+            // bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
+            // bsl::print() << bsl::rst << bsl::endl;
 
-            this->dump("address_of_io_bitmap_a ", m_intrinsic->vmread64_quiet(VMCS_ADDRESS_OF_IO_BITMAP_A));
-            this->dump("address_of_io_bitmap_b ", m_intrinsic->vmread64_quiet(VMCS_ADDRESS_OF_IO_BITMAP_B));
-            this->dump("address_of_msr_bitmaps ", m_intrinsic->vmread64_quiet(VMCS_ADDRESS_OF_MSR_BITMAPS));
-            this->dump("vmexit_msr_store_address ", m_intrinsic->vmread64_quiet(VMCS_VMEXIT_MSR_STORE_ADDRESS));
-            this->dump("vmexit_msr_load_address ", m_intrinsic->vmread64_quiet(VMCS_VMEXIT_MSR_LOAD_ADDRESS));
-            this->dump("vmentry_msr_load_address ", m_intrinsic->vmread64_quiet(VMCS_VMENTRY_MSR_LOAD_ADDRESS));
-            this->dump("executive_vmcs_pointer ", m_intrinsic->vmread64_quiet(VMCS_EXECUTIVE_VMCS_POINTER));
-            this->dump("pml_address ", m_intrinsic->vmread64_quiet(VMCS_PML_ADDRESS));
-            this->dump("tsc_offset ", m_intrinsic->vmread64_quiet(VMCS_TSC_OFFSET));
-            this->dump("virtual_apic_address ", m_intrinsic->vmread64_quiet(VMCS_VIRTUAL_APIC_ADDRESS));
-            this->dump("apic_access_address ", m_intrinsic->vmread64_quiet(VMCS_APIC_ACCESS_ADDRESS));
-            this->dump("posted_interrupt_descriptor_address ", m_intrinsic->vmread64_quiet(VMCS_POSTED_INTERRUPT_DESCRIPTOR_ADDRESS));
-            this->dump("vm_function_controls ", m_intrinsic->vmread64_quiet(VMCS_VM_FUNCTION_CONTROLS));
-            this->dump("ept_pointer ", m_intrinsic->vmread64_quiet(VMCS_EPT_POINTER));
-            this->dump("eoi_exit_bitmap0 ", m_intrinsic->vmread64_quiet(VMCS_EOI_EXIT_BITMAP0));
-            this->dump("eoi_exit_bitmap1 ", m_intrinsic->vmread64_quiet(VMCS_EOI_EXIT_BITMAP1));
-            this->dump("eoi_exit_bitmap2 ", m_intrinsic->vmread64_quiet(VMCS_EOI_EXIT_BITMAP2));
-            this->dump("eoi_exit_bitmap3 ", m_intrinsic->vmread64_quiet(VMCS_EOI_EXIT_BITMAP3));
-            this->dump("eptp_list_address ", m_intrinsic->vmread64_quiet(VMCS_EPTP_LIST_ADDRESS));
-            this->dump("vmread_bitmap_address ", m_intrinsic->vmread64_quiet(VMCS_VMREAD_BITMAP_ADDRESS));
-            this->dump("vmwrite_bitmap_address ", m_intrinsic->vmread64_quiet(VMCS_VMWRITE_BITMAP_ADDRESS));
-            this->dump("virt_exception_information_address ", m_intrinsic->vmread64_quiet(VMCS_VIRT_EXCEPTION_INFORMATION_ADDRESS));
-            this->dump("xss_exiting_bitmap ", m_intrinsic->vmread64_quiet(VMCS_XSS_EXITING_BITMAP));
-            this->dump("encls_exiting_bitmap ", m_intrinsic->vmread64_quiet(VMCS_ENCLS_EXITING_BITMAP));
-            this->dump("sub_page_permission_table_pointer ", m_intrinsic->vmread64_quiet(VMCS_SUB_PAGE_PERMISSION_TABLE_POINTER));
-            this->dump("tls_multiplier ", m_intrinsic->vmread64_quiet(VMCS_TLS_MULTIPLIER));
+            // this->dump("address_of_io_bitmap_a ", m_intrinsic->vmread64_quiet(VMCS_ADDRESS_OF_IO_BITMAP_A));
+            // this->dump("address_of_io_bitmap_b ", m_intrinsic->vmread64_quiet(VMCS_ADDRESS_OF_IO_BITMAP_B));
+            // this->dump("address_of_msr_bitmaps ", m_intrinsic->vmread64_quiet(VMCS_ADDRESS_OF_MSR_BITMAPS));
+            // this->dump("vmexit_msr_store_address ", m_intrinsic->vmread64_quiet(VMCS_VMEXIT_MSR_STORE_ADDRESS));
+            // this->dump("vmexit_msr_load_address ", m_intrinsic->vmread64_quiet(VMCS_VMEXIT_MSR_LOAD_ADDRESS));
+            // this->dump("vmentry_msr_load_address ", m_intrinsic->vmread64_quiet(VMCS_VMENTRY_MSR_LOAD_ADDRESS));
+            // this->dump("executive_vmcs_pointer ", m_intrinsic->vmread64_quiet(VMCS_EXECUTIVE_VMCS_POINTER));
+            // this->dump("pml_address ", m_intrinsic->vmread64_quiet(VMCS_PML_ADDRESS));
+            // this->dump("tsc_offset ", m_intrinsic->vmread64_quiet(VMCS_TSC_OFFSET));
+            // this->dump("virtual_apic_address ", m_intrinsic->vmread64_quiet(VMCS_VIRTUAL_APIC_ADDRESS));
+            // this->dump("apic_access_address ", m_intrinsic->vmread64_quiet(VMCS_APIC_ACCESS_ADDRESS));
+            // this->dump("posted_interrupt_descriptor_address ", m_intrinsic->vmread64_quiet(VMCS_POSTED_INTERRUPT_DESCRIPTOR_ADDRESS));
+            // this->dump("vm_function_controls ", m_intrinsic->vmread64_quiet(VMCS_VM_FUNCTION_CONTROLS));
+            // this->dump("ept_pointer ", m_intrinsic->vmread64_quiet(VMCS_EPT_POINTER));
+            // this->dump("eoi_exit_bitmap0 ", m_intrinsic->vmread64_quiet(VMCS_EOI_EXIT_BITMAP0));
+            // this->dump("eoi_exit_bitmap1 ", m_intrinsic->vmread64_quiet(VMCS_EOI_EXIT_BITMAP1));
+            // this->dump("eoi_exit_bitmap2 ", m_intrinsic->vmread64_quiet(VMCS_EOI_EXIT_BITMAP2));
+            // this->dump("eoi_exit_bitmap3 ", m_intrinsic->vmread64_quiet(VMCS_EOI_EXIT_BITMAP3));
+            // this->dump("eptp_list_address ", m_intrinsic->vmread64_quiet(VMCS_EPTP_LIST_ADDRESS));
+            // this->dump("vmread_bitmap_address ", m_intrinsic->vmread64_quiet(VMCS_VMREAD_BITMAP_ADDRESS));
+            // this->dump("vmwrite_bitmap_address ", m_intrinsic->vmread64_quiet(VMCS_VMWRITE_BITMAP_ADDRESS));
+            // this->dump("virt_exception_information_address ", m_intrinsic->vmread64_quiet(VMCS_VIRT_EXCEPTION_INFORMATION_ADDRESS));
+            // this->dump("xss_exiting_bitmap ", m_intrinsic->vmread64_quiet(VMCS_XSS_EXITING_BITMAP));
+            // this->dump("encls_exiting_bitmap ", m_intrinsic->vmread64_quiet(VMCS_ENCLS_EXITING_BITMAP));
+            // this->dump("sub_page_permission_table_pointer ", m_intrinsic->vmread64_quiet(VMCS_SUB_PAGE_PERMISSION_TABLE_POINTER));
+            // this->dump("tls_multiplier ", m_intrinsic->vmread64_quiet(VMCS_TLS_MULTIPLIER));
 
             /// 64 Bit Read-Only Fields
             ///
 
-            bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
+            // bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
+            // bsl::print() << bsl::rst << bsl::endl;
 
-            this->dump("guest_physical_address ", m_intrinsic->vmread64_quiet(VMCS_GUEST_PHYSICAL_ADDRESS));
+            // this->dump("guest_physical_address ", m_intrinsic->vmread64_quiet(VMCS_GUEST_PHYSICAL_ADDRESS));
 
             /// 64 Bit Guest Fields
             ///
 
-            bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
+            // bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
+            // bsl::print() << bsl::rst << bsl::endl;
 
-            this->dump("vmcs_link_pointer ", m_intrinsic->vmread64_quiet(VMCS_VMCS_LINK_POINTER));
-            this->dump("ia32_debugctl ", m_intrinsic->vmread64_quiet(VMCS_GUEST_IA32_DEBUGCTL));
-            this->dump("ia32_pat ", m_intrinsic->vmread64_quiet(VMCS_GUEST_IA32_PAT));
-            this->dump("ia32_efer ", m_intrinsic->vmread64_quiet(VMCS_GUEST_IA32_EFER));
-            this->dump("ia32_perf_global_ctrl ", m_intrinsic->vmread64_quiet(VMCS_GUEST_IA32_PERF_GLOBAL_CTRL));
-            this->dump("guest_pdpte0 ", m_intrinsic->vmread64_quiet(VMCS_GUEST_PDPTE0));
-            this->dump("guest_pdpte1 ", m_intrinsic->vmread64_quiet(VMCS_GUEST_PDPTE1));
-            this->dump("guest_pdpte2 ", m_intrinsic->vmread64_quiet(VMCS_GUEST_PDPTE2));
-            this->dump("guest_pdpte3 ", m_intrinsic->vmread64_quiet(VMCS_GUEST_PDPTE3));
-            this->dump("ia32_bndcfgs ", m_intrinsic->vmread64_quiet(VMCS_GUEST_IA32_BNDCFGS));
-            this->dump("guest_rtit_ctl ", m_intrinsic->vmread64_quiet(VMCS_GUEST_RTIT_CTL));
-            this->dump("ia32_star ", bsl::make_safe(m_vmcs_missing_registers.guest_ia32_star));
-            this->dump("ia32_lstar ", bsl::make_safe(m_vmcs_missing_registers.guest_ia32_lstar));
-            this->dump("ia32_cstar ", bsl::make_safe(m_vmcs_missing_registers.guest_ia32_cstar));
-            this->dump("ia32_fmask ", bsl::make_safe(m_vmcs_missing_registers.guest_ia32_fmask));
-            this->dump("ia32_kernel_gs_base ", bsl::make_safe(m_vmcs_missing_registers.guest_ia32_kernel_gs_base));
+            // this->dump("vmcs_link_pointer ", m_intrinsic->vmread64_quiet(VMCS_VMCS_LINK_POINTER));
+            // this->dump("ia32_debugctl ", m_intrinsic->vmread64_quiet(VMCS_GUEST_IA32_DEBUGCTL));
+            // this->dump("ia32_pat ", m_intrinsic->vmread64_quiet(VMCS_GUEST_IA32_PAT));
+            // this->dump("ia32_efer ", m_intrinsic->vmread64_quiet(VMCS_GUEST_IA32_EFER));
+            // this->dump("ia32_perf_global_ctrl ", m_intrinsic->vmread64_quiet(VMCS_GUEST_IA32_PERF_GLOBAL_CTRL));
+            // this->dump("guest_pdpte0 ", m_intrinsic->vmread64_quiet(VMCS_GUEST_PDPTE0));
+            // this->dump("guest_pdpte1 ", m_intrinsic->vmread64_quiet(VMCS_GUEST_PDPTE1));
+            // this->dump("guest_pdpte2 ", m_intrinsic->vmread64_quiet(VMCS_GUEST_PDPTE2));
+            // this->dump("guest_pdpte3 ", m_intrinsic->vmread64_quiet(VMCS_GUEST_PDPTE3));
+            // this->dump("ia32_bndcfgs ", m_intrinsic->vmread64_quiet(VMCS_GUEST_IA32_BNDCFGS));
+            // this->dump("guest_rtit_ctl ", m_intrinsic->vmread64_quiet(VMCS_GUEST_RTIT_CTL));
+            // this->dump("ia32_star ", bsl::make_safe(m_vmcs_missing_registers.guest_ia32_star));
+            // this->dump("ia32_lstar ", bsl::make_safe(m_vmcs_missing_registers.guest_ia32_lstar));
+            // this->dump("ia32_cstar ", bsl::make_safe(m_vmcs_missing_registers.guest_ia32_cstar));
+            // this->dump("ia32_fmask ", bsl::make_safe(m_vmcs_missing_registers.guest_ia32_fmask));
+            // this->dump("ia32_kernel_gs_base ", bsl::make_safe(m_vmcs_missing_registers.guest_ia32_kernel_gs_base));
 
             /// 32 Bit Control Fields
             ///
 
-            bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
+            // bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
+            // bsl::print() << bsl::rst << bsl::endl;
 
-            this->dump("pin_based_vm_execution_ctls ", m_intrinsic->vmread32_quiet(VMCS_PIN_BASED_VM_EXECUTION_CTLS));
-            this->dump("primary_proc_based_vm_execution_ctls ", m_intrinsic->vmread32_quiet(VMCS_PRIMARY_PROC_BASED_VM_EXECUTION_CTLS));
-            this->dump("exception_bitmap ", m_intrinsic->vmread32_quiet(VMCS_EXCEPTION_BITMAP));
-            this->dump("page_fault_error_code_mask ", m_intrinsic->vmread32_quiet(VMCS_PAGE_FAULT_ERROR_CODE_MASK));
-            this->dump("page_fault_error_code_match ", m_intrinsic->vmread32_quiet(VMCS_PAGE_FAULT_ERROR_CODE_MATCH));
-            this->dump("cr3_target_count ", m_intrinsic->vmread32_quiet(VMCS_CR3_TARGET_COUNT));
-            this->dump("vmexit_ctls ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_CTLS));
-            this->dump("vmexit_msr_store_count ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_MSR_STORE_COUNT));
-            this->dump("vmexit_msr_load_count ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_MSR_LOAD_COUNT));
-            this->dump("vmentry_ctls ", m_intrinsic->vmread32_quiet(VMCS_VMENTRY_CTLS));
-            this->dump("vmentry_msr_load_count ", m_intrinsic->vmread32_quiet(VMCS_VMENTRY_MSR_LOAD_COUNT));
-            this->dump("vmentry_interrupt_information_field ", m_intrinsic->vmread32_quiet(VMCS_VMENTRY_INTERRUPT_INFORMATION_FIELD));
-            this->dump("vmentry_exception_error_code ", m_intrinsic->vmread32_quiet(VMCS_VMENTRY_EXCEPTION_ERROR_CODE));
-            this->dump("vmentry_instruction_length ", m_intrinsic->vmread32_quiet(VMCS_VMENTRY_INSTRUCTION_LENGTH));
-            this->dump("tpr_threshold ", m_intrinsic->vmread32_quiet(VMCS_TPR_THRESHOLD));
-            this->dump("secondary_proc_based_vm_execution_ctls ", m_intrinsic->vmread32_quiet(VMCS_SECONDARY_PROC_BASED_VM_EXECUTION_CTLS));
-            this->dump("ple_gap ", m_intrinsic->vmread32_quiet(VMCS_PLE_GAP));
-            this->dump("ple_window ", m_intrinsic->vmread32_quiet(VMCS_PLE_WINDOW));
+            // this->dump("pin_based_vm_execution_ctls ", m_intrinsic->vmread32_quiet(VMCS_PIN_BASED_VM_EXECUTION_CTLS));
+            // this->dump("primary_proc_based_vm_execution_ctls ", m_intrinsic->vmread32_quiet(VMCS_PRIMARY_PROC_BASED_VM_EXECUTION_CTLS));
+            // this->dump("exception_bitmap ", m_intrinsic->vmread32_quiet(VMCS_EXCEPTION_BITMAP));
+            // this->dump("page_fault_error_code_mask ", m_intrinsic->vmread32_quiet(VMCS_PAGE_FAULT_ERROR_CODE_MASK));
+            // this->dump("page_fault_error_code_match ", m_intrinsic->vmread32_quiet(VMCS_PAGE_FAULT_ERROR_CODE_MATCH));
+            // this->dump("cr3_target_count ", m_intrinsic->vmread32_quiet(VMCS_CR3_TARGET_COUNT));
+            // this->dump("vmexit_ctls ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_CTLS));
+            // this->dump("vmexit_msr_store_count ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_MSR_STORE_COUNT));
+            // this->dump("vmexit_msr_load_count ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_MSR_LOAD_COUNT));
+            // this->dump("vmentry_ctls ", m_intrinsic->vmread32_quiet(VMCS_VMENTRY_CTLS));
+            // this->dump("vmentry_msr_load_count ", m_intrinsic->vmread32_quiet(VMCS_VMENTRY_MSR_LOAD_COUNT));
+            // this->dump("vmentry_interrupt_information_field ", m_intrinsic->vmread32_quiet(VMCS_VMENTRY_INTERRUPT_INFORMATION_FIELD));
+            // this->dump("vmentry_exception_error_code ", m_intrinsic->vmread32_quiet(VMCS_VMENTRY_EXCEPTION_ERROR_CODE));
+            // this->dump("vmentry_instruction_length ", m_intrinsic->vmread32_quiet(VMCS_VMENTRY_INSTRUCTION_LENGTH));
+            // this->dump("tpr_threshold ", m_intrinsic->vmread32_quiet(VMCS_TPR_THRESHOLD));
+            // this->dump("secondary_proc_based_vm_execution_ctls ", m_intrinsic->vmread32_quiet(VMCS_SECONDARY_PROC_BASED_VM_EXECUTION_CTLS));
+            // this->dump("ple_gap ", m_intrinsic->vmread32_quiet(VMCS_PLE_GAP));
+            // this->dump("ple_window ", m_intrinsic->vmread32_quiet(VMCS_PLE_WINDOW));
 
             /// 32 Bit Read-Only Fields
             ///
 
-            bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
+            // bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
+            // bsl::print() << bsl::rst << bsl::endl;
 
-            this->dump("exit_reason ", m_intrinsic->vmread32_quiet(VMCS_EXIT_REASON));
-            this->dump("vmexit_interruption_information ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_INTERRUPTION_INFORMATION));
-            this->dump("vmexit_interruption_error_code ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE));
-            this->dump("idt_vectoring_information_field ", m_intrinsic->vmread32_quiet(VMCS_IDT_VECTORING_INFORMATION_FIELD));
-            this->dump("idt_vectoring_error_code ", m_intrinsic->vmread32_quiet(VMCS_IDT_VECTORING_ERROR_CODE));
-            this->dump("vmexit_instruction_length ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_INSTRUCTION_LENGTH));
-            this->dump("vmexit_instruction_information ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_INSTRUCTION_INFORMATION));
+            // this->dump("exit_reason ", m_intrinsic->vmread32_quiet(VMCS_EXIT_REASON));
+            // this->dump("vmexit_interruption_information ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_INTERRUPTION_INFORMATION));
+            // this->dump("vmexit_interruption_error_code ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE));
+            // this->dump("idt_vectoring_information_field ", m_intrinsic->vmread32_quiet(VMCS_IDT_VECTORING_INFORMATION_FIELD));
+            // this->dump("idt_vectoring_error_code ", m_intrinsic->vmread32_quiet(VMCS_IDT_VECTORING_ERROR_CODE));
+            // this->dump("vmexit_instruction_length ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_INSTRUCTION_LENGTH));
+            // this->dump("vmexit_instruction_information ", m_intrinsic->vmread32_quiet(VMCS_VMEXIT_INSTRUCTION_INFORMATION));
 
             /// 32 Bit Guest Fields
             ///
@@ -3575,30 +3575,30 @@ namespace mk
             /// Natural-Width Control Fields
             ///
 
-            bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
+            // bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
+            // bsl::print() << bsl::rst << bsl::endl;
 
-            this->dump("cr0_guest_host_mask ", m_intrinsic->vmread64_quiet(VMCS_CR0_GUEST_HOST_MASK));
-            this->dump("cr4_guest_host_mask ", m_intrinsic->vmread64_quiet(VMCS_CR4_GUEST_HOST_MASK));
-            this->dump("cr0_read_shadow ", m_intrinsic->vmread64_quiet(VMCS_CR0_READ_SHADOW));
-            this->dump("cr4_read_shadow ", m_intrinsic->vmread64_quiet(VMCS_CR4_READ_SHADOW));
-            this->dump("cr3_target_value0 ", m_intrinsic->vmread64_quiet(VMCS_CR3_TARGET_VALUE0));
-            this->dump("cr3_target_value1 ", m_intrinsic->vmread64_quiet(VMCS_CR3_TARGET_VALUE1));
-            this->dump("cr3_target_value2 ", m_intrinsic->vmread64_quiet(VMCS_CR3_TARGET_VALUE2));
-            this->dump("cr3_target_value3 ", m_intrinsic->vmread64_quiet(VMCS_CR3_TARGET_VALUE3));
+            // this->dump("cr0_guest_host_mask ", m_intrinsic->vmread64_quiet(VMCS_CR0_GUEST_HOST_MASK));
+            // this->dump("cr4_guest_host_mask ", m_intrinsic->vmread64_quiet(VMCS_CR4_GUEST_HOST_MASK));
+            // this->dump("cr0_read_shadow ", m_intrinsic->vmread64_quiet(VMCS_CR0_READ_SHADOW));
+            // this->dump("cr4_read_shadow ", m_intrinsic->vmread64_quiet(VMCS_CR4_READ_SHADOW));
+            // this->dump("cr3_target_value0 ", m_intrinsic->vmread64_quiet(VMCS_CR3_TARGET_VALUE0));
+            // this->dump("cr3_target_value1 ", m_intrinsic->vmread64_quiet(VMCS_CR3_TARGET_VALUE1));
+            // this->dump("cr3_target_value2 ", m_intrinsic->vmread64_quiet(VMCS_CR3_TARGET_VALUE2));
+            // this->dump("cr3_target_value3 ", m_intrinsic->vmread64_quiet(VMCS_CR3_TARGET_VALUE3));
 
             /// Natural-Width Read-Only Fields
             ///
 
-            bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
-            bsl::print() << bsl::rst << bsl::endl;
+            // bsl::print() << bsl::ylw << "+--------------------------------------------------------------+";
+            // bsl::print() << bsl::rst << bsl::endl;
 
-            this->dump("exit_qualification ", m_intrinsic->vmread64_quiet(VMCS_EXIT_QUALIFICATION));
-            this->dump("io_rcx ", m_intrinsic->vmread64_quiet(VMCS_IO_RCX));
-            this->dump("io_rsi ", m_intrinsic->vmread64_quiet(VMCS_IO_RSI));
-            this->dump("io_rdi ", m_intrinsic->vmread64_quiet(VMCS_IO_RDI));
-            this->dump("io_rip ", m_intrinsic->vmread64_quiet(VMCS_IO_RIP));
-            this->dump("guest_linear_address ", m_intrinsic->vmread64_quiet(VMCS_GUEST_LINEAR_ADDRESS));
+            // this->dump("exit_qualification ", m_intrinsic->vmread64_quiet(VMCS_EXIT_QUALIFICATION));
+            // this->dump("io_rcx ", m_intrinsic->vmread64_quiet(VMCS_IO_RCX));
+            // this->dump("io_rsi ", m_intrinsic->vmread64_quiet(VMCS_IO_RSI));
+            // this->dump("io_rdi ", m_intrinsic->vmread64_quiet(VMCS_IO_RDI));
+            // this->dump("io_rip ", m_intrinsic->vmread64_quiet(VMCS_IO_RIP));
+            // this->dump("guest_linear_address ", m_intrinsic->vmread64_quiet(VMCS_GUEST_LINEAR_ADDRESS));
 
             /// Natural-Width Guest Fields
             ///

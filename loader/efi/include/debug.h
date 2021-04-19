@@ -49,7 +49,7 @@ static inline void
 console_write(char const *const str)
 {
     uint64_t i = 0;
-    char buf[4];
+    char buf[4] = {0};
 
     /**
      * NOTE:
@@ -65,9 +65,6 @@ console_write(char const *const str)
 
     while (str[i] != '\0') {
         buf[0] = str[i];
-        buf[1] = 0;
-        buf[2] = 0;
-        buf[3] = 0;
         if (g_st->ConOut->OutputString(g_st->ConOut, ((CHAR16 *)buf))) {
             return;
         }
@@ -79,7 +76,7 @@ console_write(char const *const str)
 static inline void
 console_write_c(char const c)
 {
-    char buf[4];
+    char buf[4] = {0};
 
     if (c == '\n') {
         console_write("\r\n");
@@ -103,12 +100,8 @@ console_write_c(char const c)
      */
 
     buf[0] = c;
-    buf[1] = 0;
-    buf[2] = 0;
-    buf[3] = 0;
     g_st->ConOut->OutputString(g_st->ConOut, ((CHAR16 *)buf));
 }
-
 
 /**
  * <!-- description -->

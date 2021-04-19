@@ -169,21 +169,21 @@ namespace mk
                 return bsl::errc_success;
             }
 
-            bsl::print() << bsl::mag;
-            bsl::print() << " ___                __ _           _         \n";
-            bsl::print() << "| _ ) __ _ _ _ ___ / _| |__ _ _ _ | |__      \n";
-            bsl::print() << "| _ \\/ _` | '_/ -_)  _| / _` | ' \\| / /    \n";
-            bsl::print() << "|___/\\__,_|_| \\___|_| |_\\__,_|_||_|_\\_\\ \n";
-            bsl::print() << "\n";
-            bsl::print() << bsl::grn;
-            bsl::print() << "Please give us a star on: ";
-            bsl::print() << bsl::rst;
-            bsl::print() << "https://github.com/Bareflank/hypervisor\n";
-            bsl::print() << bsl::rst;
-            bsl::print() << "=================================";
-            bsl::print() << "=================================";
-            bsl::print() << "\n";
-            bsl::print() << "\n";
+            // bsl::print() << bsl::mag;
+            // bsl::print() << " ___                __ _           _         \n";
+            // bsl::print() << "| _ ) __ _ _ _ ___ / _| |__ _ _ _ | |__      \n";
+            // bsl::print() << "| _ \\/ _` | '_/ -_)  _| / _` | ' \\| / /    \n";
+            // bsl::print() << "|___/\\__,_|_| \\___|_| |_\\__,_|_||_|_\\_\\ \n";
+            // bsl::print() << "\n";
+            // bsl::print() << bsl::grn;
+            // bsl::print() << "Please give us a star on: ";
+            // bsl::print() << bsl::rst;
+            // bsl::print() << "https://github.com/Bareflank/hypervisor\n";
+            // bsl::print() << bsl::rst;
+            // bsl::print() << "=================================";
+            // bsl::print() << "=================================";
+            // bsl::print() << "\n";
+            // bsl::print() << "\n";
 
             ret = m_page_pool.initialize(args->page_pool);
             if (bsl::unlikely(!ret)) {

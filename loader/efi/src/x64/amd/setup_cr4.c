@@ -29,6 +29,5 @@
  *   @brief Ensures that CR4 is set up properly.
  */
 void
-setup_cr4()
-{
-}
+setup_cr4(void)
+{}

@@ -24,13 +24,18 @@
  * SOFTWARE.
  */
 
-#ifndef SETUP_CR0_H
-#define SETUP_CR0_H
+#ifndef INTRINSIC_LTR_H
+#define INTRINSIC_LTR_H
+
+#include <types.h>
 
 /**
  * <!-- description -->
- *   @brief Ensures that CR0 is set up properly.
+ *   @brief Loads the TR segment register with the provided value.
+ *
+ * <!-- inputs/outputs -->
+ *   @param val the value to load into TR.
  */
-void setup_cr0();
+void intrinsic_ltr(uint16_t const val);
 
 #endif

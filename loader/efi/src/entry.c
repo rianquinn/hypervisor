@@ -24,6 +24,7 @@
  * SOFTWARE.
  */
 
+#include <arch_init.h>
 #include <debug.h>
 #include <efi/efi_mp_services_protocol.h>
 #include <efi/efi_simple_file_system_protocol.h>
@@ -35,7 +36,6 @@
 #include <span_t.h>
 #include <start_vmm.h>
 #include <start_vmm_args_t.h>
-#include <arch_init.h>
 
 /**
  * NOTE:
@@ -242,11 +242,13 @@ load_images_and_start(void)
 
     if (start_vmm(&start_args)) {
         bferror("start_vmm failed");
-        return EFI_SUCCESS;
+        return status;
     }
 
     return EFI_SUCCESS;
 }
+
+#include <dump_vmm_on_error_if_needed.h>
 
 /**
  * <!-- description -->
@@ -273,28 +275,45 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     g_st = SystemTable;
     if (g_st->Hdr.Revision < EFI_1_10_SYSTEM_TABLE_REVISION) {
         g_st->ConOut->OutputString(g_st->ConOut, L"EFI version not supported\r\n");
-        return EFI_UNSUPPORTED;
+        return EFI_SUCCESS;
     }
 
-    arch_init();
     serial_init();
+
+    bfdebug_d32("line", __LINE__);
+
+    status = arch_init();
+    if (EFI_ERROR(status)) {
+        bferror_x64("arch_init failed", status);
+        return EFI_SUCCESS;
+    }
+
+    bfdebug_d32("line", __LINE__);
 
     if (loader_init()) {
         bferror("loader_init failed");
         return EFI_SUCCESS;
     }
 
+    bfdebug_d32("line", __LINE__);
+
     status = locate_protocols();
     if (EFI_ERROR(status)) {
         bferror_x64("locate_protocols failed", status);
-        return status;
+        return EFI_SUCCESS;
     }
+
+    bfdebug_d32("line", __LINE__);
 
     status = load_images_and_start();
     if (EFI_ERROR(status)) {
         bferror_x64("load_images_and_start failed", status);
-        return status;
+        return EFI_SUCCESS;
     }
+
+    bfdebug_d32("line", __LINE__);
+
+    dump_vmm_on_error_if_needed();
 
     g_st->ConOut->OutputString(g_st->ConOut, L"bareflank successfully started\r\n");
     return EFI_SUCCESS;
