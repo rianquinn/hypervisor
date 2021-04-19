@@ -34,9 +34,8 @@
  *   @brief Ensures that TSS is set up properly.
  *
  * <!-- inputs/outputs -->
- *   @return returns EFI_SUCCESS on success, and a non-EFI_SUCCESS value on
- *     failure.
+ *   @return Returns 0 on success, LOADER_FAILURE otherwise
  */
-EFI_STATUS setup_tss();
+int64_t setup_tss();
 
 #endif

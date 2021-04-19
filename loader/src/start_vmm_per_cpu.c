@@ -35,7 +35,6 @@
 #include <dump_mk_stack.h>
 #include <dump_mk_state.h>
 #include <dump_root_vp_state.h>
-#include <dump_vmm_on_error_if_needed.h>
 #include <free_mk_args.h>
 #include <free_mk_stack.h>
 #include <free_mk_state.h>
@@ -59,6 +58,7 @@
 #include <platform.h>
 #include <send_command_report_on.h>
 #include <types.h>
+#include <check_for_hve_support.h>
 
 /**
  * <!-- description -->
@@ -82,6 +82,16 @@ start_vmm_per_cpu(uint32_t const cpu)
 
     if (((uint64_t)cpu) >= HYPERVISOR_MAX_VPS_PER_VM) {
         bferror("cpu out of range");
+        return LOADER_FAILURE;
+    }
+
+    if (platform_arch_init()) {
+        bferror("platform_arch_init failed");
+        return LOADER_FAILURE;
+    }
+
+    if (check_for_hve_support()) {
+        bferror("check_for_hve_support failed");
         return LOADER_FAILURE;
     }
 
@@ -185,7 +195,7 @@ start_vmm_per_cpu(uint32_t const cpu)
 #endif
 
     if (demote(g_mk_args[cpu], g_mk_state[cpu], g_root_vp_state[cpu])) {
-        dump_vmm_on_error_if_needed();
+        platform_dump_vmm();
         bferror("demote failed");
         goto demote_failed;
     }

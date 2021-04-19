@@ -26,7 +26,6 @@
 
 #include <constants.h>
 #include <debug.h>
-#include <efi/efi_status.h>
 #include <efi/efi_system_table.h>
 #include <global_descriptor_table_register_t.h>
 #include <intrinsic_lgdt.h>
@@ -43,15 +42,19 @@
 /** @brief defines our custom TR limit */
 #define UEFI_TR_LIMIT ((uint32_t)(sizeof(struct tss_t) - ((uint64_t)1)))
 
+/** @brief stores the new GDT that UEFI will use */
+struct global_descriptor_table_register_t g_new_gdtr = {0};
+/** @brief stores the selector for the TR in our new GDT  */
+uint16_t g_tr_selector = ((uint16_t)0);
+
 /**
  * <!-- description -->
  *   @brief Ensures that the TSS is set up properly.
  *
  * <!-- inputs/outputs -->
- *   @return returns EFI_SUCCESS on success, and a non-EFI_SUCCESS value on
- *     failure.
+ *   @return Returns 0 on success, LOADER_FAILURE otherwise
  */
-EFI_STATUS
+int64_t
 setup_tss(void)
 {
     int64_t ret;
@@ -74,7 +77,6 @@ setup_tss(void)
 
     struct tss_t *tss;
     struct global_descriptor_table_register_t old_gdtr;
-    struct global_descriptor_table_register_t new_gdtr;
 
     if (intrinsic_str() != ((uint16_t)0)) {
 
@@ -85,15 +87,28 @@ setup_tss(void)
          *   need to actually execute this code.
          */
 
-        return EFI_SUCCESS;
+        return LOADER_SUCCESS;
     }
 
     intrinsic_sgdt(&old_gdtr);
-    old_gdtr.limit += ((uint16_t)1);
 
-    if (old_gdtr.limit > ((uint16_t)0xFFF0)) {
+    if (old_gdtr.base == g_new_gdtr.base) {
+
+        /**
+         * NOTE:
+         * - UEFI will use the BSP's GDT on any AP that is started. This
+         *   detects when that happens, as this means that we already are
+         *   using our new GDT, and we just need to set TR and we are done.
+         */
+
+        intrinsic_ltr(g_tr_selector);
+        return LOADER_SUCCESS;
+    }
+
+    old_gdtr.limit += ((uint16_t)1);
+    if (old_gdtr.limit > ((uint16_t)0xFF0)) {
         bferror("system unsupported. existing GDT is too large");
-        return EFI_LOAD_ERROR;
+        return LOADER_FAILURE;
     }
 
     /**
@@ -103,13 +118,13 @@ setup_tss(void)
      *   available entry in the old GDT.
      */
 
-    new_gdtr.base = (uint64_t *)platform_alloc(HYPERVISOR_PAGE_SIZE);
-    if (((void *)0) == new_gdtr.base) {
+    g_new_gdtr.base = (uint64_t *)platform_alloc(HYPERVISOR_PAGE_SIZE);
+    if (((void *)0) == g_new_gdtr.base) {
         bferror("platform_alloc failed");
         goto platform_alloc_gdt_failed;
     }
 
-    new_gdtr.limit = (uint16_t)(HYPERVISOR_PAGE_SIZE - ((uint64_t)1));
+    g_new_gdtr.limit = (uint16_t)(HYPERVISOR_PAGE_SIZE - ((uint64_t)1));
 
     /**
      * TODO:
@@ -130,7 +145,7 @@ setup_tss(void)
         goto platform_alloc_tss_failed;
     }
 
-    tss->tss->iomap = ((uint16_t)sizeof(struct tss_t));
+    tss->iomap = ((uint16_t)sizeof(struct tss_t));
 
     /**
      * NOTE:
@@ -138,11 +153,12 @@ setup_tss(void)
      *   old GDT and then add the TSS.
      */
 
-    g_st->BootServices->CopyMem(new_gdtr.base, old_gdtr.base, old_gdtr.limit);
+    g_tr_selector = old_gdtr.limit;
+    g_st->BootServices->CopyMem(g_new_gdtr.base, old_gdtr.base, old_gdtr.limit);
 
     ret = set_gdt_descriptor(    // --
-        &new_gdtr,               // --
-        old_gdtr.limit,          // --
+        &g_new_gdtr,               // --
+        g_tr_selector,          // --
         (uint64_t)tss,           // --
         UEFI_TR_LIMIT,           // --
         UEFI_TR_ATTRIB);
@@ -160,16 +176,16 @@ setup_tss(void)
      *   all identical.
      */
 
-    intrinsic_lgdt(&new_gdtr);
-    intrinsic_ltr(old_gdtr.limit);
+    intrinsic_lgdt(&g_new_gdtr);
+    intrinsic_ltr(g_tr_selector);
 
-    return EFI_SUCCESS;
+    return LOADER_SUCCESS;
 
 set_descriptor_failed:
     platform_free(tss, HYPERVISOR_PAGE_SIZE);
 platform_alloc_tss_failed:
-    platform_free(new_gdtr.base, HYPERVISOR_PAGE_SIZE);
+    platform_free(g_new_gdtr.base, HYPERVISOR_PAGE_SIZE);
 platform_alloc_gdt_failed:
 
-    return EFI_LOAD_ERROR;
+    return LOADER_FAILURE;
 }

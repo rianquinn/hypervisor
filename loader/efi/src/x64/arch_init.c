@@ -27,16 +27,16 @@
 #include <setup_cr0.h>
 #include <setup_cr4.h>
 #include <setup_tss.h>
+#include <types.h>
 
 /**
  * <!-- description -->
  *   @brief Sets up the CPU above and beyond what UEFI has provided.
  *
  * <!-- inputs/outputs -->
- *   @return returns EFI_SUCCESS on success, and a non-EFI_SUCCESS value on
- *     failure.
+ *   @return Returns 0 on success, LOADER_FAILURE otherwise
  */
-EFI_STATUS
+int64_t
 arch_init(void)
 {
     setup_cr0();

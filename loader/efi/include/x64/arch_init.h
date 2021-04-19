@@ -27,16 +27,15 @@
 #ifndef ARCH_INIT_H
 #define ARCH_INIT_H
 
-#include <efi/efi_status.h>
+#include <types.h>
 
 /**
  * <!-- description -->
  *   @brief Sets up the CPU above and beyond what UEFI has provided.
  *
  * <!-- inputs/outputs -->
- *   @return returns EFI_SUCCESS on success, and a non-EFI_SUCCESS value on
- *     failure.
+ *   @return Returns 0 on success, LOADER_FAILURE otherwise
  */
-EFI_STATUS arch_init();
+int64_t arch_init();
 
 #endif

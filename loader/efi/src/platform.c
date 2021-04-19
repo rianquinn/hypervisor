@@ -33,6 +33,7 @@
 #include <g_mk_debug_ring.h>
 #include <platform.h>
 #include <work_on_cpu_callback_args.h>
+#include <arch_init.h>
 
 /**
  * <!-- description -->
@@ -213,14 +214,14 @@ platform_memcpy(void *const dst, void const *const src, uint64_t const num)
 /**
  * <!-- description -->
  *   @brief Copies "num" bytes from "src" to "dst". If "src" or "dst" are
- *     NULL, returns FAILURE, otherwise returns 0. Note that this function can
+ *     NULL, returns LOADER_FAILURE, otherwise returns 0. Note that this function can
  *     be used to copy memory from userspace via an IOCTL.
  *
  * <!-- inputs/outputs -->
  *   @param dst a pointer to the memory to copy to
  *   @param src a pointer to the memory to copy from
  *   @param num the number of bytes to copy
- *   @return If "src" or "dst" are NULL, returns FAILURE, otherwise
+ *   @return If "src" or "dst" are NULL, returns LOADER_FAILURE, otherwise
  *     returns 0.
  */
 int64_t
@@ -243,14 +244,14 @@ platform_copy_from_user(void *const dst, void const *const src, uint64_t const n
 /**
  * <!-- description -->
  *   @brief Copies "num" bytes from "src" to "dst". If "src" or "dst" are
- *     NULL, returns FAILURE, otherwise returns 0. Note that this function can
+ *     NULL, returns LOADER_FAILURE, otherwise returns 0. Note that this function can
  *     be used to copy memory to userspace via an IOCTL.
  *
  * <!-- inputs/outputs -->
  *   @param dst a pointer to the memory to copy to
  *   @param src a pointer to the memory to copy from
  *   @param num the number of bytes to copy
- *   @return If "src" or "dst" are NULL, returns FAILURE, otherwise
+ *   @return If "src" or "dst" are NULL, returns LOADER_FAILURE, otherwise
  *     returns 0.
  */
 int64_t
@@ -403,12 +404,10 @@ platform_on_each_cpu(platform_per_cpu_func const func, uint32_t const order)
 
 /**
  * <!-- description -->
- *   @brief Dumps the contents of the ring buffer in the event of the
- *     VMM failing to boot. This is only needed on platforms that do not
- *     have a separate dump capability like UEFI
+ *   @brief Dumps the contents of the VMM's ring buffer.
  */
 void
-dump_vmm_on_error_if_needed(void)
+platform_dump_vmm(void)
 {
     uint64_t epos = g_mk_debug_ring->epos;
     uint64_t spos = g_mk_debug_ring->spos;
@@ -432,4 +431,19 @@ dump_vmm_on_error_if_needed(void)
     }
 
     console_write("\r\n");
+}
+
+/**
+ * <!-- description -->
+ *   @brief Initializes the archiecture. Some platforms might need per CPU
+ *     initialization logic to get the CPU set up. Most platforms ignore
+ *     calls to this function
+ *
+ * <!-- inputs/outputs -->
+ *   @return Returns 0 on success, LOADER_FAILURE otherwise
+ */
+int64_t
+platform_arch_init(void)
+{
+    return arch_init();
 }
