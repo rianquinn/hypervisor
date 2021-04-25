@@ -49,7 +49,7 @@
 #include <types.h>
 
 /** @brief defines the default value of rflags  */
-#define DEFAULT_RFLAGS ((uint64_t)0x2)
+#define DEFAULT_RFLAGS ((uint64_t)0x40002)
 
 /** @brief defines the default value of CR0  */
 #define DEFAULT_CR0 ((uint64_t)0x80050033)
@@ -59,7 +59,8 @@
 /** @brief defines the default value of CR0 bits that must be off  */
 #define DEFAULT_CR0_OFF ((uint64_t)0xFFFFFFFFFFFFFFFF)
 /** @brief defines the default value of CR4 bits that must be off */
-#define DEFAULT_CR4_OFF ((uint64_t)0xFFFFFFFFFF9FFFFF)
+// #define DEFAULT_CR4_OFF ((uint64_t)0xFFFFFFFFFF9FFFFF)
+#define DEFAULT_CR4_OFF ((uint64_t)0xFFFFFFFFFFFFFFFF)
 
 /** @brief defines the MSR_IA32_EFER MSR  */
 #define MSR_IA32_EFER ((uint32_t)0xC0000080)
@@ -164,7 +165,7 @@
 #define MK_MSR_IA32_STAR ((uint64_t)0x001B001000000000)
 
 /** @brief defines the FMASK MSR used by the microkernel */
-#define MK_MSR_IA32_FMASK ((uint64_t)0xFFFFFFFFFFFFFFFD)
+#define MK_MSR_IA32_FMASK ((uint64_t)0xFFFFFFFFFFFBFFFD)
 
 /**
  * <!-- description -->

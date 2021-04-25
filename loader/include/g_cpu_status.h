@@ -24,8 +24,20 @@
  * SOFTWARE.
  */
 
-#include <constants.h>
-#include <mk_args_t.h>
+#ifndef CPU_STATUS_H
+#define CPU_STATUS_H
 
-/** @brief stores the microkernel's _start args */
-struct mk_args_t *g_mk_args[HYPERVISOR_MAX_PPS] = {0};
+#include <constants.h>
+#include <types.h>
+
+/** @brief defines when the CPU is stopped */
+#define CPU_STATUS_STOPPED 0U
+/** @brief defines when the CPU is running */
+#define CPU_STATUS_RUNNING 1U
+/** @brief defines when the CPU is corrupt */
+#define CPU_STATUS_CORRUPT 2U
+
+/** @brief stores the current state of each CPU */
+extern uint32_t g_cpu_status[HYPERVISOR_MAX_PPS];
+
+#endif

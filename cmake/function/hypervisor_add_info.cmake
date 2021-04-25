@@ -178,11 +178,6 @@ macro(hypervisor_add_info)
     )
 
     add_custom_command(TARGET info
-        COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_MAX_VPS_PER_VM      ${BF_COLOR_CYN}${HYPERVISOR_MAX_VPS_PER_VM}${BF_COLOR_RST}"
-        VERBATIM
-    )
-
-    add_custom_command(TARGET info
         COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_MAX_VPSS            ${BF_COLOR_CYN}${HYPERVISOR_MAX_VPSS}${BF_COLOR_RST}"
         VERBATIM
     )

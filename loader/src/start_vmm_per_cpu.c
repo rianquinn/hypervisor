@@ -40,6 +40,7 @@
 #include <free_mk_stack.h>
 #include <free_mk_state.h>
 #include <free_root_vp_state.h>
+#include <g_cpu_status.h>
 #include <g_ext_elf_files.h>
 #include <g_mk_args.h>
 #include <g_mk_debug_ring.h>
@@ -80,8 +81,13 @@ start_vmm_per_cpu(uint32_t const cpu)
     uint64_t mk_stack_offs;
     uint64_t mk_stack_virt;
 
-    if (((uint64_t)cpu) >= HYPERVISOR_MAX_VPS_PER_VM) {
+    if (((uint64_t)cpu) >= HYPERVISOR_MAX_PPS) {
         bferror("cpu out of range");
+        return LOADER_FAILURE;
+    }
+
+    if (CPU_STATUS_STOPPED != g_cpu_status[cpu]) {
+        bferror("cannot start cpu that is already running/corrupt");
         return LOADER_FAILURE;
     }
 
@@ -201,6 +207,7 @@ start_vmm_per_cpu(uint32_t const cpu)
     }
 
     send_command_report_on();
+    g_cpu_status[cpu] = CPU_STATUS_RUNNING;
     return LOADER_SUCCESS;
 
 demote_failed:

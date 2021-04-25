@@ -289,11 +289,17 @@ namespace syscall
     using bf_callback_handler_fail_t = void (*)(bf_status_t::value_type);
 
     // -------------------------------------------------------------------------
-    // Invalid ID
+    // Special IDs
     // -------------------------------------------------------------------------
 
-    /// @brief Defines an invalid ID
+    /// @brief Defines an invalid ID for an extension, VM, VP and VPS
     constexpr bsl::safe_uint16 BF_INVALID_ID{bsl::to_u16(0xFFFFU)};
+
+    /// @brief Defines the bootstrap physical processor ID
+    constexpr bsl::safe_uint16 BF_BS_PPID{bsl::to_u16(0x0U)};
+
+    /// @brief Defines the root virtual machine ID
+    constexpr bsl::safe_uint16 BF_ROOT_VMID{bsl::to_u16(0x0U)};
 
     // -------------------------------------------------------------------------
     // Syscall Status Codes
@@ -2120,6 +2126,85 @@ namespace syscall
     }
 
     // -------------------------------------------------------------------------
+    // bf_vp_op_migrate
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_vp_op_migrate.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
+    ///   @return n/a
+    ///
+    extern "C" [[nodiscard]] auto bf_vp_op_migrate_impl(    // --
+        bf_uint64_t const reg0_in,                          // --
+        bf_uint16_t const reg1_in,                          // --
+        bf_uint16_t const reg2_in) noexcept -> bf_status_t::value_type;
+
+    /// @brief Defines the syscall index for bf_vp_op_migrate
+    constexpr bsl::safe_uint64 BF_VP_OP_MIGRATE_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel to migrate a VP from one PP
+    ///     to another PP. This function does not execute the VP (use
+    ///     bf_vps_op_run for that), but instead allows bf_vps_op_run to
+    ///     execute a VP on a PP that it was not originally assigned to.
+    ///
+    ///     When a VP is migrated, all of the VPSs that are assigned to the
+    ///     requested VP are also migrated to this new PP as well. From an
+    ///     AMD/Intel point of view, this clears the VMCS/VMCB for each VPS
+    ///     assigned to the VP. On Intel, it also loads the newly cleared VPS
+    ///     and sets the launched state to false, ensuring the next
+    ///     bf_vps_op_run will use VMLaunch instead of VMResume.
+    ///
+    ///     It should be noted that the migration of a VPS from one PP to
+    ///     another does not happen during the execution of this ABI. This
+    ///     ABI simply tells the microkernel that the requested VP may now
+    ///     execute on the requested PP. This will cause a mismatch between
+    ///     the assigned PP for a VP and the assigned PP for a VPS. The
+    ///     microkernel will detect this mismatch when an extension attempts
+    ///     to execute bf_vps_op_run. When this occurs, the microkernel will
+    ///     ensure the VP is being run on the PP it was assigned to during
+    ///     migration, and then it will check to see if the PP of the VPS
+    ///     matches. If it doesn't, it will then perform a migration of that
+    ///     VPS at that time. This ensures that the microkernel is only
+    ///     migrations VPSs when it needs to, and it ensures the VPS is
+    ///     cleared an loaded (in the case of Intel) on the PP it will be
+    ///     executed on, which is a requirement for VMCS migration. An
+    ///     extension can determine which VPSs have been migrated by looking
+    ///     at the assigned PP of a VPS. If it doesn't match the VP it was
+    ///     assigned to, it has not been migrated. Finally, an extension is
+    ///     free to read/write to the VPSs state, even if it has not been
+    ///     migrated. The only requirement for migration is execution (meaning
+    ///     VMRun/VMLaunch/VMResume).
+    ///
+    ///     Any additional migration responsibilities, like TSC
+    ///     synchronization, must be performed by the extension.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpid The VPID of the VP to migrate
+    ///   @param ppid The ID of the PP to assign the provided VP to
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    [[nodiscard]] inline auto
+    bf_vp_op_migrate(                 // --
+        bf_handle_t const &handle,    // --
+        bsl::safe_uint16 const &vpid,
+        bsl::safe_uint16 const &ppid) noexcept -> bsl::errc_type
+    {
+        bf_status_t const status{bf_vp_op_migrate_impl(handle.hndl, vpid.get(), ppid.get())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::errc_failure;
+        }
+
+        return bsl::errc_success;
+    }
+
+    // -------------------------------------------------------------------------
     // bf_vps_op_create_vps
     // -------------------------------------------------------------------------
 
@@ -2801,6 +2886,38 @@ namespace syscall
     ///     the requested VM and VP using the requested VPS, and the extension
     ///     will only execute again on the next VMExit.
     ///
+    ///     Unless an extension needs to change the active VM, VP or VPS, the
+    ///     extension should use bf_vps_op_run_current instead of
+    ///     bf_vps_op_run. bf_vps_op_run is slow as it must perform a series of
+    ///     checks to determine if it has any work to perform before execution
+    ///     of a VM can occur.
+    ///
+    ///     Unlike bf_vps_op_run_current which is really just a return to
+    ///     microkernel execution, bf_vps_op_run must perform the following
+    ///     operations:
+    ///     - It first verifies that the provided VM, VP and VPS are all
+    ///       created. Meaning, and extension must first use the create ABI
+    ///       to properly create a VM, VP and VPS before it may be used.
+    ///     - Next, it must ensure VM, VP and VPS assignment is correct. A
+    ///       newly created VP and VPS are unassigned. Once bf_vps_op_run is
+    ///       executed, the VP is assigned to the provided VM and the VPS is
+    ///       assigned to the provided VP. The VP and VPS are also both
+    ///       assigned to the PP bf_vps_op_run is executed on. Once these
+    ///       assignments take place, an extension cannot change them, and any
+    ///       attempt to run a VP or VPS on a VM, VP or PP they are not
+    ///       assigned to will fail. It is impossible to change the assigned of
+    ///       a VM or VP, but an extension can change the assignment of a VP
+    ///       and VPSs PP by using the bf_vp_op_migrate function.
+    ///     - Next, bf_vps_op_run must determine if it needs to migrate a VPS
+    ///       to the PP the VPS is being executed on by bf_vps_op_run. For more
+    ///       information about how this works, please see bf_vp_op_migrate.
+    ///     - Finally, bf_vps_op_run must ensure the active VM, VP and VPS are
+    ///       set to the VM, VP and VPS provided to this ABI. Any changes in
+    ///       the active state could cause additional operations to take place.
+    ///       For example, the VPS must transfer the TLS state of the general
+    ///       purpose registers to its internal cache so that the VPS that is
+    ///       about to become active can use the TLS block instead.
+    ///
     /// <!-- inputs/outputs -->
     ///   @param handle Set to the result of bf_handle_op_open_handle
     ///   @param vpsid The VPSID of the VPS to run
@@ -3405,8 +3522,8 @@ namespace syscall
     ///     mind the following:
     ///       - The total memory available to allocate from this pool is
     ///         extremely limited. This should only be used when absolutely
-    ///         needed, and you should not expect more than 1 MB (might be
-    ///         less) of total memory available.
+    ///         needed, and extensions should not expect more than 1 MB (might
+    ///         be less) of total memory available.
     ///       - Memory allocated from the huge pool might be allocated using
     ///         different schemes. For example, the microkernel might allocate
     ///         in increments of a page, or it might use a buddy allocator that

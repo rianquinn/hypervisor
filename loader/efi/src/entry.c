@@ -280,6 +280,20 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     serial_init();
 
+    /**
+     * TODO:
+     * - The arch_init() logic needs an additional function to enable as many
+     *   hardward security features as possible. For example, SMEP/SMAP. Right
+     *   now all it does is ensure that CR0/CR4 are configured to support
+     *   virtualization. The values that UEFI sets up however are what the
+     *   microkernel will inherit and use so the UEFI loader needs to turn as
+     *   many of these features on as possible so that the microkernel can
+     *   use them. Once virtualization is started, the root OS can configure
+     *   itself however it wants, which will not affect the microkernel unless
+     *   the feature is outside of the control of the VMCS/VMCB, in which
+     *   case it will be up to the extension to deal with.
+     */
+
     if (loader_init()) {
         bferror("loader_init failed");
         return EFI_SUCCESS;

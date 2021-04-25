@@ -29,6 +29,7 @@
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
+#include <bsl/finally.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
 
@@ -58,13 +59,24 @@ namespace mk
             return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        if (bsl::unlikely(!ext_pool.signal_vm_created(vmid))) {
+        bsl::finally deallocate_on_error{[&vm_pool, &vmid]() noexcept -> void {
+            if (bsl::unlikely(!vm_pool.deallocate(vmid))) {
+                bsl::print<bsl::V>() << bsl::here();
+                return;
+            }
+
+            bsl::touch();
+        }};
+
+        if (bsl::unlikely(!ext_pool.signal_vm_created(tls, vmid))) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
         constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vmid)).get();
+
+        deallocate_on_error.ignore();
         return syscall::BF_STATUS_SUCCESS;
     }
 
@@ -114,16 +126,29 @@ namespace mk
             return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
-        if (bsl::unlikely(!ext_pool.signal_vm_destroyed(vmid))) {
-            bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
-        }
-
         if (bsl::unlikely(!vm_pool.deallocate(vmid))) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::BF_STATUS_FAILURE_UNKNOWN;
         }
 
+        bsl::finally reallocate_on_error{[&vm_pool, &vmid]() noexcept -> void {
+            if (bsl::unlikely(vm_pool.allocate() != vmid)) {
+                bsl::error()
+                    << "failed to reverse state changes. resources have been leaked."    // --
+                    << bsl::endl                                                         // --
+                    << bsl::here();                                                      // --
+            }
+            else {
+                bsl::touch();
+            }
+        }};
+
+        if (bsl::unlikely(!ext_pool.signal_vm_destroyed(tls, vmid))) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        }
+
+        reallocate_on_error.ignore();
         return syscall::BF_STATUS_SUCCESS;
     }
 

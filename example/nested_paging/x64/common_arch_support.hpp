@@ -106,6 +106,7 @@ namespace example
                     if (vpsid + bsl::ONE_U16 == syscall::bf_tls_online_pps()) {
                         bsl::print() << bsl::endl;
                         syscall::bf_debug_op_dump_page_pool();
+                        bsl::print() << bsl::endl;
                     }
                     else {
                         bsl::touch();

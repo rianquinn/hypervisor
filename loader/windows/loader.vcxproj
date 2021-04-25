@@ -40,6 +40,7 @@
     <ClCompile Include="..\src\free_mk_huge_pool.c" />
     <ClCompile Include="..\src\free_mk_page_pool.c" />
     <ClCompile Include="..\src\free_mk_stack.c" />
+    <ClCompile Include="..\src\g_cpu_status.c" />
     <ClCompile Include="..\src\g_ext_elf_files.c" />
     <ClCompile Include="..\src\g_mk_args.c" />
     <ClCompile Include="..\src\g_mk_debug_ring.c" />
@@ -48,6 +49,7 @@
     <ClCompile Include="..\src\g_mk_huge_pool.c" />
     <ClCompile Include="..\src\g_mk_page_pool.c" />
     <ClCompile Include="..\src\g_mk_stack.c" />
+    <ClCompile Include="..\src\g_vmm_status.c" />
     <ClCompile Include="..\src\loader_fini.c" />
     <ClCompile Include="..\src\loader_init.c" />
     <ClCompile Include="..\src\start_vmm_per_cpu.c" />
@@ -55,7 +57,6 @@
     <ClCompile Include="..\src\stop_and_free_the_vmm.c" />
     <ClCompile Include="..\src\stop_vmm_per_cpu.c" />
     <ClCompile Include="..\src\stop_vmm.c" />
-    <ClCompile Include="..\src\vmm_status.c" />
   </ItemGroup>
   <ItemGroup Condition="'$(Platform)'=='x64'">
 		<ClCompile Include="..\src\x64\alloc_and_copy_mk_code_aliases.c" />

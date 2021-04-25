@@ -26,10 +26,10 @@
 #define VPS_T_HPP
 
 #include <allocate_tags.hpp>
+#include <general_purpose_regs_t.hpp>
 #include <mk_interface.hpp>
 #include <vmcs_missing_registers_t.hpp>
 #include <vmcs_t.hpp>
-#include <vmexit_log_t.hpp>
 
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
@@ -44,9 +44,6 @@ namespace mk
 {
     /// @brief entry point prototype
     extern "C" void intrinsic_vmexit(void) noexcept;
-
-    /// @brief defines the value of an invalid VPSID
-    constexpr bsl::safe_uint16 INVALID_VPSID{bsl::to_u16(0xFFFFU)};
 
     /// @brief defines the IA32_VMX_BASIC MSR
     constexpr bsl::safe_uint32 IA32_VMX_BASIC{bsl::to_u32(0x480U)};
@@ -96,7 +93,9 @@ namespace mk
         /// @brief stores the ID associated with this vps_t
         bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
         /// @brief stores the ID of the VP this vps_t is assigned to
-        bsl::safe_uint16 m_assigned_vpid{bsl::safe_uint16::zero(true)};
+        bsl::safe_uint16 m_assigned_vpid{syscall::BF_INVALID_ID};
+        /// @brief stores the ID of the PP this vps_t is assigned to
+        bsl::safe_uint16 m_assigned_ppid{syscall::BF_INVALID_ID};
 
         /// @brief stores a pointer to the guest vmcs being managed by this VPS
         vmcs_t *m_vmcs{};
@@ -104,6 +103,8 @@ namespace mk
         bsl::safe_uintmax m_vmcs_phys{bsl::safe_uintmax::zero(true)};
         /// @brief stores the rest of the state the vmcs doesn't
         vmcs_missing_registers_t m_vmcs_missing_registers{};
+        /// @brief stores the general purpose registers
+        general_purpose_regs_t m_gprs{};
 
         /// <!-- description -->
         ///   @brief Stores the provided ES segment state info in the VPS.
@@ -1495,7 +1496,6 @@ namespace mk
             this->deallocate();
 
             m_id = bsl::safe_uint16::zero(true);
-            m_next = {};
             m_page_pool = {};
             m_intrinsic = {};
         }
@@ -1629,12 +1629,7 @@ namespace mk
         constexpr void
         deallocate() &noexcept
         {
-            // m_vmexit_log_crsr = {};
-            // for (auto const elem : m_vmexit_log) {
-            //     *elem.data = {};
-            // }
-
-            m_vmcs_missing_registers = {};
+            m_gprs = {} m_vmcs_missing_registers = {};
 
             m_vmcs_phys = bsl::safe_uintmax::zero(true);
             if (nullptr != m_page_pool) {
@@ -1645,7 +1640,9 @@ namespace mk
                 bsl::touch();
             }
 
-            m_assigned_vpid = bsl::safe_uint16::zero(true);
+            m_assigned_ppid = syscall::BF_INVALID_ID;
+            m_assigned_vpid = syscall::BF_INVALID_ID;
+            m_next = {};
         }
 
         /// <!-- description -->
@@ -1661,28 +1658,92 @@ namespace mk
         }
 
         /// <!-- description -->
+        ///   @brief Sets this vps_t as active.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///
+        template<typename TLS_CONCEPT>
+        constexpr void
+        set_active(TLS_CONCEPT &tls) &noexcept
+        {
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RAX, m_gprs.rax);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RBX, m_gprs.rbx);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RCX, m_gprs.rcx);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RDX, m_gprs.rdx);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RBP, m_gprs.rbp);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RSI, m_gprs.rsi);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RDI, m_gprs.rdi);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R8, m_gprs.r8);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R9, m_gprs.r9);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R10, m_gprs.r10);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R11, m_gprs.r11);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R12, m_gprs.r12);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R13, m_gprs.r13);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R14, m_gprs.r14);
+            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R15, m_gprs.r15);
+
+            tls.active_vpsid = m_id.get();
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets this vps_t as inactive.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///
+        template<typename TLS_CONCEPT>
+        constexpr void
+        set_inactive(TLS_CONCEPT &tls) &noexcept
+        {
+            if (tls.active_vpsid == m_id) {
+                m_gprs.rax = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX).get();
+                m_gprs.rbx = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX).get();
+                m_gprs.rcx = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX).get();
+                m_gprs.rdx = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX).get();
+                m_gprs.rbp = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP).get();
+                m_gprs.rsi = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI).get();
+                m_gprs.rdi = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI).get();
+                m_gprs.r8 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8).get();
+                m_gprs.r9 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9).get();
+                m_gprs.r10 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10).get();
+                m_gprs.r11 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11).get();
+                m_gprs.r12 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12).get();
+                m_gprs.r13 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13).get();
+                m_gprs.r14 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14).get();
+                m_gprs.r15 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15).get();
+
+                tls.active_vpsid = syscall::BF_INVALID_ID.get();
+            }
+            else {
+                bsl::error() << "unable to save TLS state. corruption likely\n" << bsl::here();
+            }
+        }
+
+        /// <!-- description -->
         ///   @brief Assigns this vps_t to a VP
         ///
         /// <!-- inputs/outputs -->
         ///   @param vpid the VP this vps_t is assigned to
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
         ///
-        [[nodiscard]] constexpr auto
-        assign_vp(bsl::safe_uint16 const &vpid) &noexcept -> bsl::errc_type
+        constexpr void
+        assign_vp(bsl::safe_uint16 const &vpid) &noexcept
         {
-            if (bsl::unlikely(!this->is_allocated())) {
-                bsl::error() << "invalid vps\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!vpid)) {
-                bsl::error() << "invalid vpid\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
             m_assigned_vpid = vpid;
-            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Assigns this vps_t to a PP
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param ppid the PP this vps_t is assigned to
+        ///
+        constexpr void
+        assign_pp(bsl::safe_uint16 const &ppid) &noexcept
+        {
+            m_assigned_ppid = ppid;
         }
 
         /// <!-- description -->
@@ -1695,6 +1756,18 @@ namespace mk
         assigned_vp() const &noexcept -> bsl::safe_uint16
         {
             return m_assigned_vpid;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the ID of the PP this vps_t is assigned to
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns the ID of the PP this vps_t is assigned to
+        ///
+        [[nodiscard]] constexpr auto
+        assigned_pp() const &noexcept -> bsl::safe_uint16
+        {
+            return m_assigned_ppid;
         }
 
         /// <!-- description -->
@@ -1730,21 +1803,40 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RAX, state->rax);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RBX, state->rbx);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RCX, state->rcx);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RDX, state->rdx);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RBP, state->rbp);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RSI, state->rsi);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RDI, state->rdi);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R8, state->r8);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R9, state->r9);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R10, state->r10);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R11, state->r11);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R12, state->r12);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R13, state->r13);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R14, state->r14);
-            m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R15, state->r15);
+            if (tls.active_vpsid == m_id) {
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RAX, state->rax);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RBX, state->rbx);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RCX, state->rcx);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RDX, state->rdx);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RBP, state->rbp);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RSI, state->rsi);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RDI, state->rdi);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R8, state->r8);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R9, state->r9);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R10, state->r10);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R11, state->r11);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R12, state->r12);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R13, state->r13);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R14, state->r14);
+                m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R15, state->r15);
+            }
+            else {
+                m_gprs.rax = state->rax;
+                m_gprs.rbx = state->rbx;
+                m_gprs.rcx = state->rcx;
+                m_gprs.rdx = state->rdx;
+                m_gprs.rbp = state->rbp;
+                m_gprs.rsi = state->rsi;
+                m_gprs.rdi = state->rdi;
+                m_gprs.r8 = state->r8;
+                m_gprs.r9 = state->r9;
+                m_gprs.r10 = state->r10;
+                m_gprs.r11 = state->r11;
+                m_gprs.r12 = state->r12;
+                m_gprs.r13 = state->r13;
+                m_gprs.r14 = state->r14;
+                m_gprs.r15 = state->r15;
+            }
 
             ret = m_intrinsic->vmwrite64(VMCS_GUEST_RSP, state->rsp);
             if (bsl::unlikely(!ret)) {
@@ -1951,21 +2043,40 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            state->rax = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX).get();
-            state->rbx = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX).get();
-            state->rcx = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX).get();
-            state->rdx = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX).get();
-            state->rbp = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP).get();
-            state->rsi = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI).get();
-            state->rdi = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI).get();
-            state->r8 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8).get();
-            state->r9 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9).get();
-            state->r10 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10).get();
-            state->r11 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11).get();
-            state->r12 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12).get();
-            state->r13 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13).get();
-            state->r14 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14).get();
-            state->r15 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15).get();
+            if (tls.active_vpsid == m_id) {
+                state->rax = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX).get();
+                state->rbx = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX).get();
+                state->rcx = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX).get();
+                state->rdx = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX).get();
+                state->rbp = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP).get();
+                state->rsi = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI).get();
+                state->rdi = m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI).get();
+                state->r8 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8).get();
+                state->r9 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9).get();
+                state->r10 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10).get();
+                state->r11 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11).get();
+                state->r12 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12).get();
+                state->r13 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13).get();
+                state->r14 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14).get();
+                state->r15 = m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15).get();
+            }
+            else {
+                state->rax = m_gprs.rax;
+                state->rbx = m_gprs.rbx;
+                state->rcx = m_gprs.rcx;
+                state->rdx = m_gprs.rdx;
+                state->rbp = m_gprs.rbp;
+                state->rsi = m_gprs.rsi;
+                state->rdi = m_gprs.rdi;
+                state->r8 = m_gprs.r8;
+                state->r9 = m_gprs.r9;
+                state->r10 = m_gprs.r10;
+                state->r11 = m_gprs.r11;
+                state->r12 = m_gprs.r12;
+                state->r13 = m_gprs.r13;
+                state->r14 = m_gprs.r14;
+                state->r15 = m_gprs.r15;
+            }
 
             ret = m_intrinsic->vmread64(VMCS_GUEST_RSP, &state->rsp);
             if (bsl::unlikely(!ret)) {
@@ -2380,63 +2491,123 @@ namespace mk
 
             switch (reg) {
                 case syscall::bf_reg_t::bf_reg_t_rax: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX);
+                    }
+
+                    return m_gprs.rax;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rbx: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX);
+                    }
+
+                    return m_gprs.rbx;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rcx: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX);
+                    }
+
+                    return m_gprs.rcx;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rdx: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX);
+                    }
+
+                    return m_gprs.rdx;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rbp: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP);
+                    }
+
+                    return m_gprs.rbp;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rsi: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI);
+                    }
+
+                    return m_gprs.rsi;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rdi: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI);
+                    }
+
+                    return m_gprs.rdi;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r8: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8);
+                    }
+
+                    return m_gprs.r8;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r9: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9);
+                    }
+
+                    return m_gprs.r9;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r10: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10);
+                    }
+
+                    return m_gprs.r10;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r11: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11);
+                    }
+
+                    return m_gprs.r11;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r12: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12);
+                    }
+
+                    return m_gprs.r12;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r13: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13);
+                    }
+
+                    return m_gprs.r13;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r14: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14);
+                    }
+
+                    return m_gprs.r14;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r15: {
-                    return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15);
+                    if (tls.active_vpsid == m_id) {
+                        return m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15);
+                    }
+
+                    return m_gprs.r15;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rip: {
@@ -2773,77 +2944,152 @@ namespace mk
 
             switch (reg) {
                 case syscall::bf_reg_t::bf_reg_t_rax: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RAX, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RAX, val);
+                    }
+                    else {
+                        m_gprs.rax = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rbx: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RBX, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RBX, val);
+                    }
+                    else {
+                        m_gprs.rbx = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rcx: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RCX, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RCX, val);
+                    }
+                    else {
+                        m_gprs.rcx = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rdx: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RDX, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RDX, val);
+                    }
+                    else {
+                        m_gprs.rdx = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rbp: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RBP, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RBP, val);
+                    }
+                    else {
+                        m_gprs.rbp = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rsi: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RSI, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RSI, val);
+                    }
+                    else {
+                        m_gprs.rsi = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_rdi: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RDI, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_RDI, val);
+                    }
+                    else {
+                        m_gprs.rdi = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r8: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R8, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R8, val);
+                    }
+                    else {
+                        m_gprs.r8 = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r9: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R9, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R9, val);
+                    }
+                    else {
+                        m_gprs.r9 = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r10: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R10, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R10, val);
+                    }
+                    else {
+                        m_gprs.r10 = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r11: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R11, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R11, val);
+                    }
+                    else {
+                        m_gprs.r11 = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r12: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R12, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R12, val);
+                    }
+                    else {
+                        m_gprs.r12 = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r13: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R13, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R13, val);
+                    }
+                    else {
+                        m_gprs.r13 = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r14: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R14, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R14, val);
+                    }
+                    else {
+                        m_gprs.r14 = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
                 case syscall::bf_reg_t::bf_reg_t_r15: {
-                    m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R15, val);
+                    if (tls.active_vpsid == m_id) {
+                        m_intrinsic->set_tls_reg(syscall::TLS_OFFSET_R15, val);
+                    }
+                    else {
+                        m_gprs.r15 = val.get();
+                    }
                     return bsl::errc_success;
                 }
 
@@ -3169,13 +3415,11 @@ namespace mk
         [[nodiscard]] constexpr auto
         run(TLS_CONCEPT &tls, VMEXIT_LOG_CONCEPT &log) &noexcept -> bsl::safe_uintmax
         {
-            constexpr bsl::safe_uintmax invalid_exit_reason{bsl::to_umax(0xFFFFFFFFFFFFFF00U)};
+            constexpr bsl::safe_uintmax invalid_exit_reason{bsl::to_umax(0xFFFFFFFF00000000U)};
 
-            if constexpr (!BSL_RELEASE_BUILD) {
-                if (bsl::unlikely(!this->is_allocated())) {
-                    bsl::error() << "invalid vps\n" << bsl::here();
-                    return bsl::safe_uintmax::zero(true);
-                }
+            if (bsl::unlikely(!this->is_allocated())) {
+                bsl::error() << "invalid vps\n" << bsl::here();
+                return bsl::safe_uintmax::zero(true);
             }
 
             if (bsl::unlikely(!this->ensure_this_vps_is_loaded(tls))) {
@@ -3184,9 +3428,7 @@ namespace mk
             }
 
             bsl::safe_uintmax const exit_reason{intrinsic_vmrun(&m_vmcs_missing_registers)};
-            if (exit_reason > invalid_exit_reason) {
-                this->dump(tls);
-
+            if (bsl::unlikely(exit_reason > invalid_exit_reason)) {
                 bsl::error() << "vmlaunch/vmresume failed with error code "    // --
                              << (exit_reason & (~invalid_exit_reason))         // --
                              << bsl::endl                                      // --
@@ -3195,35 +3437,33 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
-            if constexpr (!BSL_RELEASE_BUILD) {
-                if constexpr (!(BSL_DEBUG_LEVEL < bsl::VV)) {
-                    log.add(
-                        tls.ppid,
-                        {tls.active_vmid,
-                         tls.active_vpid,
-                         tls.active_vpsid,
-                         exit_reason,
-                         m_intrinsic->vmread64_quiet(VMCS_EXIT_QUALIFICATION),
-                         m_intrinsic->vmread64_quiet(VMCS_VMEXIT_INSTRUCTION_INFORMATION),
-                         bsl::ZERO_UMAX,
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14),
-                         m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15),
-                         m_intrinsic->vmread64_quiet(VMCS_GUEST_RSP),
-                         m_intrinsic->vmread64_quiet(VMCS_GUEST_RIP)});
-                }
+            if constexpr (!(BSL_DEBUG_LEVEL < bsl::VV)) {
+                log.add(
+                    tls.ppid,
+                    {tls.active_vmid,
+                     tls.active_vpid,
+                     tls.active_vpsid,
+                     exit_reason,
+                     m_intrinsic->vmread64_quiet(VMCS_EXIT_QUALIFICATION),
+                     m_intrinsic->vmread64_quiet(VMCS_VMEXIT_INSTRUCTION_INFORMATION),
+                     bsl::ZERO_UMAX,
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14),
+                     m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15),
+                     m_intrinsic->vmread64_quiet(VMCS_GUEST_RSP),
+                     m_intrinsic->vmread64_quiet(VMCS_GUEST_RIP)});
             }
 
             /// TODO:
@@ -3307,7 +3547,15 @@ namespace mk
                 return ret;
             }
 
+            ret = m_intrinsic->vmload(&m_vmcs_phys);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            tls.loaded_vpsid = m_id.get();
             m_vmcs_missing_registers.launched = {};
+
             return ret;
         }
 
@@ -3371,17 +3619,32 @@ namespace mk
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
-            /// Assigned VM
+            /// Assigned VP
             ///
 
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::fmt{"<40s", "assigned vp "};
             bsl::print() << bsl::ylw << "| ";
-            if (m_assigned_vpid) {
+            if (m_assigned_vpid != syscall::BF_INVALID_ID) {
                 bsl::print() << bsl::grn << "      " << bsl::hex(m_assigned_vpid) << "       ";
             }
             else {
-                bsl::print() << bsl::red << bsl::fmt{"^19s", "unassigned "};
+                bsl::print() << bsl::red << "      " << bsl::hex(m_assigned_vpid) << "       ";
+            }
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::endl;
+
+            /// Assigned PP
+            ///
+
+            bsl::print() << bsl::ylw << "| ";
+            bsl::print() << bsl::rst << bsl::fmt{"<40s", "assigned pp "};
+            bsl::print() << bsl::ylw << "| ";
+            if (m_assigned_ppid != syscall::BF_INVALID_ID) {
+                bsl::print() << bsl::grn << "      " << bsl::hex(m_assigned_ppid) << "       ";
+            }
+            else {
+                bsl::print() << bsl::red << "      " << bsl::hex(m_assigned_ppid) << "       ";
             }
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
@@ -3396,21 +3659,40 @@ namespace mk
                 return;
             }
 
-            this->dump("rax ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX));
-            this->dump("rbx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX));
-            this->dump("rcx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX));
-            this->dump("rdx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX));
-            this->dump("rbp ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP));
-            this->dump("rsi ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI));
-            this->dump("rdi ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI));
-            this->dump("r8 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8));
-            this->dump("r9 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9));
-            this->dump("r10 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10));
-            this->dump("r11 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11));
-            this->dump("r12 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12));
-            this->dump("r13 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13));
-            this->dump("r14 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14));
-            this->dump("r15 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15));
+            if (tls.active_vpsid == m_id) {
+                this->dump("rax ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RAX));
+                this->dump("rbx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBX));
+                this->dump("rcx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RCX));
+                this->dump("rdx ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDX));
+                this->dump("rbp ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RBP));
+                this->dump("rsi ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RSI));
+                this->dump("rdi ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_RDI));
+                this->dump("r8 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R8));
+                this->dump("r9 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R9));
+                this->dump("r10 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R10));
+                this->dump("r11 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R11));
+                this->dump("r12 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R12));
+                this->dump("r13 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R13));
+                this->dump("r14 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R14));
+                this->dump("r15 ", m_intrinsic->tls_reg(syscall::TLS_OFFSET_R15));
+            }
+            else {
+                this->dump("rax ", bsl::make_safe(m_gprs.rax));
+                this->dump("rbx ", bsl::make_safe(m_gprs.rbx));
+                this->dump("rcx ", bsl::make_safe(m_gprs.rcx));
+                this->dump("rdx ", bsl::make_safe(m_gprs.rdx));
+                this->dump("rbp ", bsl::make_safe(m_gprs.rbp));
+                this->dump("rsi ", bsl::make_safe(m_gprs.rsi));
+                this->dump("rdi ", bsl::make_safe(m_gprs.rdi));
+                this->dump("r8 ", bsl::make_safe(m_gprs.r8));
+                this->dump("r9 ", bsl::make_safe(m_gprs.r9));
+                this->dump("r10 ", bsl::make_safe(m_gprs.r10));
+                this->dump("r11 ", bsl::make_safe(m_gprs.r11));
+                this->dump("r12 ", bsl::make_safe(m_gprs.r12));
+                this->dump("r13 ", bsl::make_safe(m_gprs.r13));
+                this->dump("r14 ", bsl::make_safe(m_gprs.r14));
+                this->dump("r15 ", bsl::make_safe(m_gprs.r15));
+            }
 
             /// 16 Bit Control Fields
             ///

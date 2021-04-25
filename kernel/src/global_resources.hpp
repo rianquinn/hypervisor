@@ -103,7 +103,8 @@ namespace mk
         bsl::to_umax(HYPERVISOR_MAX_VPS).get()>;    // --
 
     /// @brief defines the VM type to use
-    using mk_vm_type = vm_t;    // --
+    using mk_vm_type = vm_t<                        // --
+        bsl::to_umax(HYPERVISOR_MAX_PPS).get()>;    // --
 
     /// @brief defines the VM pool type to use
     using mk_vm_pool_type = vm_pool_t<              // --
@@ -162,6 +163,7 @@ namespace mk
         mk_vm_pool_type,                                  // --
         mk_ext_pool_type,                                 // --
         bsl::to_umax(HYPERVISOR_PAGE_SIZE).get(),         // --
+        bsl::to_umax(HYPERVISOR_MAX_PPS).get(),           // --
         bsl::to_umax(HYPERVISOR_MK_CODE_SIZE).get(),      // --
         bsl::to_umax(HYPERVISOR_EXT_CODE_SIZE).get(),     // --
         bsl::to_umax(HYPERVISOR_EXT_STACK_ADDR).get(),    // --

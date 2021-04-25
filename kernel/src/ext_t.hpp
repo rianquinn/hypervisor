@@ -41,11 +41,49 @@
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
 
+/// TODO:
+/// - Add support for multiple extensions. For this to work, we will need
+///   support for PCID and the global flag should be turned off. This will
+///   ensure that swaps to another extension (which require a CR3 change),
+///   will not destroy performance. To ensure the hypervisor can support
+///   systems without PCID, projects that use more than one extension like
+///   MicroV should compile the additional extensions into both the main
+///   extension, and the additional ones. On systems that don't have PCID,
+///   it would call itself. Systems with PCID would call through IPC. You
+///   could then have compile/runtime flags for forcing one path over the
+///   other in situations where performace or security take precedence.
+/// - Since the microkernel doesn't have a timer, the only way another
+///   extension will execute is from some sort of IPC interface where an
+///   extension calls into another extension to perform an action and then
+///   returns a result. The best way to handle this would be to use an
+///   instruction sequence similar to a VMCall and VMExit. The extension
+///   would execute bf_ipc_op_call, which could take at most 6 arguments
+///   that match the SysV calling conventions. The additional extension
+///   would execute and then return using bf_ipc_op_return. There would
+///   need to be some logic in the syscall code to make sure that this
+///   return function was used properly (meaning you cannot return unless
+///   you have been called, and you cannot run if you have been called).
+///   From there, all that is finally needed is some way to share memory.
+///   There are two options here. Shared memory, or a memcpy ABI. IMO, we
+///   should use a memcpy ABI as shared memory really complicates things.
+///   If shared memory is used, we should make sure, that like freeing a
+///   page, unmapping shared memory is optional, meaning the microkernel
+///   is nor required to honor the request.
+/// - The TLS block that we use for the general purpose registers will need
+///   to be shared as it is currently a problem. This way, a swap to another
+///   extension only has to update the extension ID in that block, and then
+///   swap CR3. The best way to handle this would be to have the extension
+///   pool can allocate the shared portion of the TLS blocks for all of the
+///   online PPs and then give this page to each extension as it initializes.
+///   Then all we have to do is make sure that there is no state in there that
+///   would be a problem for the extensions to share, which right now is just
+///   the extension ID. If additional state is added to the ABI that is a
+///   problem, we will either have to copy the entire block on each swap,
+///   or make add a second page to the ABI, one that is shared, and one that
+///   is not.
+
 namespace mk
 {
-    /// @brief defines the value of an invalid EXTID
-    constexpr bsl::safe_uint16 INVALID_EXTID{bsl::to_u16(0xFFFFU)};
-
     /// @class mk::ext_t
     ///
     /// <!-- description -->
@@ -797,34 +835,39 @@ namespace mk
             bsl::safe_uintmax const &arg0 = {},
             bsl::safe_uintmax const &arg1 = {}) &noexcept -> bsl::errc_type
         {
-            if constexpr (!BSL_RELEASE_BUILD) {
-                if (bsl::unlikely(!m_id)) {
-                    bsl::error() << "ext_t not initialized\n" << bsl::here();
-                    return bsl::errc_failure;
-                }
-
-                if (bsl::unlikely(!ip)) {
-                    bsl::error() << "invalid instruction pointer\n" << bsl::here();
-                    return bsl::errc_failure;
-                }
+            if (bsl::unlikely(!m_id)) {
+                bsl::error() << "ext_t not initialized\n" << bsl::here();
+                return bsl::errc_failure;
             }
 
-            if (tls.ext != this) {
-                auto *const direct_map_rpt{m_direct_map_rpts.at_if(bsl::to_umax(tls.active_vmid))};
-                if (bsl::unlikely(nullptr == direct_map_rpt)) {
-                    bsl::error() << "invalid active_vmid: "      // --
-                                 << bsl::hex(tls.active_vmid)    // --
-                                 << bsl::endl                    // --
-                                 << bsl::here();                 // --
+            if (bsl::unlikely(!ip)) {
+                bsl::error() << "invalid instruction pointer\n" << bsl::here();
+                return bsl::errc_failure;
+            }
 
-                    return bsl::errc_failure;
-                }
+            auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(tls.active_vmid))};
+            if (bsl::unlikely(nullptr == rpt)) {
+                bsl::error() << "invalid active_vmid: "      // --
+                             << bsl::hex(tls.active_vmid)    // --
+                             << bsl::endl                    // --
+                             << bsl::here();                 // --
 
-                if (bsl::unlikely(!direct_map_rpt->activate())) {
+                return bsl::errc_failure;
+            }
+
+            if (tls.active_rpt != rpt) {
+                if (bsl::unlikely(!rpt->activate())) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
 
+                tls.active_rpt = rpt;
+            }
+            else {
+                bsl::touch();
+            }
+
+            if (tls.ext != this) {
                 tls.ext = this;
                 tls.active_extid = m_id.get();
             }
@@ -1463,16 +1506,6 @@ namespace mk
             constexpr auto min_dm_addr{dm_addr};
             constexpr auto max_dm_addr{dm_addr + (dm_size - bsl::ONE_UMAX)};
 
-            /// TODO:
-            /// - It is possible that 2 physical processors could attempt to
-            ///   map the same physical address at the same time. Both would
-            ///   generate a page fault. One would succeed at mapping the
-            ///   address, and the other would fail. We should create our
-            ///   own errc_type for the RPT so that it can tell this code
-            ///   that the address is already mapped, as in this case, that
-            ///   would not actually be an error.
-            ///
-
             if (bsl::unlikely(page_virt < min_dm_addr)) {
                 return bsl::errc_failure;
             }
@@ -1497,6 +1530,10 @@ namespace mk
                 MAP_PAGE_READ | MAP_PAGE_WRITE,
                 MAP_PAGE_NO_AUTO_RELEASE);
 
+            if (ret == bsl::errc_already_exists) {
+                return bsl::errc_success;
+            }
+
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
@@ -1510,13 +1547,18 @@ namespace mk
         ///     can initialize it's VM specific resources.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was created.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        signal_vm_created(bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
+        signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
         {
+            bsl::discard(tls);
+
             if (bsl::unlikely(!m_started)) {
                 bsl::error() << "ext_t not started\n" << bsl::here();
                 return bsl::errc_failure;
@@ -1549,12 +1591,16 @@ namespace mk
         ///     can release it's VM specific resources.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was destroyed.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        signal_vm_destroyed(bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
+        signal_vm_destroyed(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) noexcept
+            -> bsl::errc_type
         {
             if (bsl::unlikely(!m_started)) {
                 bsl::error() << "ext_t not started\n" << bsl::here();
@@ -1580,50 +1626,17 @@ namespace mk
                 return bsl::errc_failure;
             }
 
+            if (tls.active_rpt == rpt) {
+                bsl::error() << "the rpt for vm "                       // --
+                             << bsl::hex(vmid)                          // --
+                             << " is active and cannot be destroyed"    // --
+                             << bsl::endl                               // --
+                             << bsl::here();                            // --
+
+                return bsl::errc_failure;
+            }
+
             rpt->release();
-            return bsl::errc_success;
-        }
-
-        /// <!-- description -->
-        ///   @brief Sets the active VM for this extension. This will cause
-        ///     the extension to set VM specific resources up including the
-        ///     direct map.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @param tls the current TLS block
-        ///   @param vmid the VMID of the VM to set as active
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        template<typename TLS_CONCEPT>
-        [[nodiscard]] constexpr auto
-        set_active_vm(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
-        {
-            if (bsl::unlikely(!m_started)) {
-                bsl::error() << "ext_t not started\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (tls.active_vmid == vmid) {
-                return bsl::errc_success;
-            }
-
-            auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(vmid))};
-            if (bsl::unlikely(nullptr == rpt)) {
-                bsl::error() << "invalid vmid: "    // --
-                             << bsl::hex(vmid)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!rpt->activate())) {
-                bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
-            }
-
             return bsl::errc_success;
         }
 

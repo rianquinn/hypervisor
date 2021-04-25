@@ -95,6 +95,7 @@ if (NOT CMAKE_PROJECT_NAME STREQUAL "hypervisor_microkernel")
         src/x64/bf_vm_op_destroy_vm_impl.S
         src/x64/bf_vp_op_create_vp_impl.S
         src/x64/bf_vp_op_destroy_vp_impl.S
+        src/x64/bf_vp_op_migrate_impl.S
         src/x64/bf_vps_op_advance_ip_and_run_current_impl.S
         src/x64/bf_vps_op_advance_ip_impl.S
         src/x64/bf_vps_op_clear_vps_impl.S

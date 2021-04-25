@@ -89,12 +89,10 @@ mk_main_entry:
 
     /**
      * NOTE:
-     * - To start, there are no active extensions, VPs or VPSs. By default,
-     *   the active VM is 0, which allows extensions to work with memory
-     *   management interfaces while they are bootstrapping.
+     * - To start, there are no active extensions, VMs, VPs or VPSs.
      */
 
-    mov rax, 0xFFFFFFFF0000FFFF
+    mov rax, 0xFFFFFFFFFFFFFFFF
     mov gs:[0x238], rax
 
     /**

@@ -1368,7 +1368,7 @@ namespace mk
                              << bsl::endl              // --
                              << bsl::here();           // --
 
-                return bsl::errc_failure;
+                return bsl::errc_already_exists;
             }
 
             pte->phys = (page_phys >> PAGE_SHIFT).get();

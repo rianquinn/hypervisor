@@ -58,6 +58,9 @@ dispatch_syscall_entry:
     mov rax, gs:[0x1B8]
     mov gs:[0x188], rax
 
+    push 0x40002
+    popf
+
     mov rdi, gs:[0x200]
     call dispatch_syscall_trampoline
 

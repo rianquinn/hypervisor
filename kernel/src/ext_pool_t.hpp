@@ -213,15 +213,19 @@ namespace mk
         ///     can initialize it's VM specific resources.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was created.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        signal_vm_created(bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+        signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
+            -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
-                if (bsl::unlikely(!ext.data->signal_vm_created(vmid))) {
+                if (bsl::unlikely(!ext.data->signal_vm_created(tls, vmid))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -237,15 +241,19 @@ namespace mk
         ///     can release it's VM specific resources.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was destroyed.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        signal_vm_destroyed(bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+        signal_vm_destroyed(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
+            -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
-                if (bsl::unlikely(!ext.data->signal_vm_destroyed(vmid))) {
+                if (bsl::unlikely(!ext.data->signal_vm_destroyed(tls, vmid))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }

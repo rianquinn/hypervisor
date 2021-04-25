@@ -68,6 +68,7 @@
     - [2.12.1. Virtual Processor ID (VPID)](#2121-virtual-processor-id-vpid)
     - [2.12.2. bf_vp_op_create_vp, OP=0x5, IDX=0x0](#2122-bf_vp_op_create_vp-op0x5-idx0x0)
     - [2.12.3. bf_vp_op_destroy_vp, OP=0x5, IDX=0x1](#2123-bf_vp_op_destroy_vp-op0x5-idx0x1)
+    - [2.12.3. bf_vp_op_migrate, OP=0x5, IDX=0x2](#2123-bf_vp_op_migrate-op0x5-idx0x2)
     - [2.12.4. Virtual Processor State Syscalls](#2124-virtual-processor-state-syscalls)
     - [2.12.5. Virtual Processor State ID (VPSID)](#2125-virtual-processor-state-id-vpsid)
     - [2.12.6. bf_vps_op_create_vps, OP=0x6, IDX=0x0](#2126-bf_vps_op_create_vps-op0x6-idx0x0)
@@ -297,7 +298,17 @@ The following defines an invalid ID which can be used for all ID types.
 **const, bf_uint16_t: BF_INVALID_ID**
 | Value | Description |
 | :---- | :---------- |
-| 0xFFFF | Defines an invalid ID |
+| 0xFFFF | Defines an invalid ID for an extension, VM, VP and VPS |
+
+**const, bf_uint16_t: BF_BS_PPID**
+| Value | Description |
+| :---- | :---------- |
+| 0x0 | Defines the bootstrap physical processor ID |
+
+**const, bf_uint16_t: BF_ROOT_VMID**
+| Value | Description |
+| :---- | :---------- |
+| 0x0 | Defines the root virtual machine ID |
 
 ## 1.8. Host PAT (Intel/AMD Only)
 
@@ -643,6 +654,11 @@ The following defines the specification IDs used when opening a handle. These pr
 The microkernel defines a "thread" the same way both Intel and AMD define a thread (i.e., a logical core). For example, some Intel CPUs have 4 cores and 8 threads when hyper-threading is enabled, or 4 cores and 4 threads when hyper-threading is disabled. Each logical core is given one "thread" and that thread always executes on that logical core. The microkernel defines these logical cores as physical processors (i.e., PP).
 
 The layout of the TLS block provided to each extension uses a scheme similar to the ELF TLS specification, but with some modifications. Unlike the ELF TLS specification, each TLS block is limited to two pages. The lower half of the page is dedicated to "thread_local" storage. The upper half is defined by this specification, and provides access to registers shared between the microkernel and the extension to improve performance. For example, access to a VM's general purpose registers is available from the TLS block. Each TLS register defined by this specific is an offset into the upper half of the TLS block (which can be located using the fs segment register on Intel/AMD).
+
+**IMPORTANT:**
+The general purpose registers are always accessible to an extension to read and write, but it is up to the extension to ensure the correct VPS state is being modified. Accesses to the TLS block modifies the active VPS only. For example, while an extension is executing its bootstrap handler, there is no active VPS, in which case any reads/writes to the general purpose registers from the TLS block will be lost. When an extension is executing from a VMExit handler, reads/writes to the general purpose registers from the TLS block are made to the VPS that generated the VMExit. If an extension then creates a VPS, the only way to modify the general purpose registers for the newly created VPS is through the read_reg/write_reg ABIs. Attempting to use the TLS block will modify the registers for the active VPS, not the newly created VPS. The only way to set a VPS to "active" is to use the run ABI, which on success does not return, meaning the extension has to wait for a VMExit before the newly create VPS's general purpose registers can be accessed from the TLS block.
+
+Although this seems overly complicated, this optimization works well for the majority of the VMExits an extension will have to handle, especially the VMExits that execute frequently as most of the time an extension will only be modifying the general purpose registers for the active VPS.
 
 ### 2.6.1. TLS Offsets
 
@@ -1000,6 +1016,30 @@ This syscall tells the microkernel to destroy a VP given an ID.
 | :---- | :---------- |
 | 0x0000000000000001 | Defines the syscall index for bf_vp_op_destroy_vp |
 
+### 2.12.3. bf_vp_op_migrate, OP=0x5, IDX=0x2
+
+This syscall tells the microkernel to migrate a VP from one PP to another PP. This function does not execute the VP (use bf_vps_op_run for that), but instead allows bf_vps_op_run to execute a VP on a PP that it was not originally assigned to.
+
+When a VP is migrated, all of the VPSs that are assigned to the requested VP are also migrated to this new PP as well. From an AMD/Intel point of view, this clears the VMCS/VMCB for each VPS assigned to the VP. On Intel, it also loads the newly cleared VPS and sets the launched state to false, ensuring the next bf_vps_op_run will use VMLaunch instead of VMResume.
+
+It should be noted that the migration of a VPS from one PP to another does not happen during the execution of this ABI. This ABI simply tells the microkernel that the requested VP may now execute on the requested PP. This will cause a mismatch between the assigned PP for a VP and the assigned PP for a VPS. The microkernel will detect this mismatch when an extension attempts to execute bf_vps_op_run. When this occurs, the microkernel will ensure the VP is being run on the PP it was assigned to during migration, and then it will check to see if the PP of the VPS matches. If it doesn't, it will then perform a migration of that VPS at that time. This ensures that the microkernel is only migrations VPSs when it needs to, and it ensures the VPS is cleared an loaded (in the case of Intel) on the PP it will be executed on, which is a requirement for VMCS migration. An extension can determine which VPSs have been migrated by looking at the assigned PP of a VPS. If it doesn't match the VP it was assigned to, it has not been migrated. Finally, an extension is free to read/write to the VPSs state, even if it has not been migrated. The only requirement for migration is execution (meaning VMRun/VMLaunch/VMResume).
+
+Any additional migration responsibilities, like TSC synchronization, must be performed by the extension.
+
+**Input:**
+| Register Name | Bits | Description |
+| :------------ | :--- | :---------- |
+| REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
+| REG1 | 15:0 | The VPID of the VP to migrate |
+| REG1 | 63:16 | REVI |
+| REG2 | 15:0 | The ID of the PP to assign the provided VP to |
+| REG2 | 63:16 | REVI |
+
+**const, bf_uint64_t: BF_VP_OP_MIGRATE_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000002 | Defines the syscall index for bf_vp_op_migrate |
+
 ### 2.12.4. Virtual Processor State Syscalls
 
 A Virtual Processor State or VPS encapsulates the state associated with a virtual process. For example, on Intel this would be the VMCS, the registers that must be saved that the VMCS does not manage, and the general purpose registers.
@@ -1272,6 +1312,14 @@ Writes to a CPU register in the VPS given a bf_reg_t and the value to write. Not
 
 bf_vps_op_run tells the microkernel to execute a given VPS on behalf of a given VP and VM. This system call only returns if an error occurs. On success, this system call will physically execute the requested VM and VP using the requested VPS, and the extension will only execute again on the next VMExit.
 
+Unless an extension needs to change the active VM, VP or VPS, the extension should use bf_vps_op_run_current instead of bf_vps_op_run. bf_vps_op_run is slow as it must perform a series of checks to determine if it has any work to perform before execution of a VM can occur.
+
+Unlike bf_vps_op_run_current which is really just a return to microkernel execution, bf_vps_op_run must perform the following operations:
+- It first verifies that the provided VM, VP and VPS are all created. Meaning, and extension must first use the create ABI to properly create a VM, VP and VPS before it may be used.
+- Next, it must ensure VM, VP and VPS assignment is correct. A newly created VP and VPS are unassigned. Once bf_vps_op_run is executed, the VP is assigned to the provided VM and the VPS is assigned to the provided VP. The VP and VPS are also both assigned to the PP bf_vps_op_run is executed on. Once these assignments take place, an extension cannot change them, and any attempt to run a VP or VPS on a VM, VP or PP they are not assigned to will fail. It is impossible to change the assigned of a VM or VP, but an extension can change the assignment of a VP and VPSs PP by using the bf_vp_op_migrate function.
+- Next, bf_vps_op_run must determine if it needs to migrate a VPS to the PP the VPS is being executed on by bf_vps_op_run. For more information about how this works, please see bf_vp_op_migrate.
+- Finally, bf_vps_op_run must ensure the active VM, VP and VPS are set to the VM, VP and VPS provided to this ABI. Any changes in the active state could cause additional operations to take place. For example, the VPS must transfer the TLS state of the general purpose registers to its internal cache so that the VPS that is about to become active can use the TLS block instead.
+
 **Input:**
 | Register Name | Bits | Description |
 | :------------ | :--- | :---------- |
@@ -1517,7 +1565,7 @@ Frees a page previously allocated by bf_mem_op_alloc_page. This operation is opt
 ### 2.14.3. bf_mem_op_alloc_huge, OP=0x7, IDX=0x2
 
 bf_mem_op_alloc_huge allocates a physically contiguous block of memory. When allocating a page, the extension should keep in mind the following:
-- The total memory available to allocate from this pool is extremely limited. This should only be used when absolutely needed, and you should not expect more than 1 MB (might be less) of total memory available.
+- The total memory available to allocate from this pool is extremely limited. This should only be used when absolutely needed, and extensions should not expect more than 1 MB (might be less) of total memory available.
 - Memory allocated from the huge pool might be allocated using different schemes. For example, the microkernel might allocate in increments of a page, or it might use a buddy allocator that would allocate in multiples of 2. If the allocation size doesn't match the algorithm, internal fragmentation could occur, further limiting the total number of allocations this pool can support.
 
 **Input:**

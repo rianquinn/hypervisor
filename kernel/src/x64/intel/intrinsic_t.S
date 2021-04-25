@@ -750,7 +750,7 @@ intrinsic_vmrun_failure:
 
     mov rax, 0x4400
     vmread rax, rax
-    or rax, 0xFFFFFFFFFFFFFF00
+    or rax, 0xFFFFFFFF00000000
 
     ret
     int 3

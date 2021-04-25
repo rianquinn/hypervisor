@@ -31,6 +31,6 @@
 #include <state_save_t.h>
 
 /** @brief stores the root VP state saves */
-extern struct state_save_t *g_root_vp_state[HYPERVISOR_MAX_VPS_PER_VM];
+extern struct state_save_t *g_root_vp_state[HYPERVISOR_MAX_PPS];
 
 #endif

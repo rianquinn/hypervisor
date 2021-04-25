@@ -31,6 +31,7 @@
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
+#include <bsl/finally.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
 
@@ -59,6 +60,7 @@ namespace mk
 
         constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vpsid)).get();
+
         return syscall::BF_STATUS_SUCCESS;
     }
 
@@ -162,6 +164,7 @@ namespace mk
 
         constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFFFF00U};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(ret)).get();
+
         return syscall::BF_STATUS_SUCCESS;
     }
 
@@ -190,6 +193,7 @@ namespace mk
 
         constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(ret)).get();
+
         return syscall::BF_STATUS_SUCCESS;
     }
 
@@ -218,6 +222,7 @@ namespace mk
 
         constexpr bsl::safe_uintmax mask{0xFFFFFFFF00000000U};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(ret)).get();
+
         return syscall::BF_STATUS_SUCCESS;
     }
 
@@ -413,12 +418,10 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
-    ///   @param ext the extension that made the syscall
     ///   @param vm_pool the VM pool to use
     ///   @param vp_pool the VP pool to use
     ///   @param vps_pool the VPS pool to use
@@ -427,133 +430,185 @@ namespace mk
     ///
     template<
         typename TLS_CONCEPT,
-        typename EXT_CONCEPT,
         typename VM_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,
         typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_run(
         TLS_CONCEPT &tls,
-        EXT_CONCEPT &ext,
         VM_POOL_CONCEPT &vm_pool,
         VP_POOL_CONCEPT &vp_pool,
         VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
     {
-        /// TODO:
-        /// - If this function fails, we need to set the state back to
-        ///   what it was before we started this function.
-        ///
+        bsl::discard(tls);
+        bsl::discard(vm_pool);
+        bsl::discard(vp_pool);
+        bsl::discard(vps_pool);
 
-        /// TODO:
-        /// - Right now, when we run and the VPS changes, we are not saving
-        ///   the general purpose registers that are in the TLS block to the
-        ///   VPS before changing. What this means is that the general purpose
-        ///   register state would be leaked between each VPS as the change
-        ///   occurs.
-        /// - To solve this, we need a general_purpose_regs_t that is shared
-        ///   by Intel and AMD, that each VPS has. When a VPS switch occurs,
-        ///   we will need to save the TLS state to the VPS and via versa.
-        ///   This only needs to be done when the VPS changes.
-        ///
+        // /// NOTE:
+        // /// - First, check to make sure the provided IDs are all valid, and
+        // ///   point to allocated resources (meaning the extension has
+        // ///   actually created the resources before trying to use them).
+        // ///
 
-        auto const vmid{bsl::to_u16_unsafe(tls.ext_reg3)};
-        if (bsl::unlikely(!vm_pool.is_allocated(vmid))) {
-            bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
-        }
+        // auto const vmid{bsl::to_u16_unsafe(tls.ext_reg3)};
+        // if (bsl::unlikely(!vm_pool.is_allocated(vmid))) {
+        //     bsl::print<bsl::V>() << bsl::here();
+        //     return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        // }
 
-        auto const vpid{bsl::to_u16_unsafe(tls.ext_reg2)};
-        if (bsl::unlikely(!vp_pool.is_allocated(vpid))) {
-            bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
-        }
+        // auto const vpid{bsl::to_u16_unsafe(tls.ext_reg2)};
+        // if (bsl::unlikely(!vp_pool.is_allocated(vpid))) {
+        //     bsl::print<bsl::V>() << bsl::here();
+        //     return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        // }
 
-        if (auto const vp_assigned_vm{vp_pool.assigned_vm(vpid)}) {
-            if (bsl::unlikely(vp_assigned_vm != vmid)) {
-                bsl::error() << "attempt to run vp "                   // --
-                             << bsl::hex(vpid)                         // --
-                             << " on vm "                              // --
-                             << bsl::hex(vmid)                         // --
-                             << " that was already assigned to vm "    // --
-                             << bsl::hex(vp_assigned_vm)               // --
-                             << " was denied"                          // --
-                             << bsl::endl                              // --
-                             << bsl::here();                           // --
+        // auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
+        // if (bsl::unlikely(!vps_pool.is_allocated(vpsid))) {
+        //     bsl::print<bsl::V>() << bsl::here();
+        //     return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        // }
 
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+        // ///
 
-            bsl::touch();
-        }
-        else {
-            if (bsl::unlikely(!vp_pool.assign_vm(vpid, vmid))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-        }
+        // /// NOTE:
+        // /// - The next step is to determine if we need to assign the
+        // ///   resources to other resources. Specifically, each VP is
+        // ///   assigned to both a specific VM and a specific PP. Each
+        // ///   VPS is assigned to a specific VP. Once these assignments
+        // ///   are made, the extension cannot undo them. Meaning once
+        // ///   assigned, always assigned until the resource is destroyed.
+        // /// - The one exception to this rule if the PP. A VP's assigned
+        // ///   PP can be changed using the migration ABI (not the this
+        // ///   ABI), meaning the extension needs to be explicit about
+        // ///   migration to prevent potential errors.
+        // ///
 
-        if (auto const vp_assigned_pp{vp_pool.assigned_pp(vpid)}) {
-            if (bsl::unlikely(vp_assigned_pp != tls.ppid)) {
-                bsl::error() << "attempt to run vp "                      // --
-                             << bsl::hex(vpid)                            // --
-                             << " on pp "                                 // --
-                             << bsl::hex(tls.ppid)                        // --
-                             << " that was already assigned to pp "       // --
-                             << bsl::hex(vp_assigned_pp)                  // --
-                             << " was denied (use migrate to do this)"    // --
-                             << bsl::endl                                 // --
-                             << bsl::here();                              // --
+        // auto const vmid_assigned_to_vp{vp_pool.assigned_vm(vpid)};
+        // if (vmid_assigned_to_vp != syscall::BF_INVALID_ID) {
+        //     if (bsl::unlikely(vmid_assigned_to_vp != vmid)) {
+        //         bsl::error() << "attempt to run vp "                   // --
+        //                      << bsl::hex(vpid)                         // --
+        //                      << " on vm "                              // --
+        //                      << bsl::hex(vmid)                         // --
+        //                      << " that was already assigned to vm "    // --
+        //                      << bsl::hex(vmid_assigned_to_vp)          // --
+        //                      << " was denied"                          // --
+        //                      << bsl::endl                              // --
+        //                      << bsl::here();                           // --
 
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+        //         return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        //     }
 
-            bsl::touch();
-        }
-        else {
-            if (bsl::unlikely(!vp_pool.assign_pp(vpid, tls.ppid))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-        }
+        //     bsl::touch();
+        // }
+        // else {
+        //     bsl::touch();
+        // }
 
-        auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        if (bsl::unlikely(!vps_pool.is_allocated(vpsid))) {
-            bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
-        }
+        // auto const ppid_assigned_to_vp{vp_pool.assigned_pp(vpid)};
+        // if (ppid_assigned_to_vp != syscall::BF_INVALID_ID) {
+        //     if (bsl::unlikely(ppid_assigned_to_vp != tls.ppid)) {
+        //         bsl::error() << "attempt to run vp "                      // --
+        //                      << bsl::hex(vpid)                            // --
+        //                      << " on pp "                                 // --
+        //                      << bsl::hex(tls.ppid)                        // --
+        //                      << " that was already assigned to pp "       // --
+        //                      << bsl::hex(ppid_assigned_to_vp)             // --
+        //                      << " was denied (use migrate to do this)"    // --
+        //                      << bsl::endl                                 // --
+        //                      << bsl::here();                              // --
 
-        if (auto const vps_assigned_vp{vps_pool.assigned_vp(vpsid)}) {
-            if (bsl::unlikely(vps_assigned_vp != vpid)) {
-                bsl::error() << "attempt to run vps "                  // --
-                             << bsl::hex(vpsid)                        // --
-                             << " on vp "                              // --
-                             << bsl::hex(vpid)                         // --
-                             << " that was already assigned to vp "    // --
-                             << bsl::hex(vps_assigned_vp)              // --
-                             << " was denied"                          // --
-                             << bsl::endl                              // --
-                             << bsl::here();                           // --
+        //         return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        //     }
 
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
+        //     bsl::touch();
+        // }
+        // else {
+        //     bsl::touch();
+        // }
 
-            bsl::touch();
-        }
-        else {
-            if (bsl::unlikely(!vps_pool.assign_vp(vpsid, vpid))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return syscall::BF_STATUS_FAILURE_UNKNOWN;
-            }
-        }
+        // auto const vpid_assigned_to_vps{vps_pool.assigned_vp(vpsid)};
+        // if (vpid_assigned_to_vps != syscall::BF_INVALID_ID) {
+        //     if (bsl::unlikely(vpid_assigned_to_vps != vpid)) {
+        //         bsl::error() << "attempt to run vps "                  // --
+        //                      << bsl::hex(vpsid)                        // --
+        //                      << " on vp "                              // --
+        //                      << bsl::hex(vpid)                         // --
+        //                      << " that was already assigned to vp "    // --
+        //                      << bsl::hex(vpid_assigned_to_vps)         // --
+        //                      << " was denied"                          // --
+        //                      << bsl::endl                              // --
+        //                      << bsl::here();                           // --
 
-        if (bsl::unlikely(!ext.set_active_vm(tls, vmid))) {
-            bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
-        }
+        //         return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        //     }
 
-        tls.active_vmid = vmid.get();
-        tls.active_vpid = vpid.get();
-        tls.active_vpsid = vpsid.get();
+        //     bsl::touch();
+        // }
+        // else {
+        //     bsl::touch();
+        // }
+
+        // /// NOTE:
+        // /// - Now that all of the checks are complete, we can start setting
+        // ///   state. We will start by making the resource assignments.
+        // ///
+
+        // if (vmid_assigned_to_vp != vmid) {
+        //     vp_pool.assign_vm(vpid, vmid);
+        // }
+        // else {
+        //     bsl::touch();
+        // }
+
+        // if (ppid_assigned_to_vp != tls.ppid) {
+        //     vp_pool.assign_pp(vpid, tls.ppid);
+        // }
+        // else {
+        //     bsl::touch();
+        // }
+
+        // if (vpid_assigned_to_vps != vpid) {
+        //     vps_pool.assign_vp(vpsid, vpid);
+        // }
+        // else {
+        //     bsl::touch();
+        // }
+
+        // /// NOTE:
+        // /// - The next step is to set all of the resources active/inactive.
+        // ///   Here we use a branch because these might have a lot of state
+        // ///   to move around if there are any optimizations in place.
+        // ///
+
+        // if (tls.active_vmid != vmid) {
+        //     vm_pool.set_inactive(tls, tls.active_vmid);
+        //     vm_pool.set_active(tls, vmid);
+        // }
+        // else {
+        //     bsl::touch();
+        // }
+
+        // if (tls.active_vpid != vpid) {
+        //     vp_pool.set_inactive(tls, tls.active_vpid);
+        //     vp_pool.set_active(tls, vpid);
+        // }
+        // else {
+        //     bsl::touch();
+        // }
+
+        // if (tls.active_vpsid != vpsid) {
+        //     vps_pool.set_inactive(tls, tls.active_vpsid);
+        //     vps_pool.set_active(tls, vpsid);
+        // }
+        // else {
+        //     bsl::touch();
+        // }
+
+        // // ---------------------------------------------------------------------
+        // // Done
+        // // ---------------------------------------------------------------------
 
         return_to_mk(bsl::exit_success);
 
@@ -867,7 +922,7 @@ namespace mk
             }
 
             case syscall::BF_VPS_OP_RUN_IDX_VAL.get(): {
-                ret = syscall_vps_op_run(tls, ext, vm_pool, vp_pool, vps_pool);
+                ret = syscall_vps_op_run(tls, vm_pool, vp_pool, vps_pool);
                 if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

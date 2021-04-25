@@ -101,6 +101,7 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/free_mk_huge_pool.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/free_mk_page_pool.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/free_mk_stack.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/g_cpu_status.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_ext_elf_files.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_mk_args.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_mk_debug_ring.h
@@ -109,6 +110,7 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_mk_huge_pool.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_mk_page_pool.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_mk_stack.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/g_vmm_status.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/itoa.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/loader_fini.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/loader_init.h
@@ -118,7 +120,6 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_and_free_the_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_vmm_per_cpu.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/vmm_status.h
 )
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
@@ -274,6 +275,7 @@ target_sources(bareflank_efi_loader PUBLIC
 	../src/free_mk_huge_pool.c
 	../src/free_mk_page_pool.c
 	../src/free_mk_stack.c
+	../src/g_cpu_status.c
 	../src/g_ext_elf_files.c
 	../src/g_mk_args.c
 	../src/g_mk_debug_ring.c
@@ -282,6 +284,7 @@ target_sources(bareflank_efi_loader PUBLIC
 	../src/g_mk_huge_pool.c
 	../src/g_mk_page_pool.c
 	../src/g_mk_stack.c
+	../src/g_vmm_status.c
 	../src/loader_fini.c
 	../src/loader_init.c
 	../src/start_vmm_per_cpu.c
@@ -289,7 +292,6 @@ target_sources(bareflank_efi_loader PUBLIC
 	../src/stop_and_free_the_vmm.c
 	../src/stop_vmm_per_cpu.c
 	../src/stop_vmm.c
-	../src/vmm_status.c
 )
 
 hypervisor_add_header_depends(src/platform.c ${HEADERS})
@@ -319,6 +321,7 @@ hypervisor_add_header_depends(../src/free_mk_elf_segments.c ${HEADERS})
 hypervisor_add_header_depends(../src/free_mk_huge_pool.c ${HEADERS})
 hypervisor_add_header_depends(../src/free_mk_page_pool.c ${HEADERS})
 hypervisor_add_header_depends(../src/free_mk_stack.c ${HEADERS})
+hypervisor_add_header_depends(../src/g_cpu_status.c ${HEADERS})
 hypervisor_add_header_depends(../src/g_ext_elf_files.c ${HEADERS})
 hypervisor_add_header_depends(../src/g_mk_args.c ${HEADERS})
 hypervisor_add_header_depends(../src/g_mk_debug_ring.c ${HEADERS})
@@ -327,6 +330,7 @@ hypervisor_add_header_depends(../src/g_mk_elf_segments.c ${HEADERS})
 hypervisor_add_header_depends(../src/g_mk_huge_pool.c ${HEADERS})
 hypervisor_add_header_depends(../src/g_mk_page_pool.c ${HEADERS})
 hypervisor_add_header_depends(../src/g_mk_stack.c ${HEADERS})
+hypervisor_add_header_depends(../src/g_vmm_status.c ${HEADERS})
 hypervisor_add_header_depends(../src/loader_fini.c ${HEADERS})
 hypervisor_add_header_depends(../src/loader_init.c ${HEADERS})
 hypervisor_add_header_depends(../src/start_vmm_per_cpu.c ${HEADERS})
@@ -334,7 +338,6 @@ hypervisor_add_header_depends(../src/start_vmm.c ${HEADERS})
 hypervisor_add_header_depends(../src/stop_and_free_the_vmm.c ${HEADERS})
 hypervisor_add_header_depends(../src/stop_vmm_per_cpu.c ${HEADERS})
 hypervisor_add_header_depends(../src/stop_vmm.c ${HEADERS})
-hypervisor_add_header_depends(../src/vmm_status.c ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     target_sources(bareflank_efi_loader PUBLIC

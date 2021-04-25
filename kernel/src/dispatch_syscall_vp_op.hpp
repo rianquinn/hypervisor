@@ -57,6 +57,7 @@ namespace mk
 
         constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vpid)).get();
+
         return syscall::BF_STATUS_SUCCESS;
     }
 
@@ -106,6 +107,36 @@ namespace mk
 
         return syscall::BF_STATUS_SUCCESS;
     }
+
+    // /// <!-- description -->
+    // ///   @brief Implements the bf_vp_op_migrate syscall
+    // ///
+    // /// <!-- inputs/outputs -->
+    // ///   @tparam TLS_POOL_CONCEPT defines the type of TLS pool to use
+    // ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    // ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
+    // ///   @param tls_pool the TLS pool to use
+    // ///   @param tls the current TLS block
+    // ///   @param vp_pool the VP pool to use
+    // ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
+    // ///     code on failure.
+    // ///
+    // template<typename TLS_POOL_CONCEPT, typename TLS_CONCEPT, typename VP_POOL_CONCEPT>
+    // [[nodiscard]] constexpr auto
+    // syscall_vp_op_migrate(TLS_POOL_CONCEPT &tls_pool, TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool)
+    //     -> syscall::bf_status_t
+    // {
+    //     auto const vpid{bsl::to_u16_unsafe(tls.ext_reg1)};
+    //     auto const ppid{bsl::to_u16_unsafe(tls.ext_reg2)};
+
+    //     auto const ret{vp_pool.migrate(tls_pool, tls, vpid, ppid)};
+    //     if (bsl::unlikely(!ret)) {
+    //         bsl::print<bsl::V>() << bsl::here();
+    //         return syscall::BF_STATUS_FAILURE_UNKNOWN;
+    //     }
+
+    //     return syscall::BF_STATUS_SUCCESS;
+    // }
 
     /// <!-- description -->
     ///   @brief Dispatches the bf_vp_op syscalls
@@ -175,6 +206,16 @@ namespace mk
 
                 return ret;
             }
+
+            // case syscall::BF_VP_OP_MIGRATE_IDX_VAL.get(): {
+            //     ret = syscall_vp_op_migrate(tls_pool, tls, vp_pool);
+            //     if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+            //         bsl::print<bsl::V>() << bsl::here();
+            //         return ret;
+            //     }
+
+            //     return ret;
+            // }
 
             default: {
                 bsl::error() << "unknown syscall index: "    //--

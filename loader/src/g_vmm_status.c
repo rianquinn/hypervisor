@@ -24,8 +24,7 @@
  * SOFTWARE.
  */
 
-#include <constants.h>
-#include <mk_args_t.h>
+#include <g_vmm_status.h>
 
-/** @brief stores the microkernel's _start args */
-struct mk_args_t *g_mk_args[HYPERVISOR_MAX_PPS] = {0};
+/** @brief stores the current state of the VMM */
+uint32_t g_vmm_status = VMM_STATUS_STOPPED;

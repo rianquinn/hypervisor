@@ -83,10 +83,6 @@ namespace mk
         constexpr void
         add(bsl::safe_uint16 const &ppid, vmexit_log_record_t const &rec) &noexcept
         {
-            if constexpr (BSL_RELEASE_BUILD) {
-                return;
-            }
-
             if constexpr (BSL_DEBUG_LEVEL < bsl::VV) {
                 return;
             }
@@ -116,10 +112,6 @@ namespace mk
         constexpr void
         dump(bsl::safe_uint16 const &ppid) &noexcept
         {
-            if constexpr (BSL_RELEASE_BUILD) {
-                return;
-            }
-
             if constexpr (BSL_DEBUG_LEVEL < bsl::VV) {
                 return;
             }

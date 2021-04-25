@@ -50,6 +50,15 @@ namespace mk
     syscall_intrinsic_op_rdmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
         -> syscall::bf_status_t
     {
+        /// TODO:
+        /// - Move this logic to the dispatch_syscall_entry.S and implement
+        ///   this right in ASM. This way, we can do the smallest amount of
+        ///   state save logic and execute this instruction as fast as
+        ///   possible. Just make sure that the safe version is used, and
+        ///   it will still need to make sure that the extension is not
+        ///   trying to read/write MSRs that the microkernel is using.
+        ///
+
         auto const ret{intrinsic.rdmsr(bsl::to_u32_unsafe(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
@@ -76,6 +85,15 @@ namespace mk
     syscall_intrinsic_op_wrmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
         -> syscall::bf_status_t
     {
+        /// TODO:
+        /// - Move this logic to the dispatch_syscall_entry.S and implement
+        ///   this right in ASM. This way, we can do the smallest amount of
+        ///   state save logic and execute this instruction as fast as
+        ///   possible. Just make sure that the safe version is used, and
+        ///   it will still need to make sure that the extension is not
+        ///   trying to read/write MSRs that the microkernel is using.
+        ///
+
         auto const ret{intrinsic.wrmsr(bsl::to_u32_unsafe(tls.ext_reg1), tls.ext_reg2)};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();

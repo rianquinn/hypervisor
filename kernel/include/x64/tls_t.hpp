@@ -39,7 +39,7 @@ namespace mk
     /// @brief defines the size of the reserved1 field in the tls_t
     constexpr bsl::safe_uintmax TLS_T_RESERVED1_SIZE{bsl::to_umax(0x030)};
     /// @brief defines the size of the reserved2 field in the tls_t
-    constexpr bsl::safe_uintmax TLS_T_RESERVED2_SIZE{bsl::to_umax(0x090)};
+    constexpr bsl::safe_uintmax TLS_T_RESERVED2_SIZE{bsl::to_umax(0x088)};
     /// @brief defines the the total size of the TLS block
     constexpr bsl::safe_uintmax TLS_T_SIZE{bsl::to_umax(0x300)};
 
@@ -252,6 +252,9 @@ namespace mk
 
         /// @brief stores whether or not the first launch succeeded (0x268).
         bsl::uintmax first_launch_succeeded;
+
+        /// @brief stores the currently active root page table (0x240)
+        void *active_rpt;
 
         /// @brief reserve the rest of the TLS block for later use.
         bsl::details::carray<bsl::uint8, TLS_T_RESERVED2_SIZE.get()> reserved2;

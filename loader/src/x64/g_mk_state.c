@@ -28,4 +28,4 @@
 #include <state_save_t.h>
 
 /** @brief stores the microkernel state saves */
-struct state_save_t *g_mk_state[HYPERVISOR_MAX_VPS_PER_VM];
+struct state_save_t *g_mk_state[HYPERVISOR_MAX_PPS];

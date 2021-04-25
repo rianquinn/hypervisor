@@ -24,7 +24,8 @@
  * SOFTWARE.
  */
 
-#include <vmm_status.h>
+#include <constants.h>
+#include <g_cpu_status.h>
 
-/** @brief stores the current state of the VMM */
-uint32_t g_vmm_status = VMM_STATUS_STOPPED;
+/** @brief stores the current state of each CPU */
+uint32_t g_cpu_status[HYPERVISOR_MAX_PPS] = {0};

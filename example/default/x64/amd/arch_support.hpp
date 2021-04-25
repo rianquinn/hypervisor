@@ -146,7 +146,13 @@ namespace example
         ///   set up.
         ///
 
-        syscall::bf_tls_set_rax(handle, bsl::ZERO_UMAX);
+        ret = syscall::bf_vps_op_write_reg(
+            handle, vpsid, syscall::bf_reg_t::bf_reg_t_rax, bsl::ZERO_UMAX);
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return ret;
+        }
+
         return ret;
     }
 }

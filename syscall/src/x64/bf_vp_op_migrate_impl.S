@@ -24,8 +24,17 @@
  * SOFTWARE.
  */
 
-#include <constants.h>
-#include <mk_args_t.h>
+    .code64
+    .intel_syntax noprefix
 
-/** @brief stores the microkernel's _start args */
-struct mk_args_t *g_mk_args[HYPERVISOR_MAX_PPS] = {0};
+    .globl  bf_vp_op_migrate_impl
+    .type   bf_vp_op_migrate_impl, @function
+bf_vp_op_migrate_impl:
+
+    mov rax, 0x6642000000050002
+    syscall
+
+    ret
+    int 3
+
+    .size bf_vp_op_migrate_impl, .-bf_vp_op_migrate_impl

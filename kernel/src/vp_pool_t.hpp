@@ -25,6 +25,8 @@
 #ifndef VP_POOL_T_HPP
 #define VP_POOL_T_HPP
 
+#include <mk_interface.hpp>
+
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
@@ -261,11 +263,6 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_allocated(bsl::safe_uint16 const &vpid) &noexcept -> bool
         {
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "vp_pool_t not initialized\n" << bsl::here();
-                return false;
-            }
-
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "invalid vpid: "    // --
@@ -280,21 +277,44 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Assigns the requested vp_t to a VM
+        ///   @brief Sets the requested vp_t as active.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param vpid the ID of the vp_t to assign to
-        ///   @param vmid the VM the requested vp_t is assigned to
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param vpid the ID of the vp_t to set as active
         ///
-        [[nodiscard]] constexpr auto
-        assign_vm(bsl::safe_uint16 const &vpid, bsl::safe_uint16 const &vmid) &noexcept
-            -> bsl::errc_type
+        template<typename TLS_CONCEPT>
+        constexpr void
+        set_active(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid) &noexcept
         {
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "vp_pool_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            if (bsl::unlikely(nullptr == vp)) {
+                bsl::error() << "invalid vpid: "    // --
+                             << bsl::hex(vpid)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
+                return;
+            }
+
+            vp->set_active(tls);
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the requested vp_t as inactive.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param vpid the ID of the vp_t to set as inactive
+        ///
+        template<typename TLS_CONCEPT>
+        constexpr void
+        set_inactive(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid) &noexcept
+        {
+            if (vpid == syscall::BF_INVALID_ID) {
+                return;
             }
 
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
@@ -304,10 +324,60 @@ namespace mk
                              << bsl::endl           // --
                              << bsl::here();        // --
 
-                return bsl::errc_failure;
+                return;
             }
 
-            return vp->assign_vm(vmid);
+            vp->set_inactive(tls);
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if the requested vp_t is active, false
+        ///     if the provided VPID is invalid, or if the vp_t is not
+        ///     active.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpid the ID of the vp_t to query
+        ///   @return Returns true if the requested vp_t is active, false
+        ///     if the provided VPID is invalid, or if the vp_t is not
+        ///     active.
+        ///
+        [[nodiscard]] constexpr auto
+        is_active(bsl::safe_uint16 const &vpid) &noexcept -> bool
+        {
+            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            if (bsl::unlikely(nullptr == vp)) {
+                bsl::error() << "invalid vpid: "    // --
+                             << bsl::hex(vpid)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
+                return false;
+            }
+
+            return vp->is_active();
+        }
+
+        /// <!-- description -->
+        ///   @brief Assigns the requested vp_t to a VM
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpid the ID of the vp_t to assign to
+        ///   @param vmid the VM the requested vp_t is assigned to
+        ///
+        constexpr void
+        assign_vm(bsl::safe_uint16 const &vpid, bsl::safe_uint16 const &vmid) &noexcept
+        {
+            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            if (bsl::unlikely(nullptr == vp)) {
+                bsl::error() << "invalid vpid: "    // --
+                             << bsl::hex(vpid)      // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
+
+                return;
+            }
+
+            vp->assign_vm(vmid);
         }
 
         /// <!-- description -->
@@ -316,18 +386,10 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param vpid the ID of the vp_t to assign to
         ///   @param ppid the PP the requested vp_t is assigned to
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
         ///
-        [[nodiscard]] constexpr auto
+        constexpr void
         assign_pp(bsl::safe_uint16 const &vpid, bsl::safe_uint16 const &ppid) &noexcept
-            -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "vp_pool_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "invalid vpid: "    // --
@@ -335,10 +397,10 @@ namespace mk
                              << bsl::endl           // --
                              << bsl::here();        // --
 
-                return bsl::errc_failure;
+                return;
             }
 
-            return vp->assign_pp(ppid);
+            vp->assign_pp(ppid);
         }
 
         /// <!-- description -->
@@ -351,11 +413,6 @@ namespace mk
         [[nodiscard]] constexpr auto
         assigned_vm(bsl::safe_uint16 const &vpid) const &noexcept -> bsl::safe_uint16
         {
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "vp_pool_t not initialized\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
-            }
-
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "invalid vpid: "    // --
@@ -363,7 +420,7 @@ namespace mk
                              << bsl::endl           // --
                              << bsl::here();        // --
 
-                return bsl::safe_uint16::zero(true);
+                return syscall::BF_INVALID_ID;
             }
 
             return vp->assigned_vm();
@@ -379,11 +436,6 @@ namespace mk
         [[nodiscard]] constexpr auto
         assigned_pp(bsl::safe_uint16 const &vpid) const &noexcept -> bsl::safe_uint16
         {
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "vp_pool_t not initialized\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
-            }
-
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "invalid vpid: "    // --
@@ -391,11 +443,49 @@ namespace mk
                              << bsl::endl           // --
                              << bsl::here();        // --
 
-                return bsl::safe_uint16::zero(true);
+                return syscall::BF_INVALID_ID;
             }
 
             return vp->assigned_pp();
         }
+
+        // /// <!-- description -->
+        // ///   @brief Migrates a VP from one PP to another. If this calls
+        // ///     completes successfully, the VPSs's assigned PP will not
+        // ///     match the VP's assigned PP. Future calls to the run ABI
+        // ///     will be able to detect this an migrate mismatched VPSs to
+        // ///     the proper PP as needed.
+        // ///
+        // /// <!-- inputs/outputs -->
+        // ///   @tparam TLS_POOL_CONCEPT defines the type of TLS pool to use
+        // ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        // ///   @param tls_pool the TLS pool to use
+        // ///   @param tls the current TLS block
+        // ///   @param vpid the ID of the VP to migrate
+        // ///   @param ppid the ID of the pP to migrate to
+        // ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        // ///     otherwise
+        // ///
+        // template<typename TLS_POOL_CONCEPT, typename TLS_CONCEPT>
+        // [[nodiscard]] constexpr auto
+        // migrate(
+        //     TLS_POOL_CONCEPT &tls_pool,
+        //     TLS_CONCEPT &tls,
+        //     bsl::safe_uint16 const &vpid,
+        //     bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uintmax
+        // {
+        //     auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+        //     if (bsl::unlikely(nullptr == vp)) {
+        //         bsl::error() << "invalid vpid: "    // --
+        //                      << bsl::hex(vpid)      // --
+        //                      << bsl::endl           // --
+        //                      << bsl::here();        // --
+
+        //         return bsl::safe_uintmax::zero(true);
+        //     }
+
+        //     return vp->migrate(tls_pool, tls, ppid);
+        // }
 
         /// <!-- description -->
         ///   @brief Dumps the requested VP

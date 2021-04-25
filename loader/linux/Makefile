@@ -54,6 +54,7 @@ ifneq ($(KERNELRELEASE),)
 	$(TARGET_MODULE)-objs += ../src/free_mk_huge_pool.o
 	$(TARGET_MODULE)-objs += ../src/free_mk_page_pool.o
 	$(TARGET_MODULE)-objs += ../src/free_mk_stack.o
+	$(TARGET_MODULE)-objs += ../src/g_cpu_status.o
 	$(TARGET_MODULE)-objs += ../src/g_ext_elf_files.o
 	$(TARGET_MODULE)-objs += ../src/g_mk_args.o
 	$(TARGET_MODULE)-objs += ../src/g_mk_debug_ring.o
@@ -62,6 +63,7 @@ ifneq ($(KERNELRELEASE),)
 	$(TARGET_MODULE)-objs += ../src/g_mk_huge_pool.o
 	$(TARGET_MODULE)-objs += ../src/g_mk_page_pool.o
 	$(TARGET_MODULE)-objs += ../src/g_mk_stack.o
+	$(TARGET_MODULE)-objs += ../src/g_vmm_status.o
 	$(TARGET_MODULE)-objs += ../src/loader_fini.o
 	$(TARGET_MODULE)-objs += ../src/loader_init.o
 	$(TARGET_MODULE)-objs += ../src/start_vmm_per_cpu.o
@@ -69,7 +71,6 @@ ifneq ($(KERNELRELEASE),)
 	$(TARGET_MODULE)-objs += ../src/stop_and_free_the_vmm.o
 	$(TARGET_MODULE)-objs += ../src/stop_vmm_per_cpu.o
 	$(TARGET_MODULE)-objs += ../src/stop_vmm.o
-	$(TARGET_MODULE)-objs += ../src/vmm_status.o
 
 	EXTRA_CFLAGS += -I$(src)/include
 	EXTRA_CFLAGS += -I$(src)/include/std

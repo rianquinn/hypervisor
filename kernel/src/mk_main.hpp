@@ -58,6 +58,7 @@ namespace mk
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
     ///   @tparam PAGE_SIZE defines the size of a page
+    ///   @tparam MAX_PPS the max number of PPs supported
     ///   @tparam EXT_STACK_ADDR the address of the extension's stack
     ///   @tparam EXT_STACK_SIZE the size of the extension's stack
     ///   @tparam EXT_TLS_ADDR the address of the extension's TLS block
@@ -73,6 +74,7 @@ namespace mk
         typename VM_POOL_CONCEPT,
         typename EXT_POOL_CONCEPT,
         bsl::uintmax PAGE_SIZE,
+        bsl::uintmax MAX_PPS,
         bsl::uintmax MK_CODE_SIZE,
         bsl::uintmax EXT_CODE_SIZE,
         bsl::uintmax EXT_STACK_ADDR,
@@ -99,7 +101,244 @@ namespace mk
         EXT_POOL_CONCEPT &m_ext_pool;
 
         /// @brief stores the extension pool's initialization status
-        bool m_initialized;
+        bsl::safe_uint16 root_vmid;
+
+        /// <!-- description -->
+        ///   @brief Verifies that the args and the resulting TLS block
+        ///     make sense. The trampoline code has to fill in a lot of
+        ///     the TLS block to bootstrap, so this provides some simple
+        ///     sanity checks where possible.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam MK_ARGS_CONCEPT the type of mk_args to use
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param args the loader provided arguments to the microkernel.
+        ///   @param tls the current TLS block
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        template<typename MK_ARGS_CONCEPT, typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        verify_args(MK_ARGS_CONCEPT *const args, TLS_CONCEPT &tls) noexcept -> bsl::errc_type
+        {
+            if (args->ppid == syscall::BF_BS_PPID) {
+                if (bsl::unlikely(tls.active_vmid != syscall::BF_INVALID_ID)) {
+                    bsl::error() << "cannot initialize the BSP more than once"    // --
+                                 << bsl::endl                                     // --
+                                 << bsl::here();                                  // --
+
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
+            }
+            else {
+                if (bsl::unlikely(tls.active_vmid != syscall::BF_INVALID_ID)) {
+                    bsl::error() << "cannot initialize the AP more than once"    // --
+                                 << bsl::endl                                    // --
+                                 << bsl::here();                                 // --
+
+                    return bsl::errc_failure;
+                }
+
+                if (bsl::unlikely(!root_vmid)) {
+                    bsl::error()
+                        << "cannot initialize an AP if the BSP failed to initialize"    // --
+                        << bsl::endl                                                    // --
+                        << bsl::here();                                                 // --
+
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
+            }
+
+            if (bsl::unlikely(tls.ppid != args->ppid)) {
+                bsl::error() << "tls.ppid ["                      // --
+                             << bsl::hex(tls.ppid)                    // --
+                             << "] doesn't match the args->ppid ["    // --
+                             << bsl::hex(args->ppid)                  // --
+                             << "]"                                   // --
+                             << bsl::endl                             // --
+                             << bsl::here();                          // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(tls.online_pps != args->online_pps)) {
+                bsl::error() << "tls.online_pps ["                      // --
+                             << bsl::hex(tls.online_pps)                    // --
+                             << "] doesn't match the args->online_pps ["    // --
+                             << bsl::hex(args->online_pps)                  // --
+                             << "]"                                         // --
+                             << bsl::endl                                   // --
+                             << bsl::here();                                // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!(tls.online_pps > MAX_PPS))) {
+                bsl::error() << "tls.online_pps ["                      // --
+                             << bsl::hex(tls.online_pps)                    // --
+                             << "] is not less or equal to than the max ["    // --
+                             << bsl::hex(MAX_PPS)                  // --
+                             << "]"                                         // --
+                             << bsl::endl                                   // --
+                             << bsl::here();                                // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!(args->ppid < args->online_pps))) {
+                bsl::error() << "the args->ppid ["                         // --
+                             << bsl::hex(args->ppid)                       // --
+                             << "] is not less than args->online_pps ["    // --
+                             << bsl::hex(args->online_pps)                 // --
+                             << "]"                                        // --
+                             << bsl::endl                                  // --
+                             << bsl::here();                               // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(nullptr == args->mk_state)) {
+                bsl::error() << "args->mk_state is null"    // --
+                             << bsl::endl                   // --
+                             << bsl::here();                // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(nullptr == args->root_vp_state)) {
+                bsl::error() << "args->root_vp_state is null"    // --
+                             << bsl::endl                        // --
+                             << bsl::here();                     // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(nullptr == args->debug_ring)) {
+                bsl::error() << "args->debug_ring is null"    // --
+                             << bsl::endl                     // --
+                             << bsl::here();                  // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(args->mk_elf_file.empty())) {
+                bsl::error() << "args->mk_elf_file is empty"    // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(args->mk_elf_file.size().is_zero())) {
+                bsl::error() << "args->mk_elf_file's size is zero"    // --
+                             << bsl::endl                             // --
+                             << bsl::here();                          // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!(args->mk_elf_file.size() < MK_CODE_SIZE))) {
+                bsl::error() << "args->mk_elf_file's size is too big"    // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(args->ext_elf_files.front().empty())) {
+                bsl::error() << "args->ext_elf_files.front() is empty"    // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(args->ext_elf_files.front().size().is_zero())) {
+                bsl::error() << "args->ext_elf_files.front()'s size is zero"    // --
+                             << bsl::endl                                       // --
+                             << bsl::here();                                    // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!(args->ext_elf_files.front().size() < MK_CODE_SIZE))) {
+                bsl::error() << "args->ext_elf_files.front()'s size is too big"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(nullptr == args->rpt)) {
+                bsl::error() << "args->rpt is null"    // --
+                             << bsl::endl              // --
+                             << bsl::here();           // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(bsl::ZERO_UMAX == args->rpt_phys)) {
+                bsl::error() << "args->rpt_phys is 0"    // --
+                             << bsl::endl                // --
+                             << bsl::here();             // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(args->page_pool.empty())) {
+                bsl::error() << "args->page_pool is empty"    // --
+                             << bsl::endl                     // --
+                             << bsl::here();                  // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(args->page_pool.size().is_zero())) {
+                bsl::error() << "args->page_pool's size is zero"    // --
+                             << bsl::endl                           // --
+                             << bsl::here();                        // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(args->page_pool.size() < PAGE_SIZE)) {
+                bsl::error() << "args->page_pool's size is too small"    // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(args->huge_pool.empty())) {
+                bsl::error() << "args->huge_pool is empty"    // --
+                             << bsl::endl                     // --
+                             << bsl::here();                  // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(args->huge_pool.size().is_zero())) {
+                bsl::error() << "args->huge_pool's size is zero"    // --
+                             << bsl::endl                           // --
+                             << bsl::here();                        // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(args->huge_pool.size() < PAGE_SIZE)) {
+                bsl::error() << "args->huge_pool's size is too small"    // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
+            return bsl::errc_success;
+        }
 
         /// <!-- description -->
         ///   @brief Sets the extension stack pointer given a TLS block,
@@ -159,8 +398,8 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (m_initialized) {
-                ret = m_system_rpt.activate();
+            if (args->ppid != syscall::BF_BS_PPID) {
+                ret = m_vm_pool.set_active(tls, root_vmid);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -169,21 +408,18 @@ namespace mk
                 return bsl::errc_success;
             }
 
-            // bsl::print() << bsl::mag;
-            // bsl::print() << " ___                __ _           _         \n";
-            // bsl::print() << "| _ ) __ _ _ _ ___ / _| |__ _ _ _ | |__      \n";
-            // bsl::print() << "| _ \\/ _` | '_/ -_)  _| / _` | ' \\| / /    \n";
-            // bsl::print() << "|___/\\__,_|_| \\___|_| |_\\__,_|_||_|_\\_\\ \n";
-            // bsl::print() << "\n";
-            // bsl::print() << bsl::grn;
-            // bsl::print() << "Please give us a star on: ";
-            // bsl::print() << bsl::rst;
-            // bsl::print() << "https://github.com/Bareflank/hypervisor\n";
-            // bsl::print() << bsl::rst;
-            // bsl::print() << "=================================";
-            // bsl::print() << "=================================";
-            // bsl::print() << "\n";
-            // bsl::print() << "\n";
+            bsl::print() << bsl::mag << " ___                __ _           _        " << bsl::endl;
+            bsl::print() << bsl::mag << "| _ ) __ _ _ _ ___ / _| |__ _ _ _ | |__     " << bsl::endl;
+            bsl::print() << bsl::mag << "| _ \\/ _` | '_/ -_)  _| / _` | ' \\| / /   " << bsl::endl;
+            bsl::print() << bsl::mag << "|___/\\__,_|_| \\___|_| |_\\__,_|_||_|_\\_\\" << bsl::endl;
+            bsl::print() << bsl::rst << bsl::endl;
+            bsl::print() << bsl::grn << "Please give us a star on: ";
+            bsl::print() << bsl::rst << "https://github.com/Bareflank/hypervisor";
+            bsl::print() << bsl::rst << bsl::endl;
+            bsl::print() << bsl::ylw << "=================================";
+            bsl::print() << bsl::ylw << "=================================";
+            bsl::print() << bsl::rst << bsl::endl;
+            bsl::print() << bsl::rst << bsl::endl;
 
             ret = m_page_pool.initialize(args->page_pool);
             if (bsl::unlikely(!ret)) {
@@ -209,12 +445,6 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = m_system_rpt.activate();
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
-            }
-
             ret = m_vps_pool.initialize();
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -233,6 +463,18 @@ namespace mk
                 return bsl::errc_failure;
             }
 
+            root_vmid = m_vm_pool.allocate();
+            if (bsl::unlikely(!root_vmid)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            ret = m_vm_pool.set_active(tls, root_vmid);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
             ret = m_ext_pool.initialize(tls, args->ext_elf_files);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -242,149 +484,6 @@ namespace mk
             ret = m_ext_pool.start(tls);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            m_initialized = true;
-            return bsl::errc_success;
-        }
-
-        /// <!-- description -->
-        ///   @brief Verifies that the args and the resulting TLS block
-        ///     make sense. The trampoline code has to fill in a lot of
-        ///     the TLS block to bootstrap, so this provides some simple
-        ///     sanity checks where possible.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam MK_ARGS_CONCEPT the type of mk_args to use
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @param args the loader provided arguments to the microkernel.
-        ///   @param tls the current TLS block
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        template<typename MK_ARGS_CONCEPT, typename TLS_CONCEPT>
-        [[nodiscard]] constexpr auto
-        verify_args(MK_ARGS_CONCEPT *const args, TLS_CONCEPT &tls) noexcept -> bsl::errc_type
-        {
-            if (tls.ppid != args->ppid) {
-                bsl::error() << "the tls.ppid ["                      // --
-                             << bsl::hex(tls.ppid)                    // --
-                             << "] doesn't match the args->ppid ["    // --
-                             << bsl::hex(args->ppid)                  // --
-                             << "]"                                   // --
-                             << bsl::endl                             // --
-                             << bsl::here();                          // --
-
-                return bsl::errc_failure;
-            }
-
-            if (tls.online_pps != args->online_pps) {
-                bsl::error() << "the tls.online_pps ["                      // --
-                             << bsl::hex(tls.online_pps)                    // --
-                             << "] doesn't match the args->online_pps ["    // --
-                             << bsl::hex(args->online_pps)                  // --
-                             << "]"                                         // --
-                             << bsl::endl                                   // --
-                             << bsl::here();                                // --
-
-                return bsl::errc_failure;
-            }
-
-            if (!(args->ppid < args->online_pps)) {
-                bsl::error() << "the args->ppid ["                         // --
-                             << bsl::hex(args->ppid)                       // --
-                             << "] is not less than args->online_pps ["    // --
-                             << bsl::hex(args->online_pps)                 // --
-                             << "]"                                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
-
-                return bsl::errc_failure;
-            }
-
-            if (nullptr == args->mk_state) {
-                bsl::error() << "args->mk_state is null\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (nullptr == args->root_vp_state) {
-                bsl::error() << "args->root_vp_state is null\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (nullptr == args->debug_ring) {
-                bsl::error() << "args->debug_ring is null\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (args->mk_elf_file.empty()) {
-                bsl::error() << "args->mk_elf_file is empty\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (args->mk_elf_file.size().is_zero()) {
-                bsl::error() << "args->mk_elf_file's size is zero\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (!(args->mk_elf_file.size() < MK_CODE_SIZE)) {
-                bsl::error() << "args->mk_elf_file's size is too big\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (args->ext_elf_files.front().empty()) {
-                bsl::error() << "args->ext_elf_files.front() is empty\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (args->ext_elf_files.front().size().is_zero()) {
-                bsl::error() << "args->ext_elf_files.front()'s size is zero\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (!(args->ext_elf_files.front().size() < MK_CODE_SIZE)) {
-                bsl::error() << "args->ext_elf_files.front()'s size is too big\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (nullptr == args->rpt) {
-                bsl::error() << "args->rpt is null\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (bsl::ZERO_UMAX == args->rpt_phys) {
-                bsl::error() << "args->rpt_phys is 0\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (args->page_pool.empty()) {
-                bsl::error() << "args->page_pool is empty\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (args->page_pool.size().is_zero()) {
-                bsl::error() << "args->page_pool's size is zero\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (args->page_pool.size() < PAGE_SIZE) {
-                bsl::error() << "args->page_pool's size is too small\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (args->huge_pool.empty()) {
-                bsl::error() << "args->huge_pool is empty\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (args->huge_pool.size().is_zero()) {
-                bsl::error() << "args->huge_pool's size is zero\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (args->huge_pool.size() < PAGE_SIZE) {
-                bsl::error() << "args->huge_pool's size is too small\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
@@ -440,7 +539,7 @@ namespace mk
             , m_vp_pool{vp_pool}
             , m_vm_pool{vm_pool}
             , m_ext_pool{ext_pool}
-            , m_initialized{}
+            , root_vmid{bsl::safe_uint16::zero(true)}
         {}
 
         /// <!-- description -->
@@ -462,13 +561,18 @@ namespace mk
         [[nodiscard]] constexpr auto
         process(MK_ARGS_CONCEPT *const args, TLS_CONCEPT &tls) &noexcept -> bsl::exit_code
         {
-            // if (bsl::unlikely(!this->verify_args(args, tls))) {
-            //     bsl::print<bsl::V>() << bsl::here();
-            //     return bsl::exit_failure;
-            // }
+            bsl::finally reset_root_vmid_on_error{[this, &tls]() noexcept -> void {
+                root_vmid = bsl::safe_uint16::zero(true);
+                tls.active_vmid = syscall::BF_INVALID_ID.get();
+            }};
 
-            set_extension_sp(tls);
-            set_extension_tp(tls);
+            if (bsl::unlikely(!this->verify_args(args, tls))) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::exit_failure;
+            }
+
+            this->set_extension_sp(tls);
+            this->set_extension_tp(tls);
 
             if (bsl::unlikely(!this->initialize(args, tls))) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -477,6 +581,30 @@ namespace mk
 
             if (bsl::unlikely(!m_ext_pool.bootstrap(tls))) {
                 bsl::print<bsl::V>() << bsl::here();
+                return bsl::exit_failure;
+            }
+
+            if (bsl::unlikely(nullptr == tls.ext_vmexit)) {
+                bsl::error() << "a vmexit handler has not been registered"    // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
+
+                return bsl::exit_failure;
+            }
+
+            if (bsl::unlikely(nullptr == tls.ext_fail)) {
+                bsl::error() << "a fast fail handler has not been registered"    // --
+                             << bsl::endl                                        // --
+                             << bsl::here();                                     // --
+
+                return bsl::exit_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_extid)) {
+                bsl::error() << "bf_vps_op_run was never executed by an extension"    // --
+                             << bsl::endl                                             // --
+                             << bsl::here();                                          // --
+
                 return bsl::exit_failure;
             }
 
@@ -504,18 +632,10 @@ namespace mk
                 return bsl::exit_failure;
             }
 
-            if (bsl::unlikely(nullptr == tls.ext_vmexit)) {
-                bsl::error() << "a vmexit handler has not been registered"    // --
-                             << bsl::endl                                     // --
-                             << bsl::here();                                  // --
-
-                return bsl::exit_failure;
-            }
-
-            if (bsl::unlikely(nullptr == tls.ext_fail)) {
-                bsl::error() << "a fast fail handler has not been registered"    // --
-                             << bsl::endl                                        // --
-                             << bsl::here();                                     // --
+            if (bsl::unlikely(nullptr == tls.active_rpt)) {
+                bsl::error() << "bf_vps_op_run was never executed by an extension"    // --
+                             << bsl::endl                                             // --
+                             << bsl::here();                                          // --
 
                 return bsl::exit_failure;
             }
@@ -525,18 +645,50 @@ namespace mk
                 return bsl::exit_failure;
             }
 
+            // Unreachable. Only used for unit testing
+
+            reset_root_vmid_on_error.ignore();
             return bsl::exit_success;
 
-            // [ ] make sure that verify actually works
-            // [ ] implement general_purpose_regs_t
-            // [ ] implement failure state logic for the run API
-            // [ ] implement an ERRC type for the direct map logic.
+            /// Need to finish porting the VP and VPS and possibly any other
+            /// object that supports release().
+            /// Need to reimplement the run function. No idea what that is
+            /// going to look like, so good luck.
+            /// Need to finish the migration stuff so that it makes sense. 
+
+            // [ ] Do I still need the TLS block pool?
+            // [ ] Finish migration stuff
+            // [ ] The syscalls should not be doing all of the checks. This
+            //     should be done by the APIs themselves for safety.
+            // [ ] We need assigned ABIs
+            // [ ] We need an umap routines. One routine should unmap a
+            //     single address, and another should unmap over an array
+            //     that is provided by the extension so that any attempt
+            //     to do a TLB flush only occurs after everything is complete.
+            // [ ] We need a memset ABI so that extensions do not have
+            //     to map in large amounts of memory to set it if needed.
+            // [ ] We need a memcpy ABI so that extensions do not have
+            //     to map in large amounts of memory to copy it if needed.
+            // [ ] Resource cleanup.
+            //     - cannot destroy VM until all VPs are destroyed
+            //     - cannot destroy VP until all VPSs are destroyed
+            //     - cannot load a VPS that is already loaded on another PP
+            // [ ] If you destroy a VPS, it should be cleared before it is
+            //     destroyed.
+            // [ ] make sure the VPS has a migrate function, and make sure
+            //     we check that the PP has the same revision ID. Make a
+            //     note about the revision issue for AMD.
+            // [ ] Add support for size optimizations in the BSL
+            // [ ] What about optimizations for read/write MSRs so that the
+            //     APIC is fast for an extension.
+            // [ ] What about IO operations
+            // [ ] What about an IPI ABI
+            // [ ] What about a WBINVLD ABI
             // [ ] implement migration APIs
-            // [ ] implement allow SMEP/SMAP to be turned back on, but
-            //     turn on the AC bit at all times
             // [ ] implement checks for which MSRs can be read/written
             // [ ] implement checks for VMCS fields can be read/written
             // [ ] implement contants for all of the asm logic
+            // [ ] implement and remaining needed lock guards
         }
     };
 }

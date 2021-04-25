@@ -219,14 +219,6 @@ bf_add_config(
 )
 
 bf_add_config(
-    CONFIG_NAME HYPERVISOR_MAX_VPS_PER_VM
-    CONFIG_TYPE STRING
-    DEFAULT_VAL "HYPERVISOR_MAX_PPS"
-    DESCRIPTION "Defines the hypervisor's max number of virtual processors per VM supported"
-    OPTIONS HYPERVISOR_MAX_PPS
-)
-
-bf_add_config(
     CONFIG_NAME HYPERVISOR_MAX_VPSS
     CONFIG_TYPE STRING
     DEFAULT_VAL "HYPERVISOR_MAX_VPS"

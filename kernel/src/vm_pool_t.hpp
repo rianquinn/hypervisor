@@ -25,6 +25,8 @@
 #ifndef VM_POOL_T_HPP
 #define VM_POOL_T_HPP
 
+#include <mk_interface.hpp>
+
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
@@ -85,10 +87,14 @@ namespace mk
             }
 
             bsl::finally release_on_error{[this]() noexcept -> void {
-                this->release();
+                if (bsl::unlikely(!this->release())) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return;
+                }
+
+                bsl::touch();
             }};
 
-            VM_CONCEPT *prev{};
             for (auto const vm : m_pool) {
                 ret = vm.data->initialize(bsl::to_u16(vm.index));
                 if (bsl::unlikely(!ret)) {
@@ -96,34 +102,50 @@ namespace mk
                     return bsl::errc_failure;
                 }
 
+                bsl::touch();
+            }
+
+            VM_CONCEPT *prev{};
+            for (auto const vm : m_pool) {
                 if (nullptr != prev) {
                     prev->set_next(vm.data);
-                }
-                else {
-                    m_head = vm.data;
                 }
 
                 prev = vm.data;
             }
 
-            release_on_error.ignore();
+            m_head = m_pool.front_if();
             m_initialized = true;
 
+            release_on_error.ignore();
             return bsl::errc_success;
         }
 
         /// <!-- description -->
-        ///   @brief Release the vm_t
+        ///   @brief Release the vm_pool_t. Note that if this function fails,
+        ///     the microkernel is left in a corrupt state and all use of the
+        ///     vm_pool_t after calling this function will results in UB.
         ///
-        constexpr void
-        release() &noexcept
+        /// <!-- inputs/outputs -->
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        release() &noexcept -> bsl::errc_type
         {
             for (auto const vm : m_pool) {
-                vm.data->release();
+                if (bsl::unlikely(!vm.data->release())) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::errc_failure;
+                }
+
+                bsl::touch();
             }
 
             m_head = {};
             m_initialized = {};
+
+            return bsl::errc_success;
         }
 
         /// <!-- description -->
@@ -197,7 +219,6 @@ namespace mk
             auto *const vm{m_head};
             m_head = m_head->next();
 
-            vm->set_next(vm);
             return vm->id();
         }
 
@@ -222,25 +243,21 @@ namespace mk
 
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "invalid vmid: "    // --
-                             << bsl::hex(vmid)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "vmid "                           // --
+                             << bsl::hex(vmid)                  // --
+                             << " is greater than the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                  // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
 
                 return bsl::errc_failure;
             }
 
-            if (!vm->is_allocated()) {
-                bsl::error() << "vm with id "             // --
-                             << bsl::hex(vmid)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
-
+            if (bsl::unlikely(!vm->deallocate())) {
+                bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            vm->deallocate();
             vm->set_next(m_head);
             m_head = vm;
 
@@ -261,22 +278,106 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_allocated(bsl::safe_uint16 const &vmid) &noexcept -> bool
         {
-            if (bsl::unlikely(!m_initialized)) {
-                bsl::error() << "vm_pool_t not initialized\n" << bsl::here();
-                return false;
-            }
-
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "invalid vmid: "    // --
-                             << bsl::hex(vmid)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "vmid "                           // --
+                             << bsl::hex(vmid)                  // --
+                             << " is greater than the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                  // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
 
                 return false;
             }
 
             return vm->is_allocated();
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the requested vm_t as active.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param vmid the ID of the vm_t to set as active
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        set_active(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept  -> bsl::errc_type
+        {
+            auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
+            if (bsl::unlikely(nullptr == vm)) {
+                bsl::error() << "vmid "                           // --
+                             << bsl::hex(vmid)                  // --
+                             << " is greater than the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                  // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
+            }
+
+            return vm->set_active(tls);
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the requested vm_t as inactive.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param vmid the ID of the vm_t to set as inactive
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        set_inactive(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept  -> bsl::errc_type
+        {
+            auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
+            if (bsl::unlikely(nullptr == vm)) {
+                bsl::error() << "vmid "                           // --
+                             << bsl::hex(vmid)                  // --
+                             << " is greater than the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                  // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
+            }
+
+            return vm->set_inactive(tls);
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if the requested vm_t is active, false
+        ///     if the provided VMID is invalid, or if the vm_t is not
+        ///     active.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vmid the ID of the vm_t to query
+        ///   @return Returns true if the requested vm_t is active, false
+        ///     if the provided VMID is invalid, or if the vm_t is not
+        ///     active.
+        ///
+        [[nodiscard]] constexpr auto
+        is_active(bsl::safe_uint16 const &vmid) &noexcept -> bool
+        {
+            auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
+            if (bsl::unlikely(nullptr == vm)) {
+                bsl::error() << "vmid "                           // --
+                             << bsl::hex(vmid)                  // --
+                             << " is greater than the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                  // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return false;
+            }
+
+            return vm->is_active();
         }
 
         /// <!-- description -->
@@ -297,10 +398,12 @@ namespace mk
 
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "invalid vmid: "    // --
-                             << bsl::hex(vmid)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "vmid "                           // --
+                             << bsl::hex(vmid)                  // --
+                             << " is greater than the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                  // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
 
                 return;
             }
