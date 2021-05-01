@@ -1419,6 +1419,30 @@ namespace syscall
     }
 
     // -------------------------------------------------------------------------
+    // bf_control_op_wait
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements the ABI for bf_control_op_wait.
+    ///
+    extern "C" void bf_control_op_wait_impl() noexcept;
+
+    /// @brief Defines the syscall index for bf_control_op_wait
+    constexpr bsl::safe_uint64 BF_CONTROL_OP_WAIT_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel that the extension would
+    ///     like to wait for a callback. This is a blocking syscall that never
+    ///     returns and should be used to return from the successful execution
+    ///     of the _start function.
+    ///
+    inline void
+    bf_control_op_wait() noexcept
+    {
+        bf_control_op_wait_impl();
+    }
+
+    // -------------------------------------------------------------------------
     // bf_handle_op_open_handle
     // -------------------------------------------------------------------------
 
@@ -1803,30 +1827,6 @@ namespace syscall
     }
 
     // -------------------------------------------------------------------------
-    // bf_callback_op_wait
-    // -------------------------------------------------------------------------
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_callback_op_wait.
-    ///
-    extern "C" void bf_callback_op_wait_impl() noexcept;
-
-    /// @brief Defines the syscall index for bf_callback_op_wait
-    constexpr bsl::safe_uint64 BF_CALLBACK_OP_WAIT_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
-
-    /// <!-- description -->
-    ///   @brief This syscall tells the microkernel that the extension would
-    ///     like to wait for a callback. This is a blocking syscall that never
-    ///     returns and should be used to return from the successful execution
-    ///     of the _start function.
-    ///
-    inline void
-    bf_callback_op_wait() noexcept
-    {
-        bf_callback_op_wait_impl();
-    }
-
-    // -------------------------------------------------------------------------
     // bf_callback_op_register_bootstrap
     // -------------------------------------------------------------------------
 
@@ -2050,32 +2050,42 @@ namespace syscall
     ///
     /// <!-- inputs/outputs -->
     ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
     extern "C" [[nodiscard]] auto bf_vp_op_create_vp_impl(    // --
         bf_uint64_t const reg0_in,                            // --
+        bf_uint16_t const reg1_in,                            // --
+        bf_uint16_t const reg2_in,                            // --
         bf_uint16_t *const reg0_out) noexcept -> bf_status_t::value_type;
 
     /// @brief Defines the syscall index for bf_vp_op_create_vp
     constexpr bsl::safe_uint64 BF_VP_OP_CREATE_VP_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
 
     /// <!-- description -->
-    ///   @brief This syscall tells the microkernel to create a VP
-    ///     and return it's ID.
+    ///   @brief This syscall tells the microkernel to create a VP given the
+    ///     IDs of the VM and PP the VP will be assigned to. Upon success,
+    ///     this syscall returns the ID of the newly created VP.
     ///
     /// <!-- inputs/outputs -->
     ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vmid The ID of the VM to assign the newly created VP to
+    ///   @param ppid The ID of the PP to assign the newly created VP to
     ///   @param vpid The resulting VPID of the newly created VP
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] inline auto
-    bf_vp_op_create_vp(               // --
-        bf_handle_t const &handle,    // --
+    bf_vp_op_create_vp(                  // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint16 const &vmid,    // --
+        bsl::safe_uint16 const &ppid,    // --
         bsl::safe_uint16 &vpid) noexcept -> bsl::errc_type
     {
-        bf_status_t const status{bf_vp_op_create_vp_impl(handle.hndl, vpid.data())};
+        bf_status_t const status{
+            bf_vp_op_create_vp_impl(handle.hndl, vmid.get(), ppid.get(), vpid.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2191,9 +2201,9 @@ namespace syscall
     ///     otherwise
     ///
     [[nodiscard]] inline auto
-    bf_vp_op_migrate(                 // --
-        bf_handle_t const &handle,    // --
-        bsl::safe_uint16 const &vpid,
+    bf_vp_op_migrate(                    // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint16 const &vpid,    // --
         bsl::safe_uint16 const &ppid) noexcept -> bsl::errc_type
     {
         bf_status_t const status{bf_vp_op_migrate_impl(handle.hndl, vpid.get(), ppid.get())};
@@ -2213,11 +2223,15 @@ namespace syscall
     ///
     /// <!-- inputs/outputs -->
     ///   @param reg0_in n/a
+    ///   @param reg1_in n/a
+    ///   @param reg2_in n/a
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
     extern "C" [[nodiscard]] auto bf_vps_op_create_vps_impl(    // --
         bf_uint64_t const reg0_in,                              // --
+        bf_uint16_t const reg1_in,                              // --
+        bf_uint16_t const reg2_in,                              // --
         bf_uint16_t *const reg0_out) noexcept -> bf_status_t::value_type;
 
     /// @brief Defines the syscall index for bf_vps_op_create_vps
@@ -2229,16 +2243,21 @@ namespace syscall
     ///
     /// <!-- inputs/outputs -->
     ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @param vpid The ID of the VP to assign the newly created VPS to
+    ///   @param ppid The resulting VPSID of the newly created VPS
     ///   @param vpsid The resulting VPSID of the newly created VPS
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] inline auto
-    bf_vps_op_create_vps(             // --
-        bf_handle_t const &handle,    // --
+    bf_vps_op_create_vps(                // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint16 const &vpid,    // --
+        bsl::safe_uint16 const &ppid,    // --
         bsl::safe_uint16 &vpsid) noexcept -> bsl::errc_type
     {
-        bf_status_t const status{bf_vps_op_create_vps_impl(handle.hndl, vpsid.data())};
+        bf_status_t const status{
+            bf_vps_op_create_vps_impl(handle.hndl, vpid.get(), ppid.get(), vpsid.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }
@@ -2920,21 +2939,21 @@ namespace syscall
     ///
     /// <!-- inputs/outputs -->
     ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param vpsid The VPSID of the VPS to run
-    ///   @param vpid The VPID of the VP to run
     ///   @param vmid The VMID of the VM to run
+    ///   @param vpid The VPID of the VP to run
+    ///   @param vpsid The VPSID of the VPS to run
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] inline auto
-    bf_vps_op_run(                        // --
-        bf_handle_t const &handle,        // --
-        bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint16 const &vpid,     // --
-        bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
+    bf_vps_op_run(                       // --
+        bf_handle_t const &handle,       // --
+        bsl::safe_uint16 const &vmid,    // --
+        bsl::safe_uint16 const &vpid,    // --
+        bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
         bf_status_t const status{
-            bf_vps_op_run_impl(handle.hndl, vpsid.get(), vpid.get(), vmid.get())};
+            bf_vps_op_run_impl(handle.hndl, vmid.get(), vpid.get(), vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
         }

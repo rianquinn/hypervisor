@@ -47,8 +47,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_intrinsic_op_rdmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
-        -> syscall::bf_status_t
+    syscall_intrinsic_op_rdmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         /// TODO:
         /// - Move this logic to the dispatch_syscall_entry.S and implement
@@ -59,14 +58,16 @@ namespace mk
         ///   trying to read/write MSRs that the microkernel is using.
         ///
 
-        auto const ret{intrinsic.rdmsr(bsl::to_u32_unsafe(tls.ext_reg1))};
-        if (bsl::unlikely(!ret)) {
+        auto const val{intrinsic.rdmsr(bsl::to_u32_unsafe(tls.ext_reg1))};
+        if (bsl::unlikely(!val)) {
             bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            return bsl::errc_failure;
         }
 
-        tls.ext_reg0 = ret.get();
-        return syscall::BF_STATUS_SUCCESS;
+        tls.ext_reg0 = val.get();
+
+        tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
+        return bsl::errc_success;
     }
 
     /// <!-- description -->
@@ -82,8 +83,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_intrinsic_op_wrmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
-        -> syscall::bf_status_t
+    syscall_intrinsic_op_wrmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         /// TODO:
         /// - Move this logic to the dispatch_syscall_entry.S and implement
@@ -97,10 +97,11 @@ namespace mk
         auto const ret{intrinsic.wrmsr(bsl::to_u32_unsafe(tls.ext_reg1), tls.ext_reg2)};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            return ret;
         }
 
-        return syscall::BF_STATUS_SUCCESS;
+        tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
+        return bsl::errc_success;
     }
 
     /// <!-- description -->
@@ -116,16 +117,16 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_intrinsic_op_invlpga(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
-        -> syscall::bf_status_t
+    syscall_intrinsic_op_invlpga(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         auto const ret{intrinsic.invlpga(tls.ext_reg1, tls.ext_reg2)};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            return ret;
         }
 
-        return syscall::BF_STATUS_SUCCESS;
+        tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
+        return bsl::errc_success;
     }
 
     /// <!-- description -->
@@ -144,10 +145,9 @@ namespace mk
     template<typename TLS_CONCEPT, typename EXT_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_intrinsic_op(
-        TLS_CONCEPT &tls, EXT_CONCEPT const &ext, INTRINSIC_CONCEPT &intrinsic)
-        -> syscall::bf_status_t
+        TLS_CONCEPT &tls, EXT_CONCEPT const &ext, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
-        syscall::bf_status_t ret{};
+        bsl::errc_type ret{};
 
         if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
             bsl::error() << "invalid handle: "        // --
@@ -155,13 +155,14 @@ namespace mk
                          << bsl::endl                 // --
                          << bsl::here();              // --
 
-            return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
+            tls.syscall_ret_status = syscall::BF_STATUS_FAILURE_INVALID_HANDLE.get();
+            return bsl::errc_failure;
         }
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_INTRINSIC_OP_RDMSR_IDX_VAL.get(): {
                 ret = syscall_intrinsic_op_rdmsr(tls, intrinsic);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
@@ -171,7 +172,7 @@ namespace mk
 
             case syscall::BF_INTRINSIC_OP_WRMSR_IDX_VAL.get(): {
                 ret = syscall_intrinsic_op_wrmsr(tls, intrinsic);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
@@ -181,7 +182,7 @@ namespace mk
 
             case syscall::BF_INTRINSIC_OP_INVLPGA_IDX_VAL.get(): {
                 ret = syscall_intrinsic_op_invlpga(tls, intrinsic);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
@@ -190,16 +191,17 @@ namespace mk
             }
 
             default: {
-                bsl::error() << "unknown syscall index: "    //--
-                             << bsl::hex(tls.ext_syscall)    //--
-                             << bsl::endl                    //--
-                             << bsl::here();                 //--
-
                 break;
             }
         }
 
-        return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        bsl::error() << "unknown syscall index: "    //--
+                     << bsl::hex(tls.ext_syscall)    //--
+                     << bsl::endl                    //--
+                     << bsl::here();                 //--
+
+        tls.syscall_ret_status = syscall::BF_STATUS_FAILURE_UNSUPPORTED.get();
+        return bsl::errc_failure;
     }
 }
 

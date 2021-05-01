@@ -22,64 +22,78 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef DISPATCH_SYSCALL_CONTROL_OP_HPP
-#define DISPATCH_SYSCALL_CONTROL_OP_HPP
-
-#include "return_to_mk.hpp"
+#ifndef DISPATCH_SYSCALL_DEBUG_OP_FAILURE_HPP
+#define DISPATCH_SYSCALL_DEBUG_OP_FAILURE_HPP
 
 #include <mk_interface.hpp>
 
+#include <bsl/char_type.hpp>
+#include <bsl/cstr_type.hpp>
 #include <bsl/debug.hpp>
+#include <bsl/unlikely.hpp>
 
 namespace mk
 {
     /// <!-- description -->
-    ///   @brief Dispatches the bf_callback_op syscalls
+    ///   @brief Dispatches the bf_debug_op syscalls
     ///
     /// <!-- inputs/outputs -->
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
-    ///   @param ext the extension that made the syscall
-    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-    ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
-    [[nodiscard]] constexpr auto
-    dispatch_syscall_control_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    /// <!-- exception safety -->
+    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
+    ///     that state reversal MIGHT BE REQUIRED.
+    ///
+    template<typename TLS_CONCEPT>
+    constexpr void
+    dispatch_syscall_debug_op_failure(TLS_CONCEPT &tls) noexcept
     {
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
-            case syscall::BF_CONTROL_OP_EXIT_IDX_VAL.get(): {
-                return_to_mk(bsl::exit_failure);
-
-                // Unreachable
-                return bsl::errc_success;
+            case syscall::BF_DEBUG_OP_OUT_IDX_VAL.get(): {
+                break;
             }
 
-            case syscall::BF_CONTROL_OP_WAIT_IDX_VAL.get(): {
-                if (ext.is_started()) {
-                    return_to_mk(bsl::exit_failure);
-                }
-                else {
-                    return_to_mk(bsl::exit_success);
-                }
+            case syscall::BF_DEBUG_OP_DUMP_VM_IDX_VAL.get(): {
+                break;
+            }
 
-                // Unreachable
-                return bsl::errc_success;
+            case syscall::BF_DEBUG_OP_DUMP_VP_IDX_VAL.get(): {
+                break;
+            }
+
+            case syscall::BF_DEBUG_OP_DUMP_VPS_IDX_VAL.get(): {
+                break;
+            }
+
+            case syscall::BF_DEBUG_OP_DUMP_VMEXIT_LOG_IDX_VAL.get(): {
+                break;
+            }
+
+            case syscall::BF_DEBUG_OP_WRITE_C_IDX_VAL.get(): {
+                break;
+            }
+
+            case syscall::BF_DEBUG_OP_WRITE_STR_IDX_VAL.get(): {
+                break;
+            }
+
+            case syscall::BF_DEBUG_OP_DUMP_EXT_IDX_VAL.get(): {
+                break;
+            }
+
+            case syscall::BF_DEBUG_OP_DUMP_PAGE_POOL_IDX_VAL.get(): {
+                break;
+            }
+
+            case syscall::BF_DEBUG_OP_DUMP_HUGE_POOL_IDX_VAL.get(): {
+                break;
             }
 
             default: {
                 break;
             }
         }
-
-        bsl::error() << "unknown syscall index: "    //--
-                     << bsl::hex(tls.ext_syscall)    //--
-                     << bsl::endl                    //--
-                     << bsl::here();                 //--
-
-        tls.syscall_ret_status = syscall::BF_STATUS_FAILURE_UNSUPPORTED.get();
-        return bsl::errc_failure;
     }
 }
 

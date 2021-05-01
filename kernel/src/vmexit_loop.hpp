@@ -38,10 +38,12 @@ namespace mk
     /// <!-- inputs/outputs -->
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
+    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @tparam VMEXIT_LOG_CONCEPT defines the type of VMExit log to use
     ///   @param tls the current TLS block
     ///   @param ext the ext_t to handle the VMExit
+    ///   @param intrinsic the intrinsics to use
     ///   @param vps_pool the VPS pool to use
     ///   @param log the VMExit log to use
     ///   @return Returns bsl::exit_success on success, bsl::exit_failure
@@ -50,16 +52,18 @@ namespace mk
     template<
         typename TLS_CONCEPT,
         typename EXT_CONCEPT,
+        typename INTRINSIC_CONCEPT,
         typename VPS_POOL_CONCEPT,
         typename VMEXIT_LOG_CONCEPT>
     [[nodiscard]] constexpr auto
     vmexit_loop(
         TLS_CONCEPT &tls,
         EXT_CONCEPT &ext,
+        INTRINSIC_CONCEPT &intrinsic,
         VPS_POOL_CONCEPT &vps_pool,
         VMEXIT_LOG_CONCEPT &log) noexcept -> bsl::exit_code
     {
-        auto const exit_reason{vps_pool.run(tls, tls.active_vpsid, log)};
+        auto const exit_reason{vps_pool.run(tls, intrinsic, tls.active_vpsid, log)};
         if (bsl::unlikely(!exit_reason)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::exit_failure;

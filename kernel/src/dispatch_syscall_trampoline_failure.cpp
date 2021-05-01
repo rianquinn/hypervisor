@@ -22,38 +22,45 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef DISPATCH_ESR_PAGE_FAULT_HPP
-#define DISPATCH_ESR_PAGE_FAULT_HPP
+#include <dispatch_syscall_failure.hpp>
+#include <global_resources.hpp>
+#include <mk_interface.hpp>
+#include <tls_t.hpp>
 
-#include <bsl/convert.hpp>
-#include <bsl/debug.hpp>
-#include <bsl/discard.hpp>
-#include <bsl/errc_type.hpp>
-#include <bsl/unlikely.hpp>
+#include <bsl/exit_code.hpp>
 
 namespace mk
 {
     /// <!-- description -->
-    ///   @brief Provides the ESR handler for page faults
+    ///   @brief Since we cannot create a template function pointer, we need
+    ///     a way to call a template function from our ASM entry point.
+    ///     Normally the way this works in a normal program is the OS calls
+    ///     _start, which then calls main(). The main() function, which is
+    ///     an extern C function, similar to this function, can then call a
+    ///     template function as needed. So the whole point of this function
+    ///     is to simply trampoline from our ASM logic, to a C++ template
+    ///     function that is easy to test.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
-    ///   @param ext the extension that made the syscall
-    ///   @return Returns bsl::errc_success if the exception was handled,
-    ///     bsl::errc_failure otherwise
+    ///   @return Returns bsl::exit_success on success, bsl::exit_failure
+    ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
-    [[nodiscard]] constexpr auto
-    dispatch_esr_page_fault(TLS_CONCEPT &tls, EXT_CONCEPT *const ext) noexcept -> bsl::errc_type
+    extern "C" auto
+    dispatch_syscall_trampoline_failure(tls_t *const tls) noexcept -> bsl::exit_code
     {
-        if (bsl::unlikely(nullptr == ext)) {
-            return bsl::errc_failure;
-        }
+        auto *const ext{static_cast<mk_ext_type *>(tls->ext)};
 
-        return ext->map_page_direct(tls, bsl::to_umax(tls.esr_cr2));
+        return dispatch_syscall_failure(
+            *tls,
+            g_ext_pool,
+            *ext,
+            g_intrinsic,
+            g_page_pool,
+            g_huge_pool,
+            g_vps_pool,
+            g_vp_pool,
+            g_vm_pool,
+            g_vmexit_log);
     }
 }
-
-#endif

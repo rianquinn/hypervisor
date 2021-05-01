@@ -25,7 +25,9 @@
 #ifndef PAGE_POOL_T_HPP
 #define PAGE_POOL_T_HPP
 
+#include <lock_guard.hpp>
 #include <page_pool_record_t.hpp>
+#include <spinlock.hpp>
 
 #include <bsl/array.hpp>
 #include <bsl/construct_at.hpp>
@@ -37,10 +39,8 @@
 #include <bsl/finally.hpp>
 #include <bsl/is_standard_layout.hpp>
 #include <bsl/is_void.hpp>
-#include <bsl/lock_guard.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/span.hpp>
-#include <bsl/spinlock.hpp>
 #include <bsl/string_view.hpp>
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
@@ -48,7 +48,7 @@
 namespace mk
 {
     /// @brief stores the max number of records the page pool can store
-    constexpr bsl::safe_uintmax PAGE_POOL_MAX_RECORDS{bsl::to_umax(25)};
+    constexpr bsl::safe_uintmax PAGE_POOL_MAX_RECORDS{bsl::to_umax(10)};
 
     /// @class mk::page_pool_t
     ///
@@ -103,7 +103,7 @@ namespace mk
         /// @brief stores information about how memory is allocated
         bsl::array<page_pool_record_t, PAGE_POOL_MAX_RECORDS.get()> m_rcds{};
         /// @brief safe guards operations on the pool.
-        mutable bsl::spinlock m_pool_lock{};
+        mutable spinlock m_lock{};
 
     public:
         /// <!-- description -->
@@ -209,14 +209,16 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam T the type of pointer to return
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param tag the tag to mark the allocation with
         ///   @return Returns a pointer to the newly allocated page
         ///
-        template<typename T>
+        template<typename T, typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate(bsl::string_view const &tag) &noexcept -> T *
+        allocate(TLS_CONCEPT &tls, bsl::string_view const &tag) &noexcept -> T *
         {
-            bsl::lock_guard lock{m_pool_lock};
+            lock_guard lock{tls, m_lock};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "page_pool_t not initialized\n" << bsl::here();
@@ -285,13 +287,16 @@ namespace mk
         ///     function to the page pool.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param ptr the pointer to the page to deallocate
         ///   @param tag the tag the allocation was marked with
         ///
+        template<typename TLS_CONCEPT>
         constexpr void
-        deallocate(void *const ptr, bsl::string_view const &tag) &noexcept
+        deallocate(TLS_CONCEPT &tls, void *const ptr, bsl::string_view const &tag) &noexcept
         {
-            bsl::lock_guard lock{m_pool_lock};
+            lock_guard lock{tls, m_lock};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "page_pool_t not initialized\n" << bsl::here();

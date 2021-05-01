@@ -391,13 +391,16 @@ namespace mk
         ///     the provided root page table.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param rpt the root page table to add too
         ///   @param elf_file the ELF file that contains the segment info
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_segments(
+        add_segments(TLS_CONCEPT &tls,
             ROOT_PAGE_TABLE_CONCEPT &rpt, bsl::span<bsl::byte const> const &elf_file) &noexcept
             -> bsl::errc_type
         {
@@ -430,13 +433,13 @@ namespace mk
                     if (bytes_to_next_page == PAGE_SIZE) {
                         if ((phdr->p_flags & bfelf::PF_X).is_pos()) {
                             page = bsl::as_writable_t<bsl::byte>(
-                                rpt.allocate_page_rx(
+                                rpt.allocate_page_rx(tls,
                                     phdr->p_vaddr + bytes, MAP_PAGE_AUTO_RELEASE_ELF),
                                 PAGE_SIZE);
                         }
                         else {
                             page = bsl::as_writable_t<bsl::byte>(
-                                rpt.allocate_page_rw(
+                                rpt.allocate_page_rw(tls,
                                     phdr->p_vaddr + bytes, MAP_PAGE_AUTO_RELEASE_ELF),
                                 PAGE_SIZE);
                         }
@@ -499,17 +502,21 @@ namespace mk
         ///     provided root page table at the provided address.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param rpt the root page table to add too
         ///   @param addr the address of where to put the stack
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_stack(ROOT_PAGE_TABLE_CONCEPT &rpt, bsl::safe_uintmax const &addr) &noexcept
+        add_stack(
+            TLS_CONCEPT &tls, ROOT_PAGE_TABLE_CONCEPT &rpt, bsl::safe_uintmax const &addr) &noexcept
             -> bsl::errc_type
         {
             for (bsl::safe_uintmax bytes{}; bytes < EXT_STACK_SIZE; bytes += PAGE_SIZE) {
-                void *page{rpt.allocate_page_rw(addr + bytes, MAP_PAGE_AUTO_RELEASE_STACK)};
+                void *page{rpt.allocate_page_rw(tls, addr + bytes, MAP_PAGE_AUTO_RELEASE_STACK)};
                 if (bsl::unlikely(nullptr == page)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -540,7 +547,7 @@ namespace mk
                 auto const offs{(EXT_STACK_SIZE + PAGE_SIZE) * pp};
                 auto const addr{(EXT_STACK_ADDR + offs)};
 
-                if (bsl::unlikely(!this->add_stack(rpt, addr))) {
+                if (bsl::unlikely(!this->add_stack(tls, rpt, addr))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -556,6 +563,8 @@ namespace mk
         ///     provided root page table at the provided address.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param rpt the root page table to add too
         ///   @param addr_usr the address the user's portion of the TLS block
         ///   @param addr_abi the address the ABI's portion of the TLS block
@@ -563,8 +572,10 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         add_tls_block(
+            TLS_CONCEPT &tls,
             ROOT_PAGE_TABLE_CONCEPT &rpt,
             bsl::safe_uintmax const &addr_usr,
             bsl::safe_uintmax const &addr_abi,
@@ -574,14 +585,14 @@ namespace mk
             bsl::span<bsl::uintmax> page_abi{};
 
             page_usr = bsl::as_writable_t<bsl::uint8>(
-                rpt.allocate_page_rw(addr_usr, MAP_PAGE_AUTO_RELEASE_TLS), PAGE_SIZE);
+                rpt.allocate_page_rw(tls, addr_usr, MAP_PAGE_AUTO_RELEASE_TLS), PAGE_SIZE);
             if (bsl::unlikely(!page_usr)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
             page_abi = bsl::as_writable_t<bsl::uintmax>(
-                rpt.allocate_page_rw(addr_abi, MAP_PAGE_AUTO_RELEASE_TLS), PAGE_SIZE);
+                rpt.allocate_page_rw(tls, addr_abi, MAP_PAGE_AUTO_RELEASE_TLS), PAGE_SIZE);
             if (bsl::unlikely(!page_abi)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -626,11 +637,14 @@ namespace mk
             ROOT_PAGE_TABLE_CONCEPT &rpt,
             bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
         {
+            bsl::errc_type ret{};
+
             for (bsl::safe_uintmax pp{}; pp < bsl::to_umax(tls.online_pps); ++pp) {
                 auto const offs{(EXT_TLS_SIZE + PAGE_SIZE) * pp};
                 auto const addr{(EXT_TLS_ADDR + offs)};
 
-                if (bsl::unlikely(!this->add_tls_block(rpt, addr, addr + PAGE_SIZE, elf_file))) {
+                ret = this->add_tls_block(tls, rpt, addr, addr + PAGE_SIZE, elf_file);
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -663,21 +677,21 @@ namespace mk
             ROOT_PAGE_TABLE_CONCEPT const &system_rpt,
             bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!rpt.initialize(m_intrinsic, m_page_pool, m_huge_pool))) {
+            if (bsl::unlikely(!rpt.initialize(tls, m_intrinsic, m_page_pool, m_huge_pool))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            bsl::finally release_on_error{[&rpt]() noexcept -> void {
-                rpt.release();
+            bsl::finally release_on_error{[&tls, &rpt]() noexcept -> void {
+                rpt.release(tls);
             }};
 
-            if (bsl::unlikely(!rpt.add_tables(system_rpt))) {
+            if (bsl::unlikely(!rpt.add_tables(tls, system_rpt))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!this->add_segments(rpt, elf_file))) {
+            if (bsl::unlikely(!this->add_segments(tls, rpt, elf_file))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
@@ -702,23 +716,27 @@ namespace mk
         ///     map).
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param rpt the root page table to initialize
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize_direct_map_rpt(ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept -> bsl::errc_type
+        initialize_direct_map_rpt(TLS_CONCEPT &tls, ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept
+            -> bsl::errc_type
         {
-            if (bsl::unlikely(!rpt.initialize(m_intrinsic, m_page_pool, m_huge_pool))) {
+            if (bsl::unlikely(!rpt.initialize(tls, m_intrinsic, m_page_pool, m_huge_pool))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            bsl::finally release_on_error{[&rpt]() noexcept -> void {
-                rpt.release();
+            bsl::finally release_on_error{[&tls, &rpt]() noexcept -> void {
+                rpt.release(tls);
             }};
 
-            if (bsl::unlikely(!rpt.add_tables(m_main_rpt))) {
+            if (bsl::unlikely(!rpt.add_tables(tls, m_main_rpt))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
@@ -789,18 +807,21 @@ namespace mk
         ///     the TLS blocks, etc... You cannot mix and match.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        update_direct_map_rpts() &noexcept -> bsl::errc_type
+        update_direct_map_rpts(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
         {
             for (auto const rpt : m_direct_map_rpts) {
                 if (!rpt.data->is_initialized()) {
                     continue;
                 }
 
-                if (bsl::unlikely(!rpt.data->add_tables(m_main_rpt))) {
+                if (bsl::unlikely(!rpt.data->add_tables(tls, m_main_rpt))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -932,8 +953,8 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::finally release_on_error{[this]() noexcept -> void {
-                this->release();
+            bsl::finally release_on_error{[this, &tls]() noexcept -> void {
+                this->release(tls);
             }};
 
             m_intrinsic = intrinsic;
@@ -975,7 +996,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = this->initialize_direct_map_rpt(m_direct_map_rpts.front());
+            ret = this->initialize_direct_map_rpt(tls, m_direct_map_rpts.front());
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -996,8 +1017,13 @@ namespace mk
         /// <!-- description -->
         ///   @brief Release the ext_t
         ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///
+        template<typename TLS_CONCEPT>
         constexpr void
-        release() &noexcept
+        release(TLS_CONCEPT &tls) &noexcept
         {
             m_heap_crsr = {};
             m_handle = bsl::safe_uintmax::zero(true);
@@ -1007,10 +1033,10 @@ namespace mk
             m_entry_ip = bsl::safe_uintmax::zero(true);
 
             for (auto const rpt : m_direct_map_rpts) {
-                rpt.data->release();
+                rpt.data->release(tls);
             }
 
-            m_main_rpt.release();
+            m_main_rpt.release(tls);
 
             m_id = bsl::safe_uint16::zero(true);
             m_started = {};
@@ -1179,6 +1205,18 @@ namespace mk
         }
 
         /// <!-- description -->
+        ///   @brief Returns true if the extension's handle is open.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns true if the extension's handle is open.
+        ///
+        [[nodiscard]] constexpr auto
+        is_handle_open() const &noexcept -> bool
+        {
+            return !!m_handle;
+        }
+
+        /// <!-- description -->
         ///   @brief Returns true if provided handle is valid
         ///
         /// <!-- inputs/outputs -->
@@ -1210,12 +1248,15 @@ namespace mk
         ///     address space.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @return Returns a page_t containing the virtual address and
         ///     physical address of the page. If an error occurs, this
         ///     function will return an invalid virtual and physical address.
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        alloc_page() &noexcept -> page_t
+        alloc_page(TLS_CONCEPT &tls) &noexcept -> page_t
         {
             bsl::errc_type ret{};
 
@@ -1225,7 +1266,7 @@ namespace mk
             }
 
             auto const *const page{
-                m_page_pool->template allocate<void>(ALLOCATE_TAG_BF_MEM_OP_ALLOC_PAGE)};
+                m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_BF_MEM_OP_ALLOC_PAGE)};
             if (bsl::unlikely(nullptr == page)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
@@ -1257,6 +1298,7 @@ namespace mk
             ///
 
             ret = m_direct_map_rpts.front().map_page(
+                tls,
                 page_virt,
                 page_phys,
                 MAP_PAGE_READ | MAP_PAGE_WRITE,
@@ -1293,13 +1335,16 @@ namespace mk
         ///     it into the extension's address space.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param size the total number of bytes to allocate
         ///   @return Returns a huge_t containing the virtual address and
         ///     physical address of the memory block. If an error occurs, this
         ///     function will return an invalid virtual and physical address.
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        alloc_huge(bsl::safe_uintmax const &size) &noexcept -> huge_t
+        alloc_huge(TLS_CONCEPT &tls, bsl::safe_uintmax const &size) &noexcept -> huge_t
         {
             bsl::errc_type ret{};
 
@@ -1317,7 +1362,7 @@ namespace mk
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
-            auto const *const huge{m_huge_pool->template allocate<void>(size)};
+            auto const *const huge{m_huge_pool->template allocate<void>(tls, size)};
             if (bsl::unlikely(nullptr == huge)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
@@ -1350,6 +1395,7 @@ namespace mk
 
             for (bsl::safe_uintmax i{}; i < size; i += PAGE_SIZE) {
                 ret = m_direct_map_rpts.front().map_page(
+                    tls,
                     huge_virt + i,
                     huge_phys + i,
                     MAP_PAGE_READ | MAP_PAGE_WRITE,
@@ -1389,14 +1435,17 @@ namespace mk
         ///     address space.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param size the total number of bytes to allocate and add
         ///     to the heap.
         ///   @return On success, alloc_heap returns the previous address
         ///     virtual address of the heap. If an error occurs, this
         ///     function returns bsl::safe_uintmax::zero(true).
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        alloc_heap(bsl::safe_uintmax const &size) &noexcept -> bsl::safe_uintmax
+        alloc_heap(TLS_CONCEPT &tls, bsl::safe_uintmax const &size) &noexcept -> bsl::safe_uintmax
         {
             bsl::errc_type ret{};
 
@@ -1441,7 +1490,7 @@ namespace mk
 
             for (bsl::safe_uintmax i{}; i < pages; ++i) {
                 auto const *const page{
-                    m_page_pool->template allocate<void>(ALLOCATE_TAG_BF_MEM_OP_ALLOC_HEAP)};
+                    m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_BF_MEM_OP_ALLOC_HEAP)};
                 if (bsl::unlikely(nullptr == page)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::safe_uintmax::zero(true);
@@ -1460,6 +1509,7 @@ namespace mk
                 }
 
                 ret = m_main_rpt.map_page(
+                    tls,
                     page_virt,
                     page_phys,
                     MAP_PAGE_READ | MAP_PAGE_WRITE,
@@ -1473,7 +1523,7 @@ namespace mk
                 m_heap_crsr += PAGE_SIZE;
             }
 
-            ret = this->update_direct_map_rpts();
+            ret = this->update_direct_map_rpts(tls);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::safe_uintmax::zero(true);
@@ -1525,6 +1575,7 @@ namespace mk
             }
 
             ret = direct_map_rpt->map_page_unaligned(
+                tls,
                 page_virt,
                 page_virt - min_dm_addr,
                 MAP_PAGE_READ | MAP_PAGE_WRITE,
@@ -1557,28 +1608,38 @@ namespace mk
         [[nodiscard]] constexpr auto
         signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
         {
-            bsl::discard(tls);
-
             if (bsl::unlikely(!m_started)) {
                 bsl::error() << "ext_t not started\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (vmid.is_zero()) {
+            if (bsl::unlikely(vmid == syscall::BF_ROOT_VMID)) {
                 return bsl::errc_success;
             }
 
-            auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(vmid))};
-            if (bsl::unlikely(nullptr == rpt)) {
-                bsl::error() << "invalid vmid: "    // --
-                             << bsl::hex(vmid)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+            if (bsl::unlikely(vmid == syscall::BF_INVALID_ID)) {
+                bsl::error() << "vmid "                           // --
+                                << bsl::hex(vmid)                  // --
+                                << " is invalid and cannot be created"       // --
+                                << bsl::endl                       // --
+                                << bsl::here();                    // --
 
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!this->initialize_direct_map_rpt(*rpt))) {
+            auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(vmid))};
+            if (bsl::unlikely(nullptr == rpt)) {
+                bsl::error() << "vmid "                            // --
+                             << bsl::hex(vmid)                     // --
+                             << " is invalid or greater than the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
+                             << bsl::endl                          // --
+                             << bsl::here();                       // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!this->initialize_direct_map_rpt(tls, *rpt))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1607,24 +1668,36 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(vmid.is_zero())) {
-                bsl::error() << "invalid vmid: "    // --
-                             << bsl::hex(vmid)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+            if (syscall::BF_INVALID_ID == vmid) {
+                return bsl::errc_success;
+            }
+
+            if (bsl::unlikely(vmid == syscall::BF_ROOT_VMID)) {
+                bsl::error() << "vm "                           // --
+                             << bsl::hex(vmid)                  // --
+                             << " is the root VM which cannot be destroyed"       // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
 
                 return bsl::errc_failure;
             }
 
             auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == rpt)) {
-                bsl::error() << "invalid vmid: "    // --
-                             << bsl::hex(vmid)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "vmid "                            // --
+                             << bsl::hex(vmid)                     // --
+                             << " is invalid or greater than the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
+                             << bsl::endl                          // --
+                             << bsl::here();                       // --
 
                 return bsl::errc_failure;
             }
+
+            /// TODO:
+            /// - This check is not good enough. We need a way to determine
+            ///   if the VM itself is active. We really should provide the
+            ///   function with a way to ask the vm_pool if this is true.
 
             if (tls.active_rpt == rpt) {
                 bsl::error() << "the rpt for vm "                       // --
@@ -1636,7 +1709,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            rpt->release();
+            rpt->release(tls);
             return bsl::errc_success;
         }
 

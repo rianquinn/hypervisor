@@ -30,6 +30,7 @@
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
+#include <bsl/likely.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
 
@@ -46,6 +47,8 @@ namespace mk
         vp_t *m_next{};
         /// @brief stores the ID associated with this vp_t
         bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
+        /// @brief stores whether or not this vp_t is allocated.
+        bool m_allocated{};
         /// @brief stores the ID of the VM this vp_t is assigned to
         bsl::safe_uint16 m_assigned_vmid{syscall::BF_INVALID_ID};
         /// @brief stores the ID of the PP this vp_t is assigned to
@@ -58,410 +61,6 @@ namespace mk
         ///   @brief Default constructor
         ///
         constexpr vp_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief Initializes this vp_t
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param i the ID for this vp_t
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
-        {
-            if (bsl::unlikely(m_id)) {
-                bsl::error() << "vp_t already initialized\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            bsl::finally release_on_error{[this]() noexcept -> void {
-                if (bsl::unlikely(!this->release())) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return;
-                }
-
-                bsl::touch();
-            }};
-
-            if (bsl::unlikely(!i)) {
-                bsl::error() << "invalid id\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            m_id = i;
-
-            release_on_error.ignore();
-            return bsl::errc_success;
-        }
-
-        /// <!-- description -->
-        ///   @brief Release the vp_t. Note that if this function fails,
-        ///     the microkernel is left in a corrupt state and all use of the
-        ///     vp_t after calling this function will results in UB.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        [[nodiscard]] constexpr auto
-        release() &noexcept -> bsl::errc_type
-        {
-            if (bsl::unlikely(!this->deallocate())) {
-                bsl::error() << "failed to release vp "         // --
-                             << bsl::hex(m_id)                  // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
-                return bsl::errc_failure;
-            }
-
-            m_id = bsl::safe_uint16::zero(true);
-            return bsl::errc_success;
-        }
-
-        /// <!-- description -->
-        ///   @brief Allocates this vp_t
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        [[nodiscard]] constexpr auto
-        allocate() &noexcept -> bsl::errc_type
-        {
-            if (bsl::unlikely(!m_id)) {
-                bsl::error() << "vp_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(m_allocated)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " was was already allocated"    // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
-                return bsl::errc_failure;
-            }
-
-            m_allocated = true;
-            return bsl::errc_success;
-        }
-
-        /// <!-- description -->
-        ///   @brief Deallocates this vp_t
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        [[nodiscard]] constexpr auto
-        deallocate() &noexcept -> bsl::errc_type
-        {
-            if (bsl::unlikely(!m_id)) {
-                return bsl::errc_success;
-            }
-
-            if (bsl::unlikely(!m_allocated)) {
-                return bsl::errc_success;
-            }
-
-            if (bsl::unlikely(this->is_active())) {
-                bsl::error() << "vp "                           // --
-                            << bsl::hex(m_id)                  // --
-                            << " is still active and cannot be deallocated"    // --
-                            << bsl::endl                       // --
-                            << bsl::here();                    // --
-
-                return bsl::errc_failure;
-            }
-
-            m_active_ppid = syscall::BF_INVALID_ID;
-            m_allocated = {};
-
-            return bsl::errc_success;
-        }
-
-        /// <!-- description -->
-        ///   @brief Returns true if this vp_t is allocated, false otherwise
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns true if this vp_t is allocated, false otherwise
-        ///
-        [[nodiscard]] constexpr auto
-        is_allocated() const &noexcept -> bool
-        {
-            return m_allocated;
-        }
-
-        /// <!-- description -->
-        ///   @brief Sets this vp_t as active.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @param tls the current TLS block
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        template<typename TLS_CONCEPT>
-        [[nodiscard]] constexpr auto
-        set_active(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
-        {
-            if (bsl::unlikely(!m_id)) {
-                bsl::error() << "vp_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " was was never allocated"    // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(tls.active_vpid == m_id)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is already active"    // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(m_active_ppid != syscall::BF_INVALID_ID)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is already active"    // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
-                return bsl::errc_failure;
-            }
-
-            tls.active_vpid = m_id.get();
-            m_active_ppid = tls.ppid;
-
-            return bsl::errc_success;
-        }
-
-        /// <!-- description -->
-        ///   @brief Sets this vp_t as inactive.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @param tls the current TLS block
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
-        ///
-        template<typename TLS_CONCEPT>
-        [[nodiscard]] constexpr auto
-        set_inactive(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
-        {
-            if (bsl::unlikely(!m_id)) {
-                bsl::error() << "vp_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " was was never allocated"    // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(tls.active_vpid != m_id)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is not active"    // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(m_active_ppid == syscall::BF_INVALID_ID)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is not active"    // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
-                return bsl::errc_failure;
-            }
-
-            tls.active_vpid = syscall::BF_INVALID_ID.get();
-            m_active_ppid = syscall::BF_INVALID_ID;
-
-            return bsl::errc_success;
-        }
-
-        /// <!-- description -->
-        ///   @brief Returns true if this vp_t is active, false otherwise
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns true if this vp_t is active, false otherwise
-        ///
-        [[nodiscard]] constexpr auto
-        is_active() const &noexcept -> bool
-        {
-            return m_active;
-        }
-
-        /// <!-- description -->
-        ///   @brief Assigns this vp_t to a VM
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param vmid the VM this vp_t is assigned to
-        ///
-        constexpr void
-        assign_vm(bsl::safe_uint16 const &vmid) &noexcept
-        {
-            m_assigned_vmid = vmid;
-        }
-
-        /// <!-- description -->
-        ///   @brief Assigns this vp_t to a PP
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param ppid the PP this vp_t is assigned to
-        ///
-        constexpr void
-        assign_pp(bsl::safe_uint16 const &ppid) &noexcept
-        {
-            m_assigned_ppid = ppid;
-        }
-
-        /// <!-- description -->
-        ///   @brief Returns the ID of the VM this vp_t is assigned to
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns the ID of the VM this vp_t is assigned to
-        ///
-        [[nodiscard]] constexpr auto
-        assigned_vm() const &noexcept -> bsl::safe_uint16
-        {
-            return m_assigned_vmid;
-        }
-
-        /// <!-- description -->
-        ///   @brief Returns the ID of the PP this vp_t is assigned to
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns the ID of the PP this vp_t is assigned to
-        ///
-        [[nodiscard]] constexpr auto
-        assigned_pp() const &noexcept -> bsl::safe_uint16
-        {
-            return m_assigned_ppid;
-        }
-
-        // /// <!-- description -->
-        // ///   @brief Migrates this VP from one PP to another. If this calls
-        // ///     completes successfully, the VPSs's assigned PP will not
-        // ///     match the VP's assigned PP. Future calls to the run ABI
-        // ///     will be able to detect this an migrate mismatched VPSs to
-        // ///     the proper PP as needed.
-        // ///
-        // /// <!-- inputs/outputs -->
-        // ///   @tparam TLS_POOL_CONCEPT defines the type of TLS pool to use
-        // ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        // ///   @param tls_pool the TLS pool to use
-        // ///   @param tls the current TLS block
-        // ///   @param ppid the ID of the pP to migrate to
-        // ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        // ///     otherwise
-        // ///
-        // template<typename TLS_POOL_CONCEPT, typename TLS_CONCEPT>
-        // [[nodiscard]] constexpr auto
-        // migrate(
-        //     TLS_POOL_CONCEPT &tls_pool, TLS_CONCEPT &tls, bsl::safe_uint16 const &ppid) &noexcept
-        //     -> bsl::safe_uintmax
-        // {
-        //     if (bsl::unlikely(!this->is_allocated())) {
-        //         bsl::error() << "invalid vp\n" << bsl::here();
-        //         return bsl::errc_failure;
-        //     }
-
-        //     if (bsl::unlikely(!ppid)) {
-        //         bsl::error() << "invalid ppid\n" << bsl::here();
-        //         return bsl::errc_failure;
-        //     }
-
-        //     if (bsl::unlikely(syscall::BF_INVALID_ID == assigned_vm)) {
-        //         bsl::error() << "vp "                            // --
-        //                      << bsl::hex(m_id)                   // --
-        //                      << " was never assigned to a vm"    // --
-        //                      << bsl::endl                        // --
-        //                      << bsl::here();                     // --
-
-        //         return bsl::errc_failure;
-        //     }
-
-        //     if (bsl::unlikely(syscall::BF_INVALID_ID == assigned_pp)) {
-        //         bsl::error() << "vp "                            // --
-        //                      << bsl::hex(m_id)                   // --
-        //                      << " was never assigned to a pp"    // --
-        //                      << bsl::endl                        // --
-        //                      << bsl::here();                     // --
-
-        //         return bsl::errc_failure;
-        //     }
-
-        //     /// NOTE:
-        //     /// - The following check is super important as it handles several
-        //     ///   different types of issues.
-        //     /// - If a VP is active on another PP, it means that it is
-        //     ///   executing. This means that a VPS associated with this VP is
-        //     ///   also executing, which means it cannot be cleared. Migration
-        //     ///   should normally happen by an extension when a VM exit is
-        //     ///   taken by one VP to execute another VP. For example, if a
-        //     ///   root VP gets a "run this VM using this VP and VPS" command
-        //     ///   one a PP that the VP and VPS were not originally assigned
-        //     ///   to, which basically means whatever scheduler is in place
-        //     ///   decided that it would be best to move the VP and VPS to
-        //     ///   another PP. If this happens, the active VP is the root VP,
-        //     ///   and so the VP and VPS that need to be run should be in the
-        //     ///   inactive state.
-        //     /// - The other thing that this does is ensures that we don't have
-        //     ///   an issue with a VPS executing on another core. Extensions
-        //     ///   can only run a VPS on the VP it was assigned to. This means
-        //     ///   that if the VP is inactive, any VPS that was assigned to the
-        //     ///   VP must also be inactive. In otherwords, we don't need to
-        //     ///   track the activity state of the VPSs as by design, this edge
-        //     ///   case is not possible.
-        //     ///
-
-        //     if (bsl::unlikely(tls_pool.is_vp_active(m_id))) {
-        //         bsl::error() << "vp "                                            // --
-        //                      << bsl::hex(vpid)                                   // --
-        //                      << " is currently active and cannot be migrated"    // --
-        //                      << bsl::endl                                        // --
-        //                      << bsl::here();                                     // --
-
-        //         return bsl::errc_failure;
-        //     }
-
-        //     if (bsl::unlikely(!(ppid < tls.online_pps))) {
-        //         bsl::error() << "pp "                 // --
-        //                      << bsl::hex(ppid)        // --
-        //                      << " is out of range"    // --
-        //                      << bsl::endl             // --
-        //                      << bsl::here();          // --
-
-        //         return bsl::errc_failure;
-        //     }
-
-        //     this->assign_pp(ppid);
-        //     return bsl::errc_success;
-        // }
 
         /// <!-- description -->
         ///   @brief Destructor
@@ -503,6 +102,68 @@ namespace mk
         [[maybe_unused]] constexpr auto operator=(vp_t &&o) &noexcept -> vp_t & = default;
 
         /// <!-- description -->
+        ///   @brief Initializes this vp_t
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param i the ID for this vp_t
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(m_id)) {
+                bsl::error() << "vp_t already initialized\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!i)) {
+                bsl::error() << "invalid id\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID == i)) {
+                bsl::error() << "invalid id\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            m_id = i;
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Release the vp_t. Note that if this function fails,
+        ///     the microkernel is left in a corrupt state and all use of the
+        ///     vp_t after calling this function will results in UB.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        release() &noexcept -> bsl::errc_type
+        {
+            if (syscall::BF_INVALID_ID != m_active_ppid) {
+                bsl::error() << "vp "                        // --
+                             << bsl::hex(m_id)               // --
+                             << " is still active on pp "    // --
+                             << bsl::hex(m_active_ppid)      // --
+                             << " and cannot be released"    // --
+                             << bsl::endl                    // --
+                             << bsl::here();                 // --
+
+                return bsl::errc_failure;
+            }
+
+            m_assigned_ppid = syscall::BF_INVALID_ID;
+            m_assigned_vmid = syscall::BF_INVALID_ID;
+            m_allocated = {};
+            m_id = bsl::safe_uint16::zero(true);
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
         ///   @brief Returns the ID of this vp_t
         ///
         /// <!-- inputs/outputs -->
@@ -512,6 +173,440 @@ namespace mk
         id() const &noexcept -> bsl::safe_uint16 const &
         {
             return m_id;
+        }
+
+        /// <!-- description -->
+        ///   @brief Allocates this vp_t
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param vmid The ID of the VM to assign the newly created VP to
+        ///   @param ppid The ID of the PP to assign the newly created VP to
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        allocate(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid, bsl::safe_uint16 const &ppid) &noexcept
+            -> bsl::errc_type
+        {
+            if (bsl::unlikely(!m_id)) {
+                bsl::error() << "vp_t not initialized\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(m_allocated)) {
+                bsl::error() << "vp "                      // --
+                             << bsl::hex(m_id)             // --
+                             << " is already allocated"    // --
+                             << bsl::endl                  // --
+                             << bsl::here();               // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!vmid)) {
+                bsl::error() << "invalid vmid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID == vmid)) {
+                bsl::error() << "invalid vmid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!ppid)) {
+                bsl::error() << "invalid ppid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
+                bsl::error() << "invalid ppid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!(ppid < tls.online_pps))) {
+                bsl::error() << "invalid ppid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            m_assigned_vmid = vmid;
+            m_assigned_ppid = ppid;
+            m_allocated = true;
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Deallocates this vp_t
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        deallocate(TLS_CONCEPT const &tls) &noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!m_id)) {
+                return bsl::errc_success;
+            }
+
+            if (bsl::unlikely(!m_allocated)) {
+                return bsl::errc_success;
+            }
+
+            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                           // --
+                             << bsl::hex(m_id)                  // --
+                             << " is assigned to pp "       // --
+                             << bsl::hex(m_assigned_ppid)         // --
+                             << " and cannot be deallocated on pp "    // --
+                             << bsl::hex(tls.ppid)         // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
+            }
+
+            if (syscall::BF_INVALID_ID != m_active_ppid) {
+                bsl::error() << "vp "                           // --
+                             << bsl::hex(m_id)                  // --
+                             << " is still active on pp "       // --
+                             << bsl::hex(m_active_ppid)         // --
+                             << " and cannot be deallocated"    // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
+            }
+
+            m_assigned_ppid = syscall::BF_INVALID_ID;
+            m_assigned_vmid = syscall::BF_INVALID_ID;
+            m_allocated = {};
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if this vp_t is allocated, false otherwise
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns true if this vp_t is allocated, false otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        is_allocated() const &noexcept -> bool
+        {
+            return m_allocated;
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets this vp_t as active.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        set_active(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!m_id)) {
+                bsl::error() << "vp_t not initialized\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!m_allocated)) {
+                bsl::error() << "vp "                     // --
+                             << bsl::hex(m_id)            // --
+                             << " was never allocated"    // --
+                             << bsl::endl                 // --
+                             << bsl::here();              // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                           // --
+                             << bsl::hex(m_id)                  // --
+                             << " is assigned to pp "       // --
+                             << bsl::hex(m_assigned_ppid)         // --
+                             << " and cannot be activated on pp "    // --
+                             << bsl::hex(tls.ppid)         // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(tls.active_vpid == m_id)) {
+                bsl::error() << "vp "                                 // --
+                             << bsl::hex(m_id)                        // --
+                             << " is already the active vp on pp "    // --
+                             << bsl::hex(tls.ppid)                    // --
+                             << bsl::endl                             // --
+                             << bsl::here();                          // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID != tls.active_vpid)) {
+                bsl::error() << "vp "                        // --
+                             << bsl::hex(tls.active_vpid)    // --
+                             << " is still active on pp "    // --
+                             << bsl::hex(tls.ppid)           // --
+                             << bsl::endl                    // --
+                             << bsl::here();                 // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID != m_active_ppid)) {
+                bsl::error() << "vp "                                 // --
+                             << bsl::hex(m_id)                        // --
+                             << " is already the active vp on pp "    // --
+                             << bsl::hex(m_active_ppid)               // --
+                             << bsl::endl                             // --
+                             << bsl::here();                          // --
+
+                return bsl::errc_failure;
+            }
+
+            tls.active_vpid = m_id.get();
+            m_active_ppid = tls.ppid;
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets this vp_t as inactive.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        set_inactive(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!m_id)) {
+                bsl::error() << "vp_t not initialized\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!m_allocated)) {
+                bsl::error() << "vp "                     // --
+                             << bsl::hex(m_id)            // --
+                             << " was never allocated"    // --
+                             << bsl::endl                 // --
+                             << bsl::here();              // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                           // --
+                             << bsl::hex(m_id)                  // --
+                             << " is assigned to pp "       // --
+                             << bsl::hex(m_assigned_ppid)         // --
+                             << " and cannot be deactivated on pp "    // --
+                             << bsl::hex(tls.ppid)         // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vpid)) {
+                bsl::error() << "vp "                      // --
+                             << bsl::hex(m_id)             // --
+                             << " is not active on pp "    // --
+                             << bsl::hex(tls.ppid)         // --
+                             << bsl::endl                  // --
+                             << bsl::here();               // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(tls.active_vpid != m_id)) {
+                bsl::error() << "vp "                        // --
+                             << bsl::hex(tls.active_vpid)    // --
+                             << " is still active on pp "    // --
+                             << bsl::hex(tls.ppid)           // --
+                             << bsl::endl                    // --
+                             << bsl::here();                 // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID == m_active_ppid)) {
+                bsl::error() << "vp "                      // --
+                             << bsl::hex(m_id)             // --
+                             << " is not active on pp "    // --
+                             << bsl::hex(tls.ppid)         // --
+                             << bsl::endl                  // --
+                             << bsl::here();               // --
+
+                return bsl::errc_failure;
+            }
+
+            tls.active_vpid = syscall::BF_INVALID_ID.get();
+            m_active_ppid = syscall::BF_INVALID_ID;
+
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if this vp_t is active, false otherwise
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns true if this vp_t is active, false otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        is_active() const &noexcept -> bool
+        {
+            return syscall::BF_INVALID_ID != m_active_ppid;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if this vp_t is active on the current PP,
+        ///     false otherwise
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @return Returns true if this vp_t is active on the current PP,
+        ///     false otherwise
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        is_active_on_current_pp(TLS_CONCEPT const &tls) const &noexcept -> bool
+        {
+            return tls.ppid == m_active_ppid;
+        }
+
+        /// <!-- description -->
+        ///   @brief Migrates this vp_t from one PP to another. If this calls
+        ///     completes successfully, the VPS's assigned PP will not
+        ///     match the VP's assigned PP. Future calls to the run ABI
+        ///     will be able to detect this an migrate mismatched VPSs to
+        ///     the proper PP as needed. Note that since the VP doesn't control
+        ///     any hardware state, all we have to do here is set which PP
+        ///     this VP is allowed to execute on. The VPS is what actually
+        ///     needs to be migrated, and that will not happen until a call
+        ///     to the run ABIs made. Once the run ABI detects a mismatch with
+        ///     the VPS and it's assigned VP, it will be migrated then.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param ppid the ID of the PP to migrate to
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     otherwise
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        migrate(TLS_CONCEPT &tls, bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
+        {
+            if (bsl::unlikely(!m_id)) {
+                bsl::error() << "vp_t not initialized\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!m_allocated)) {
+                bsl::error() << "vp "                     // --
+                             << bsl::hex(m_id)            // --
+                             << " was never allocated"    // --
+                             << bsl::endl                 // --
+                             << bsl::here();              // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!ppid)) {
+                bsl::error() << "invalid ppid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
+                bsl::error() << "invalid ppid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(!(ppid < tls.online_pps))) {
+                bsl::error() << "invalid ppid\n" << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(tls.ppid != ppid)) {
+                bsl::error() << "vp "                           // --
+                             << bsl::hex(m_id)                  // --
+                             << " is being migrated to pp "       // --
+                             << bsl::hex(ppid)         // --
+                             << " by pp "    // --
+                             << bsl::hex(tls.ppid)         // --
+                             << " which is not allowed "       // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(ppid == m_assigned_ppid)) {
+                bsl::error() << "vp "                            // --
+                             << bsl::hex(m_id)                   // --
+                             << " is already assigned to a pp "    // --
+                             << bsl::hex(m_assigned_ppid)      // --
+                             << bsl::endl                        // --
+                             << bsl::here();                     // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID != m_active_ppid)) {
+                bsl::error() << "vp "                        // --
+                             << bsl::hex(m_id)               // --
+                             << " is still active on pp "    // --
+                             << bsl::hex(m_active_ppid)      // --
+                             << bsl::endl                    // --
+                             << bsl::here();                 // --
+
+                return bsl::errc_failure;
+            }
+
+            m_assigned_ppid = ppid;
+            return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the ID of the VM this vp_t is assigned to
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns the ID of the VM this vp_t is assigned to
+        ///
+        [[nodiscard]] constexpr auto
+        assigned_vm() const &noexcept -> bsl::safe_uint16 const &
+        {
+            return m_assigned_vmid;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns the ID of the PP this vp_t is assigned to
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns the ID of the PP this vp_t is assigned to
+        ///
+        [[nodiscard]] constexpr auto
+        assigned_pp() const &noexcept -> bsl::safe_uint16 const &
+        {
+            return m_assigned_ppid;
         }
 
         /// <!-- description -->
@@ -617,7 +712,7 @@ namespace mk
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::fmt{"<12s", "assigned vm "};
             bsl::print() << bsl::ylw << "| ";
-            if (m_assigned_vmid != syscall::BF_INVALID_ID) {
+            if (syscall::BF_INVALID_ID != m_assigned_vmid) {
                 bsl::print() << bsl::grn << "  " << bsl::hex(m_assigned_vmid) << "   ";
             }
             else {
@@ -626,13 +721,13 @@ namespace mk
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::endl;
 
-            /// Assigned VM
+            /// Assigned PP
             ///
 
             bsl::print() << bsl::ylw << "| ";
             bsl::print() << bsl::rst << bsl::fmt{"<12s", "assigned pp "};
             bsl::print() << bsl::ylw << "| ";
-            if (m_assigned_ppid != syscall::BF_INVALID_ID) {
+            if (syscall::BF_INVALID_ID != m_assigned_ppid) {
                 bsl::print() << bsl::grn << "  " << bsl::hex(m_assigned_ppid) << "   ";
             }
             else {

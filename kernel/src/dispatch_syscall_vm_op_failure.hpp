@@ -22,8 +22,8 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef DISPATCH_SYSCALL_VM_OP_HPP
-#define DISPATCH_SYSCALL_VM_OP_HPP
+#ifndef DISPATCH_SYSCALL_VM_OP_FAILURE_HPP
+#define DISPATCH_SYSCALL_VM_OP_FAILURE_HPP
 
 #include <mk_interface.hpp>
 
@@ -54,32 +54,28 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vm_op_create_vm(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool)
-        -> bsl::errc_type
+    syscall_vm_op_create_vm_failure(
+        TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool) -> bsl::errc_type
     {
-        tls.log_vmid = syscall::BF_INVALID_ID.get();
-        tls.state_reversal_required = true;
+        bsl::errc_type ret{};
+        bsl::discard(ext_pool);
 
-        auto const vmid{vm_pool.allocate(tls)};
-        if (bsl::unlikely(!vmid)) {
+        if (!tls.state_reversal_required) {
+            return bsl::errc_success;
+        }
+
+        ret = vm_pool.deallocate(tls, tls.log_vmid);
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return ret;
+        }
+
+        ret = ext_pool.signal_vm_destroyed(tls, tls.log_vmid);
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }
 
-        if (bsl::unlikely(!ext_pool.signal_vm_created(tls, vmid))) {
-            bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
-        }
-
-if (vmid.is_pos()) {
-    bsl::error() << "test bug\n";
-    return bsl::errc_failure;
-}
-
-        constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
-        tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vmid)).get();
-
-        tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
     }
 
@@ -98,47 +94,55 @@ if (vmid.is_pos()) {
     ///
     /// <!-- exception safety -->
     ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
+    ///     that state reversal is NOT REQUIRED.
     ///
     template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vm_op_destroy_vm(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool)
-        -> bsl::errc_type
+    syscall_vm_op_destroy_vm_failure(
+        TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool) -> bsl::errc_type
     {
+        bsl::errc_type ret{};
+        bsl::discard(ext_pool);
+
+        if (!tls.state_reversal_required) {
+            return bsl::errc_success;
+        }
+
         auto const vmid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        if (bsl::unlikely(vmid == syscall::BF_ROOT_VMID)) {
-            bsl::error() << "vm "                           // --
-                            << bsl::hex(vmid)                  // --
-                            << " is the root VM which cannot be destroyed"       // --
-                            << bsl::endl                       // --
-                            << bsl::here();                    // --
-
-            return bsl::errc_failure;
+        if (!vm_pool.is_zombie(vmid)) {
+            ret = vm_pool.zombify(vmid);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
         }
 
-        if (bsl::unlikely(vmid == syscall::BF_INVALID_ID)) {
-            bsl::error() << "vmid "                           // --
-                            << bsl::hex(vmid)                  // --
-                            << " is invalid and cannot be destroyed"       // --
-                            << bsl::endl                       // --
-                            << bsl::here();                    // --
+        // /// NOTE:
+        // /// - vm_pool.deallocate is assumped to be exception safe
+        // ///
 
-            return bsl::errc_failure;
-        }
+        // auto const vmid{bsl::to_u16_unsafe(tls.ext_reg1)};
+        // if (bsl::unlikely(!vm_pool.deallocate(vmid))) {
+        //     bsl::print<bsl::V>() << bsl::here();
+        //     return bsl::errc_failure;
+        // }
 
-        tls.state_reversal_required = true;
+        // /// NOTE:
+        // /// - ext_pool.signal_vm_destroyed is assumped to be exception UNSAFE
+        // ///
 
-        if (bsl::unlikely(!ext_pool.signal_vm_destroyed(tls, vmid))) {
-            bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
-        }
+        // tls.backup1 = vmid.get();
 
-        if (bsl::unlikely(!vm_pool.deallocate(tls, vmid))) {
-            bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
-        }
+        // if (bsl::unlikely(!ext_pool.signal_vm_destroyed(tls, vmid))) {
+        //     bsl::print<bsl::V>() << bsl::here();
+        //     return bsl::errc_failure;
+        // }
 
-        tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
+        // /// NOTE:
+        // /// - The remaining is assumped to be exception safe
+        // ///
+
+        // tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
     }
 
@@ -148,11 +152,9 @@ if (vmid.is_pos()) {
     /// <!-- inputs/outputs -->
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @param tls the current TLS block
     ///   @param ext_pool the extension pool to use
-    ///   @param ext the extension that made the syscall
     ///   @param vm_pool the VM pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
@@ -164,56 +166,23 @@ if (vmid.is_pos()) {
     template<
         typename TLS_CONCEPT,
         typename EXT_POOL_CONCEPT,
-        typename EXT_CONCEPT,
         typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_vm_op(
+    dispatch_syscall_vm_op_failure(
         TLS_CONCEPT &tls,
         EXT_POOL_CONCEPT &ext_pool,
-        EXT_CONCEPT const &ext,
         VM_POOL_CONCEPT &vm_pool) -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
-        if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
-            bsl::error() << "invalid handle: "        // --
-                         << bsl::hex(tls.ext_reg0)    // --
-                         << bsl::endl                 // --
-                         << bsl::here();              // --
-
-            tls.syscall_ret_status = syscall::BF_STATUS_FAILURE_INVALID_HANDLE.get();
-            return bsl::errc_failure;
-        }
-
-        if (bsl::unlikely(tls.ext != tls.ext_vmexit)) {
-            bsl::error() << "vm ops are not allowed by ext "        // --
-                         << bsl::hex(ext.id())                      // --
-                         << " as it didn't register for vmexits"    // --
-                         << bsl::endl                               // --
-                         << bsl::here();                            // --
-
-            tls.syscall_ret_status = syscall::BF_STATUS_INVALID_PERM_EXT.get();
-            return bsl::errc_failure;
-        }
-
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_VM_OP_CREATE_VM_IDX_VAL.get(): {
-                ret = syscall_vm_op_create_vm(tls, ext_pool, vm_pool);
-                if (bsl::unlikely(!ret)) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return ret;
-                }
-
+                ret = syscall_vm_op_create_vm_failure(tls, ext_pool, vm_pool);
                 return ret;
             }
 
             case syscall::BF_VM_OP_DESTROY_VM_IDX_VAL.get(): {
-                ret = syscall_vm_op_destroy_vm(tls, ext_pool, vm_pool);
-                if (bsl::unlikely(!ret)) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return ret;
-                }
-
+                ret = syscall_vm_op_destroy_vm_failure(tls, ext_pool, vm_pool);
                 return ret;
             }
 
@@ -222,13 +191,7 @@ if (vmid.is_pos()) {
             }
         }
 
-        bsl::error() << "unknown syscall index: "    //--
-                     << bsl::hex(tls.ext_syscall)    //--
-                     << bsl::endl                    //--
-                     << bsl::here();                 //--
-
-        tls.syscall_ret_status = syscall::BF_STATUS_FAILURE_UNSUPPORTED.get();
-        return bsl::errc_failure;
+        return bsl::errc_success;
     }
 }
 

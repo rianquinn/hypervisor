@@ -37,9 +37,12 @@ list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/include/return_to_vmexit_loop.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/vmexit_loop_entry.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/debug_ring_write.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_callback_op_failure.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_callback_op.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_control_op.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_debug_op.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_failure.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_handle_op_failure.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_handle_op.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_mem_op.hpp
@@ -117,6 +120,7 @@ endif()
 
 target_sources(kernel PRIVATE
     src/dispatch_esr_trampoline.cpp
+    src/dispatch_syscall_trampoline_failure.cpp
     src/dispatch_syscall_trampoline.cpp
     src/fast_fail_trampoline.cpp
     src/mk_main_trampoline.cpp

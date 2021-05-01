@@ -41,6 +41,7 @@
     - [2.6.1. TLS Offsets](#261-tls-offsets)
   - [2.7. Control Syscalls](#27-control-syscalls)
     - [2.7.1. bf_control_op_exit, OP=0x0, IDX=0x0](#271-bf_control_op_exit-op0x0-idx0x0)
+    - [2.10.1. bf_control_op_wait, OP=0x0, IDX=0x1](#2101-bf_control_op_wait-op0x0-idx0x1)
   - [2.8. Handle Syscalls](#28-handle-syscalls)
     - [2.8.1. bf_handle_op_open_handle, OP=0x1, IDX=0x0](#281-bf_handle_op_open_handle-op0x1-idx0x0)
     - [2.8.2. bf_handle_op_close_handle, OP=0x1, IDX=0x1](#282-bf_handle_op_close_handle-op0x1-idx0x1)
@@ -56,7 +57,6 @@
     - [2.9.9. bf_debug_op_dump_page_pool, OP=0x2, IDX=0x8](#299-bf_debug_op_dump_page_pool-op0x2-idx0x8)
     - [2.9.10. bf_debug_op_dump_huge_pool, OP=0x2, IDX=0x9](#2910-bf_debug_op_dump_huge_pool-op0x2-idx0x9)
   - [2.10. Callback Syscalls](#210-callback-syscalls)
-    - [2.10.1. bf_callback_op_wait, OP=0x3, IDX=0x0](#2101-bf_callback_op_wait-op0x3-idx0x0)
     - [2.10.2. bf_callback_op_register_bootstrap, OP=0x3, IDX=0x2](#2102-bf_callback_op_register_bootstrap-op0x3-idx0x2)
     - [2.10.3. bf_callback_op_register_vmexit, OP=0x3, IDX=0x3](#2103-bf_callback_op_register_vmexit-op0x3-idx0x3)
     - [2.10.4. bf_callback_op_register_fail, OP=0x3, IDX=0x4](#2104-bf_callback_op_register_fail-op0x3-idx0x4)
@@ -698,6 +698,15 @@ This syscall tells the microkernel to stop the execution of an extension, provid
 | :---- | :---------- |
 | 0x0000000000000000 | Defines the syscall index for bf_control_op_exit |
 
+### 2.10.1. bf_control_op_wait, OP=0x0, IDX=0x1
+
+This syscall tells the microkernel that the extension would like to wait for a callback. This syscall is a blocking syscall that never returns and should be used to return from the _start function.
+
+**const, bf_uint64_t: BF_CONTROL_OP_WAIT_IDX_VAL**
+| Value | Description |
+| :---- | :---------- |
+| 0x0000000000000001 | Defines the syscall index for bf_control_op_wait |
+
 ## 2.8. Handle Syscalls
 
 ### 2.8.1. bf_handle_op_open_handle, OP=0x1, IDX=0x0
@@ -870,15 +879,6 @@ This syscall tells the microkernel to output the huge pool's stats to the consol
 
 ## 2.10. Callback Syscalls
 
-### 2.10.1. bf_callback_op_wait, OP=0x3, IDX=0x0
-
-This syscall tells the microkernel that the extension would like to wait for a callback. This syscall is a blocking syscall that never returns and should be used to return from the _start function.
-
-**const, bf_uint64_t: BF_CALLBACK_OP_WAIT_IDX_VAL**
-| Value | Description |
-| :---- | :---------- |
-| 0x0000000000000000 | Defines the syscall index for bf_callback_op_wait |
-
 ### 2.10.2. bf_callback_op_register_bootstrap, OP=0x3, IDX=0x2
 
 This syscall tells the microkernel that the extension would like to receive callbacks for bootstrap events.
@@ -982,12 +982,16 @@ The Virtual Processor ID (VPID) is a 16bit number that uniquely identifies a VP.
 
 ### 2.12.2. bf_vp_op_create_vp, OP=0x5, IDX=0x0
 
-This syscall tells the microkernel to create a VP and return its ID.
+This syscall tells the microkernel to create a VP given the IDs of the VM and PP the VP will be assigned to. Upon success, this syscall returns the ID of the newly created VP.
 
 **Input:**
 | Register Name | Bits | Description |
 | :------------ | :--- | :---------- |
 | REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
+| REG1 | 15:0 | The ID of the VM to assign the newly created VP to |
+| REG1 | 63:16 | REVI |
+| REG2 | 15:0 | The ID of the PP to assign the newly created VP to |
+| REG2 | 63:16 | REVI |
 
 **Output:**
 | Register Name | Bits | Description |
@@ -1052,12 +1056,16 @@ The Virtual Processor State ID (VPSID) is a 16bit number that uniquely identifie
 
 ### 2.12.6. bf_vps_op_create_vps, OP=0x6, IDX=0x0
 
-This syscall tells the microkernel to create a VPS and return its ID.
+This syscall tells the microkernel to create a VPS given the IDs of the VP and PP the VPS will be assigned to. Upon success, this syscall returns the ID of the newly created VPS.
 
 **Input:**
 | Register Name | Bits | Description |
 | :------------ | :--- | :---------- |
 | REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
+| REG1 | 15:0 | The ID of the VP to assign the newly created VPS to |
+| REG1 | 63:16 | REVI |
+| REG2 | 15:0 | The ID of the PP to assign the newly created VPS to |
+| REG2 | 63:16 | REVI |
 
 **Output:**
 | Register Name | Bits | Description |
@@ -1324,11 +1332,11 @@ Unlike bf_vps_op_run_current which is really just a return to microkernel execut
 | Register Name | Bits | Description |
 | :------------ | :--- | :---------- |
 | REG0 | 63:0 | Set to the result of bf_handle_op_open_handle |
-| REG1 | 15:0 | The VPSID of the VPS to run |
+| REG1 | 15:0 | The VMID of the VM to run |
 | REG1 | 63:16 | REVI |
 | REG2 | 15:0 | The VPID of the VP to run |
 | REG2 | 63:16 | REVI |
-| REG3 | 15:0 | The VMID of the VM to run |
+| REG3 | 15:0 | The VPSID of the VPS to run |
 | REG3 | 63:16 | REVI |
 
 **const, bf_uint64_t: BF_VPS_OP_RUN_IDX_VAL**

@@ -30,6 +30,8 @@
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
+#include <bsl/finally.hpp>
+#include <bsl/likely.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/string_view.hpp>
 
@@ -242,26 +244,36 @@ namespace mk
     dispatch_esr(TLS_CONCEPT &tls, EXT_CONCEPT *const ext, INTRINSIC_CONCEPT &intrinsic) noexcept
         -> bsl::exit_code
     {
-        bsl::exit_code ret{bsl::exit_failure};
+        bsl::finally reset_on_exit{[&tls]() noexcept -> void {
+            /// NOTE:
+            /// - This tells our spinlocks that we are no longer in an ESR,
+            ///   which is needed to ensure deadlock detection is handled
+            ///   properly.
+            ///
+
+            tls.esr_rip = {};
+        }};
 
         switch (tls.esr_vector) {
             case EXCEPTION_VECTOR_2.get(): {
-                ret = dispatch_esr_nmi(tls, intrinsic);
+                if (bsl::likely(dispatch_esr_nmi(tls, intrinsic))) {
+                    return bsl::exit_success;
+                }
+
                 break;
             }
 
             case EXCEPTION_VECTOR_14.get(): {
-                ret = dispatch_esr_page_fault(tls, ext);
+                if (bsl::likely(dispatch_esr_page_fault(tls, ext))) {
+                    return bsl::exit_success;
+                }
+
                 break;
             }
 
             default: {
                 break;
             }
-        }
-
-        if (bsl::exit_success == ret) {
-            return bsl::exit_success;
         }
 
         bsl::print() << bsl::red << "...<EXCEPTION>\n\n";
@@ -344,7 +356,7 @@ namespace mk
         bsl::print() << bsl::ylw << "+---------------------------------------------+";
         bsl::print() << bsl::rst << bsl::endl;
 
-        dispatch_esr_dump("ppip", tls.ppid);
+        dispatch_esr_dump("ppid", tls.ppid);
         dispatch_esr_dump("online_pps", tls.online_pps);
         dispatch_esr_dump("active_extid", tls.active_extid);
         dispatch_esr_dump("active_vmid", tls.active_vmid);

@@ -42,22 +42,36 @@ namespace mk
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
-    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-    ///     code on failure.
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    /// <!-- exception safety -->
+    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
+    ///     that state reversal MIGHT BE REQUIRED.
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_page(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+    syscall_mem_op_alloc_page(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
-        auto const page{ext.alloc_page()};
+        /// NOTE:
+        /// - ext.alloc_page is assumped to be exception UNSAFE
+        ///
+
+        auto const page{ext.alloc_page(tls)};
         if (bsl::unlikely(!page.virt)) {
             bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            return bsl::errc_failure;
         }
+
+        /// NOTE:
+        /// - The remaining is assumped to be exception safe
+        ///
 
         tls.ext_reg0 = page.virt.get();
         tls.ext_reg1 = page.phys.get();
-        return syscall::BF_STATUS_SUCCESS;
+
+        tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
+        return bsl::errc_success;
     }
 
     /// <!-- description -->
@@ -68,20 +82,33 @@ namespace mk
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
-    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-    ///     code on failure.
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    /// <!-- exception safety -->
+    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
+    ///     that state reversal MIGHT BE REQUIRED.
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_free_page(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+    syscall_mem_op_free_page(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
+        /// NOTE:
+        /// - ext.free_page is assumped to be exception UNSAFE
+        ///
+
         auto const ret{ext.free_page(bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            return ret;
         }
 
-        return syscall::BF_STATUS_SUCCESS;
+        /// NOTE:
+        /// - The remaining is assumped to be exception safe
+        ///
+
+        tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
+        return bsl::errc_success;
     }
 
     /// <!-- description -->
@@ -92,22 +119,36 @@ namespace mk
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
-    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-    ///     code on failure.
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    /// <!-- exception safety -->
+    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
+    ///     that state reversal MIGHT BE REQUIRED.
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+    syscall_mem_op_alloc_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
-        auto const huge{ext.alloc_huge(bsl::to_umax(tls.ext_reg1))};
+        /// NOTE:
+        /// - ext.alloc_huge is assumped to be exception UNSAFE
+        ///
+
+        auto const huge{ext.alloc_huge(tls, bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!huge.virt)) {
             bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            return bsl::errc_failure;
         }
+
+        /// NOTE:
+        /// - The remaining is assumped to be exception safe
+        ///
 
         tls.ext_reg0 = huge.virt.get();
         tls.ext_reg1 = huge.phys.get();
-        return syscall::BF_STATUS_SUCCESS;
+
+        tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
+        return bsl::errc_success;
     }
 
     /// <!-- description -->
@@ -118,20 +159,33 @@ namespace mk
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
-    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-    ///     code on failure.
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    /// <!-- exception safety -->
+    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
+    ///     that state reversal MIGHT BE REQUIRED.
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_free_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+    syscall_mem_op_free_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
+        /// NOTE:
+        /// - ext.free_huge is assumped to be exception UNSAFE
+        ///
+
         auto const ret{ext.free_huge(bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            return ret;
         }
 
-        return syscall::BF_STATUS_SUCCESS;
+        /// NOTE:
+        /// - The remaining is assumped to be exception safe
+        ///
+
+        tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
+        return bsl::errc_success;
     }
 
     /// <!-- description -->
@@ -142,21 +196,35 @@ namespace mk
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
-    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-    ///     code on failure.
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    /// <!-- exception safety -->
+    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
+    ///     that state reversal MIGHT BE REQUIRED.
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_heap(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+    syscall_mem_op_alloc_heap(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
-        auto const previous_heap_virt{ext.alloc_heap(bsl::to_umax(tls.ext_reg1))};
+        /// NOTE:
+        /// - ext.alloc_heap is assumped to be exception UNSAFE
+        ///
+
+        auto const previous_heap_virt{ext.alloc_heap(tls, bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!previous_heap_virt)) {
             bsl::print<bsl::V>() << bsl::here();
-            return syscall::BF_STATUS_FAILURE_UNKNOWN;
+            return bsl::errc_failure;
         }
 
+        /// NOTE:
+        /// - The remaining is assumped to be exception safe
+        ///
+
         tls.ext_reg0 = previous_heap_virt.get();
-        return syscall::BF_STATUS_SUCCESS;
+
+        tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
+        return bsl::errc_success;
     }
 
     /// <!-- description -->
@@ -167,14 +235,18 @@ namespace mk
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
-    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-    ///     code on failure.
+    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+    ///     otherwise
+    ///
+    /// <!-- exception safety -->
+    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
+    ///     that state reversal MIGHT BE REQUIRED.
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_mem_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+    dispatch_syscall_mem_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
-        syscall::bf_status_t ret{};
+        bsl::errc_type ret{};
 
         if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
             bsl::error() << "invalid handle: "        // --
@@ -182,13 +254,14 @@ namespace mk
                          << bsl::endl                 // --
                          << bsl::here();              // --
 
-            return syscall::BF_STATUS_FAILURE_INVALID_HANDLE;
+            tls.syscall_ret_status = syscall::BF_STATUS_FAILURE_INVALID_HANDLE.get();
+            return bsl::errc_failure;
         }
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_MEM_OP_ALLOC_PAGE_IDX_VAL.get(): {
                 ret = syscall_mem_op_alloc_page(tls, ext);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
@@ -198,7 +271,7 @@ namespace mk
 
             case syscall::BF_MEM_OP_FREE_PAGE_IDX_VAL.get(): {
                 ret = syscall_mem_op_free_page(tls, ext);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
@@ -208,7 +281,7 @@ namespace mk
 
             case syscall::BF_MEM_OP_ALLOC_HUGE_IDX_VAL.get(): {
                 ret = syscall_mem_op_alloc_huge(tls, ext);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
@@ -218,7 +291,7 @@ namespace mk
 
             case syscall::BF_MEM_OP_FREE_HUGE_IDX_VAL.get(): {
                 ret = syscall_mem_op_free_huge(tls, ext);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
@@ -228,7 +301,7 @@ namespace mk
 
             case syscall::BF_MEM_OP_ALLOC_HEAP_IDX_VAL.get(): {
                 ret = syscall_mem_op_alloc_heap(tls, ext);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
@@ -237,16 +310,17 @@ namespace mk
             }
 
             default: {
-                bsl::error() << "unknown syscall index: "    //--
-                             << bsl::hex(tls.ext_syscall)    //--
-                             << bsl::endl                    //--
-                             << bsl::here();                 //--
-
                 break;
             }
         }
 
-        return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        bsl::error() << "unknown syscall index: "    //--
+                     << bsl::hex(tls.ext_syscall)    //--
+                     << bsl::endl                    //--
+                     << bsl::here();                 //--
+
+        tls.syscall_ret_status = syscall::BF_STATUS_FAILURE_UNSUPPORTED.get();
+        return bsl::errc_failure;
     }
 }
 

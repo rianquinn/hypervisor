@@ -27,14 +27,14 @@
     .code64
     .intel_syntax noprefix
 
-    .globl  bf_callback_op_wait_impl
-    .type   bf_callback_op_wait_impl, @function
-bf_callback_op_wait_impl:
+    .globl  bf_control_op_wait_impl
+    .type   bf_control_op_wait_impl, @function
+bf_control_op_wait_impl:
 
-    mov rax, 0x6642000000030000
+    mov rax, 0x6642000000000001
     syscall
 
     ret
     int 3
 
-    .size bf_callback_op_wait_impl, .-bf_callback_op_wait_impl
+    .size bf_control_op_wait_impl, .-bf_control_op_wait_impl

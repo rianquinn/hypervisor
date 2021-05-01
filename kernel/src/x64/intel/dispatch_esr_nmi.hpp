@@ -27,7 +27,6 @@
 
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
-#include <bsl/exit_code.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/string_view.hpp>
 #include <bsl/unlikely.hpp>
@@ -42,12 +41,12 @@ namespace mk
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param intrinsic the intrinsics to use
-    ///   @return Returns bsl::exit_success if the exception was handled,
-    ///     bsl::exit_failure otherwise
+    ///   @return Returns bsl::errc_success if the exception was handled,
+    ///     bsl::errc_failure otherwise
     ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_esr_nmi(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) noexcept -> bsl::exit_code
+    dispatch_esr_nmi(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
         bsl::safe_uint32 val{};
@@ -57,13 +56,13 @@ namespace mk
 
         if (bsl::ZERO_UMAX != tls.nmi_lock) {
             tls.nmi_pending = bsl::ONE_UMAX.get();
-            return bsl::exit_success;
+            return bsl::errc_success;
         }
 
         ret = intrinsic.vmread32(vmcs_procbased_ctls_idx, val.data());
         if (bsl::unlikely(!ret)) {
             bsl::error() << bsl::here();
-            return bsl::exit_failure;
+            return ret;
         }
 
         val |= vmcs_set_nmi_window_exiting;
@@ -71,11 +70,11 @@ namespace mk
         ret = intrinsic.vmwrite32(vmcs_procbased_ctls_idx, val);
         if (bsl::unlikely(!ret)) {
             bsl::error() << bsl::here();
-            return bsl::exit_failure;
+            return ret;
         }
 
         tls.nmi_pending = bsl::ZERO_UMAX.get();
-        return bsl::exit_success;
+        return bsl::errc_success;
     }
 }
 

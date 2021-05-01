@@ -30,8 +30,8 @@ if (NOT CMAKE_PROJECT_NAME STREQUAL "hypervisor_microkernel")
         src/x64/bf_callback_op_register_bootstrap_impl.S
         src/x64/bf_callback_op_register_fail_impl.S
         src/x64/bf_callback_op_register_vmexit_impl.S
-        src/x64/bf_callback_op_wait_impl.S
         src/x64/bf_control_op_exit_impl.S
+        src/x64/bf_control_op_wait_impl.S
         src/x64/bf_debug_op_dump_ext_impl.S
         src/x64/bf_debug_op_dump_huge_pool_impl.S
         src/x64/bf_debug_op_dump_page_pool_impl.S

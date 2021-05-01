@@ -100,8 +100,12 @@ namespace mk
         /// @brief stores a reference to the extension pool to use
         EXT_POOL_CONCEPT &m_ext_pool;
 
-        /// @brief stores the extension pool's initialization status
-        bsl::safe_uint16 root_vmid;
+        /// @brief stores the root VMID
+        bsl::safe_uint16 m_root_vmid;
+        /// @brief stores the registered VMExit handler
+        void *m_ext_vmexit{};
+        /// @brief stores the registered fast fail handler
+        void *m_ext_fail{};
 
         /// <!-- description -->
         ///   @brief Verifies that the args and the resulting TLS block
@@ -119,10 +123,10 @@ namespace mk
         ///
         template<typename MK_ARGS_CONCEPT, typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        verify_args(MK_ARGS_CONCEPT *const args, TLS_CONCEPT &tls) noexcept -> bsl::errc_type
+        verify_args(MK_ARGS_CONCEPT *const args, TLS_CONCEPT const &tls) noexcept -> bsl::errc_type
         {
             if (args->ppid == syscall::BF_BS_PPID) {
-                if (bsl::unlikely(tls.active_vmid != syscall::BF_INVALID_ID)) {
+                if (bsl::unlikely(syscall::BF_INVALID_ID != tls.active_vmid)) {
                     bsl::error() << "cannot initialize the BSP more than once"    // --
                                  << bsl::endl                                     // --
                                  << bsl::here();                                  // --
@@ -133,7 +137,7 @@ namespace mk
                 bsl::touch();
             }
             else {
-                if (bsl::unlikely(tls.active_vmid != syscall::BF_INVALID_ID)) {
+                if (bsl::unlikely(syscall::BF_INVALID_ID != tls.active_vmid)) {
                     bsl::error() << "cannot initialize the AP more than once"    // --
                                  << bsl::endl                                    // --
                                  << bsl::here();                                 // --
@@ -141,11 +145,10 @@ namespace mk
                     return bsl::errc_failure;
                 }
 
-                if (bsl::unlikely(!root_vmid)) {
-                    bsl::error()
-                        << "cannot initialize an AP if the BSP failed to initialize"    // --
-                        << bsl::endl                                                    // --
-                        << bsl::here();                                                 // --
+                if (bsl::unlikely(!m_root_vmid)) {
+                    bsl::error() << "cannot initialize an AP due to previous failure"    // --
+                                 << bsl::endl                                            // --
+                                 << bsl::here();                                         // --
 
                     return bsl::errc_failure;
                 }
@@ -154,7 +157,19 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != args->ppid)) {
-                bsl::error() << "tls.ppid ["                      // --
+                bsl::error() << "tls.ppid ["                          // --
+                             << bsl::hex(tls.ppid)                    // --
+                             << "] doesn't match the args->ppid ["    // --
+                             << bsl::hex(args->ppid)                  // --
+                             << "]"                                   // --
+                             << bsl::endl                             // --
+                             << bsl::here();                          // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.ppid)) {
+                bsl::error() << "tls.ppid ["                          // --
                              << bsl::hex(tls.ppid)                    // --
                              << "] doesn't match the args->ppid ["    // --
                              << bsl::hex(args->ppid)                  // --
@@ -166,7 +181,7 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.online_pps != args->online_pps)) {
-                bsl::error() << "tls.online_pps ["                      // --
+                bsl::error() << "tls.online_pps ["                          // --
                              << bsl::hex(tls.online_pps)                    // --
                              << "] doesn't match the args->online_pps ["    // --
                              << bsl::hex(args->online_pps)                  // --
@@ -177,14 +192,14 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!(tls.online_pps > MAX_PPS))) {
-                bsl::error() << "tls.online_pps ["                      // --
-                             << bsl::hex(tls.online_pps)                    // --
+            if (bsl::unlikely(tls.online_pps > MAX_PPS)) {
+                bsl::error() << "tls.online_pps ["                            // --
+                             << bsl::hex(tls.online_pps)                      // --
                              << "] is not less or equal to than the max ["    // --
-                             << bsl::hex(MAX_PPS)                  // --
-                             << "]"                                         // --
-                             << bsl::endl                                   // --
-                             << bsl::here();                                // --
+                             << bsl::hex(MAX_PPS)                             // --
+                             << "]"                                           // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return bsl::errc_failure;
             }
@@ -398,16 +413,6 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (args->ppid != syscall::BF_BS_PPID) {
-                ret = m_vm_pool.set_active(tls, root_vmid);
-                if (bsl::unlikely(!ret)) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
-                }
-
-                return bsl::errc_success;
-            }
-
             bsl::print() << bsl::mag << " ___                __ _           _        " << bsl::endl;
             bsl::print() << bsl::mag << "| _ ) __ _ _ _ ___ / _| |__ _ _ _ | |__     " << bsl::endl;
             bsl::print() << bsl::mag << "| _ \\/ _` | '_/ -_)  _| / _` | ' \\| / /   " << bsl::endl;
@@ -433,19 +438,19 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = m_system_rpt.initialize(&m_intrinsic, &m_page_pool, &m_huge_pool);
+            ret = m_system_rpt.initialize(tls, &m_intrinsic, &m_page_pool, &m_huge_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_system_rpt.add_tables(args->rpt);
+            ret = m_system_rpt.add_tables(tls, args->rpt);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_vps_pool.initialize();
+            ret = m_vps_pool.initialize(tls, m_page_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -463,13 +468,15 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            root_vmid = m_vm_pool.allocate();
-            if (bsl::unlikely(!root_vmid)) {
+            tls.log_vmid = syscall::BF_INVALID_ID.get();
+
+            m_root_vmid = m_vm_pool.allocate(tls);
+            if (bsl::unlikely(!m_root_vmid)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_vm_pool.set_active(tls, root_vmid);
+            ret = m_vm_pool.set_active(tls, m_root_vmid);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -539,7 +546,9 @@ namespace mk
             , m_vp_pool{vp_pool}
             , m_vm_pool{vm_pool}
             , m_ext_pool{ext_pool}
-            , root_vmid{bsl::safe_uint16::zero(true)}
+            , m_root_vmid{bsl::safe_uint16::zero(true)}
+            , m_ext_vmexit{}
+            , m_ext_fail{}
         {}
 
         /// <!-- description -->
@@ -561,12 +570,14 @@ namespace mk
         [[nodiscard]] constexpr auto
         process(MK_ARGS_CONCEPT *const args, TLS_CONCEPT &tls) &noexcept -> bsl::exit_code
         {
-            bsl::finally reset_root_vmid_on_error{[this, &tls]() noexcept -> void {
-                root_vmid = bsl::safe_uint16::zero(true);
-                tls.active_vmid = syscall::BF_INVALID_ID.get();
+            bsl::errc_type ret{};
+
+            bsl::finally reset_root_vmid_on_error{[this]() noexcept -> void {
+                m_root_vmid = bsl::safe_uint16::zero(true);
             }};
 
-            if (bsl::unlikely(!this->verify_args(args, tls))) {
+            ret = this->verify_args(args, tls);
+            if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::exit_failure;
             }
@@ -574,29 +585,47 @@ namespace mk
             this->set_extension_sp(tls);
             this->set_extension_tp(tls);
 
-            if (bsl::unlikely(!this->initialize(args, tls))) {
+            if (args->ppid == syscall::BF_BS_PPID) {
+                ret = this->initialize(args, tls);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::exit_failure;
+                }
+
+                m_ext_vmexit = tls.ext_vmexit;
+                if (bsl::unlikely(nullptr == m_ext_vmexit)) {
+                    bsl::error() << "a vmexit handler has not been registered"    // --
+                                 << bsl::endl                                     // --
+                                 << bsl::here();                                  // --
+
+                    return bsl::exit_failure;
+                }
+
+                m_ext_fail = tls.ext_fail;
+                if (bsl::unlikely(nullptr == m_ext_fail)) {
+                    bsl::error() << "a fast fail handler has not been registered"    // --
+                                 << bsl::endl                                        // --
+                                 << bsl::here();                                     // --
+
+                    return bsl::exit_failure;
+                }
+
+                bsl::touch();
+            }
+            else {
+                ret = m_vm_pool.set_active(tls, m_root_vmid);
+                if (bsl::unlikely(!ret)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return bsl::exit_failure;
+                }
+
+                tls.ext_vmexit = m_ext_vmexit;
+                tls.ext_fail = m_ext_fail;
+            }
+
+            ret = m_ext_pool.bootstrap(tls);
+            if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::exit_failure;
-            }
-
-            if (bsl::unlikely(!m_ext_pool.bootstrap(tls))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return bsl::exit_failure;
-            }
-
-            if (bsl::unlikely(nullptr == tls.ext_vmexit)) {
-                bsl::error() << "a vmexit handler has not been registered"    // --
-                             << bsl::endl                                     // --
-                             << bsl::here();                                  // --
-
-                return bsl::exit_failure;
-            }
-
-            if (bsl::unlikely(nullptr == tls.ext_fail)) {
-                bsl::error() << "a fast fail handler has not been registered"    // --
-                             << bsl::endl                                        // --
-                             << bsl::here();                                     // --
-
                 return bsl::exit_failure;
             }
 
@@ -654,9 +683,30 @@ namespace mk
             /// object that supports release().
             /// Need to reimplement the run function. No idea what that is
             /// going to look like, so good luck.
-            /// Need to finish the migration stuff so that it makes sense. 
+            /// Need to finish the migration stuff so that it makes sense.
 
+            // [ ] add a pointer to the TLS block to the top of the stack
+            //     so that you can use the stack to get to the TLS block in
+            //     addition to GS. This way, the SX handler has a way to
+            //     change TLS data without needing GS, which is a problem.
+            //     Will also need a way to get to the size of the stack from
+            //     constants.h inside of assembly logic.
+            // [ ] Most of the syscalls need to verify that the ext has started that it registered for VMExits. 
+            // [ ] VP and VPS calls should only occur on the PP the VP/VPS was assigned to?
+            // [ ] What happens if you try to delete a VM that has VPs assigned to it?
+            // [ ] What happens if you try to delete a VP that has VPSs assigned to it?
+            // [ ] Provide syscall handlers with real error codes?
+            // [ ] lock protect the initialize main function in case initialization happens in parallel. mimic call_once init?
+            // [ ] What do I do if an exception fires for each syscall.
+            //     - Will I end up in deadlock?
+            //     = What about the state. Is it corrupt?
+            // [ ] What do I do if an exception fires for non-syscalls
+            //     - Will I end up in deadlock?
+            //     = What about the state. Is it corrupt?
+            // [ ] detect if the microkernel attempt to map in physical memory and generates a page fault. This should be ignored
+            // [ ] The intrinsic run function should be a function in the class and not a global?
             // [ ] Do I still need the TLS block pool?
+            // [ ] Remove pool and intrinsic points from remaining classes
             // [ ] Finish migration stuff
             // [ ] The syscalls should not be doing all of the checks. This
             //     should be done by the APIs themselves for safety.
@@ -681,6 +731,10 @@ namespace mk
             // [ ] Add support for size optimizations in the BSL
             // [ ] What about optimizations for read/write MSRs so that the
             //     APIC is fast for an extension.
+            // [ ] Make sure all function inputs are checked.
+            // [ ] Make sure all rule of 5 crap is moved to the top
+            // [ ] What about assignment and active ABIs
+            // [ ] Validate upper limit of VM, VP and VPS in config and test with 1 and max
             // [ ] What about IO operations
             // [ ] What about an IPI ABI
             // [ ] What about a WBINVLD ABI

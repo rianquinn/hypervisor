@@ -25,6 +25,9 @@
 #ifndef HUGE_POOL_T_HPP
 #define HUGE_POOL_T_HPP
 
+#include <lock_guard.hpp>
+#include <spinlock.hpp>
+
 #include <bsl/byte.hpp>
 #include <bsl/construct_at.hpp>
 #include <bsl/convert.hpp>
@@ -33,10 +36,8 @@
 #include <bsl/finally.hpp>
 #include <bsl/is_standard_layout.hpp>
 #include <bsl/is_void.hpp>
-#include <bsl/lock_guard.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/span.hpp>
-#include <bsl/spinlock.hpp>
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
 
@@ -68,7 +69,7 @@ namespace mk
         /// @brief stores the huge pool's cursor
         bsl::safe_uintmax m_crsr{};
         /// @brief safe guards operations on the pool.
-        mutable bsl::spinlock m_pool_lock{};
+        mutable spinlock m_lock{};
 
     public:
         /// <!-- description -->
@@ -169,14 +170,16 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam T the type of pointer to return
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param size the total number of bytes to allocate.
         ///   @return Returns a pointer to the newly allocated memory
         ///
-        template<typename T>
+        template<typename T, typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate(bsl::safe_uintmax const &size) &noexcept -> T *
+        allocate(TLS_CONCEPT &tls, bsl::safe_uintmax const &size) &noexcept -> T *
         {
-            bsl::lock_guard lock{m_pool_lock};
+            lock_guard lock{tls, m_lock};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "huge_pool_t not initialized\n" << bsl::here();
@@ -226,12 +229,15 @@ namespace mk
         ///   @brief Not supported
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param ptr the pointer to the memory to deallocate
         ///
+        template<typename TLS_CONCEPT>
         constexpr void
-        deallocate(void *const ptr) &noexcept
+        deallocate(TLS_CONCEPT &tls, void *const ptr) &noexcept
         {
-            bsl::lock_guard lock{m_pool_lock};
+            lock_guard lock{tls, m_lock};
             bsl::discard(ptr);
 
             /// NOTE:

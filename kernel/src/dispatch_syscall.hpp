@@ -47,7 +47,6 @@ namespace mk
     ///     will dispatch syscalls as needed.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_POOL_CONCEPT defines the type of TLS pool to use
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
     ///   @tparam EXT_CONCEPT defines the type of extension to use
@@ -58,7 +57,6 @@ namespace mk
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VMEXIT_LOG_CONCEPT defines the type of VMExit log to use
-    ///   @param tls_pool the TLS pool to use
     ///   @param tls the current TLS block
     ///   @param ext_pool the extension pool to use
     ///   @param ext the extension that made the syscall
@@ -69,11 +67,10 @@ namespace mk
     ///   @param vp_pool the VP pool to use
     ///   @param vm_pool the VM pool to use
     ///   @param log the VMExit log to use
-    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-    ///     code on failure.
+    ///   @return Returns bsl::exit_success on success, bsl::exit_failure
+    ///     otherwise
     ///
     template<
-        typename TLS_POOL_CONCEPT,
         typename TLS_CONCEPT,
         typename EXT_POOL_CONCEPT,
         typename EXT_CONCEPT,
@@ -86,7 +83,6 @@ namespace mk
         typename VMEXIT_LOG_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall(
-        TLS_POOL_CONCEPT &tls_pool,
         TLS_CONCEPT &tls,
         EXT_POOL_CONCEPT &ext_pool,
         EXT_CONCEPT &ext,
@@ -96,113 +92,124 @@ namespace mk
         VPS_POOL_CONCEPT &vps_pool,
         VP_POOL_CONCEPT &vp_pool,
         VM_POOL_CONCEPT &vm_pool,
-        VMEXIT_LOG_CONCEPT &log) noexcept -> syscall::bf_status_t
+        VMEXIT_LOG_CONCEPT &log) noexcept -> bsl::exit_code
     {
-        syscall::bf_status_t ret{};
+        bsl::errc_type ret{};
 
         switch (syscall::bf_syscall_opcode(tls.ext_syscall).get()) {
             case syscall::BF_CONTROL_OP_VAL.get(): {
-                ret = dispatch_syscall_control_op(tls);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                ret = dispatch_syscall_control_op(tls, ext);
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return ret;
+                    return bsl::exit_failure;
                 }
 
-                return ret;
+                return bsl::exit_success;
             }
 
             case syscall::BF_HANDLE_OP_VAL.get(): {
                 ret = dispatch_syscall_handle_op(tls, ext);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return ret;
+                    return bsl::exit_failure;
                 }
 
-                return ret;
+                return bsl::exit_success;
             }
 
             case syscall::BF_DEBUG_OP_VAL.get(): {
                 ret = dispatch_syscall_debug_op(
-                    tls, ext_pool, page_pool, huge_pool, vps_pool, vp_pool, vm_pool, log);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                    tls,
+                    ext_pool,
+                    intrinsic,
+                    page_pool,
+                    huge_pool,
+                    vps_pool,
+                    vp_pool,
+                    vm_pool,
+                    log);
+
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return ret;
+                    return bsl::exit_failure;
                 }
 
-                return ret;
+                return bsl::exit_success;
             }
 
             case syscall::BF_CALLBACK_OP_VAL.get(): {
                 ret = dispatch_syscall_callback_op(tls, ext);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return ret;
+                    return bsl::exit_failure;
                 }
 
-                return ret;
+                return bsl::exit_success;
             }
 
             case syscall::BF_VM_OP_VAL.get(): {
-                ret = dispatch_syscall_vm_op(tls_pool, tls, ext_pool, ext, vm_pool);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                ret = dispatch_syscall_vm_op(tls, ext_pool, ext, vm_pool);
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return ret;
+                    return bsl::exit_failure;
                 }
 
-                return ret;
+                return bsl::exit_success;
             }
 
             case syscall::BF_VP_OP_VAL.get(): {
-                ret = dispatch_syscall_vp_op(tls_pool, tls, ext, vp_pool);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                ret = dispatch_syscall_vp_op(tls, ext, vm_pool, vp_pool);
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return ret;
+                    return bsl::exit_failure;
                 }
 
-                return ret;
+                return bsl::exit_success;
             }
 
             case syscall::BF_VPS_OP_VAL.get(): {
-                ret = dispatch_syscall_vps_op(tls_pool, tls, ext, vm_pool, vp_pool, vps_pool);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                ret = dispatch_syscall_vps_op(
+                    tls, ext, intrinsic, page_pool, vm_pool, vp_pool, vps_pool);
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return ret;
+                    return bsl::exit_failure;
                 }
 
-                return ret;
+                return bsl::exit_success;
             }
 
             case syscall::BF_INTRINSIC_OP_VAL.get(): {
                 ret = dispatch_syscall_intrinsic_op(tls, ext, intrinsic);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return ret;
+                    return bsl::exit_failure;
                 }
 
-                return ret;
+                return bsl::exit_success;
             }
 
             case syscall::BF_MEM_OP_VAL.get(): {
                 ret = dispatch_syscall_mem_op(tls, ext);
-                if (bsl::unlikely(ret != syscall::BF_STATUS_SUCCESS)) {
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return ret;
+                    return bsl::exit_failure;
                 }
 
-                return ret;
+                return bsl::exit_success;
             }
 
             default: {
-                bsl::error() << "unknown syscall signature/opcode: "    //--
-                             << bsl::hex(tls.ext_syscall)               //--
-                             << bsl::endl                               //--
-                             << bsl::here();                            //--
-
                 break;
             }
         }
 
-        return syscall::BF_STATUS_FAILURE_UNKNOWN;
+        bsl::error() << "unknown syscall signature/opcode: "    //--
+                     << bsl::hex(tls.ext_syscall)               //--
+                     << bsl::endl                               //--
+                     << bsl::here();                            //--
+
+        tls.syscall_ret_status = syscall::BF_STATUS_FAILURE_UNSUPPORTED.get();
+        return bsl::exit_failure;
     }
 }
 

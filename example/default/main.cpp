@@ -57,7 +57,7 @@ namespace example
         ///
 
         bsl::print<bsl::V>() << bsl::here();
-        syscall::bf_control_op_exit();
+        return syscall::bf_control_op_exit();
     }
 
     /// <!-- description -->
@@ -99,7 +99,7 @@ namespace example
         ///
 
         bsl::print<bsl::V>() << bsl::here();
-        syscall::bf_control_op_exit();
+        return syscall::bf_control_op_exit();
     }
 
     /// <!-- description -->
@@ -119,81 +119,49 @@ namespace example
     {
         bsl::errc_type ret{};
 
-        bsl::safe_uint16 vmid{};
         bsl::safe_uint16 vpid{};
         bsl::safe_uint16 vpsid{};
 
         /// NOTE:
-        /// - Before we can create a VM, VP and VPS, we must first register
-        ///   for VMExits. If we don't, the microkernel will complain as it
-        ///   ensures the extension that registers for VMExits is the only
-        ///   extension that can create and manage these resources.
-        /// - We also register for fast fail events in case something bad
-        ///   happens.
-        ///
-
-        ret = syscall::bf_callback_op_register_vmexit(g_handle, &vmexit_entry);
-        if (bsl::unlikely(!ret)) {
-            bsl::print<bsl::V>() << bsl::here();
-            syscall::bf_control_op_exit();
-        }
-        else {
-            bsl::touch();
-        }
-
-        ret = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
-        if (bsl::unlikely(!ret)) {
-            bsl::print<bsl::V>() << bsl::here();
-            syscall::bf_control_op_exit();
-        }
-        else {
-            bsl::touch();
-        }
-
-        /// NOTE:
-        /// - Create the root VM, root VP and root VPS that we will start.
+        /// - Create the root VP and root VPS that we will start.
         ///   Since we are not implementing nested virtualization or VSM
-        ///   support, the VP and VPS are always identical.
-        ///
-        /// IMPORTANT:
-        /// - The microkernel does not check to make sure that a VPS is not
-        ///   run on different PPs at the same time. This would require an
-        ///   enormous amount of overhead on every VMExit to address. As a
-        ///   result, it is possible to corrupt the system if you are not
-        ///   careful with respect to creating VPSs and running them on the
-        ///   proper PPs. You have been warned.
+        ///   support, the VPID and VPSID are always identical.
+        /// - There is no need to create the root VM as this is created
+        ///   for you. You only need to create VMs if you plan to add guest
+        ///   VM support to your extension.
         ///
 
-        if (bsl::ZERO_U16 == ppid) {
-            ret = syscall::bf_vm_op_create_vm(g_handle, vmid);
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                syscall::bf_control_op_exit();
-            }
-            else {
-                bsl::touch();
-            }
-        }
-        else {
-            bsl::touch();
-        }
+if (ppid == syscall::BF_ROOT_VMID) {
+    ret = syscall::bf_vm_op_create_vm(g_handle, vpid);
+    if (bsl::unlikely(!ret)) {
+        bsl::print<bsl::V>() << bsl::here();
+    }
 
-        ret = syscall::bf_vp_op_create_vp(g_handle, vpid);
+    ret = syscall::bf_vm_op_destroy_vm(g_handle, syscall::BF_ROOT_VMID);
+    if (bsl::unlikely(!ret)) {
+        bsl::print<bsl::V>() << bsl::here();
+    }
+
+    // ret = syscall::bf_vm_op_create_vm(g_handle, vpid);
+    // if (bsl::unlikely(!ret)) {
+    //     bsl::print<bsl::V>() << bsl::here();
+    // }
+}
+
+
+
+
+
+        ret = syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, ppid, vpid);
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            syscall::bf_control_op_exit();
-        }
-        else {
-            bsl::touch();
+            return syscall::bf_control_op_exit();
         }
 
-        ret = syscall::bf_vps_op_create_vps(g_handle, vpsid);
+        ret = syscall::bf_vps_op_create_vps(g_handle, vpid, ppid, vpsid);
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            syscall::bf_control_op_exit();
-        }
-        else {
-            bsl::touch();
+            return syscall::bf_control_op_exit();
         }
 
         /// NOTE:
@@ -207,10 +175,7 @@ namespace example
         ret = syscall::bf_vps_op_init_as_root(g_handle, vpsid);
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            syscall::bf_control_op_exit();
-        }
-        else {
-            bsl::touch();
+            return syscall::bf_control_op_exit();
         }
 
         /// NOTE:
@@ -219,22 +184,19 @@ namespace example
 
         if (bsl::unlikely(!init_vps(g_handle, vpsid))) {
             bsl::print<bsl::V>() << bsl::here();
-            syscall::bf_control_op_exit();
-        }
-        else {
-            bsl::touch();
+            return syscall::bf_control_op_exit();
         }
 
         /// NOTE:
-        /// - Run the newly created VP on behalf of the newly created VM
-        ///   using the newly created and initialized VPS.
+        /// - Run the newly created VP on behalf of the root VM using the
+        ///   newly created and initialized VPS.
         /// - It should be noted that if bf_vps_op_run succeeds, it will
         ///   not return. Like the rest of the code in this example, we
         ///   return success for unit testing purposes. If this function
         ///   returns, it is actually an error.
         ///
 
-        bsl::discard(syscall::bf_vps_op_run(g_handle, vpsid, vpid, vmid));
+        bsl::discard(syscall::bf_vps_op_run(g_handle, syscall::BF_ROOT_VMID, vpid, vpsid));
 
         /// NOTE:
         /// - The following is only called if an error occurs. Failure to
@@ -269,10 +231,7 @@ namespace example
 
         if (bsl::unlikely(!syscall::bf_is_spec1_supported(version))) {
             bsl::error() << "unsupported microkernel\n" << bsl::here();
-            syscall::bf_control_op_exit();
-        }
-        else {
-            bsl::touch();
+            return syscall::bf_control_op_exit();
         }
 
         /// NOTE:
@@ -283,10 +242,7 @@ namespace example
         ret = syscall::bf_handle_op_open_handle(syscall::BF_SPEC_ID1_VAL, g_handle);
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            syscall::bf_control_op_exit();
-        }
-        else {
-            bsl::touch();
+            return syscall::bf_control_op_exit();
         }
 
         /// NOTE:
@@ -297,10 +253,29 @@ namespace example
         ret = syscall::bf_callback_op_register_bootstrap(g_handle, &bootstrap_entry);
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            syscall::bf_control_op_exit();
+            return syscall::bf_control_op_exit();
         }
-        else {
-            bsl::touch();
+
+        /// NOTE:
+        /// - Register the vmexit entry function so that we can handle
+        ///   VMExits
+        ///
+
+        ret = syscall::bf_callback_op_register_vmexit(g_handle, &vmexit_entry);
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::bf_control_op_exit();
+        }
+
+        /// NOTE:
+        /// - Register the vmexit entry function so that we can handle
+        ///   fast fail events
+        ///
+
+        ret = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
+        if (bsl::unlikely(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::bf_control_op_exit();
         }
 
         /// NOTE:
@@ -311,6 +286,6 @@ namespace example
         ///   function leads to undefined behaviour (likely a page fault).
         ///
 
-        syscall::bf_callback_op_wait();
+        syscall::bf_control_op_wait();
     }
 }

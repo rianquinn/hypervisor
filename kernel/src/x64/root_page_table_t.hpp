@@ -26,6 +26,7 @@
 #define ROOT_PAGE_TABLE_T_HPP
 
 #include <allocate_tags.hpp>
+#include <lock_guard.hpp>
 #include <map_page_flags.hpp>
 #include <pdpt_t.hpp>
 #include <pdpte_t.hpp>
@@ -35,15 +36,14 @@
 #include <pml4te_t.hpp>
 #include <pt_t.hpp>
 #include <pte_t.hpp>
+#include <spinlock.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
 #include <bsl/fmt.hpp>
-#include <bsl/lock_guard.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/spinlock.hpp>
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
 
@@ -83,7 +83,7 @@ namespace mk
         /// @brief stores the physical address of the pml4t
         bsl::safe_uintmax m_pml4t_phys{bsl::safe_uintmax::zero(true)};
         /// @brief safe guards operations on the RPT.
-        mutable bsl::spinlock m_rpt_lock{};
+        mutable spinlock m_lock{};
 
         /// <!-- description -->
         ///   @brief Returns the index of the last entry present in a page
@@ -343,14 +343,17 @@ namespace mk
         ///   @brief Adds a pdpt_t to the provided pml4te_t.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param pml4te the pml4te_t to add a pdpt_t too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_pdpt(loader::pml4te_t *const pml4te) noexcept -> bsl::errc_type
+        add_pdpt(TLS_CONCEPT &tls, loader::pml4te_t *const pml4te) noexcept -> bsl::errc_type
         {
-            auto const *const table{m_page_pool->template allocate<void>(ALLOCATE_TAG_PDPTS)};
+            auto const *const table{m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_PDPTS)};
             if (bsl::unlikely(nullptr == table)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -374,21 +377,24 @@ namespace mk
         ///   @brief Adds a pdpt_t to the provided pml4te_t.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param pml4te the pml4te_t to add a pdpt_t too
         ///
+        template<typename TLS_CONCEPT>
         constexpr void
-        remove_pdpt(loader::pml4te_t *const pml4te) noexcept
+        remove_pdpt(TLS_CONCEPT &tls, loader::pml4te_t *const pml4te) noexcept
         {
             for (auto const elem : get_pdpt(pml4te)->entries) {
                 if (elem.data->p != bsl::ZERO_UMAX) {
-                    this->remove_pdt(elem.data);
+                    this->remove_pdt(tls, elem.data);
                 }
                 else {
                     bsl::touch();
                 }
             }
 
-            m_page_pool->deallocate(get_pdpt(pml4te), ALLOCATE_TAG_PDPTS);
+            m_page_pool->deallocate(tls, get_pdpt(pml4te), ALLOCATE_TAG_PDPTS);
         }
 
         /// <!-- description -->
@@ -474,14 +480,17 @@ namespace mk
         ///   @brief Adds a pdt_t to the provided pdpte_t.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param pdpte the pdpte_t to add a pdt_t too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_pdt(loader::pdpte_t *const pdpte) noexcept -> bsl::errc_type
+        add_pdt(TLS_CONCEPT &tls, loader::pdpte_t *const pdpte) noexcept -> bsl::errc_type
         {
-            auto const *const table{m_page_pool->template allocate<void>(ALLOCATE_TAG_PDTS)};
+            auto const *const table{m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_PDTS)};
             if (bsl::unlikely(nullptr == table)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -505,21 +514,24 @@ namespace mk
         ///   @brief Adds a pdt_t to the provided pdpte_t.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param pdpte the pdpte_t to add a pdt_t too
         ///
+        template<typename TLS_CONCEPT>
         constexpr void
-        remove_pdt(loader::pdpte_t *const pdpte) noexcept
+        remove_pdt(TLS_CONCEPT &tls, loader::pdpte_t *const pdpte) noexcept
         {
             for (auto const elem : get_pdt(pdpte)->entries) {
                 if (elem.data->p != bsl::ZERO_UMAX) {
-                    this->remove_pt(elem.data);
+                    this->remove_pt(tls, elem.data);
                 }
                 else {
                     bsl::touch();
                 }
             }
 
-            m_page_pool->deallocate(get_pdt(pdpte), ALLOCATE_TAG_PDTS);
+            m_page_pool->deallocate(tls, get_pdt(pdpte), ALLOCATE_TAG_PDTS);
         }
 
         /// <!-- description -->
@@ -612,14 +624,17 @@ namespace mk
         ///   @brief Adds a pt_t to the provided pdte_t.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param pdte the pdte_t to add a pt_t too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_pt(loader::pdte_t *const pdte) noexcept -> bsl::errc_type
+        add_pt(TLS_CONCEPT &tls, loader::pdte_t *const pdte) noexcept -> bsl::errc_type
         {
-            auto const *const table{m_page_pool->template allocate<void>(ALLOCATE_TAG_PTS)};
+            auto const *const table{m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_PTS)};
             if (bsl::unlikely(nullptr == table)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -643,10 +658,13 @@ namespace mk
         ///   @brief Adds a pt_t to the provided pdte_t.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param pdte the pdte_t to add a pt_t too
         ///
+        template<typename TLS_CONCEPT>
         constexpr void
-        remove_pt(loader::pdte_t *const pdte) noexcept
+        remove_pt(TLS_CONCEPT &tls, loader::pdte_t *const pdte) noexcept
         {
             for (auto const elem : get_pt(pdte)->entries) {
                 if (elem.data->p == bsl::ZERO_UMAX) {
@@ -659,7 +677,7 @@ namespace mk
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_ALLOC_PAGE.get(): {
-                        m_page_pool->deallocate(
+                        m_page_pool->deallocate(tls,
                             this->pte_from_page_pool_to_virt(elem.data),
                             ALLOCATE_TAG_BF_MEM_OP_ALLOC_PAGE);
 
@@ -667,12 +685,12 @@ namespace mk
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_ALLOC_HUGE.get(): {
-                        m_huge_pool->deallocate(this->pte_from_huge_pool_to_virt(elem.data));
+                        m_huge_pool->deallocate(tls, this->pte_from_huge_pool_to_virt(elem.data));
                         break;
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_ALLOC_HEAP.get(): {
-                        m_page_pool->deallocate(
+                        m_page_pool->deallocate(tls,
                             this->pte_from_page_pool_to_virt(elem.data),
                             ALLOCATE_TAG_BF_MEM_OP_ALLOC_HEAP);
 
@@ -680,21 +698,21 @@ namespace mk
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_STACK.get(): {
-                        m_page_pool->deallocate(
+                        m_page_pool->deallocate(tls,
                             this->pte_from_page_pool_to_virt(elem.data), ALLOCATE_TAG_EXT_STACK);
 
                         break;
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_TLS.get(): {
-                        m_page_pool->deallocate(
+                        m_page_pool->deallocate(tls,
                             this->pte_from_page_pool_to_virt(elem.data), ALLOCATE_TAG_EXT_TLS);
 
                         break;
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_ELF.get(): {
-                        m_page_pool->deallocate(
+                        m_page_pool->deallocate(tls,
                             this->pte_from_page_pool_to_virt(elem.data), ALLOCATE_TAG_EXT_ELF);
 
                         break;
@@ -707,7 +725,7 @@ namespace mk
                 }
             }
 
-            m_page_pool->deallocate(get_pt(pdte), ALLOCATE_TAG_PTS);
+            m_page_pool->deallocate(tls, get_pt(pdte), ALLOCATE_TAG_PTS);
         }
 
         /// <!-- description -->
@@ -867,6 +885,8 @@ namespace mk
         ///     page pool.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param page_virt the virtual address to map the allocated
         ///     page to
         ///   @param page_flags defines how memory should be mapped
@@ -874,8 +894,10 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         allocate_page(
+            TLS_CONCEPT &tls,
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_flags,
             bsl::safe_int32 const &auto_release) &noexcept -> void *
@@ -885,17 +907,17 @@ namespace mk
             void *page{};
             switch (auto_release.get()) {
                 case MAP_PAGE_AUTO_RELEASE_STACK.get(): {
-                    page = m_page_pool->template allocate<void>(ALLOCATE_TAG_EXT_STACK);
+                    page = m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_EXT_STACK);
                     break;
                 }
 
                 case MAP_PAGE_AUTO_RELEASE_TLS.get(): {
-                    page = m_page_pool->template allocate<void>(ALLOCATE_TAG_EXT_TLS);
+                    page = m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_EXT_TLS);
                     break;
                 }
 
                 case MAP_PAGE_AUTO_RELEASE_ELF.get(): {
-                    page = m_page_pool->template allocate<void>(ALLOCATE_TAG_EXT_ELF);
+                    page = m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_EXT_ELF);
                     break;
                 }
 
@@ -920,7 +942,7 @@ namespace mk
                 return nullptr;
             }
 
-            ret = this->map_page(page_virt, page_phys, page_flags, auto_release);
+            ret = this->map_page(tls, page_virt, page_phys, page_flags, auto_release);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return nullptr;
@@ -932,8 +954,13 @@ namespace mk
         /// <!-- description -->
         ///   @brief Releases the memory allocated for tables
         ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///
+        template<typename TLS_CONCEPT>
         constexpr void
-        release_tables() &noexcept
+        release_tables(TLS_CONCEPT &tls) &noexcept
         {
             if (bsl::unlikely(nullptr == m_pml4t)) {
                 return;
@@ -956,10 +983,10 @@ namespace mk
                     continue;
                 }
 
-                this->remove_pdpt(elem.data);
+                this->remove_pdpt(tls, elem.data);
             }
 
-            m_page_pool->deallocate(m_pml4t, ALLOCATE_TAG_PML4TS);
+            m_page_pool->deallocate(tls, m_pml4t, ALLOCATE_TAG_PML4TS);
             m_pml4t = {};
             m_pml4t_phys = bsl::safe_uintmax::zero(true);
         }
@@ -981,14 +1008,18 @@ namespace mk
         ///   @brief Initializes this root_page_table_t
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param page_pool the page pool to use
         ///   @param huge_pool the huge pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         initialize(
+            TLS_CONCEPT &tls,
             INTRINSIC_CONCEPT *const intrinsic,
             PAGE_POOL_CONCEPT *const page_pool,
             HUGE_POOL_CONCEPT *const huge_pool) &noexcept -> bsl::errc_type
@@ -998,8 +1029,8 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::finally release_on_error{[this]() noexcept -> void {
-                this->release();
+            bsl::finally release_on_error{[this, &tls]() noexcept -> void {
+                this->release(tls);
             }};
 
             m_intrinsic = intrinsic;
@@ -1020,7 +1051,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            m_pml4t = m_page_pool->template allocate<pml4t_t>(ALLOCATE_TAG_PML4TS);
+            m_pml4t = m_page_pool->template allocate<pml4t_t>(tls, ALLOCATE_TAG_PML4TS);
             if (bsl::unlikely(nullptr == m_pml4t)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -1041,10 +1072,17 @@ namespace mk
         /// <!-- description -->
         ///   @brief Releases all of the resources used by the RPT.
         ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///
+        template<typename TLS_CONCEPT>
         constexpr void
-        release() &noexcept
+        release(TLS_CONCEPT &tls) &noexcept
         {
-            this->release_tables();
+            lock_guard lock{tls, m_lock};
+
+            this->release_tables(tls);
 
             m_huge_pool = {};
             m_page_pool = {};
@@ -1125,20 +1163,6 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Returns true if the current root page table is this root
-        ///     page table.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns true if the current root page table is this root
-        ///     page table.
-        ///
-        [[nodiscard]] constexpr auto
-        is_active() const &noexcept -> bool
-        {
-            return (m_intrinsic->cr3() == m_pml4t_phys);
-        }
-
-        /// <!-- description -->
         ///   @brief Given a root page table, the pml4te_t enties are aliased
         ///     into this page table, allowing software using this root page
         ///     table to access the memory mapped into the provided root page
@@ -1147,14 +1171,17 @@ namespace mk
         ///     are not returned back to the page pool.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param rpt the root page table to add aliases to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_tables(void const *const rpt) &noexcept -> bsl::errc_type
+        add_tables(TLS_CONCEPT &tls, void const *const rpt) &noexcept -> bsl::errc_type
         {
-            bsl::lock_guard lock{m_rpt_lock};
+            lock_guard lock{tls, m_lock};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
@@ -1191,14 +1218,17 @@ namespace mk
         ///     are not returned back to the page pool.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param rpt the root page table to add aliases to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_tables(root_page_table_t const &rpt) &noexcept -> bsl::errc_type
+        add_tables(TLS_CONCEPT &tls, root_page_table_t const &rpt) &noexcept -> bsl::errc_type
         {
-            return this->add_tables(rpt.m_pml4t);
+            return this->add_tables(tls, rpt.m_pml4t);
         }
 
         /// <!-- description -->
@@ -1206,6 +1236,8 @@ namespace mk
         ///     by this class.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param page_virt the virtual address to map the physical address
         ///     too.
         ///   @param page_phys the physical address to map.
@@ -1214,14 +1246,16 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         map_page(
+            TLS_CONCEPT &tls,
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_phys,
             bsl::safe_uintmax const &page_flags,
             bsl::safe_int32 const &auto_release) &noexcept -> bsl::errc_type
         {
-            bsl::lock_guard lock{m_rpt_lock};
+            lock_guard lock{tls, m_lock};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
@@ -1300,7 +1334,7 @@ namespace mk
 
             auto *const pml4te{m_pml4t->entries.at_if(this->pml4to(page_virt))};
             if (pml4te->p == bsl::ZERO_UMAX) {
-                if (bsl::unlikely(!this->add_pdpt(pml4te))) {
+                if (bsl::unlikely(!this->add_pdpt(tls, pml4te))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -1334,7 +1368,7 @@ namespace mk
             auto *const pdpt{this->get_pdpt(pml4te)};
             auto *const pdpte{pdpt->entries.at_if(this->pdpto(page_virt))};
             if (pdpte->p == bsl::ZERO_UMAX) {
-                if (bsl::unlikely(!this->add_pdt(pdpte))) {
+                if (bsl::unlikely(!this->add_pdt(tls, pdpte))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -1348,7 +1382,7 @@ namespace mk
             auto *const pdt{this->get_pdt(pdpte)};
             auto *const pdte{pdt->entries.at_if(this->pdto(page_virt))};
             if (pdte->p == bsl::ZERO_UMAX) {
-                if (bsl::unlikely(!this->add_pt(pdte))) {
+                if (bsl::unlikely(!this->add_pt(tls, pdte))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -1402,6 +1436,8 @@ namespace mk
         ///     accidentally introduced.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param page_virt the virtual address to map the physical address
         ///     too.
         ///   @param page_phys the physical address to map. If the physical
@@ -1412,14 +1448,17 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         map_page_unaligned(
+            TLS_CONCEPT &tls,
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_phys,
             bsl::safe_uintmax const &page_flags,
             bsl::safe_int32 const &auto_release) &noexcept -> bsl::errc_type
         {
             return this->map_page(
+                tls,
                 this->page_aligned(page_virt),
                 this->page_aligned(page_phys),
                 page_flags,
@@ -1436,16 +1475,20 @@ namespace mk
         ///     read/write.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param page_virt the virtual address to map the allocated
         ///     page to
         ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         allocate_page_rw(
-            bsl::safe_uintmax const &page_virt, bsl::safe_int32 const &auto_release) &noexcept
-            -> void *
+            TLS_CONCEPT &tls,
+            bsl::safe_uintmax const &page_virt,
+            bsl::safe_int32 const &auto_release) &noexcept -> void *
         {
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
@@ -1479,7 +1522,8 @@ namespace mk
                 return nullptr;
             }
 
-            return this->allocate_page(page_virt, MAP_PAGE_READ | MAP_PAGE_WRITE, auto_release);
+            return this->allocate_page(
+                tls, page_virt, MAP_PAGE_READ | MAP_PAGE_WRITE, auto_release);
         }
 
         /// <!-- description -->
@@ -1492,16 +1536,20 @@ namespace mk
         ///     read/execute.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @param page_virt the virtual address to map the allocated
         ///     page to
         ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         allocate_page_rx(
-            bsl::safe_uintmax const &page_virt, bsl::safe_int32 const &auto_release) &noexcept
-            -> void *
+            TLS_CONCEPT &tls,
+            bsl::safe_uintmax const &page_virt,
+            bsl::safe_int32 const &auto_release) &noexcept -> void *
         {
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
@@ -1535,7 +1583,8 @@ namespace mk
                 return nullptr;
             }
 
-            return this->allocate_page(page_virt, MAP_PAGE_READ | MAP_PAGE_EXECUTE, auto_release);
+            return this->allocate_page(
+                tls, page_virt, MAP_PAGE_READ | MAP_PAGE_EXECUTE, auto_release);
         }
 
         /// <!-- description -->

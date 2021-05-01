@@ -32,7 +32,6 @@
 #include <mk_main.hpp>
 #include <page_pool_t.hpp>
 #include <root_page_table_t.hpp>
-#include <tls_pool_t.hpp>
 #include <tls_t.hpp>
 #include <vm_pool_t.hpp>
 #include <vm_t.hpp>
@@ -60,11 +59,6 @@ extern "C"
 namespace mk
 {
     /// @brief defines the TLS pool type to use
-    using mk_tls_pool_type = tls_pool_t<            // --
-        tls_t,                                      // --
-        bsl::to_umax(HYPERVISOR_MAX_PPS).get()>;    // --
-
-    /// @brief defines the TLS pool type to use
     using mk_vmexit_log_type = vmexit_log_t<               // --
         bsl::to_umax(HYPERVISOR_VMEXIT_LOG_SIZE).get(),    // --
         bsl::to_umax(HYPERVISOR_MAX_PPS).get()>;           // --
@@ -83,15 +77,11 @@ namespace mk
         bsl::to_umax(HYPERVISOR_MK_HUGE_POOL_ADDR).get()>;    // --
 
     /// @brief defines the VPS type to use
-    using mk_vps_type = vps_t<    // --
-        mk_intrinsic_type,        // --
-        mk_page_pool_type>;       // --
+    using mk_vps_type = vps_t;    // --
 
     /// @brief defines the VPS pool type to use
     using mk_vps_pool_type = vps_pool_t<             // --
         mk_vps_type,                                 // --
-        mk_intrinsic_type,                           // --
-        mk_page_pool_type,                           // --
         bsl::to_umax(HYPERVISOR_MAX_VPSS).get()>;    // --
 
     /// @brief defines the VP type to use
@@ -171,9 +161,6 @@ namespace mk
         bsl::to_umax(HYPERVISOR_EXT_TLS_ADDR).get(),      // --
         bsl::to_umax(HYPERVISOR_EXT_TLS_SIZE).get()>;     // --
 
-    /// @brief stores the TLS pool used by the microkernel
-    constinit inline mk_tls_pool_type g_tls_pool{g_tls_blocks};
-
     /// @brief stores the vmexit log used by the microkernel
     constinit inline mk_vmexit_log_type g_vmexit_log{};
 
@@ -187,7 +174,7 @@ namespace mk
     constinit inline mk_huge_pool_type g_huge_pool{};
 
     /// @brief stores the vps_t pool used by the microkernel
-    constinit inline mk_vps_pool_type g_vps_pool{g_intrinsic, g_page_pool};
+    constinit inline mk_vps_pool_type g_vps_pool{};
 
     /// @brief stores the vp_t pool used by the microkernel
     constinit inline mk_vp_pool_type g_vp_pool{};

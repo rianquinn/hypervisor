@@ -126,8 +126,8 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::finally release_on_error{[this]() noexcept -> void {
-                this->release();
+            bsl::finally release_on_error{[this, &tls]() noexcept -> void {
+                this->release(tls);
             }};
 
             for (auto const ext : m_pool) {
@@ -159,11 +159,16 @@ namespace mk
         /// <!-- description -->
         ///   @brief Release the ext_pool_t
         ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///
+        template<typename TLS_CONCEPT>
         constexpr void
-        release() &noexcept
+        release(TLS_CONCEPT &tls) &noexcept
         {
             for (auto const ext : m_pool) {
-                ext.data->release();
+                ext.data->release(tls);
             }
         }
 

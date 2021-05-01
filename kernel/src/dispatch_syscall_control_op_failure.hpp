@@ -22,37 +22,41 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef DISPATCH_ESR_PAGE_FAULT_HPP
-#define DISPATCH_ESR_PAGE_FAULT_HPP
+#ifndef DISPATCH_SYSCALL_CONTROL_OP_FAILURE_HPP
+#define DISPATCH_SYSCALL_CONTROL_OP_FAILURE_HPP
 
-#include <bsl/convert.hpp>
+#include "return_to_mk.hpp"
+
+#include <mk_interface.hpp>
+
 #include <bsl/debug.hpp>
-#include <bsl/discard.hpp>
-#include <bsl/errc_type.hpp>
-#include <bsl/unlikely.hpp>
 
 namespace mk
 {
     /// <!-- description -->
-    ///   @brief Provides the ESR handler for page faults
+    ///   @brief Dispatches the bf_callback_op syscalls
     ///
     /// <!-- inputs/outputs -->
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
-    ///   @param ext the extension that made the syscall
-    ///   @return Returns bsl::errc_success if the exception was handled,
-    ///     bsl::errc_failure otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
-    [[nodiscard]] constexpr auto
-    dispatch_esr_page_fault(TLS_CONCEPT &tls, EXT_CONCEPT *const ext) noexcept -> bsl::errc_type
+    template<typename TLS_CONCEPT>
+    constexpr void
+    dispatch_syscall_control_op_failure(TLS_CONCEPT &tls) noexcept
     {
-        if (bsl::unlikely(nullptr == ext)) {
-            return bsl::errc_failure;
-        }
+        switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
+            case syscall::BF_CONTROL_OP_EXIT_IDX_VAL.get(): {
+                break;
+            }
 
-        return ext->map_page_direct(tls, bsl::to_umax(tls.esr_cr2));
+            case syscall::BF_CONTROL_OP_WAIT_IDX_VAL.get(): {
+                break;
+            }
+
+            default: {
+                break;
+            }
+        }
     }
 }
 
