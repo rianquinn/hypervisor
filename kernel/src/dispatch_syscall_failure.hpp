@@ -134,15 +134,12 @@ namespace mk
     {
         bsl::errc_type ret{bsl::errc_success};
 
-
         bsl::discard(intrinsic);
         bsl::discard(page_pool);
         bsl::discard(huge_pool);
         bsl::discard(vp_pool);
         bsl::discard(vps_pool);
         bsl::discard(log);
-
-
 
         switch (syscall::bf_syscall_opcode(tls.ext_syscall).get()) {
             case syscall::BF_CONTROL_OP_VAL.get(): {
@@ -166,7 +163,7 @@ namespace mk
             }
 
             case syscall::BF_VM_OP_VAL.get(): {
-                ret = dispatch_syscall_vm_op_failure(tls, ext_pool, vm_pool);
+                ret = dispatch_syscall_vm_op_failure(tls, ext_pool, vm_pool, vp_pool);
                 break;
             }
 

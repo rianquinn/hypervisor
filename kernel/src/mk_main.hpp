@@ -119,7 +119,7 @@ namespace mk
         ///   @param args the loader provided arguments to the microkernel.
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename MK_ARGS_CONCEPT, typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -405,7 +405,7 @@ namespace mk
         ///   @param args the loader provided arguments to the microkernel.
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename MK_ARGS_CONCEPT, typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -468,21 +468,19 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            tls.log_vmid = syscall::BF_INVALID_ID.get();
+            ret = m_ext_pool.initialize(tls, args->ext_elf_files);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
 
-            m_root_vmid = m_vm_pool.allocate(tls);
+            m_root_vmid = m_vm_pool.allocate(tls, m_ext_pool);
             if (bsl::unlikely(!m_root_vmid)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
             ret = m_vm_pool.set_active(tls, m_root_vmid);
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            ret = m_ext_pool.initialize(tls, args->ext_elf_files);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -691,7 +689,7 @@ namespace mk
             //     change TLS data without needing GS, which is a problem.
             //     Will also need a way to get to the size of the stack from
             //     constants.h inside of assembly logic.
-            // [ ] Most of the syscalls need to verify that the ext has started that it registered for VMExits. 
+            // [ ] Most of the syscalls need to verify that the ext has started that it registered for VMExits.
             // [ ] VP and VPS calls should only occur on the PP the VP/VPS was assigned to?
             // [ ] What happens if you try to delete a VM that has VPs assigned to it?
             // [ ] What happens if you try to delete a VP that has VPSs assigned to it?
@@ -705,7 +703,10 @@ namespace mk
             //     = What about the state. Is it corrupt?
             // [ ] detect if the microkernel attempt to map in physical memory and generates a page fault. This should be ignored
             // [ ] The intrinsic run function should be a function in the class and not a global?
+            // [ ] Simplify the Intel VPS destriptor stuff by using a template?
             // [ ] Do I still need the TLS block pool?
+            // [ ] Grep for bsl::errc_failure and use other error codes where
+            //     it makes sense
             // [ ] Remove pool and intrinsic points from remaining classes
             // [ ] Finish migration stuff
             // [ ] The syscalls should not be doing all of the checks. This

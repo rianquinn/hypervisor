@@ -19,35 +19,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.13)
-project(hypervisor CXX)
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/function/hypervisor_add_integration.cmake)
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/init_build.cmake)
+list(APPEND HEADERS
+    ${CMAKE_CURRENT_LIST_DIR}/integration_utils.hpp
+)
 
-if(HYPERVISOR_BUILD_LOADER)
-    add_subdirectory(loader)
-endif()
-
-if(HYPERVISOR_BUILD_VMMCTL)
-    add_subdirectory(vmmctl)
-endif()
-
-if(HYPERVISOR_BUILD_MICROKERNEL)
-    hypervisor_add_mk_cross_compile(cmake/mk_cross_compile)
-endif()
-
-hypervisor_add_ext_cross_compile(cmake/ext_cross_compile)
-
-if(HYPERVISOR_BUILD_EFI)
-    hypervisor_add_efi_cross_compile(cmake/efi_cross_compile)
-endif()
-
-if(NOT CMAKE_BUILD_TYPE STREQUAL RELEASE)
-    if(BUILD_TESTS AND NOT HYPERVISOR_BUILD_TESTS_OVERRIDE)
-        add_subdirectory(kernel/test)
-    endif()
-
-    if(BUILD_TESTS AND NOT HYPERVISOR_BUILD_TESTS_OVERRIDE)
-        include(kernel/integration/integration_targets.cmake)
-    endif()
-endif()
+hypervisor_add_integration(bf_callback_op_register_bootstrap HEADERS)
+hypervisor_add_integration(bf_callback_op_register_fail HEADERS)
+hypervisor_add_integration(bf_callback_op_register_vmexit HEADERS)
+hypervisor_add_integration(bf_handle_op_close_handle HEADERS)
+hypervisor_add_integration(bf_handle_op_open_handle HEADERS)
+hypervisor_add_integration(bf_vm_op_create_vm HEADERS)
+hypervisor_add_integration(bf_vm_op_destroy_vm HEADERS)
+hypervisor_add_integration(fast_fail_exit_from_main HEADERS)
+hypervisor_add_integration(fast_fail_no_wait HEADERS)
+hypervisor_add_integration(fast_fail_wait_no_bootstrap HEADERS)
+hypervisor_add_integration(fast_fail_wait_no_fail HEADERS)
+hypervisor_add_integration(fast_fail_wait_no_vmexit HEADERS)

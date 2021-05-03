@@ -38,7 +38,7 @@ namespace example
 
     /// <!-- description -->
     ///   @brief Implements the VMExit entry function. This is registered
-    ///     by the bootstrap function to execute whenever a VMExit occurs.
+    ///     by the main function to execute whenever a VMExit occurs.
     ///
     /// <!-- inputs/outputs -->
     ///   @param vpsid the ID of the VPS that generated the VMExit
@@ -62,7 +62,7 @@ namespace example
 
     /// <!-- description -->
     ///   @brief Implements the fast fail entry function. This is registered
-    ///     by the bootstrap function to execute whenever a fast fail occurs.
+    ///     by the main function to execute whenever a fast fail occurs.
     ///
     /// <!-- inputs/outputs -->
     ///   @param fail_reason the exit reason associated with the fail
@@ -130,27 +130,6 @@ namespace example
         ///   for you. You only need to create VMs if you plan to add guest
         ///   VM support to your extension.
         ///
-
-if (ppid == syscall::BF_ROOT_VMID) {
-    ret = syscall::bf_vm_op_create_vm(g_handle, vpid);
-    if (bsl::unlikely(!ret)) {
-        bsl::print<bsl::V>() << bsl::here();
-    }
-
-    ret = syscall::bf_vm_op_destroy_vm(g_handle, syscall::BF_ROOT_VMID);
-    if (bsl::unlikely(!ret)) {
-        bsl::print<bsl::V>() << bsl::here();
-    }
-
-    // ret = syscall::bf_vm_op_create_vm(g_handle, vpid);
-    // if (bsl::unlikely(!ret)) {
-    //     bsl::print<bsl::V>() << bsl::here();
-    // }
-}
-
-
-
-
 
         ret = syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, ppid, vpid);
         if (bsl::unlikely(!ret)) {

@@ -112,7 +112,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param ext_elf_files the ext_elf_files provided by the loader
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename EXT_ELF_FILES_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -222,7 +222,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was created.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -250,7 +250,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was destroyed.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -277,7 +277,7 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -303,7 +303,7 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto

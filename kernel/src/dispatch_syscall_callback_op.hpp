@@ -51,6 +51,15 @@ namespace mk
     [[nodiscard]] constexpr auto
     syscall_callback_op_register_bootstrap(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
+        bsl::safe_uintmax callback{tls.ext_reg1};
+        if (bsl::unlikely(callback.is_zero())) {
+            bsl::error() << "the bootstrap callback cannot be null"                           // --
+                            << bsl::endl                       // --
+                            << bsl::here();                    // --
+
+            return bsl::errc_failure;
+        }
+
         if (bsl::unlikely(ext.bootstrap_ip())) {
             bsl::error() << "ext "                                          // --
                          << bsl::hex(ext.id())                              // --
@@ -61,7 +70,7 @@ namespace mk
         }
 
         tls.state_reversal_required = true;
-        ext.set_bootstrap_ip(tls.ext_reg1);
+        ext.set_bootstrap_ip(callback);
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -82,6 +91,15 @@ namespace mk
     [[nodiscard]] constexpr auto
     syscall_callback_op_register_vmexit(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
+        bsl::safe_uintmax callback{tls.ext_reg1};
+        if (bsl::unlikely(callback.is_zero())) {
+            bsl::error() << "the vmexit callback cannot be null"                           // --
+                            << bsl::endl                       // --
+                            << bsl::here();                    // --
+
+            return bsl::errc_failure;
+        }
+
         if (bsl::unlikely(ext.vmexit_ip())) {
             bsl::error() << "ext "                                       // --
                          << bsl::hex(ext.id())                           // --
@@ -101,7 +119,7 @@ namespace mk
         }
 
         tls.state_reversal_required = true;
-        ext.set_vmexit_ip(tls.ext_reg1);
+        ext.set_vmexit_ip(callback);
         tls.ext_vmexit = &ext;
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
@@ -123,6 +141,15 @@ namespace mk
     [[nodiscard]] constexpr auto
     syscall_callback_op_register_fail(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
+        bsl::safe_uintmax callback{tls.ext_reg1};
+        if (bsl::unlikely(callback.is_zero())) {
+            bsl::error() << "the fast fail callback cannot be null"                           // --
+                            << bsl::endl                       // --
+                            << bsl::here();                    // --
+
+            return bsl::errc_failure;
+        }
+
         if (bsl::unlikely(ext.fail_ip())) {
             bsl::error() << "ext "                                          // --
                          << bsl::hex(ext.id())                              // --
@@ -142,7 +169,7 @@ namespace mk
         }
 
         tls.state_reversal_required = true;
-        ext.set_fail_ip(tls.ext_reg1);
+        ext.set_fail_ip(callback);
         tls.ext_fail = &ext;
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();

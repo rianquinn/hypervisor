@@ -750,7 +750,8 @@ intrinsic_vmrun_failure:
 
     mov rax, 0x4400
     vmread rax, rax
-    or rax, 0xFFFFFFFF00000000
+    mov rdx, 0xFFFFFFFF00000000
+    or rax, rdx
 
     ret
     int 3
@@ -762,6 +763,9 @@ intrinsic_vmrun_failure:
     .globl  intrinsic_vmexit
     .type   intrinsic_vmexit, @function
 intrinsic_vmexit:
+
+    push 0x40002
+    popf
 
     /**************************************************************************/
     /* General Purpose Register State                                         */

@@ -347,7 +347,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param pml4te the pml4te_t to add a pdpt_t too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -484,7 +484,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param pdpte the pdpte_t to add a pdt_t too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -628,7 +628,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param pdte the pdte_t to add a pt_t too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -892,7 +892,7 @@ namespace mk
         ///   @param page_flags defines how memory should be mapped
         ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1005,6 +1005,47 @@ namespace mk
         constexpr root_page_table_t() noexcept = default;
 
         /// <!-- description -->
+        ///   @brief Destructor
+        ///
+        constexpr ~root_page_table_t() noexcept = default;
+
+        /// <!-- description -->
+        ///   @brief copy constructor
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param o the object being copied
+        ///
+        constexpr root_page_table_t(root_page_table_t const &o) noexcept = delete;
+
+        /// <!-- description -->
+        ///   @brief move constructor
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param o the object being moved
+        ///
+        constexpr root_page_table_t(root_page_table_t &&o) noexcept = default;
+
+        /// <!-- description -->
+        ///   @brief copy assignment
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param o the object being copied
+        ///   @return a reference to *this
+        ///
+        [[maybe_unused]] constexpr auto operator=(root_page_table_t const &o) &noexcept
+            -> root_page_table_t & = delete;
+
+        /// <!-- description -->
+        ///   @brief move assignment
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param o the object being moved
+        ///   @return a reference to *this
+        ///
+        [[maybe_unused]] constexpr auto operator=(root_page_table_t &&o) &noexcept
+            -> root_page_table_t & = default;
+
+        /// <!-- description -->
         ///   @brief Initializes this root_page_table_t
         ///
         /// <!-- inputs/outputs -->
@@ -1014,7 +1055,7 @@ namespace mk
         ///   @param page_pool the page pool to use
         ///   @param huge_pool the huge pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1103,52 +1144,11 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Destructor
-        ///
-        constexpr ~root_page_table_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr root_page_table_t(root_page_table_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr root_page_table_t(root_page_table_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(root_page_table_t const &o) &noexcept
-            -> root_page_table_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(root_page_table_t &&o) &noexcept
-            -> root_page_table_t & = default;
-
-        /// <!-- description -->
         ///   @brief Sets the current root page table to this root page table.
         ///
         /// <!-- inputs/outputs -->
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         activate() const &noexcept -> bsl::errc_type
@@ -1175,7 +1175,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param rpt the root page table to add aliases to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1222,7 +1222,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param rpt the root page table to add aliases to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1244,7 +1244,7 @@ namespace mk
         ///   @param page_flags defines how memory should be mapped
         ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1446,7 +1446,7 @@ namespace mk
         ///   @param page_flags defines how memory should be mapped
         ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1481,7 +1481,7 @@ namespace mk
         ///     page to
         ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1542,7 +1542,7 @@ namespace mk
         ///     page to
         ///   @param auto_release defines what auto release tag to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto

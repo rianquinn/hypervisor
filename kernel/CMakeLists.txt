@@ -29,24 +29,32 @@ target_include_directories(kernel PRIVATE
 )
 
 list(APPEND HEADERS
+    ${CMAKE_CURRENT_LIST_DIR}/include/allocate_tags.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/allocated_status_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/call_ext.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/get_current_tls.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/lock_guard.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/map_page_flags.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/page_pool_record_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/promote.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/return_to_mk.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/return_to_vmexit_loop.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/vmexit_loop_entry.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/debug_ring_write.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_callback_op_failure.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_callback_op.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_control_op.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_debug_op.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_failure.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_handle_op_failure.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_handle_op.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_esr_page_fault.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_callback_op.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_callback_op_failure.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_control_op.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_control_op_failure.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_debug_op.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_debug_op_failure.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_failure.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_handle_op.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_handle_op_failure.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_mem_op.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_vm_op.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_vm_op_failure.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_vp_op.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_vps_op.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ext_pool_t.hpp
@@ -54,38 +62,42 @@ list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/src/fast_fail.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/global_resources.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/huge_pool_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/huge_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/mk_main.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/page_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/page_t.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/vmexit_loop.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vm_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vm_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vmexit_loop.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vp_pool_t.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/vps_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vp_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vps_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/bsl/cstdio.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/bsl/details/print_thread_id.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/bsl/details/putc_stderr.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/bsl/details/putc_stdout.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/bsl/details/puts_stderr.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/bsl/details/puts_stdout.hpp
-)
+    ${CMAKE_CURRENT_LIST_DIR}/src/bsl/details/puts_stdout.hpp)
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     target_include_directories(kernel PRIVATE
         include/x64
         src/x64
     )
-
     list(APPEND HEADERS
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/general_purpose_regs_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/include/x64/pdpt_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/include/x64/pdt_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/include/x64/pml4t_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/include/x64/pt_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/include/x64/serial_write.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/spinlock.hpp
         ${CMAKE_CURRENT_LIST_DIR}/include/x64/tls_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/vmexit_log_pp_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/vmexit_log_record_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/dispatch_esr.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/root_page_table_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/x64/vmexit_log_t.hpp
     )
 endif()
 
@@ -107,6 +119,8 @@ elseif(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
         src/x64/intel
     )
     list(APPEND HEADERS
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/intel/invept_descriptor_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/include/x64/intel/invvpid_descriptor_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/include/x64/intel/vmcs_missing_registers_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/include/x64/intel/vmcs_t.hpp
         ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/dispatch_esr_nmi.hpp
@@ -130,6 +144,7 @@ target_sources(kernel PRIVATE
 )
 
 hypervisor_add_header_depends(src/dispatch_esr_trampoline.cpp ${HEADERS})
+hypervisor_add_header_depends(src/dispatch_syscall_trampoline_failure.cpp ${HEADERS})
 hypervisor_add_header_depends(src/dispatch_syscall_trampoline.cpp ${HEADERS})
 hypervisor_add_header_depends(src/fast_fail_trampoline.cpp ${HEADERS})
 hypervisor_add_header_depends(src/mk_main_trampoline.cpp ${HEADERS})

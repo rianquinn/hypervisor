@@ -738,7 +738,7 @@ namespace mk
         ///   @param msr the MSR to write to
         ///   @param val the value to set the MSR to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         wrmsr(bsl::safe_uint32 const &msr, bsl::safe_uint64 const &val) noexcept -> bsl::errc_type
@@ -791,7 +791,7 @@ namespace mk
         ///   @param eptp The EPTP to invalidate
         ///   @param type The INVEPT type (see the Intel SDM for details)
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         invept(bsl::safe_uint64 const &eptp, bsl::safe_uint64 const &type) noexcept
@@ -834,7 +834,7 @@ namespace mk
         ///   @param vpid The VPID to invalidate
         ///   @param type The INVVPID type (see the Intel SDM for details)
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         invvpid(
@@ -892,7 +892,7 @@ namespace mk
         ///   @param phys a pointer to the physical address of the VMCS to
         ///     load.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         vmload(void *const phys) noexcept -> bsl::errc_type
@@ -933,7 +933,7 @@ namespace mk
         ///   @param phys a pointer to the physical address of the VMCS to
         ///     load.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         vmclear(void *const phys) noexcept -> bsl::errc_type
@@ -973,7 +973,7 @@ namespace mk
         ///   @param field the 16 bit VMCS field to read
         ///   @param val the value to store the 32 bit VMCS field to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         vmread16(bsl::safe_uint64 const &field, bsl::uint16 *const val) noexcept -> bsl::errc_type
@@ -1022,7 +1022,7 @@ namespace mk
         ///   @param field the 32 bit VMCS field to read
         ///   @param val the value to store the 32 bit VMCS field to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         vmread32(bsl::safe_uint64 const &field, bsl::uint32 *const val) noexcept -> bsl::errc_type
@@ -1071,7 +1071,7 @@ namespace mk
         ///   @param field the 64 bit VMCS field to read
         ///   @param val the value to store the 32 bit VMCS field to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         vmread64(bsl::safe_uint64 const &field, bsl::uint64 *const val) noexcept -> bsl::errc_type
@@ -1210,7 +1210,7 @@ namespace mk
         ///   @param field the 16 bit VMCS field to write to
         ///   @param val the value to set the 16 bit VMCS field to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         vmwrite16(bsl::safe_uint64 const &field, bsl::safe_uint16 const &val) noexcept
@@ -1262,7 +1262,7 @@ namespace mk
         ///   @param field the 32 bit VMCS field to write to
         ///   @param val the value to set the 32 bit VMCS field to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         vmwrite32(bsl::safe_uint64 const &field, bsl::safe_uint32 const &val) noexcept
@@ -1314,7 +1314,7 @@ namespace mk
         ///   @param field the 64 bit VMCS field to write to
         ///   @param val the value to set the 64 bit VMCS field to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         vmwrite64(bsl::safe_uint64 const &field, bsl::safe_uint64 const &val) noexcept

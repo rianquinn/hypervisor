@@ -204,7 +204,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param i the ID for this vps_t
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
@@ -239,7 +239,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param page_pool the page pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename PAGE_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -298,7 +298,7 @@ namespace mk
         ///   @param vpid The ID of the VP to assign the newly created VP to
         ///   @param ppid The ID of the PP to assign the newly created VP to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename PAGE_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -398,7 +398,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param page_pool the page pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename PAGE_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -475,7 +475,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -573,7 +573,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -704,7 +704,7 @@ namespace mk
         ///   @param intrinsic the intrinsics to use
         ///   @param ppid the ID of the PP to migrate to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -821,7 +821,7 @@ namespace mk
         ///   @param intrinsic the intrinsics to use
         ///   @param state the state to set the VPS to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -977,7 +977,7 @@ namespace mk
         ///   @param intrinsic the intrinsics to use
         ///   @param state the state save to store the VPS state to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1202,7 +1202,7 @@ namespace mk
         ///   @param index the index of the field to write to the VPS
         ///   @param val the value to write to the VPS
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename FIELD_TYPE, typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1685,7 +1685,7 @@ namespace mk
         ///   @param reg a bf_reg_t defining the field to write to the VPS
         ///   @param val the value to write to the VPS
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -2275,7 +2275,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -2326,7 +2326,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto

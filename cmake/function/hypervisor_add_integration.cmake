@@ -19,35 +19,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.13)
-project(hypervisor CXX)
+# Add's An Integration Test Target
+#
+macro(hypervisor_add_integration NAME HEADERS)
+    add_executable(integration_${NAME})
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/init_build.cmake)
-
-if(HYPERVISOR_BUILD_LOADER)
-    add_subdirectory(loader)
-endif()
-
-if(HYPERVISOR_BUILD_VMMCTL)
-    add_subdirectory(vmmctl)
-endif()
-
-if(HYPERVISOR_BUILD_MICROKERNEL)
-    hypervisor_add_mk_cross_compile(cmake/mk_cross_compile)
-endif()
-
-hypervisor_add_ext_cross_compile(cmake/ext_cross_compile)
-
-if(HYPERVISOR_BUILD_EFI)
-    hypervisor_add_efi_cross_compile(cmake/efi_cross_compile)
-endif()
-
-if(NOT CMAKE_BUILD_TYPE STREQUAL RELEASE)
-    if(BUILD_TESTS AND NOT HYPERVISOR_BUILD_TESTS_OVERRIDE)
-        add_subdirectory(kernel/test)
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
+        target_include_directories(integration_${NAME} PRIVATE
+            x64/amd
+        )
+    elseif(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+        target_include_directories(integration_${NAME} PRIVATE
+            x64/intel
+        )
+    else()
+        message(FATAL_ERROR "Unsupported HYPERVISOR_TARGET_ARCH: ${HYPERVISOR_TARGET_ARCH}")
     endif()
 
-    if(BUILD_TESTS AND NOT HYPERVISOR_BUILD_TESTS_OVERRIDE)
-        include(kernel/integration/integration_targets.cmake)
-    endif()
-endif()
+    target_sources(integration_${NAME} PRIVATE
+        ${NAME}.cpp
+    )
+
+    set_property(SOURCE ${NAME} APPEND PROPERTY OBJECT_DEPENDS ${${HEADERS}})
+
+    target_link_libraries(integration_${NAME} PRIVATE
+        runtime
+        bsl
+        loader
+    )
+
+    install(TARGETS integration_${NAME} DESTINATION bin)
+endmacro(hypervisor_add_integration)

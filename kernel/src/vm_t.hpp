@@ -88,56 +88,12 @@ namespace mk
 
     public:
         /// <!-- description -->
-        ///   @brief Default constructor
-        ///
-        constexpr vm_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief Destructor
-        ///
-        constexpr ~vm_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr vm_t(vm_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr vm_t(vm_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(vm_t const &o) &noexcept -> vm_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(vm_t &&o) &noexcept -> vm_t & = default;
-
-        /// <!-- description -->
         ///   @brief Initializes this vm_t
         ///
         /// <!-- inputs/outputs -->
         ///   @param i the ID for this vm_t
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
@@ -168,7 +124,7 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         release() &noexcept -> bsl::errc_type
@@ -211,11 +167,19 @@ namespace mk
         ///   @brief Allocates this vm_t
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
+        ///   @param tls the current TLS block
+        ///   @param ext_pool the extension pool to use
         ///   @return Returns ID of the newly allocated vm
         ///
+        template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate() &noexcept -> bsl::errc_type
+        allocate(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool) &noexcept -> bsl::errc_type
         {
+            bsl::errc_type ret{};
+            lock_guard lock{tls, m_lock};
+
             if (bsl::unlikely(!m_id)) {
                 bsl::error() << "vm_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
@@ -241,6 +205,16 @@ namespace mk
                 return bsl::errc_failure;
             }
 
+// if (m_id.is_pos()) {
+//     int *i{};
+//     *i = 42;
+// }
+            ret = ext_pool.signal_vm_created(tls, m_id);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
             m_allocated = allocated_status_t::allocated;
             return bsl::errc_success;
         }
@@ -250,14 +224,19 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
+        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
+        ///   @param ext_pool the extension pool to use
+        ///   @param vp_pool the VP pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
+        template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        deallocate(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
+        deallocate(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept -> bsl::errc_type
         {
+            bsl::errc_type ret{};
             lock_guard lock{tls, m_lock};
 
             if (bsl::unlikely(!m_id)) {
@@ -274,13 +253,42 @@ namespace mk
                 return bsl::errc_failure;
             }
 
+            if (bsl::unlikely(m_allocated == allocated_status_t::zombie)) {
+                bsl::error() << "vm "                           // --
+                             << bsl::hex(m_id)                  // --
+                             << " is a zombie and cannot be destroyed"       // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
+            }
+
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
-                return bsl::errc_success;
+                bsl::error() << "vm "                           // --
+                             << bsl::hex(m_id)                  // --
+                             << " has not been created and cannot be destroyed"       // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
             }
 
             bsl::finally zombify_on_error{[this]() noexcept -> void {
                 this->zombify();
             }};
+
+            auto const vpid{vp_pool.is_vm_assigned(tls, m_id)};
+            if (bsl::unlikely(vpid)) {
+                bsl::error() << "vm "                           // --
+                             << bsl::hex(m_id)                  // --
+                             << " is assigned to vp "           // --
+                             << bsl::hex(vpid)                  // --
+                             << " and cannot be destroyed"      // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_failure;
+            }
 
             for (auto const elem : m_active) {
                 if (bsl::unlikely(*elem.data)) {
@@ -298,6 +306,12 @@ namespace mk
                 bsl::touch();
             }
 
+            ret = ext_pool.signal_vm_destroyed(tls, m_id);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
             m_allocated = allocated_status_t::unallocated;
 
             zombify_on_error.ignore();
@@ -311,6 +325,10 @@ namespace mk
         constexpr void
         zombify() &noexcept
         {
+            if (m_allocated == allocated_status_t::zombie) {
+                return;
+            }
+
             if (bsl::unlikely(m_id == syscall::BF_ROOT_VMID)) {
                 bsl::alert() << "attempt to zombify vm "                           // --
                              << bsl::hex(m_id)                  // --
@@ -358,7 +376,7 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -439,7 +457,7 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto

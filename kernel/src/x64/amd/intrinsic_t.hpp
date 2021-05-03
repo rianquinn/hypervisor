@@ -428,7 +428,7 @@ namespace mk
         ///   @param msr the MSR to write to
         ///   @param val the value to set the MSR to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         wrmsr(bsl::safe_uint32 const &msr, bsl::safe_uint64 const &val) noexcept -> bsl::errc_type
@@ -480,7 +480,7 @@ namespace mk
         ///   @param addr The address to invalidate
         ///   @param asid The ASID to invalidate
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         invlpga(bsl::safe_uint64 const &addr, bsl::safe_uint64 const &asid) noexcept

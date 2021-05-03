@@ -38,7 +38,7 @@ namespace example
 
     /// <!-- description -->
     ///   @brief Implements the VMExit entry function. This is registered
-    ///     by the bootstrap function to execute whenever a VMExit occurs.
+    ///     by the main function to execute whenever a VMExit occurs.
     ///
     /// <!-- inputs/outputs -->
     ///   @param vpsid the ID of the VPS that generated the VMExit
@@ -62,7 +62,7 @@ namespace example
 
     /// <!-- description -->
     ///   @brief Implements the fast fail entry function. This is registered
-    ///     by the bootstrap function to execute whenever a fast fail occurs.
+    ///     by the main function to execute whenever a fast fail occurs.
     ///
     /// <!-- inputs/outputs -->
     ///   @param fail_reason the exit reason associated with the fail

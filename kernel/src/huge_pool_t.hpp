@@ -85,7 +85,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param pool the mutable_buffer_t of the huge pool
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         initialize(bsl::span<bsl::byte> &pool) &noexcept -> bsl::errc_type

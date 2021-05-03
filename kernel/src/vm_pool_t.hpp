@@ -50,71 +50,24 @@ namespace mk
     class vm_pool_t final
     {
         /// @brief stores true if initialized() has been executed
-        bool m_initialized;
+        bool m_initialized{};
         /// @brief stores the first VM_CONCEPT in the VM_CONCEPT linked list
-        VM_CONCEPT *m_head;
+        VM_CONCEPT *m_head{};
         /// @brief stores the VM_CONCEPTs in the VM_CONCEPT linked list
-        bsl::array<VM_CONCEPT, MAX_VMS> m_pool;
+        bsl::array<VM_CONCEPT, MAX_VMS> m_pool{};
         /// @brief safe guards operations on the pool.
-        mutable spinlock m_lock;
+        mutable spinlock m_lock{};
 
     public:
         /// @brief an alias for VM_CONCEPT
         using vm_type = VM_CONCEPT;
 
         /// <!-- description -->
-        ///   @brief Creates a vm_pool_t
-        ///
-        explicit constexpr vm_pool_t() noexcept    // --
-            : m_initialized{}, m_head{}, m_pool{}, m_lock{}
-        {}
-
-        /// <!-- description -->
-        ///   @brief Destroyes a previously created vm_pool_t
-        ///
-        constexpr ~vm_pool_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr vm_pool_t(vm_pool_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr vm_pool_t(vm_pool_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(vm_pool_t const &o) &noexcept
-            -> vm_pool_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(vm_pool_t &&o) &noexcept -> vm_pool_t & = default;
-
-        /// <!-- description -->
         ///   @brief Initializes this vm_pool_t
         ///
         /// <!-- inputs/outputs -->
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         initialize() &noexcept -> bsl::errc_type
@@ -123,7 +76,7 @@ namespace mk
 
             if (bsl::unlikely(m_initialized)) {
                 bsl::error() << "vm_pool_t already initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             bsl::finally release_on_error{[this, &ret]() noexcept -> void {
@@ -142,7 +95,7 @@ namespace mk
                 ret = vm.data->initialize(bsl::to_u16(vm.index));
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
@@ -171,15 +124,18 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         release() &noexcept -> bsl::errc_type
         {
+            bsl::errc_type ret{};
+
             for (auto const vm : m_pool) {
-                if (bsl::unlikely(!vm.data->release())) {
+                ret = vm.data->release();
+                if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 vm.data->set_next(nullptr);
@@ -196,16 +152,18 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
         ///   @param tls the current TLS block
+        ///   @param ext_pool the extension pool to use
         ///   @return Returns ID of the newly allocated vm
         ///
         /// <!-- exception safety -->
         ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
         ///     that state reversal MIGHT BE REQUIRED.
         ///
-        template<typename TLS_CONCEPT>
+        template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate(TLS_CONCEPT &tls) &noexcept -> bsl::safe_uint16
+        allocate(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool) &noexcept -> bsl::safe_uint16
         {
             lock_guard lock{tls, m_lock};
             auto *const vm{m_head};
@@ -215,30 +173,20 @@ namespace mk
                 return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(tls.log_vmid != syscall::BF_INVALID_ID)) {
-                bsl::error() << "log_vmid contains an unexpected value of "                      // --
-                             << bsl::hex(tls.log_vmid)             // --
-                             << bsl::endl                  // --
-                             << bsl::here();               // --
-
-                return bsl::safe_uint16::zero(true);
-            }
-
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vm pool out of vms\n" << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }
 
+            tls.state_reversal_required = true;
             tls.log_vmid = vm->id().get();
 
-            if (bsl::unlikely(!vm->allocate())) {
+            if (bsl::unlikely(!vm->allocate(tls, ext_pool))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }
 
             m_head = vm->next();
-
-bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
             return tls.log_vmid;
         }
 
@@ -248,24 +196,24 @@ bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
+        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
+        ///   @param ext_pool the extension pool to use
+        ///   @param vp_pool the VP pool to use
         ///   @param vmid the ID of the vm to deallocate
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
+        template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        deallocate(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+        deallocate(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT const &vp_pool, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
             lock_guard lock{tls, m_lock};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "vm_pool_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (syscall::BF_INVALID_ID == vmid) {
-                return bsl::errc_success;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(vmid == syscall::BF_ROOT_VMID)) {
@@ -275,7 +223,7 @@ bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
                              << bsl::endl                       // --
                              << bsl::here();                    // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
@@ -287,31 +235,39 @@ bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely(vm->is_zombie())) {
+                bsl::error() << "vm "                           // --
+                             << bsl::hex(vmid)                  // --
+                             << " is a zombie and cannot be destroyed"       // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(!vm->is_allocated())) {
-                return bsl::errc_success;
+                bsl::error() << "vm "                           // --
+                             << bsl::hex(vmid)                  // --
+                             << " has not been created and cannot be destroyed"       // --
+                             << bsl::endl                       // --
+                             << bsl::here();                    // --
+
+                return bsl::errc_precondition;
             }
-
-            // The VM
-            // - must be allocated
-            // - must not be active
-            // - must not have any VPs assigned to it.
-
-            // Get rid of the linked lists. If we have to search through
-            // lists during creating, O(N) is not the end of the world,
-            // and it is a lot safer, and will consume less memory. Even
-            // if we have to search through the max number of objects support
-            // for 
 
             bsl::finally zombify_on_error{[&vm]() noexcept -> void {
                 vm->zombify();
             }};
 
-            if (bsl::unlikely(!vm->deallocate(tls))) {
+            tls.state_reversal_required = true;
+
+            ret = vm->deallocate(tls, ext_pool, vp_pool);
+            if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             if (bsl::unlikely(m_head == vm)) {
@@ -332,15 +288,11 @@ bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
         /// <!-- inputs/outputs -->
         ///   @param vmid the ID of the vm_t to set as a zombie
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         zombify(bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
-            if (syscall::BF_INVALID_ID == vmid) {
-                return bsl::errc_success;
-            }
-
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vmid "                            // --
@@ -350,7 +302,7 @@ bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_index_out_of_bounds;
             }
 
             vm->zombify();
@@ -431,7 +383,7 @@ bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
         ///   @param tls the current TLS block
         ///   @param vmid the ID of the vm_t to set as active
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -444,7 +396,7 @@ bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
@@ -456,7 +408,7 @@ bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_index_out_of_bounds;
             }
 
             return vm->set_active(tls);
@@ -470,7 +422,7 @@ bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
         ///   @param tls the current TLS block
         ///   @param vmid the ID of the vm_t to set as inactive
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -483,7 +435,7 @@ bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
@@ -495,7 +447,7 @@ bsl::debug() << "successfully allocated vm " << tls.log_vmid << bsl::endl;
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_index_out_of_bounds;
             }
 
             return vm->set_inactive(tls);

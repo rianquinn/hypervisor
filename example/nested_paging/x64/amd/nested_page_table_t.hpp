@@ -91,7 +91,7 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param npml4te the npml4te_t to add a npdpt_t too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         add_npdpt(npml4te_t *const npml4te) noexcept -> bsl::errc_type
@@ -193,7 +193,7 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param npdpte the npdpte_t to add a npdt_t too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         add_npdt(npdpte_t *const npdpte) noexcept -> bsl::errc_type
@@ -295,7 +295,7 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param npdte the npdte_t to add a npt_t too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         add_npt(npdte_t *const npdte) noexcept -> bsl::errc_type
@@ -434,7 +434,7 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param page_pool the page pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         initialize(page_pool_t *const page_pool) &noexcept -> bsl::errc_type
@@ -548,7 +548,7 @@ namespace example
         ///   @param page_flags defines how memory should be mapped
         ///   @param page_type defines the memory type for the mapping
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         map_4k_page(
@@ -735,7 +735,7 @@ namespace example
         ///   @param page_flags defines how memory should be mapped
         ///   @param page_type defines the memory type for the mapping
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         map_2m_page(

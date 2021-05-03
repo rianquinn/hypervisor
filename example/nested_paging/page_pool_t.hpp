@@ -91,7 +91,7 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param handle the handle used to communicate with the kernel
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         initialize(syscall::bf_handle_t const &handle) &noexcept -> bsl::errc_type

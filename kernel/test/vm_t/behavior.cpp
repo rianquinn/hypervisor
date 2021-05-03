@@ -26,8 +26,11 @@
 
 #include <bsl/ut.hpp>
 
-namespace
+namespace mk
 {
+    /// @brief defines the max number of PPS supported by the tests
+    constexpr bsl::safe_uintmax TEST_MAX_PPS{bsl::to_umax(2)};
+
     /// <!-- description -->
     ///   @brief Used to execute the actual checks. We put the checks in this
     ///     function so that we can validate the tests both at compile-time
@@ -40,6 +43,30 @@ namespace
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
+        bsl::ut_scenario{"initialize"} = []() {
+            bsl::ut_given{} = []() {
+                vm_t<TEST_MAX_PPS.get()> vm{};
+                bsl::ut_then{} = [&vm]() {
+                    bsl::ut_check(!vm.initialize(bsl::safe_uint16::zero(true)));
+                };
+            };
+
+            bsl::ut_given{} = []() {
+                vm_t<TEST_MAX_PPS.get()> vm{};
+                bsl::ut_then{} = [&vm]() {
+                    bsl::ut_check(!vm.initialize(syscall::BF_INVALID_ID));
+                };
+            };
+
+            bsl::ut_given{} = []() {
+                vm_t<TEST_MAX_PPS.get()> vm{};
+                bsl::ut_then{} = [&vm]() {
+                    bsl::ut_check(vm.initialize(syscall::BF_ROOT_VMID));
+                    bsl::ut_check(!vm.initialize(syscall::BF_INVALID_ID));
+                };
+            };
+        };
+
         return bsl::ut_success();
     }
 }
@@ -55,6 +82,6 @@ namespace
 [[nodiscard]] auto
 main() noexcept -> bsl::exit_code
 {
-    static_assert(tests() == bsl::ut_success());
-    return tests();
+    static_assert(mk::tests() == bsl::ut_success());
+    return mk::tests();
 }

@@ -42,10 +42,12 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
+    ///   @param intrinsic the intrinsics to use
     ///   @param page_pool the page pool to use
     ///   @param vp_pool the VP pool to use
     ///   @param vps_pool the VPS pool to use
@@ -58,12 +60,14 @@ namespace mk
     ///
     template<
         typename TLS_CONCEPT,
+        typename INTRINSIC_CONCEPT,
         typename PAGE_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,
         typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_create_vps(
         TLS_CONCEPT &tls,
+        INTRINSIC_CONCEPT &intrinsic,
         PAGE_POOL_CONCEPT &page_pool,
         VP_POOL_CONCEPT &vp_pool,
         VPS_POOL_CONCEPT &vps_pool) -> bsl::errc_type
@@ -104,7 +108,7 @@ namespace mk
         /// - vps_pool.allocate is assumped to be exception UNSAFE
         ///
 
-        auto const vpsid{vps_pool.allocate(tls, page_pool, vpid, ppid)};
+        auto const vpsid{vps_pool.allocate(tls, intrinsic, page_pool, vpid, ppid)};
         if (bsl::unlikely(!vpsid)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
@@ -1122,7 +1126,7 @@ namespace mk
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_VPS_OP_CREATE_VPS_IDX_VAL.get(): {
-                ret = syscall_vps_op_create_vps(tls, page_pool, vp_pool, vps_pool);
+                ret = syscall_vps_op_create_vps(tls, intrinsic, page_pool, vp_pool, vps_pool);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

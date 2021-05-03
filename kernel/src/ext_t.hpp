@@ -175,7 +175,7 @@ namespace mk
         ///   @param phdr the pt_load segment to validate
         ///   @param elf_file the ELF file to validate against
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         validate_pt_load(
@@ -247,7 +247,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param phdr the pt_gnu_stack segment to validate
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         validate_pt_gnu_stack(bfelf::elf64_phdr_t const *const phdr) &noexcept -> bsl::errc_type
@@ -267,7 +267,7 @@ namespace mk
         ///   @param phdr the pt_tls segment to validate
         ///   @param elf_file the ELF file to validate against
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         validate_pt_tls(
@@ -315,7 +315,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param elf_file the ELF file to validate against
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         validate(bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
@@ -396,7 +396,7 @@ namespace mk
         ///   @param rpt the root page table to add too
         ///   @param elf_file the ELF file that contains the segment info
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -507,7 +507,7 @@ namespace mk
         ///   @param rpt the root page table to add too
         ///   @param addr the address of where to put the stack
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -537,7 +537,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param rpt the root page table to add too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -570,7 +570,7 @@ namespace mk
         ///   @param addr_abi the address the ABI's portion of the TLS block
         ///   @param elf_file the ELF file that contains the TLS info
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -628,7 +628,7 @@ namespace mk
         ///   @param rpt the root page table to add too
         ///   @param elf_file the ELF file that contains the TLS info
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -667,7 +667,7 @@ namespace mk
         ///   @param elf_file the ELF file that contains the segment and TLS
         ///      info need to initialize the provided rpt
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -720,7 +720,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param rpt the root page table to initialize
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -810,7 +810,7 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -846,7 +846,7 @@ namespace mk
         ///   @param arg0 the first argument to pass the extension
         ///   @param arg1 the second argument to pass the extension
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -933,7 +933,7 @@ namespace mk
         ///   @param ext_elf_file the ELF file for this ext_t
         ///   @param system_rpt the system RPT provided by the loader
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -991,12 +991,6 @@ namespace mk
             }
 
             ret = this->initialize_rpt(tls, m_main_rpt, *system_rpt, ext_elf_file);
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            ret = this->initialize_direct_map_rpt(tls, m_direct_map_rpts.front());
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -1319,7 +1313,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param page_virt the virtual address to free
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         free_page(bsl::safe_uintmax const &page_virt) &noexcept -> bsl::errc_type
@@ -1419,7 +1413,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param huge_virt the virtual address to free
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
         free_huge(bsl::safe_uintmax const &huge_virt) &noexcept -> bsl::errc_type
@@ -1541,7 +1535,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param page_virt the virtual address to map the physical address too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1602,28 +1596,14 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was created.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
+        signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_started)) {
-                bsl::error() << "ext_t not started\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(vmid == syscall::BF_ROOT_VMID)) {
-                return bsl::errc_success;
-            }
-
-            if (bsl::unlikely(vmid == syscall::BF_INVALID_ID)) {
-                bsl::error() << "vmid "                           // --
-                                << bsl::hex(vmid)                  // --
-                                << " is invalid and cannot be created"       // --
-                                << bsl::endl                       // --
-                                << bsl::here();                    // --
-
+            if (bsl::unlikely(!m_id)) {
+                bsl::error() << "ext_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
@@ -1656,29 +1636,15 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was destroyed.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        signal_vm_destroyed(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) noexcept
+        signal_vm_destroyed(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_started)) {
-                bsl::error() << "ext_t not started\n" << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if (syscall::BF_INVALID_ID == vmid) {
-                return bsl::errc_success;
-            }
-
-            if (bsl::unlikely(vmid == syscall::BF_ROOT_VMID)) {
-                bsl::error() << "vm "                           // --
-                             << bsl::hex(vmid)                  // --
-                             << " is the root VM which cannot be destroyed"       // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
+            if (bsl::unlikely(!m_id)) {
+                bsl::error() << "ext_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
@@ -1690,21 +1656,6 @@ namespace mk
                              << bsl::hex(bsl::to_u16(MAX_VMS))     // --
                              << bsl::endl                          // --
                              << bsl::here();                       // --
-
-                return bsl::errc_failure;
-            }
-
-            /// TODO:
-            /// - This check is not good enough. We need a way to determine
-            ///   if the VM itself is active. We really should provide the
-            ///   function with a way to ask the vm_pool if this is true.
-
-            if (tls.active_rpt == rpt) {
-                bsl::error() << "the rpt for vm "                       // --
-                             << bsl::hex(vmid)                          // --
-                             << " is active and cannot be destroyed"    // --
-                             << bsl::endl                               // --
-                             << bsl::here();                            // --
 
                 return bsl::errc_failure;
             }
@@ -1722,7 +1673,7 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1748,7 +1699,7 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1779,7 +1730,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param exit_reason the reason for the VMExit
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
@@ -1806,7 +1757,7 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     otherwise
+        ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
