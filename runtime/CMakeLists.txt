@@ -45,10 +45,11 @@ list(APPEND HEADERS
 )
 
 target_sources(runtime PRIVATE
-    src/_start.cpp
+    src/_start.S
+    src/msg_stack_chk_fail.cpp
 )
 
-hypervisor_add_header_depends(src/_start.cpp ${HEADERS})
+hypervisor_add_header_depends(src/msg_stack_chk_fail.cpp ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     target_sources(runtime PRIVATE

@@ -32,41 +32,10 @@ if (NOT EXISTS ${CMAKE_BINARY_DIR}/toolchain/x64/mk.ld)
     file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "\n")
 
     file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "SECTIONS {\n")
-
     file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    . = ${HYPERVISOR_MK_CODE_ADDR};\n")
-
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .text : ALIGN(${BSL_PAGE_SIZE}) {\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "        *(.text)\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    }\n")
-
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .init : ALIGN(${BSL_PAGE_SIZE}) {\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "        *(.init)\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    }\n")
-
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .init_array : ALIGN(${BSL_PAGE_SIZE}) {\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "        *(.init_array)\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    }\n")
-
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .fini : ALIGN(${BSL_PAGE_SIZE}) {\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "        *(.fini)\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    }\n")
-
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .fini_array : ALIGN(${BSL_PAGE_SIZE}) {\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "        *(.fini_array)\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    }\n")
-
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .rodata : ALIGN(${BSL_PAGE_SIZE}) {\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "        *(.rodata)\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    }\n")
-
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .data : ALIGN(${BSL_PAGE_SIZE}) {\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "        *(.data)\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    }\n")
-
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .bss : ALIGN(${BSL_PAGE_SIZE}) {\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "        *(.bss)\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    }\n")
-
+    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .text : ALIGN(0x1000) { *(.text .text.*); }\n")
+    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .rodata : ALIGN(0x1000) { *(.rodata .rodata.*); }\n")
+    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .data : ALIGN(0x1000) { *(.data .data.*); }\n")
+    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "    .bss : ALIGN(0x1000) { *(.bss .bss.*); }\n")
     file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "}\n")
-    file(APPEND ${HYPERVISOR_TOOLCHAIN_X64_MK_LD} "\n")
 endif()

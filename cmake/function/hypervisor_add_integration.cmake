@@ -48,5 +48,9 @@ macro(hypervisor_add_integration NAME HEADERS)
         loader
     )
 
+    if(CMAKE_BUILD_TYPE STREQUAL RELEASE OR CMAKE_BUILD_TYPE STREQUAL MINSIZEREL)
+        add_custom_command(TARGET integration_${NAME} POST_BUILD COMMAND ${CMAKE_STRIP} integration_${NAME})
+    endif()
+
     install(TARGETS integration_${NAME} DESTINATION bin)
 endmacro(hypervisor_add_integration)

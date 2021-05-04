@@ -37,6 +37,8 @@
 
 namespace mk
 {
+    inline bool yourmom{};
+
     /// @class mk::vm_pool_t
     ///
     /// <!-- description -->
@@ -51,8 +53,6 @@ namespace mk
     {
         /// @brief stores true if initialized() has been executed
         bool m_initialized{};
-        /// @brief stores the first VM_CONCEPT in the VM_CONCEPT linked list
-        VM_CONCEPT *m_head{};
         /// @brief stores the VM_CONCEPTs in the VM_CONCEPT linked list
         bsl::array<VM_CONCEPT, MAX_VMS> m_pool{};
         /// @brief safe guards operations on the pool.
@@ -80,15 +80,7 @@ namespace mk
             }
 
             bsl::finally release_on_error{[this, &ret]() noexcept -> void {
-                for (auto const vm : m_pool) {
-                    ret = vm.data->release();
-                    if (bsl::unlikely(!ret)) {
-                        bsl::print<bsl::V>() << bsl::here();
-                    }
-                    else {
-                        bsl::touch();
-                    }
-                }
+                this->release();
             }};
 
             for (auto const vm : m_pool) {
@@ -101,16 +93,6 @@ namespace mk
                 bsl::touch();
             }
 
-            VM_CONCEPT *prev{};
-            for (auto const vm : m_pool) {
-                if (nullptr != prev) {
-                    prev->set_next(vm.data);
-                }
-
-                prev = vm.data;
-            }
-
-            m_head = m_pool.front_if();
             m_initialized = true;
 
             release_on_error.ignore();
@@ -118,9 +100,7 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Release the vm_pool_t. Note that if this function fails,
-        ///     the microkernel is left in a corrupt state and all use of the
-        ///     vm_pool_t after calling this function will results in UB.
+        ///   @brief Release the vm_pool_t.
         ///
         /// <!-- inputs/outputs -->
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
@@ -138,12 +118,10 @@ namespace mk
                     return ret;
                 }
 
-                vm.data->set_next(nullptr);
+                bsl::touch();
             }
 
-            m_head = {};
             m_initialized = {};
-
             return bsl::errc_success;
         }
 
@@ -157,20 +135,25 @@ namespace mk
         ///   @param ext_pool the extension pool to use
         ///   @return Returns ID of the newly allocated vm
         ///
-        /// <!-- exception safety -->
-        ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-        ///     that state reversal MIGHT BE REQUIRED.
-        ///
         template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
         allocate(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool) &noexcept -> bsl::safe_uint16
         {
             lock_guard lock{tls, m_lock};
-            auto *const vm{m_head};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "vm_pool_t not initialized\n" << bsl::here();
                 return bsl::safe_uint16::zero(true);
+            }
+
+            VM_CONCEPT *vm{};
+            for (auto const elem : m_pool) {
+                if (elem.data->is_deallocated()) {
+                    vm = elem.data;
+                    break;
+                }
+
+                bsl::touch();
             }
 
             if (bsl::unlikely(nullptr == vm)) {
@@ -178,16 +161,7 @@ namespace mk
                 return bsl::safe_uint16::zero(true);
             }
 
-            tls.state_reversal_required = true;
-            tls.log_vmid = vm->id().get();
-
-            if (bsl::unlikely(!vm->allocate(tls, ext_pool))) {
-                bsl::print<bsl::V>() << bsl::here();
-                return bsl::safe_uint16::zero(true);
-            }
-
-            m_head = vm->next();
-            return tls.log_vmid;
+            return vm->allocate(tls, ext_pool);
         }
 
         /// <!-- description -->
@@ -207,8 +181,13 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        deallocate(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT const &vp_pool, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+        deallocate(
+            TLS_CONCEPT &tls,
+            EXT_POOL_CONCEPT &ext_pool,
+            VP_POOL_CONCEPT const &vp_pool,
+            bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
+            bsl::errc_type ret{};
             lock_guard lock{tls, m_lock};
 
             if (bsl::unlikely(!m_initialized)) {
@@ -216,53 +195,17 @@ namespace mk
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(vmid == syscall::BF_ROOT_VMID)) {
-                bsl::error() << "vm "                           // --
-                             << bsl::hex(vmid)                  // --
-                             << " is the root VM which cannot be destroyed"       // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
-                return bsl::errc_precondition;
-            }
-
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
-                             << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                bsl::error() << "vmid "                                       // --
+                             << bsl::hex(vmid)                                // --
+                             << " is invalid or greater than or equal to the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
-                return bsl::errc_precondition;
+                return bsl::errc_index_out_of_bounds;
             }
-
-            if (bsl::unlikely(vm->is_zombie())) {
-                bsl::error() << "vm "                           // --
-                             << bsl::hex(vmid)                  // --
-                             << " is a zombie and cannot be destroyed"       // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
-                return bsl::errc_precondition;
-            }
-
-            if (bsl::unlikely(!vm->is_allocated())) {
-                bsl::error() << "vm "                           // --
-                             << bsl::hex(vmid)                  // --
-                             << " has not been created and cannot be destroyed"       // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
-
-                return bsl::errc_precondition;
-            }
-
-            bsl::finally zombify_on_error{[&vm]() noexcept -> void {
-                vm->zombify();
-            }};
-
-            tls.state_reversal_required = true;
 
             ret = vm->deallocate(tls, ext_pool, vp_pool);
             if (bsl::unlikely(!ret)) {
@@ -270,14 +213,13 @@ namespace mk
                 return ret;
             }
 
-            if (bsl::unlikely(m_head == vm)) {
-                return bsl::errc_success;
-            }
-
-            vm->set_next(m_head);
-            m_head = vm;
-
-            zombify_on_error.ignore();
+// if (vm->id().is_pos()) {
+//     if (!yourmom) {
+//         yourmom = true;
+//         int *i{};
+//         *i = 42;
+//     }
+// }
             return bsl::errc_success;
         }
 
@@ -295,12 +237,12 @@ namespace mk
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
-                             << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                bsl::error() << "vmid "                                       // --
+                             << bsl::hex(vmid)                                // --
+                             << " is invalid or greater than or equal to the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -323,18 +265,14 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_allocated(bsl::safe_uint16 const &vmid) &noexcept -> bool
         {
-            if (syscall::BF_INVALID_ID == vmid) {
-                return false;
-            }
-
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
-                             << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                bsl::error() << "vmid "                                       // --
+                             << bsl::hex(vmid)                                // --
+                             << " is invalid or greater than or equal to the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return false;
             }
@@ -356,18 +294,14 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_zombie(bsl::safe_uint16 const &vmid) &noexcept -> bool
         {
-            if (syscall::BF_INVALID_ID == vmid) {
-                return false;
-            }
-
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
-                             << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                bsl::error() << "vmid "                                       // --
+                             << bsl::hex(vmid)                                // --
+                             << " is invalid or greater than or equal to the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return false;
             }
@@ -389,24 +323,14 @@ namespace mk
         [[nodiscard]] constexpr auto
         set_active(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
-            if (syscall::BF_INVALID_ID == vmid) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
-                             << " is invalid"    // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
-
-                return bsl::errc_precondition;
-            }
-
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
-                             << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                bsl::error() << "vmid "                                       // --
+                             << bsl::hex(vmid)                                // --
+                             << " is invalid or greater than or equal to the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -428,24 +352,14 @@ namespace mk
         [[nodiscard]] constexpr auto
         set_inactive(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
-            if (syscall::BF_INVALID_ID == vmid) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
-                             << " is invalid"    // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
-
-                return bsl::errc_precondition;
-            }
-
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
-                             << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                bsl::error() << "vmid "                                       // --
+                             << bsl::hex(vmid)                                // --
+                             << " is invalid or greater than or equal to the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -470,18 +384,14 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_active(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bool
         {
-            if (syscall::BF_INVALID_ID == vmid) {
-                return false;
-            }
-
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
-                             << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                bsl::error() << "vmid "                                       // --
+                             << bsl::hex(vmid)                                // --
+                             << " is invalid or greater than or equal to the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return false;
             }
@@ -506,18 +416,14 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_active_on_current_pp(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bool
         {
-            if (syscall::BF_INVALID_ID == vmid) {
-                return false;
-            }
-
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
-                             << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                bsl::error() << "vmid "                                       // --
+                             << bsl::hex(vmid)                                // --
+                             << " is invalid or greater than or equal to the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return false;
             }
@@ -541,18 +447,14 @@ namespace mk
                 return;
             }
 
-            if (syscall::BF_INVALID_ID == vmid) {
-                return;
-            }
-
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
-                             << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                bsl::error() << "vmid "                                       // --
+                             << bsl::hex(vmid)                                // --
+                             << " is invalid or greater than or equal to the MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return;
             }

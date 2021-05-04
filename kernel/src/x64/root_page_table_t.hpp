@@ -677,7 +677,8 @@ namespace mk
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_ALLOC_PAGE.get(): {
-                        m_page_pool->deallocate(tls,
+                        m_page_pool->deallocate(
+                            tls,
                             this->pte_from_page_pool_to_virt(elem.data),
                             ALLOCATE_TAG_BF_MEM_OP_ALLOC_PAGE);
 
@@ -690,7 +691,8 @@ namespace mk
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_ALLOC_HEAP.get(): {
-                        m_page_pool->deallocate(tls,
+                        m_page_pool->deallocate(
+                            tls,
                             this->pte_from_page_pool_to_virt(elem.data),
                             ALLOCATE_TAG_BF_MEM_OP_ALLOC_HEAP);
 
@@ -698,22 +700,24 @@ namespace mk
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_STACK.get(): {
-                        m_page_pool->deallocate(tls,
-                            this->pte_from_page_pool_to_virt(elem.data), ALLOCATE_TAG_EXT_STACK);
+                        m_page_pool->deallocate(
+                            tls,
+                            this->pte_from_page_pool_to_virt(elem.data),
+                            ALLOCATE_TAG_EXT_STACK);
 
                         break;
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_TLS.get(): {
-                        m_page_pool->deallocate(tls,
-                            this->pte_from_page_pool_to_virt(elem.data), ALLOCATE_TAG_EXT_TLS);
+                        m_page_pool->deallocate(
+                            tls, this->pte_from_page_pool_to_virt(elem.data), ALLOCATE_TAG_EXT_TLS);
 
                         break;
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_ELF.get(): {
-                        m_page_pool->deallocate(tls,
-                            this->pte_from_page_pool_to_virt(elem.data), ALLOCATE_TAG_EXT_ELF);
+                        m_page_pool->deallocate(
+                            tls, this->pte_from_page_pool_to_virt(elem.data), ALLOCATE_TAG_EXT_ELF);
 
                         break;
                     }
@@ -1593,6 +1597,10 @@ namespace mk
         constexpr void
         dump() const &noexcept
         {
+            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
+                return;
+            }
+
             if (bsl::unlikely(!m_initialized)) {
                 bsl::print() << "[error]" << bsl::endl;
                 return;

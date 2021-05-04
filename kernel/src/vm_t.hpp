@@ -25,10 +25,10 @@
 #ifndef VM_T_HPP
 #define VM_T_HPP
 
+#include <allocated_status_t.hpp>
 #include <lock_guard.hpp>
 #include <mk_interface.hpp>
 #include <spinlock.hpp>
-#include <allocated_status_t.hpp>
 
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
@@ -75,12 +75,10 @@ namespace mk
     template<bsl::uintmax MAX_PPS>
     class vm_t final
     {
-        /// @brief stores the next vm_t in the vm_pool_t linked list
-        vm_t *m_next{};
         /// @brief stores the ID associated with this vm_t
         bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
         /// @brief stores whether or not this vm_t is allocated.
-        allocated_status_t m_allocated{allocated_status_t::unallocated};
+        allocated_status_t m_allocated{allocated_status_t::deallocated};
         /// @brief stores whether or not this vm_t is active.
         bsl::array<bool, MAX_PPS> m_active{};
         /// @brief safe guards operations on the pool.
@@ -118,36 +116,30 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Release the vm_t. Note that if this function fails,
-        ///     the microkernel is left in a corrupt state and all use of the
-        ///     vm_t after calling this function will results in UB.
+        ///   @brief Release the vm_t.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
+        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
+        ///   @param tls the current TLS block
+        ///   @param ext_pool the extension pool to use
+        ///   @param vp_pool the VP pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
+        template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        release() &noexcept -> bsl::errc_type
+        release(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept
+            -> bsl::errc_type
         {
-            for (auto const elem : m_active) {
-                if (bsl::unlikely(*elem.data)) {
-                    bsl::error() << "vm "                        // --
-                                 << bsl::hex(m_id)               // --
-                                 << " is still active on pp "    // --
-                                 << bsl::hex(elem.index)         // --
-                                 << " and cannot be released"    // --
-                                 << bsl::endl                    // --
-                                 << bsl::here();                 // --
-
-                    return bsl::errc_failure;
-                }
-
-                bsl::touch();
+            auto const ret{this->deallocate(tls, ext_pool, vp_pool)};
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
             }
 
-            m_allocated = allocated_status_t::unallocated;
             m_id = bsl::safe_uint16::zero(true);
-
             return bsl::errc_success;
         }
 
@@ -175,48 +167,47 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool) &noexcept -> bsl::errc_type
+        allocate(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool) &noexcept -> bsl::safe_uint16
         {
             bsl::errc_type ret{};
             lock_guard lock{tls, m_lock};
 
             if (bsl::unlikely(!m_id)) {
                 bsl::error() << "vm_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
+            }
+
+            if (bsl::unlikely(m_allocated == allocated_status_t::zombie)) {
+                bsl::error() << "vm "                                     // --
+                             << bsl::hex(m_id)                            // --
+                             << " is a zombie and cannot be allocated"    // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
+
+                return bsl::safe_uint16::zero(true);
             }
 
             if (bsl::unlikely(m_allocated == allocated_status_t::allocated)) {
                 bsl::error() << "vm "                      // --
                              << bsl::hex(m_id)             // --
-                             << " is already allocated"    // --
+                             << " is already allocated and cannot be created"    // --
                              << bsl::endl                  // --
                              << bsl::here();               // --
 
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(m_allocated == allocated_status_t::zombie)) {
-                bsl::error() << "vm "                      // --
-                             << bsl::hex(m_id)             // --
-                             << " is a zombie and cannot be allocated"    // --
-                             << bsl::endl                  // --
-                             << bsl::here();               // --
+            tls.state_reversal_required = true;
+            tls.log_vmid = m_id.get();
 
-                return bsl::errc_failure;
-            }
-
-// if (m_id.is_pos()) {
-//     int *i{};
-//     *i = 42;
-// }
             ret = ext_pool.signal_vm_created(tls, m_id);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
             m_allocated = allocated_status_t::allocated;
-            return bsl::errc_success;
+            return m_id;
         }
 
         /// <!-- description -->
@@ -234,58 +225,61 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        deallocate(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept -> bsl::errc_type
+        deallocate(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
             lock_guard lock{tls, m_lock};
 
             if (bsl::unlikely(!m_id)) {
-                return bsl::errc_success;
+                bsl::error() << "vm_t not initialized\n" << bsl::here();
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(m_id == syscall::BF_ROOT_VMID)) {
-                bsl::error() << "vm "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is the root VM which cannot be destroyed"       // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                bsl::error() << "vm "                                          // --
+                             << bsl::hex(m_id)                                 // --
+                             << " is the root VM which cannot be destroyed"    // --
+                             << bsl::endl                                      // --
+                             << bsl::here();                                   // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(m_allocated == allocated_status_t::zombie)) {
-                bsl::error() << "vm "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is a zombie and cannot be destroyed"       // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                bsl::error() << "vm "                                     // --
+                             << bsl::hex(m_id)                            // --
+                             << " is a zombie and cannot be destroyed"    // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
-                bsl::error() << "vm "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " has not been created and cannot be destroyed"       // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                bsl::error() << "vm "                      // --
+                             << bsl::hex(m_id)             // --
+                             << " is already deallocated and cannot be destroyed"    // --
+                             << bsl::endl                  // --
+                             << bsl::here();               // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
+            tls.state_reversal_required = true;
             bsl::finally zombify_on_error{[this]() noexcept -> void {
                 this->zombify();
             }};
 
             auto const vpid{vp_pool.is_vm_assigned(tls, m_id)};
             if (bsl::unlikely(vpid)) {
-                bsl::error() << "vm "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to vp "           // --
-                             << bsl::hex(vpid)                  // --
-                             << " and cannot be destroyed"      // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                bsl::error() << "vm "                         // --
+                             << bsl::hex(m_id)                // --
+                             << " is assigned to vp "         // --
+                             << bsl::hex(vpid)                // --
+                             << " and cannot be destroyed"    // --
+                             << bsl::endl                     // --
+                             << bsl::here();                  // --
 
                 return bsl::errc_failure;
             }
@@ -309,10 +303,10 @@ namespace mk
             ret = ext_pool.signal_vm_destroyed(tls, m_id);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            m_allocated = allocated_status_t::unallocated;
+            m_allocated = allocated_status_t::deallocated;
 
             zombify_on_error.ignore();
             return bsl::errc_success;
@@ -330,19 +324,31 @@ namespace mk
             }
 
             if (bsl::unlikely(m_id == syscall::BF_ROOT_VMID)) {
-                bsl::alert() << "attempt to zombify vm "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " was ignored as the root VM cannot be a zombie"       // --
-                             << bsl::endl;                       // --
+                bsl::alert() << "attempt to zombify vm "                            // --
+                             << bsl::hex(m_id)                                      // --
+                             << " was ignored as the root VM cannot be a zombie"    // --
+                             << bsl::endl;                                          // --
             }
             else {
-                bsl::alert() << "vm "                      // --
-                                << bsl::hex(m_id)             // --
-                                << " has been zombified"    // --
-                                << bsl::endl;                  // --
+                bsl::alert() << "vm "                    // --
+                             << bsl::hex(m_id)           // --
+                             << " has been zombified"    // --
+                             << bsl::endl;               // --
 
                 m_allocated = allocated_status_t::zombie;
             }
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if this vm_t is deallocated, false otherwise
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns true if this vm_t is deallocated, false otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        is_deallocated() const &noexcept -> bool
+        {
+            return m_allocated == allocated_status_t::deallocated;
         }
 
         /// <!-- description -->
@@ -390,11 +396,11 @@ namespace mk
             }
 
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
-                bsl::error() << "vm "                     // --
-                             << bsl::hex(m_id)            // --
+                bsl::error() << "vm "                                                    // --
+                             << bsl::hex(m_id)                                           // --
                              << " has not been properly allocated and cannot be used"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+                             << bsl::endl                                                // --
+                             << bsl::here();                                             // --
 
                 return bsl::errc_failure;
             }
@@ -471,11 +477,11 @@ namespace mk
             }
 
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
-                bsl::error() << "vm "                     // --
-                             << bsl::hex(m_id)            // --
+                bsl::error() << "vm "                                                    // --
+                             << bsl::hex(m_id)                                           // --
                              << " has not been properly allocated and cannot be used"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+                             << bsl::endl                                                // --
+                             << bsl::here();                                             // --
 
                 return bsl::errc_failure;
             }
@@ -543,9 +549,8 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_active(TLS_CONCEPT &tls) const &noexcept -> bool
         {
-            lock_guard lock{tls, m_lock};
-
             for (auto const elem : m_active) {
+                if (elem.)
                 if (*elem.data) {
                     return true;
                 }
@@ -583,30 +588,6 @@ namespace mk
             }
 
             return *active;
-        }
-
-        /// <!-- description -->
-        ///   @brief Returns the next vm_t in the vm_pool_t linked list
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns the next vm_t in the vm_pool_t linked list
-        ///
-        [[nodiscard]] constexpr auto
-        next() const &noexcept -> vm_t *
-        {
-            return m_next;
-        }
-
-        /// <!-- description -->
-        ///   @brief Sets the next vm_t in the vm_pool_t linked list
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param val the next vm_t in the vm_pool_t linked list to set
-        ///
-        constexpr void
-        set_next(vm_t *val) &noexcept
-        {
-            m_next = val;
         }
 
         /// <!-- description -->

@@ -122,6 +122,14 @@ target_link_libraries(example_nested_paging PRIVATE
 )
 
 # NOTE:
+# - Strip the binary if this is a release build
+#
+
+if(CMAKE_BUILD_TYPE STREQUAL RELEASE OR CMAKE_BUILD_TYPE STREQUAL MINSIZEREL)
+    add_custom_command(TARGET example_nested_paging POST_BUILD COMMAND ${CMAKE_STRIP} example_nested_paging)
+endif()
+
+# NOTE:
 # - Install your extension somewhere.
 #
 

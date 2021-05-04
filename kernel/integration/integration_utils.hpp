@@ -25,8 +25,8 @@
 #ifndef INTEGRATION_UTILS_HPP
 #define INTEGRATION_UTILS_HPP
 
-#include <bsl/errc_type.hpp>
 #include <bsl/debug.hpp>
+#include <bsl/errc_type.hpp>
 #include <bsl/likely.hpp>
 
 namespace integration

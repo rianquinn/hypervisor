@@ -22,51 +22,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include <mk_interface.hpp>
+#include <bsl/debug.hpp>
 
-#include <bsl/cstdint.hpp>
-#include <bsl/cstdio.hpp>
-#include <bsl/cstring.hpp>
-
-extern "C"
-{
-    /// @brief provides the stack guard
-    __attribute__((used)) bsl::uintmax __stack_chk_guard{0xDEADBEEFDEADBEEF};    // NOLINT
-
-    /// <!-- description -->
-    ///   @brief Used to detect if stack corruption occurs.
-    ///
-    void
-    __stack_chk_fail() noexcept    // NOLINT
-    {
-        bsl::fputs("stack smashing detected\n");
-        syscall::bf_control_op_exit();
-    }
-}
-
-namespace runtime
+namespace mk
 {
     /// <!-- description -->
-    ///   @brief Implements the extension's main entry point
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param version the version of the spec implemented by the
-    ///     microkernel. This can be used to ensure the extension and the
-    ///     microkernel speak the same ABI.
-    ///
-    extern "C" void ext_main_entry(bsl::safe_uint32 const &version) noexcept;
-
-    /// <!-- description -->
-    ///   @brief Provides the _start function
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param version the version of the spec implemented by the
-    ///     microkernel. This can be used to ensure the extension and the
-    ///     microkernel speak the same ABI.
+    ///   @brief Called by the __stack_chk_fail function, this function
+    ///     displays a message using the debuging facilities.
     ///
     extern "C" void
-    _start(bsl::uint32 const version) noexcept
+    msg_stack_chk_fail() noexcept
     {
-        ext_main_entry(version);
+        bsl::print() << bsl::red << "...<FAULT>\n\n" << bsl::rst;
+        bsl::error() << "Stack Overflow Detected!!!\n";
     }
 }

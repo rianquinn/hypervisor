@@ -42,7 +42,7 @@ if(HYPERVISOR_BUILD_EFI)
     hypervisor_add_efi_cross_compile(cmake/efi_cross_compile)
 endif()
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL RELEASE)
+if(NOT CMAKE_BUILD_TYPE STREQUAL RELEASE AND NOT CMAKE_BUILD_TYPE STREQUAL MINSIZEREL)
     if(BUILD_TESTS AND NOT HYPERVISOR_BUILD_TESTS_OVERRIDE)
         add_subdirectory(kernel/test)
     endif()

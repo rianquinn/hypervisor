@@ -47,8 +47,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_intrinsic_op_rdmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
-        -> bsl::errc_type
+    syscall_intrinsic_op_rdmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         /// TODO:
         /// - Move this logic to the dispatch_syscall_entry.S and implement
@@ -84,8 +83,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_intrinsic_op_wrmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
-        -> bsl::errc_type
+    syscall_intrinsic_op_wrmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         /// TODO:
         /// - Move this logic to the dispatch_syscall_entry.S and implement
@@ -119,8 +117,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_intrinsic_op_invept(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
-        -> bsl::errc_type
+    syscall_intrinsic_op_invept(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         auto const ret{intrinsic.invept(tls.ext_reg1, tls.ext_reg2)};
         if (bsl::unlikely(!ret)) {
@@ -145,8 +142,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_intrinsic_op_invvpid(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic)
-        -> bsl::errc_type
+    syscall_intrinsic_op_invvpid(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         auto const ret{
             intrinsic.invvpid(tls.ext_reg1, bsl::to_u16_unsafe(tls.ext_reg2), tls.ext_reg3)};
@@ -175,8 +171,7 @@ namespace mk
     template<typename TLS_CONCEPT, typename EXT_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_intrinsic_op(
-        TLS_CONCEPT &tls, EXT_CONCEPT const &ext, INTRINSIC_CONCEPT &intrinsic)
-        -> bsl::errc_type
+        TLS_CONCEPT &tls, EXT_CONCEPT const &ext, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

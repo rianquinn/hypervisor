@@ -36,9 +36,6 @@ extern "C"
 {
     /// @brief stores the TLS blocks used by the microkernel.
     constinit bsl::array<mk::tls_t, bsl::to_umax(HYPERVISOR_MAX_PPS).get()> g_tls_blocks{};
-
-    /// @brief provides the stack guard
-    __attribute__((used)) bsl::uintmax __stack_chk_guard{0xDEADBEEFDEADBEEF};    // NOLINT
 }
 
 namespace mk

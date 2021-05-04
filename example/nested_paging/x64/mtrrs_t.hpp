@@ -1656,6 +1656,10 @@ namespace example
         constexpr void
         dump() const &noexcept
         {
+            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
+                return;
+            }
+
             bsl::print() << bsl::mag << "mtrrs dump: ";
             bsl::print() << bsl::rst << bsl::endl;
 

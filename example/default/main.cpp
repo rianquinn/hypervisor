@@ -196,7 +196,7 @@ namespace example
     ///     microkernel speak the same ABI.
     ///
     extern "C" void
-    ext_main_entry(bsl::safe_uint32 const &version) noexcept
+    ext_main_entry(bsl::uint32 const version) noexcept
     {
         bsl::errc_type ret{};
 

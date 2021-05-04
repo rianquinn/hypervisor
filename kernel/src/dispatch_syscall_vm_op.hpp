@@ -89,10 +89,17 @@ namespace mk
     ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
     ///     that state reversal MIGHT BE REQUIRED.
     ///
-    template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT, typename VP_POOL_CONCEPT>
+    template<
+        typename TLS_CONCEPT,
+        typename EXT_POOL_CONCEPT,
+        typename VM_POOL_CONCEPT,
+        typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vm_op_destroy_vm(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool, VP_POOL_CONCEPT &vp_pool)
-        -> bsl::errc_type
+    syscall_vm_op_destroy_vm(
+        TLS_CONCEPT &tls,
+        EXT_POOL_CONCEPT &ext_pool,
+        VM_POOL_CONCEPT &vm_pool,
+        VP_POOL_CONCEPT &vp_pool) -> bsl::errc_type
     {
         auto const ret{
             vm_pool.deallocate(tls, ext_pool, vp_pool, bsl::to_u16_unsafe(tls.ext_reg1))};

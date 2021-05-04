@@ -191,4 +191,8 @@ target_link_libraries(kernel PRIVATE
     hypervisor
 )
 
+if(CMAKE_BUILD_TYPE STREQUAL RELEASE OR CMAKE_BUILD_TYPE STREQUAL MINSIZEREL)
+    add_custom_command(TARGET kernel POST_BUILD COMMAND ${CMAKE_STRIP} kernel)
+endif()
+
 install(TARGETS kernel DESTINATION bin)

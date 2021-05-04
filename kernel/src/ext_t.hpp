@@ -400,9 +400,10 @@ namespace mk
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_segments(TLS_CONCEPT &tls,
-            ROOT_PAGE_TABLE_CONCEPT &rpt, bsl::span<bsl::byte const> const &elf_file) &noexcept
-            -> bsl::errc_type
+        add_segments(
+            TLS_CONCEPT &tls,
+            ROOT_PAGE_TABLE_CONCEPT &rpt,
+            bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
         {
             bsl::span<bsl::byte> page{};
 
@@ -433,14 +434,14 @@ namespace mk
                     if (bytes_to_next_page == PAGE_SIZE) {
                         if ((phdr->p_flags & bfelf::PF_X).is_pos()) {
                             page = bsl::as_writable_t<bsl::byte>(
-                                rpt.allocate_page_rx(tls,
-                                    phdr->p_vaddr + bytes, MAP_PAGE_AUTO_RELEASE_ELF),
+                                rpt.allocate_page_rx(
+                                    tls, phdr->p_vaddr + bytes, MAP_PAGE_AUTO_RELEASE_ELF),
                                 PAGE_SIZE);
                         }
                         else {
                             page = bsl::as_writable_t<bsl::byte>(
-                                rpt.allocate_page_rw(tls,
-                                    phdr->p_vaddr + bytes, MAP_PAGE_AUTO_RELEASE_ELF),
+                                rpt.allocate_page_rw(
+                                    tls, phdr->p_vaddr + bytes, MAP_PAGE_AUTO_RELEASE_ELF),
                                 PAGE_SIZE);
                         }
 
@@ -1600,7 +1601,8 @@ namespace mk
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+        signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
+            -> bsl::errc_type
         {
             if (bsl::unlikely(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
@@ -1609,12 +1611,12 @@ namespace mk
 
             auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == rpt)) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
+                bsl::error() << "vmid "                                       // --
+                             << bsl::hex(vmid)                                // --
                              << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return bsl::errc_failure;
             }
@@ -1650,12 +1652,12 @@ namespace mk
 
             auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == rpt)) {
-                bsl::error() << "vmid "                            // --
-                             << bsl::hex(vmid)                     // --
+                bsl::error() << "vmid "                                       // --
+                             << bsl::hex(vmid)                                // --
                              << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return bsl::errc_failure;
             }

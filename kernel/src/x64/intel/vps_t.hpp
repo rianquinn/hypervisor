@@ -114,7 +114,9 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        set_es_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept -> bsl::errc_type
+        set_es_segment_descriptor(
+            INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -152,8 +154,8 @@ namespace mk
                     return bsl::errc_failure;
                 }
 
-                ret = intrinsic.vmwrite32(
-                    VMCS_GUEST_ES_ACCESS_RIGHTS, bsl::to_u32(state.es_attrib));
+                ret =
+                    intrinsic.vmwrite32(VMCS_GUEST_ES_ACCESS_RIGHTS, bsl::to_u32(state.es_attrib));
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -190,7 +192,9 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        set_cs_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept -> bsl::errc_type
+        set_cs_segment_descriptor(
+            INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -228,8 +232,8 @@ namespace mk
                     return bsl::errc_failure;
                 }
 
-                ret = intrinsic.vmwrite32(
-                    VMCS_GUEST_CS_ACCESS_RIGHTS, bsl::to_u32(state.cs_attrib));
+                ret =
+                    intrinsic.vmwrite32(VMCS_GUEST_CS_ACCESS_RIGHTS, bsl::to_u32(state.cs_attrib));
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -266,7 +270,9 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        set_ss_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept -> bsl::errc_type
+        set_ss_segment_descriptor(
+            INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -304,8 +310,8 @@ namespace mk
                     return bsl::errc_failure;
                 }
 
-                ret = intrinsic.vmwrite32(
-                    VMCS_GUEST_SS_ACCESS_RIGHTS, bsl::to_u32(state.ss_attrib));
+                ret =
+                    intrinsic.vmwrite32(VMCS_GUEST_SS_ACCESS_RIGHTS, bsl::to_u32(state.ss_attrib));
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -342,7 +348,9 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        set_ds_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept -> bsl::errc_type
+        set_ds_segment_descriptor(
+            INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -380,8 +388,8 @@ namespace mk
                     return bsl::errc_failure;
                 }
 
-                ret = intrinsic.vmwrite32(
-                    VMCS_GUEST_DS_ACCESS_RIGHTS, bsl::to_u32(state.ds_attrib));
+                ret =
+                    intrinsic.vmwrite32(VMCS_GUEST_DS_ACCESS_RIGHTS, bsl::to_u32(state.ds_attrib));
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -418,7 +426,9 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        set_fs_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept -> bsl::errc_type
+        set_fs_segment_descriptor(
+            INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -456,8 +466,8 @@ namespace mk
                     return bsl::errc_failure;
                 }
 
-                ret = intrinsic.vmwrite32(
-                    VMCS_GUEST_FS_ACCESS_RIGHTS, bsl::to_u32(state.fs_attrib));
+                ret =
+                    intrinsic.vmwrite32(VMCS_GUEST_FS_ACCESS_RIGHTS, bsl::to_u32(state.fs_attrib));
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -494,7 +504,9 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        set_gs_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept -> bsl::errc_type
+        set_gs_segment_descriptor(
+            INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -532,8 +544,8 @@ namespace mk
                     return bsl::errc_failure;
                 }
 
-                ret = intrinsic.vmwrite32(
-                    VMCS_GUEST_GS_ACCESS_RIGHTS, bsl::to_u32(state.gs_attrib));
+                ret =
+                    intrinsic.vmwrite32(VMCS_GUEST_GS_ACCESS_RIGHTS, bsl::to_u32(state.gs_attrib));
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -570,7 +582,8 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        set_ldtr_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) &noexcept
+        set_ldtr_segment_descriptor(
+            INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) &noexcept
             -> bsl::errc_type
         {
             bsl::errc_type ret{};
@@ -647,7 +660,9 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        set_tr_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept -> bsl::errc_type
+        set_tr_segment_descriptor(
+            INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -685,8 +700,8 @@ namespace mk
                     return bsl::errc_failure;
                 }
 
-                ret = intrinsic.vmwrite32(
-                    VMCS_GUEST_TR_ACCESS_RIGHTS, bsl::to_u32(state.tr_attrib));
+                ret =
+                    intrinsic.vmwrite32(VMCS_GUEST_TR_ACCESS_RIGHTS, bsl::to_u32(state.tr_attrib));
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -724,7 +739,8 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        get_es_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept -> bsl::errc_type
+        get_es_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
             bsl::safe_uint16 selector{};
@@ -786,7 +802,8 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        get_cs_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept -> bsl::errc_type
+        get_cs_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
             bsl::safe_uint16 selector{};
@@ -848,7 +865,8 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        get_ss_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept -> bsl::errc_type
+        get_ss_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
             bsl::safe_uint16 selector{};
@@ -910,7 +928,8 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        get_ds_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept -> bsl::errc_type
+        get_ds_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
             bsl::safe_uint16 selector{};
@@ -972,7 +991,8 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        get_gs_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept -> bsl::errc_type
+        get_gs_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
             bsl::safe_uint16 selector{};
@@ -1034,7 +1054,8 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        get_fs_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept -> bsl::errc_type
+        get_fs_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
             bsl::safe_uint16 selector{};
@@ -1096,7 +1117,8 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        get_ldtr_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept -> bsl::errc_type
+        get_ldtr_segment_descriptor(
+            INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
             bsl::safe_uint16 selector{};
@@ -1158,7 +1180,8 @@ namespace mk
         ///
         template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
-        get_tr_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept -> bsl::errc_type
+        get_tr_segment_descriptor(INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
             bsl::safe_uint16 selector{};
@@ -1219,7 +1242,8 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        ensure_this_vps_is_loaded(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) noexcept -> bsl::errc_type
+        ensure_this_vps_is_loaded(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -1320,8 +1344,8 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = intrinsic.vmwrite64(
-                VMCS_HOST_IA32_SYSENTER_CS, intrinsic.rdmsr(IA32_SYSENTER_CS));
+            ret =
+                intrinsic.vmwrite64(VMCS_HOST_IA32_SYSENTER_CS, intrinsic.rdmsr(IA32_SYSENTER_CS));
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -1396,15 +1420,15 @@ namespace mk
             }
 
             m_vmcs_missing_registers.host_ia32_star =              // --
-                intrinsic.rdmsr(IA32_STAR).get();               // --
+                intrinsic.rdmsr(IA32_STAR).get();                  // --
             m_vmcs_missing_registers.host_ia32_lstar =             // --
-                intrinsic.rdmsr(IA32_LSTAR).get();              // --
+                intrinsic.rdmsr(IA32_LSTAR).get();                 // --
             m_vmcs_missing_registers.host_ia32_cstar =             // --
-                intrinsic.rdmsr(IA32_CSTAR).get();              // --
+                intrinsic.rdmsr(IA32_CSTAR).get();                 // --
             m_vmcs_missing_registers.host_ia32_fmask =             // --
-                intrinsic.rdmsr(IA32_FMASK).get();              // --
+                intrinsic.rdmsr(IA32_FMASK).get();                 // --
             m_vmcs_missing_registers.host_ia32_kernel_gs_base =    // --
-                intrinsic.rdmsr(IA32_KERNEL_GS_BASE).get();     // --
+                intrinsic.rdmsr(IA32_KERNEL_GS_BASE).get();        // --
 
             return bsl::errc_success;
         }
@@ -1460,7 +1484,6 @@ namespace mk
         }
 
     public:
-
         /// <!-- description -->
         ///   @brief Default constructor
         ///
@@ -1578,6 +1601,7 @@ namespace mk
 
             return bsl::errc_success;
         }
+
         /// <!-- description -->
         ///   @brief Returns the ID of this vps_t
         ///
@@ -1607,8 +1631,9 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate(TLS_CONCEPT &tls,
-        INTRINSIC_CONCEPT &intrinsic,
+        allocate(
+            TLS_CONCEPT &tls,
+            INTRINSIC_CONCEPT &intrinsic,
             PAGE_POOL_CONCEPT &page_pool,
             bsl::safe_uint16 const &vpid,
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
@@ -1708,14 +1733,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vps "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vps "                                 // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be deallocated on pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::errc_failure;
             }
@@ -1789,14 +1814,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vps "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vps "                               // --
+                             << bsl::hex(m_id)                       // --
+                             << " is assigned to pp "                // --
+                             << bsl::hex(m_assigned_ppid)            // --
                              << " and cannot be activated on pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                   // --
+                             << bsl::endl                            // --
+                             << bsl::here();                         // --
 
                 return bsl::errc_failure;
             }
@@ -1887,14 +1912,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vps "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vps "                                 // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be deactivated on pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::errc_failure;
             }
@@ -2037,26 +2062,26 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != ppid)) {
-                bsl::error() << "vps "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is being migrated to pp "       // --
-                             << bsl::hex(ppid)         // --
-                             << " by pp "    // --
-                             << bsl::hex(tls.ppid)         // --
+                bsl::error() << "vps "                         // --
+                             << bsl::hex(m_id)                 // --
+                             << " is being migrated to pp "    // --
+                             << bsl::hex(ppid)                 // --
+                             << " by pp "                      // --
+                             << bsl::hex(tls.ppid)             // --
                              << " which is not allowed "       // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::endl                      // --
+                             << bsl::here();                   // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(ppid == m_assigned_ppid)) {
-                bsl::error() << "vps "                            // --
-                             << bsl::hex(m_id)                   // --
+                bsl::error() << "vps "                             // --
+                             << bsl::hex(m_id)                     // --
                              << " is already assigned to a pp "    // --
-                             << bsl::hex(m_assigned_ppid)      // --
-                             << bsl::endl                        // --
-                             << bsl::here();                     // --
+                             << bsl::hex(m_assigned_ppid)          // --
+                             << bsl::endl                          // --
+                             << bsl::here();                       // --
 
                 return bsl::errc_failure;
             }
@@ -2357,9 +2382,8 @@ namespace mk
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
         vps_to_state_save(
-            TLS_CONCEPT &tls,
-            INTRINSIC_CONCEPT &intrinsic,
-            STATE_SAVE_CONCEPT &state) &noexcept -> bsl::errc_type
+            TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) &noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -2693,7 +2717,7 @@ namespace mk
 
             if (bsl::unlikely(!val)) {
                 bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)    // --
+                             << bsl::hex(val)      // --
                              << bsl::endl          // --
                              << bsl::here();       // --
 
@@ -2817,8 +2841,9 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        read_reg(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg)
-            &noexcept -> bsl::safe_uintmax
+        read_reg(
+            TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg) &noexcept
+            -> bsl::safe_uintmax
         {
             bsl::safe_uint64 index{bsl::safe_uint64::zero(true)};
 

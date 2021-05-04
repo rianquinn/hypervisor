@@ -24,12 +24,12 @@
 
 #include "../../src/vm_pool_t.hpp"
 
-#include <bsl/ut.hpp>
-
+#include <allocated_status_t.hpp>
 #include <lock_guard.hpp>
 #include <mk_interface.hpp>
 #include <spinlock.hpp>
-#include <allocated_status_t.hpp>
+
+#include <bsl/ut.hpp>
 
 namespace mk
 {
@@ -92,7 +92,7 @@ namespace mk
     /// <!-- description -->
     ///   @brief Returns success on initialization
     ///
-    class vm_t_initialize_success final // --
+    class vm_t_initialize_success final    // --
         : public vm_t_base<vm_t_initialize_success>
     {
     public:
@@ -117,7 +117,7 @@ namespace mk
     /// <!-- description -->
     ///   @brief Returns failure on initialization
     ///
-    class vm_t_initialize_failure final // --
+    class vm_t_initialize_failure final    // --
         : public vm_t_base<vm_t_initialize_failure>
     {
     public:
@@ -145,7 +145,7 @@ namespace mk
         /// @brief stores the ID associated with this vm_t
         bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
         /// @brief stores whether or not this vm_t is allocated.
-        allocated_status_t m_allocated{allocated_status_t::unallocated};
+        allocated_status_t m_allocated{allocated_status_t::deallocated};
         /// @brief stores whether or not this vm_t is active.
         bsl::array<bool, MAX_PPS> m_active{};
         /// @brief safe guards operations on the pool.
@@ -195,7 +195,7 @@ namespace mk
                 bsl::touch();
             }
 
-            m_allocated = allocated_status_t::unallocated;
+            m_allocated = allocated_status_t::deallocated;
             m_id = bsl::safe_uint16::zero(true);
 
             return bsl::errc_success;
@@ -238,11 +238,11 @@ namespace mk
             }
 
             if (bsl::unlikely(m_allocated == allocated_status_t::zombie)) {
-                bsl::error() << "vm "                      // --
-                             << bsl::hex(m_id)             // --
+                bsl::error() << "vm "                                     // --
+                             << bsl::hex(m_id)                            // --
                              << " is a zombie and cannot be allocated"    // --
-                             << bsl::endl                  // --
-                             << bsl::here();               // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
 
                 return bsl::errc_failure;
             }
@@ -271,11 +271,11 @@ namespace mk
             }
 
             if (bsl::unlikely(m_id == syscall::BF_ROOT_VMID)) {
-                bsl::error() << "vm "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is the root VM which cannot be destroyed"       // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                bsl::error() << "vm "                                          // --
+                             << bsl::hex(m_id)                                 // --
+                             << " is the root VM which cannot be destroyed"    // --
+                             << bsl::endl                                      // --
+                             << bsl::here();                                   // --
 
                 return bsl::errc_failure;
             }
@@ -304,7 +304,7 @@ namespace mk
                 bsl::touch();
             }
 
-            m_allocated = allocated_status_t::unallocated;
+            m_allocated = allocated_status_t::deallocated;
 
             zombify_on_error.ignore();
             return bsl::errc_success;
@@ -318,16 +318,16 @@ namespace mk
         zombify() &noexcept
         {
             if (bsl::unlikely(m_id == syscall::BF_ROOT_VMID)) {
-                bsl::alert() << "attempt to zombify vm "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " was ignored as the root VM cannot be a zombie"       // --
-                             << bsl::endl;                       // --
+                bsl::alert() << "attempt to zombify vm "                            // --
+                             << bsl::hex(m_id)                                      // --
+                             << " was ignored as the root VM cannot be a zombie"    // --
+                             << bsl::endl;                                          // --
             }
             else {
-                bsl::alert() << "vm "                      // --
-                                << bsl::hex(m_id)             // --
-                                << " has been zombified"    // --
-                                << bsl::endl;                  // --
+                bsl::alert() << "vm "                    // --
+                             << bsl::hex(m_id)           // --
+                             << " has been zombified"    // --
+                             << bsl::endl;               // --
 
                 m_allocated = allocated_status_t::zombie;
             }
@@ -378,11 +378,11 @@ namespace mk
             }
 
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
-                bsl::error() << "vm "                     // --
-                             << bsl::hex(m_id)            // --
+                bsl::error() << "vm "                                                    // --
+                             << bsl::hex(m_id)                                           // --
                              << " has not been properly allocated and cannot be used"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+                             << bsl::endl                                                // --
+                             << bsl::here();                                             // --
 
                 return bsl::errc_failure;
             }
@@ -459,11 +459,11 @@ namespace mk
             }
 
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
-                bsl::error() << "vm "                     // --
-                             << bsl::hex(m_id)            // --
+                bsl::error() << "vm "                                                    // --
+                             << bsl::hex(m_id)                                           // --
                              << " has not been properly allocated and cannot be used"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+                             << bsl::endl                                                // --
+                             << bsl::here();                                             // --
 
                 return bsl::errc_failure;
             }

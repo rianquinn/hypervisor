@@ -292,21 +292,27 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
         ///   @param tls the current TLS block
+        ///   @param intrinsic the intrinsics to use
         ///   @param page_pool the page pool to use
         ///   @param vpid The ID of the VP to assign the newly created VP to
         ///   @param ppid The ID of the PP to assign the newly created VP to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT, typename PAGE_POOL_CONCEPT>
+        template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate(TLS_CONCEPT &tls,
+        allocate(
+            TLS_CONCEPT &tls,
+            INTRINSIC_CONCEPT &intrinsic,
             PAGE_POOL_CONCEPT &page_pool,
             bsl::safe_uint16 const &vpid,
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
         {
+            bsl::discard(intrinsic);
+
             if (bsl::unlikely(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
@@ -413,14 +419,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vps "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vps "                                 // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be deallocated on pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::errc_failure;
             }
@@ -497,14 +503,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vps "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vps "                               // --
+                             << bsl::hex(m_id)                       // --
+                             << " is assigned to pp "                // --
+                             << bsl::hex(m_assigned_ppid)            // --
                              << " and cannot be activated on pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                   // --
+                             << bsl::endl                            // --
+                             << bsl::here();                         // --
 
                 return bsl::errc_failure;
             }
@@ -595,14 +601,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vps "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vps "                                 // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be deactivated on pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::errc_failure;
             }
@@ -745,26 +751,26 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != ppid)) {
-                bsl::error() << "vps "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is being migrated to pp "       // --
-                             << bsl::hex(ppid)         // --
-                             << " by pp "    // --
-                             << bsl::hex(tls.ppid)         // --
+                bsl::error() << "vps "                         // --
+                             << bsl::hex(m_id)                 // --
+                             << " is being migrated to pp "    // --
+                             << bsl::hex(ppid)                 // --
+                             << " by pp "                      // --
+                             << bsl::hex(tls.ppid)             // --
                              << " which is not allowed "       // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::endl                      // --
+                             << bsl::here();                   // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(ppid == m_assigned_ppid)) {
-                bsl::error() << "vps "                            // --
-                             << bsl::hex(m_id)                   // --
+                bsl::error() << "vps "                             // --
+                             << bsl::hex(m_id)                     // --
                              << " is already assigned to a pp "    // --
-                             << bsl::hex(m_assigned_ppid)      // --
-                             << bsl::endl                        // --
-                             << bsl::here();                     // --
+                             << bsl::hex(m_assigned_ppid)          // --
+                             << bsl::endl                          // --
+                             << bsl::here();                       // --
 
                 return bsl::errc_failure;
             }
@@ -846,14 +852,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be operated on by pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::errc_failure;
             }
@@ -1002,14 +1008,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be operated on by pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::errc_failure;
             }
@@ -1160,14 +1166,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be operated on by pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::safe_integral<FIELD_TYPE>::zero(true);
             }
@@ -1235,14 +1241,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be operated on by pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::errc_failure;
             }
@@ -1299,14 +1305,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be operated on by pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::safe_uintmax::zero(true);
             }
@@ -1716,14 +1722,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be operated on by pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::errc_failure;
             }
@@ -2214,14 +2220,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
-                             << " and cannot run by pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                bsl::error() << "vp "                        // --
+                             << bsl::hex(m_id)               // --
+                             << " is assigned to pp "        // --
+                             << bsl::hex(m_assigned_ppid)    // --
+                             << " and cannot run by pp "     // --
+                             << bsl::hex(tls.ppid)           // --
+                             << bsl::endl                    // --
+                             << bsl::here();                 // --
 
                 return bsl::safe_uintmax::zero(true);
             }
@@ -2299,14 +2305,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be operated on by pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::errc_failure;
             }
@@ -2350,14 +2356,14 @@ namespace mk
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vp "                           // --
-                             << bsl::hex(m_id)                  // --
-                             << " is assigned to pp "       // --
-                             << bsl::hex(m_assigned_ppid)         // --
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
                              << " and cannot be operated on by pp "    // --
-                             << bsl::hex(tls.ppid)         // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::errc_failure;
             }

@@ -218,8 +218,9 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate(TLS_CONCEPT &tls,
-        INTRINSIC_CONCEPT &intrinsic,
+        allocate(
+            TLS_CONCEPT &tls,
+            INTRINSIC_CONCEPT &intrinsic,
             PAGE_POOL_CONCEPT &page_pool,
             bsl::safe_uint16 const &vpid,
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
@@ -262,7 +263,8 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename PAGE_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        deallocate(TLS_CONCEPT &tls, PAGE_POOL_CONCEPT &page_pool, bsl::safe_uint16 const &vpsid) &noexcept
+        deallocate(
+            TLS_CONCEPT &tls, PAGE_POOL_CONCEPT &page_pool, bsl::safe_uint16 const &vpsid) &noexcept
             -> bsl::errc_type
         {
             lock_guard lock{tls, m_lock};

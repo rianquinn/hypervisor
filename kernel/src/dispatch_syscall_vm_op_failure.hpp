@@ -54,10 +54,17 @@ namespace mk
     ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
     ///     that state reversal MIGHT BE REQUIRED.
     ///
-    template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT, typename VP_POOL_CONCEPT>
+    template<
+        typename TLS_CONCEPT,
+        typename EXT_POOL_CONCEPT,
+        typename VM_POOL_CONCEPT,
+        typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vm_op_create_vm_failure(
-        TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool, VP_POOL_CONCEPT &vp_pool) -> bsl::errc_type
+        TLS_CONCEPT &tls,
+        EXT_POOL_CONCEPT &ext_pool,
+        VM_POOL_CONCEPT &vm_pool,
+        VP_POOL_CONCEPT &vp_pool) -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -66,7 +73,13 @@ namespace mk
         }
 
         ret = vm_pool.deallocate(tls, ext_pool, vp_pool, tls.log_vmid);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely(!bsl::success_or_precondition(ret))) {
+            bsl::print<bsl::V>() << bsl::here();
+            return ret;
+        }
+
+        ret = ext_pool.signal_vm_destroyed(tls, tls.log_vmid);
+        if (bsl::unlikely(!bsl::success_or_precondition(ret))) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -91,8 +104,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vm_op_destroy_vm_failure(
-        TLS_CONCEPT &tls, VM_POOL_CONCEPT &vm_pool) -> bsl::errc_type
+    syscall_vm_op_destroy_vm_failure(TLS_CONCEPT &tls, VM_POOL_CONCEPT &vm_pool) -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -101,7 +113,7 @@ namespace mk
         }
 
         ret = vm_pool.zombify(bsl::to_u16_unsafe(tls.ext_reg1));
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely(!bsl::success_or_precondition(ret))) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }

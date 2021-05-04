@@ -91,6 +91,14 @@ target_link_libraries(example_default PRIVATE
 )
 
 # NOTE:
+# - Strip the binary if this is a release build
+#
+
+if(CMAKE_BUILD_TYPE STREQUAL RELEASE OR CMAKE_BUILD_TYPE STREQUAL MINSIZEREL)
+    add_custom_command(TARGET example_default POST_BUILD COMMAND ${CMAKE_STRIP} example_default)
+endif()
+
+# NOTE:
 # - Install your extension somewhere.
 #
 

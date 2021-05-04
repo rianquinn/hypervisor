@@ -27,6 +27,10 @@
     .code64
     .intel_syntax noprefix
 
+    .globl  _start
+    .type   _start, @function
+_start:
+
     .globl  mk_main_entry
     .type   mk_main_entry, @function
 mk_main_entry:
@@ -352,3 +356,12 @@ memset:
     int 3
 
     .size memset, .-memset
+
+
+
+    .data
+    .intel_syntax noprefix
+
+    .globl  __stack_chk_guard
+__stack_chk_guard:
+    .quad 0xDEADBEEFDEADBEEF

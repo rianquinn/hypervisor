@@ -53,9 +53,9 @@ namespace mk
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
-            bsl::error() << "the bootstrap callback cannot be null"                           // --
-                            << bsl::endl                       // --
-                            << bsl::here();                    // --
+            bsl::error() << "the bootstrap callback cannot be null"    // --
+                         << bsl::endl                                  // --
+                         << bsl::here();                               // --
 
             return bsl::errc_failure;
         }
@@ -93,9 +93,9 @@ namespace mk
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
-            bsl::error() << "the vmexit callback cannot be null"                           // --
-                            << bsl::endl                       // --
-                            << bsl::here();                    // --
+            bsl::error() << "the vmexit callback cannot be null"    // --
+                         << bsl::endl                               // --
+                         << bsl::here();                            // --
 
             return bsl::errc_failure;
         }
@@ -143,9 +143,9 @@ namespace mk
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
-            bsl::error() << "the fast fail callback cannot be null"                           // --
-                            << bsl::endl                       // --
-                            << bsl::here();                    // --
+            bsl::error() << "the fast fail callback cannot be null"    // --
+                         << bsl::endl                                  // --
+                         << bsl::here();                               // --
 
             return bsl::errc_failure;
         }

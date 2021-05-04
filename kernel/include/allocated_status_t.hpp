@@ -36,8 +36,8 @@ namespace mk
     ///
     enum class allocated_status_t : bsl::uint8
     {
-        /// @brief defines the unallocated state for a resource
-        unallocated,
+        /// @brief defines the deallocated state for a resource
+        deallocated,
         /// @brief defines the allocated state for a resource
         allocated,
         /// @brief defines the zombie state for a resource

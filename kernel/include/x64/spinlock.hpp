@@ -133,7 +133,7 @@ namespace mk
                     bsl::alert() << "pp "                                       // --
                                  << bsl::hex(tls.ppid)                          // --
                                  << " acquired the same lock more than once"    // --
-                                 << bsl::endl;                                   // --
+                                 << bsl::endl;                                  // --
 
                     return;
                 }
@@ -145,7 +145,7 @@ namespace mk
                     bsl::alert() << "pp "                                                   // --
                                  << bsl::hex(tls.ppid)                                      // --
                                  << " acquired the same lock more than once from an ESR"    // --
-                                 << bsl::endl;                                               // --
+                                 << bsl::endl;                                              // --
 
                     return;
                 }

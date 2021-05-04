@@ -203,7 +203,8 @@ namespace mk
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid, bsl::safe_uint16 const &ppid) &noexcept
+        allocate(
+            TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid, bsl::safe_uint16 const &ppid) &noexcept
             -> bsl::safe_uint16
         {
             lock_guard lock{tls, m_lock};
@@ -289,7 +290,8 @@ namespace mk
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_vm_assigned(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept -> bsl::safe_uint16
+        is_vm_assigned(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept
+            -> bsl::safe_uint16
         {
             lock_guard lock{tls, m_lock};
 
@@ -435,7 +437,8 @@ namespace mk
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_active_on_current_pp(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid) const &noexcept -> bool
+        is_active_on_current_pp(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid) const &noexcept
+            -> bool
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {

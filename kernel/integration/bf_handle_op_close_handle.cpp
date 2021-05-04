@@ -22,8 +22,9 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include <mk_interface.hpp>
 #include "integration_utils.hpp"
+
+#include <mk_interface.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
@@ -42,7 +43,7 @@ namespace integration
     ///     microkernel speak the same ABI.
     ///
     extern "C" void
-    ext_main_entry(bsl::safe_uint32 const &version) noexcept
+    ext_main_entry(bsl::uint32 const version) noexcept
     {
         bsl::errc_type ret{};
         syscall::bf_handle_t handle{};
