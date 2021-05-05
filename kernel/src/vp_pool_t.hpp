@@ -276,7 +276,7 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief If a vp_t is assigned to the requested VMID, the ID of
+        ///   @brief If a vp_t is assigned to the requested VM, the ID of
         ///     the vp_t is returned. Otherwise, this function will return
         ///     bsl::safe_uint16::zero(true)
         ///
@@ -284,13 +284,13 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param vmid the ID fo the VM to query
-        ///   @return If a vp_t is assigned to the requested VMID, the ID of
+        ///   @return If a vp_t is assigned to the requested VM, the ID of
         ///     the vp_t is returned. Otherwise, this function will return
         ///     bsl::safe_uint16::zero(true)
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_vm_assigned(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept
+        is_assigned_to_vm(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept
             -> bsl::safe_uint16
         {
             lock_guard lock{tls, m_lock};

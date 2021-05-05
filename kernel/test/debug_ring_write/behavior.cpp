@@ -58,6 +58,8 @@ namespace
 [[nodiscard]] auto
 main() noexcept -> bsl::exit_code
 {
+    bsl::enable_color();
+
     static_assert(tests() == bsl::ut_success());
     return tests();
 }

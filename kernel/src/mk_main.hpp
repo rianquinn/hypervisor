@@ -462,13 +462,13 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = m_vm_pool.initialize();
+            ret = m_ext_pool.initialize(tls, args->ext_elf_files);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_ext_pool.initialize(tls, args->ext_elf_files);
+            ret = m_vm_pool.initialize(tls, m_ext_pool, m_vp_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;

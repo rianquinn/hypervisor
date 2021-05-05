@@ -38,7 +38,6 @@ string(CONCAT HYPERVISOR_EXT_CXX_FLAGS
     "-mno-sse4a "
     "-mcmodel=large "
     "-std=c++20 "
-    "-flto "
 )
 
 string(CONCAT HYPERVISOR_EXT_LINK_FLAGS

@@ -98,17 +98,17 @@ namespace mk
         {
             if (bsl::unlikely(m_id)) {
                 bsl::error() << "vm_t already initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(!i)) {
                 bsl::error() << "invalid id\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID == i)) {
                 bsl::error() << "invalid id\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             m_id = i;
@@ -133,13 +133,62 @@ namespace mk
         release(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept
             -> bsl::errc_type
         {
-            auto const ret{this->deallocate(tls, ext_pool, vp_pool)};
-            if (bsl::unlikely(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return ret;
+            bsl::errc_type ret{};
+            lock_guard lock{tls, m_lock};
+
+            if (syscall::BF_ROOT_VMID == m_id) {
+                return bsl::errc_success;
             }
 
+            if (this->is_zombie()) {
+                return bsl::errc_success;
+            }
+
+            tls.state_reversal_required = true;
+            bsl::finally zombify_on_error{[this]() noexcept -> void {
+                this->zombify();
+            }};
+
+            auto const vpid{vp_pool.is_assigned_to_vm(tls, m_id)};
+            if (bsl::unlikely(vpid)) {
+                bsl::error() << "vp "                     // --
+                             << bsl::hex(vpid)            // --
+                             << " is assigned to vm "     // --
+                             << bsl::hex(m_id)            // --
+                             << " and therefore vm "      // --
+                             << bsl::hex(m_id)            // --
+                             << " cannot be destroyed"    // --
+                             << bsl::endl                 // --
+                             << bsl::here();              // --
+
+                return bsl::errc_failure;
+            }
+
+            auto const active_ppid{this->is_active(tls)};
+            if (bsl::unlikely(active_ppid)) {
+                bsl::error() << "vm "                     // --
+                             << bsl::hex(m_id)            // --
+                             << " is active onpp "        // --
+                             << bsl::hex(active_ppid)     // --
+                             << " and therefore vm "      // --
+                             << bsl::hex(m_id)            // --
+                             << " cannot be destroyed"    // --
+                             << bsl::endl                 // --
+                             << bsl::here();              // --
+
+                return bsl::errc_failure;
+            }
+
+            ret = ext_pool.signal_vm_destroyed(tls, m_id);
+            if (bsl::unlikely(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
+            m_allocated = allocated_status_t::deallocated;
             m_id = bsl::safe_uint16::zero(true);
+
+            zombify_on_error.ignore();
             return bsl::errc_success;
         }
 
@@ -188,11 +237,11 @@ namespace mk
             }
 
             if (bsl::unlikely(m_allocated == allocated_status_t::allocated)) {
-                bsl::error() << "vm "                      // --
-                             << bsl::hex(m_id)             // --
+                bsl::error() << "vm "                                            // --
+                             << bsl::hex(m_id)                                   // --
                              << " is already allocated and cannot be created"    // --
-                             << bsl::endl                  // --
-                             << bsl::here();               // --
+                             << bsl::endl                                        // --
+                             << bsl::here();                                     // --
 
                 return bsl::safe_uint16::zero(true);
             }
@@ -257,11 +306,11 @@ namespace mk
             }
 
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
-                bsl::error() << "vm "                      // --
-                             << bsl::hex(m_id)             // --
+                bsl::error() << "vm "                                                // --
+                             << bsl::hex(m_id)                                       // --
                              << " is already deallocated and cannot be destroyed"    // --
-                             << bsl::endl                  // --
-                             << bsl::here();               // --
+                             << bsl::endl                                            // --
+                             << bsl::here();                                         // --
 
                 return bsl::errc_precondition;
             }
@@ -271,39 +320,40 @@ namespace mk
                 this->zombify();
             }};
 
-            auto const vpid{vp_pool.is_vm_assigned(tls, m_id)};
+            auto const vpid{vp_pool.is_assigned_to_vm(tls, m_id)};
             if (bsl::unlikely(vpid)) {
-                bsl::error() << "vm "                         // --
-                             << bsl::hex(m_id)                // --
-                             << " is assigned to vp "         // --
-                             << bsl::hex(vpid)                // --
-                             << " and cannot be destroyed"    // --
-                             << bsl::endl                     // --
-                             << bsl::here();                  // --
+                bsl::error() << "vp "                     // --
+                             << bsl::hex(vpid)            // --
+                             << " is assigned to vm "     // --
+                             << bsl::hex(m_id)            // --
+                             << " and therefore vm "      // --
+                             << bsl::hex(m_id)            // --
+                             << " cannot be destroyed"    // --
+                             << bsl::endl                 // --
+                             << bsl::here();              // --
 
                 return bsl::errc_failure;
             }
 
-            for (auto const elem : m_active) {
-                if (bsl::unlikely(*elem.data)) {
-                    bsl::error() << "vm "                           // --
-                                 << bsl::hex(m_id)                  // --
-                                 << " is still active on pp "       // --
-                                 << bsl::hex(elem.index)            // --
-                                 << " and cannot be deallocated"    // --
-                                 << bsl::endl                       // --
-                                 << bsl::here();                    // --
+            auto const active_ppid{this->is_active(tls)};
+            if (bsl::unlikely(active_ppid)) {
+                bsl::error() << "vm "                     // --
+                             << bsl::hex(m_id)            // --
+                             << " is active onpp "        // --
+                             << bsl::hex(active_ppid)     // --
+                             << " and therefore vm "      // --
+                             << bsl::hex(m_id)            // --
+                             << " cannot be destroyed"    // --
+                             << bsl::endl                 // --
+                             << bsl::here();              // --
 
-                    return bsl::errc_failure;
-                }
-
-                bsl::touch();
+                return bsl::errc_failure;
             }
 
             ret = ext_pool.signal_vm_destroyed(tls, m_id);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return ret;
+                return bsl::errc_failure;
             }
 
             m_allocated = allocated_status_t::deallocated;
@@ -392,7 +442,7 @@ namespace mk
 
             if (bsl::unlikely(!m_id)) {
                 bsl::error() << "vm_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
@@ -402,7 +452,7 @@ namespace mk
                              << bsl::endl                                                // --
                              << bsl::here();                                             // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(tls.active_vmid == m_id)) {
@@ -413,7 +463,7 @@ namespace mk
                              << bsl::endl                             // --
                              << bsl::here();                          // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID != tls.active_vmid)) {
@@ -424,7 +474,7 @@ namespace mk
                              << bsl::endl                    // --
                              << bsl::here();                 // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             auto *const active{m_active.at_if(bsl::to_umax(tls.ppid))};
@@ -436,7 +486,7 @@ namespace mk
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_index_out_of_bounds;
             }
 
             if (bsl::unlikely(*active)) {
@@ -447,7 +497,7 @@ namespace mk
                              << bsl::endl                             // --
                              << bsl::here();                          // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             tls.active_vmid = m_id.get();
@@ -473,17 +523,17 @@ namespace mk
 
             if (bsl::unlikely(!m_id)) {
                 bsl::error() << "vm_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+            if (bsl::unlikely(m_allocated == allocated_status_t::deallocated)) {
                 bsl::error() << "vm "                                                    // --
                              << bsl::hex(m_id)                                           // --
                              << " has not been properly allocated and cannot be used"    // --
                              << bsl::endl                                                // --
                              << bsl::here();                                             // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vmid)) {
@@ -494,7 +544,7 @@ namespace mk
                              << bsl::endl                  // --
                              << bsl::here();               // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(tls.active_vmid != m_id)) {
@@ -505,7 +555,7 @@ namespace mk
                              << bsl::endl                    // --
                              << bsl::here();                 // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             auto *const active{m_active.at_if(bsl::to_umax(tls.ppid))};
@@ -517,7 +567,7 @@ namespace mk
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_index_out_of_bounds;
             }
 
             if (bsl::unlikely(!*active)) {
@@ -528,7 +578,7 @@ namespace mk
                              << bsl::endl                  // --
                              << bsl::here();               // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -538,27 +588,34 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Returns true if this vm_t is active, false otherwise
+        ///   @brief Returns the ID of the first PP identified that this VM
+        ///     is still active on. If the VM is inactive, this function
+        ///     returns bsl::safe_uint16::zero(true)
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
-        ///   @return Returns true if this vm_t is active, false otherwise
+        ///   @return Returns the ID of the first PP identified that this VM
+        ///     is still active on. If the VM is inactive, this function
+        ///     returns bsl::safe_uint16::zero(true)
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_active(TLS_CONCEPT &tls) const &noexcept -> bool
+        is_active(TLS_CONCEPT &tls) const &noexcept -> bsl::safe_uint16
         {
             for (auto const elem : m_active) {
-                if (elem.)
+                if (!(elem.index < bsl::to_umax(tls.online_pps))) {
+                    break;
+                }
+
                 if (*elem.data) {
-                    return true;
+                    return bsl::to_u16(elem.index);
                 }
 
                 bsl::touch();
             }
 
-            return false;
+            return bsl::safe_uint16::zero(true);
         }
 
         /// <!-- description -->

@@ -37,5 +37,6 @@
 [[nodiscard]] auto
 main() noexcept -> bsl::exit_code
 {
+    bsl::enable_color();
     return bsl::ut_success();
 }

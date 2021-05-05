@@ -31,6 +31,8 @@
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>
 #include <bsl/cstr_type.hpp>
+#include <bsl/debug.hpp>
+#include <bsl/enable_color.hpp>
 #include <bsl/exit_code.hpp>
 #include <bsl/move.hpp>
 
@@ -51,6 +53,8 @@ namespace vmmctl
 [[nodiscard]] auto
 main(bsl::int32 const argc, bsl::cstr_type const argv[]) noexcept -> bsl::exit_code
 {
+    bsl::enable_color();
+
     bsl::arguments args{bsl::to_umax(argc), argv};
     ++args;
 
