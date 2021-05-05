@@ -243,7 +243,7 @@ namespace mk
         ///     deallocated.
         ///
         [[nodiscard]] constexpr auto
-        is_deallocated(bsl::safe_uint16 const &vmid) &noexcept -> bool
+        is_deallocated(bsl::safe_uint16 const &vmid) const &noexcept -> bool
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
@@ -272,7 +272,7 @@ namespace mk
         ///     allocated.
         ///
         [[nodiscard]] constexpr auto
-        is_allocated(bsl::safe_uint16 const &vmid) &noexcept -> bool
+        is_allocated(bsl::safe_uint16 const &vmid) const &noexcept -> bool
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
@@ -301,7 +301,7 @@ namespace mk
         ///     a zombie.
         ///
         [[nodiscard]] constexpr auto
-        is_zombie(bsl::safe_uint16 const &vmid) &noexcept -> bool
+        is_zombie(bsl::safe_uint16 const &vmid) const &noexcept -> bool
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
@@ -377,9 +377,9 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Returns true if the requested vm_t is active, false
-        ///     if the provided VMID is invalid, or if the vm_t is not
-        ///     active.
+        ///   @brief  Returns the ID of the first PP identified that the
+        ///     requested VM is still active on. If the VM is inactive, this
+        ///     function returns bsl::safe_uint16::zero(true)
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
@@ -391,7 +391,7 @@ namespace mk
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_active(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::safe_uint16
+        is_active(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept -> bsl::safe_uint16
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
@@ -423,7 +423,7 @@ namespace mk
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_active_on_current_pp(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept -> bool
+        is_active_on_current_pp(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept -> bool
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
@@ -450,7 +450,7 @@ namespace mk
         ///
         template<typename TLS_CONCEPT>
         constexpr void
-        dump(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
+        dump(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;

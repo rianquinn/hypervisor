@@ -691,7 +691,9 @@ namespace mk
             //     constants.h inside of assembly logic.
             // [ ] Most of the syscalls need to verify that the ext has started that it registered for VMExits.
             // [ ] VP and VPS calls should only occur on the PP the VP/VPS was assigned to?
-            // [ ] What happens if you try to delete a VM that has VPs assigned to it?
+            //     what about the migration case? You need to update a VPS. The VP has
+            //     been migrated, but the VPS has not. Why do we care?
+            // [x] What happens if you try to delete a VM that has VPs assigned to it?
             // [ ] What happens if you try to delete a VP that has VPSs assigned to it?
             // [ ] Provide syscall handlers with real error codes?
             // [ ] lock protect the initialize main function in case initialization happens in parallel. mimic call_once init?
@@ -701,10 +703,10 @@ namespace mk
             // [ ] What do I do if an exception fires for non-syscalls
             //     - Will I end up in deadlock?
             //     = What about the state. Is it corrupt?
-            // [ ] detect if the microkernel attempt to map in physical memory and generates a page fault. This should be ignored
+            // [ ] detect if the microkernel attempt to map in physical memory and generates a page fault.
+            //     only userspace should be allowed to map to the direct map
             // [ ] The intrinsic run function should be a function in the class and not a global?
             // [ ] Simplify the Intel VPS destriptor stuff by using a template?
-            // [ ] Do I still need the TLS block pool?
             // [ ] Grep for bsl::errc_failure and use other error codes where
             //     it makes sense
             // [ ] Remove pool and intrinsic points from remaining classes
@@ -729,21 +731,19 @@ namespace mk
             // [ ] make sure the VPS has a migrate function, and make sure
             //     we check that the PP has the same revision ID. Make a
             //     note about the revision issue for AMD.
-            // [ ] Add support for size optimizations in the BSL
             // [ ] What about optimizations for read/write MSRs so that the
             //     APIC is fast for an extension.
             // [ ] Make sure all function inputs are checked.
-            // [ ] Make sure all rule of 5 crap is moved to the top
+            // [ ] Make sure all rule of 5 crap is moved to the top or removed
             // [ ] What about assignment and active ABIs
             // [ ] Validate upper limit of VM, VP and VPS in config and test with 1 and max
-            // [ ] What about IO operations
+            // [ ] What about IO operations. Need to make sure that an extension can execute port IO
             // [ ] What about an IPI ABI
             // [ ] What about a WBINVLD ABI
             // [ ] implement migration APIs
             // [ ] implement checks for which MSRs can be read/written
             // [ ] implement checks for VMCS fields can be read/written
             // [ ] implement contants for all of the asm logic
-            // [ ] implement and remaining needed lock guards
         }
     };
 }

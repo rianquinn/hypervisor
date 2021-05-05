@@ -168,7 +168,7 @@ namespace mk
             if (bsl::unlikely(active_ppid)) {
                 bsl::error() << "vm "                     // --
                              << bsl::hex(m_id)            // --
-                             << " is active onpp "        // --
+                             << " is active on pp "        // --
                              << bsl::hex(active_ppid)     // --
                              << " and therefore vm "      // --
                              << bsl::hex(m_id)            // --
@@ -339,7 +339,7 @@ namespace mk
             if (bsl::unlikely(active_ppid)) {
                 bsl::error() << "vm "                     // --
                              << bsl::hex(m_id)            // --
-                             << " is active onpp "        // --
+                             << " is active on pp "        // --
                              << bsl::hex(active_ppid)     // --
                              << " and therefore vm "      // --
                              << bsl::hex(m_id)            // --
