@@ -78,7 +78,10 @@ namespace integration
     bootstrap_entry(bsl::uint16 const ppid) noexcept
     {
         bsl::discard(ppid);
-        syscall::bf_control_op_exit();
+
+        bsl::error() << "extension purposely dereferencing nullptr. fault expected\n";
+        int *i{};
+        *i = 42;
     }
 
     /// <!-- description -->
@@ -112,7 +115,6 @@ namespace integration
         ret = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
         integration::require(bsl::errc_success == ret);
 
-        bsl::error() << "extension purposely exiting early\n";
-        syscall::bf_control_op_exit();
+        syscall::bf_control_op_wait();
     }
 }

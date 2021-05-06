@@ -22,36 +22,43 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include "integration_utils.hpp"
+#ifndef VP_T_SET_INACTIVE_FAILURE_HPP
+#define VP_T_SET_INACTIVE_FAILURE_HPP
 
-#include <mk_interface.hpp>
+#include "vp_t_base.hpp"
 
-#include <bsl/debug.hpp>
-#include <bsl/exit_code.hpp>
+#include <bsl/discard.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/unlikely.hpp>
+#include <bsl/errc_type.hpp>
 
-namespace integration
+namespace mk
 {
+    /// @class mk::vp_t_set_inactive_failure
+    ///
     /// <!-- description -->
-    ///   @brief Implements the main entry function for this integration
-    ///     test
+    ///   @brief Returns failure on initialization
     ///
-    /// <!-- inputs/outputs -->
-    ///   @param version the version of the spec implemented by the
-    ///     microkernel. This can be used to ensure the extension and the
-    ///     microkernel speak the same ABI.
-    ///
-    extern "C" void
-    ext_main_entry(bsl::uint32 const version) noexcept
+    class vp_t_set_inactive_failure final    // --
+        : public vp_t_base<vp_t_set_inactive_failure>
     {
-        if (bsl::unlikely(!syscall::bf_is_spec1_supported(version))) {
-            bsl::error() << "integration test not supported\n" << bsl::here();
-            return syscall::bf_control_op_exit();
-        }
-
-        /// NOTE:
-        /// - Not calling wait should generate a fault.
+    public:
+        /// <!-- description -->
+        ///   @brief Sets this vp_t as inactive.
         ///
-    }
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     and friends otherwise
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        set_inactive(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
+        {
+            bsl::discard(tls);
+            return bsl::errc_failure;
+        }
+    };
 }
+
+#endif

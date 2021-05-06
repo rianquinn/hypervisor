@@ -28,24 +28,19 @@ hypervisor_add_integration_target(bf_handle_op_close_handle)
 hypervisor_add_integration_target(bf_handle_op_open_handle)
 hypervisor_add_integration_target(bf_vm_op_create_vm)
 hypervisor_add_integration_target(bf_vm_op_destroy_vm)
+hypervisor_add_integration_target(bf_vp_op_create_vp)
+hypervisor_add_integration_target(bf_vp_op_destroy_vp)
+hypervisor_add_integration_target(fast_fail_exit_from_bootstrap_with_no_syscall)
+hypervisor_add_integration_target(fast_fail_exit_from_bootstrap_with_segfault)
+hypervisor_add_integration_target(fast_fail_exit_from_bootstrap_with_wait)
+hypervisor_add_integration_target(fast_fail_exit_from_bootstrap)
+hypervisor_add_integration_target(fast_fail_exit_from_main_with_no_syscall)
+hypervisor_add_integration_target(fast_fail_exit_from_main_with_segfault)
 hypervisor_add_integration_target(fast_fail_exit_from_main)
-hypervisor_add_integration_target(fast_fail_no_wait)
+hypervisor_add_integration_target(fast_fail_exit_from_vmexit_with_no_syscall)
+hypervisor_add_integration_target(fast_fail_exit_from_vmexit_with_segfault)
+hypervisor_add_integration_target(fast_fail_exit_from_vmexit_with_wait)
+hypervisor_add_integration_target(fast_fail_exit_from_vmexit)
 hypervisor_add_integration_target(fast_fail_wait_no_bootstrap)
 hypervisor_add_integration_target(fast_fail_wait_no_fail)
 hypervisor_add_integration_target(fast_fail_wait_no_vmexit)
-
-add_custom_target(integration
-    COMMAND ${CMAKE_COMMAND} --build . --target bf_callback_op_register_bootstrap
-    COMMAND ${CMAKE_COMMAND} --build . --target bf_callback_op_register_fail
-    COMMAND ${CMAKE_COMMAND} --build . --target bf_callback_op_register_vmexit
-    COMMAND ${CMAKE_COMMAND} --build . --target bf_handle_op_close_handle
-    COMMAND ${CMAKE_COMMAND} --build . --target bf_handle_op_open_handle
-    COMMAND ${CMAKE_COMMAND} --build . --target bf_vm_op_create_vm
-    COMMAND ${CMAKE_COMMAND} --build . --target bf_vm_op_destroy_vm
-    COMMAND ${CMAKE_COMMAND} --build . --target fast_fail_exit_from_main
-    COMMAND ${CMAKE_COMMAND} --build . --target fast_fail_no_wait
-    COMMAND ${CMAKE_COMMAND} --build . --target fast_fail_wait_no_bootstrap
-    COMMAND ${CMAKE_COMMAND} --build . --target fast_fail_wait_no_fail
-    COMMAND ${CMAKE_COMMAND} --build . --target fast_fail_wait_no_vmexit
-    VERBATIM
-)

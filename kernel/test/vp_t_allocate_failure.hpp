@@ -22,42 +22,52 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VM_T_INITIALIZE_FAILURE_HPP
-#define VM_T_INITIALIZE_FAILURE_HPP
+#ifndef VP_T_ALLOCATE_FAILURE_HPP
+#define VP_T_ALLOCATE_FAILURE_HPP
 
-#include "vm_t_base.hpp"
+#include "vp_t_base.hpp"
 
 #include <bsl/discard.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/errc_type.hpp>
 
 namespace mk
 {
-    /// @class mk::vm_t_initialize_failure
+    /// @class mk::vp_t_allocate_failure
     ///
     /// <!-- description -->
     ///   @brief Returns failure on initialization
     ///
-    class vm_t_initialize_failure final    // --
-        : public vm_t_base<vm_t_initialize_failure>
+    class vp_t_allocate_failure final    // --
+        : public vp_t_base<vp_t_allocate_failure>
     {
     public:
         /// <!-- description -->
-        ///   @brief Initializes this vm_t
+        ///   @brief Allocates this vp_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @param i the ID for this vm_t
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
+        ///   @param tls the current TLS block
+        ///   @param vm_pool the VM pool to use
+        ///   @param vmid The ID of the VM to assign the newly created VP to
+        ///   @param ppid The ID of the PP to assign the newly created VP to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
+        template<typename TLS_CONCEPT, typename VM_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        allocate(
+            TLS_CONCEPT &tls,
+            VM_POOL_CONCEPT &vm_pool,
+            bsl::safe_uint16 const &vmid,
+            bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
         {
-            if (i.is_zero()) {
-                return bsl::errc_success;
-            }
+            bsl::discard(tls);
+            bsl::discard(vm_pool);
+            bsl::discard(vmid);
+            bsl::discard(ppid);
 
-            return bsl::errc_failure;
+            return bsl::safe_uint16::zero(true);
         }
     };
 }

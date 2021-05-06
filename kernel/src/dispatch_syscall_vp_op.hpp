@@ -53,30 +53,9 @@ namespace mk
         -> bsl::errc_type
     {
         auto const vmid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        if (bsl::unlikely(!vm_pool.is_allocated(vmid))) {
-            bsl::error() << "vm "                     // --
-                         << bsl::hex(vmid)            // --
-                         << " was never allocated"    // --
-                         << bsl::endl                 // --
-                         << bsl::here();              // --
-
-            tls.syscall_ret_status = syscall::BF_STATUS_INVALID_PARAMS1.get();
-            return bsl::errc_failure;
-        }
-
         auto const ppid{bsl::to_u16_unsafe(tls.ext_reg2)};
-        if (bsl::unlikely(!(ppid < tls.online_pps))) {
-            bsl::error() << "pp "                 // --
-                         << bsl::hex(ppid)        // --
-                         << " is out of range"    // --
-                         << bsl::endl             // --
-                         << bsl::here();          // --
 
-            tls.syscall_ret_status = syscall::BF_STATUS_INVALID_PARAMS2.get();
-            return bsl::errc_failure;
-        }
-
-        auto const vpid{vp_pool.allocate(tls, vmid, ppid)};
+        auto const vpid{vp_pool.allocate(tls, vm_pool, vmid, ppid)};
         if (bsl::unlikely(!vpid)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
@@ -95,19 +74,23 @@ namespace mk
     /// <!-- inputs/outputs -->
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
     ///   @param vp_pool the VP pool to use
+    ///   @param vps_pool the VPS pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT>
+    template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vp_op_destroy_vp(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) -> bsl::errc_type
+    syscall_vp_op_destroy_vp(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool, VPS_POOL_CONCEPT &vps_pool)
+        -> bsl::errc_type
     {
         auto const vpid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        if (bsl::unlikely(!vp_pool.deallocate(tls, vpid))) {
+        auto const ret{vp_pool.deallocate(tls, vps_pool, vpid)};
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
@@ -149,10 +132,12 @@ namespace mk
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
+    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @param vm_pool the VM pool to use
     ///   @param vp_pool the VP pool to use
+    ///   @param vps_pool the VPS pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
@@ -160,13 +145,15 @@ namespace mk
         typename TLS_CONCEPT,
         typename EXT_CONCEPT,
         typename VM_POOL_CONCEPT,
-        typename VP_POOL_CONCEPT>
+        typename VP_POOL_CONCEPT,
+        typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_vp_op(
         TLS_CONCEPT &tls,
         EXT_CONCEPT const &ext,
         VM_POOL_CONCEPT &vm_pool,
-        VP_POOL_CONCEPT &vp_pool) -> bsl::errc_type
+        VP_POOL_CONCEPT &vp_pool,
+        VPS_POOL_CONCEPT &vps_pool) -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -203,7 +190,7 @@ namespace mk
             }
 
             case syscall::BF_VP_OP_DESTROY_VP_IDX_VAL.get(): {
-                ret = syscall_vp_op_destroy_vp(tls, vp_pool);
+                ret = syscall_vp_op_destroy_vp(tls, vp_pool, vps_pool);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

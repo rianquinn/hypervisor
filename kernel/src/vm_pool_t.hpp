@@ -378,7 +378,7 @@ namespace mk
 
         /// <!-- description -->
         ///   @brief  Returns the ID of the first PP identified that the
-        ///     requested VM is still active on. If the VM is inactive, this
+        ///     requested vm_t is still active on. If the vm_t is inactive, this
         ///     function returns bsl::safe_uint16::zero(true)
         ///
         /// <!-- inputs/outputs -->
@@ -386,12 +386,13 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param vmid the ID of the vm_t to query
         ///   @return Returns the ID of the first PP identified that the
-        ///     requested VM is still active on. If the VM is inactive, this
+        ///     requested vm_t is still active on. If the vm_t is inactive, this
         ///     function returns bsl::safe_uint16::zero(true)
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_active(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept -> bsl::safe_uint16
+        is_active(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept
+            -> bsl::safe_uint16
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
@@ -409,21 +410,22 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Returns true if this vm_t is active on the current PP,
-        ///     false if the provided ID is invalid, or if the vm_t is not
-        ///     active on the current PP.
+        ///   @brief Returns true if the requested vm_t is active on the
+        ///     current PP, false if the provided ID is invalid, or if the
+        ///     vm_t is not active on the current PP.
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param vmid the ID of the vm_t to query
-        ///   @return Returns true if this vm_t is active on the current PP,
-        ///     false if the provided ID is invalid, or if the vm_t is not
-        ///     active on the current PP.
+        ///   @return Returns true if the requested vm_t is active on the
+        ///     current PP, false if the provided ID is invalid, or if the
+        ///     vm_t is not active on the current PP.
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_active_on_current_pp(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept -> bool
+        is_active_on_current_pp(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept
+            -> bool
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {

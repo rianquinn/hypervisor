@@ -22,10 +22,10 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VM_T_INITIALIZE_FAILURE_HPP
-#define VM_T_INITIALIZE_FAILURE_HPP
+#ifndef VP_T_DEALLOCATE_FAILURE_HPP
+#define VP_T_DEALLOCATE_FAILURE_HPP
 
-#include "vm_t_base.hpp"
+#include "vp_t_base.hpp"
 
 #include <bsl/discard.hpp>
 #include <bsl/safe_integral.hpp>
@@ -33,29 +33,32 @@
 
 namespace mk
 {
-    /// @class mk::vm_t_initialize_failure
+    /// @class mk::vp_t_deallocate_failure
     ///
     /// <!-- description -->
     ///   @brief Returns failure on initialization
     ///
-    class vm_t_initialize_failure final    // --
-        : public vm_t_base<vm_t_initialize_failure>
+    class vp_t_deallocate_failure final    // --
+        : public vp_t_base<vp_t_deallocate_failure>
     {
     public:
         /// <!-- description -->
-        ///   @brief Initializes this vm_t
+        ///   @brief Deallocates this vp_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @param i the ID for this vm_t
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+        ///   @param tls the current TLS block
+        ///   @param vps_pool the VPS pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
+        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        deallocate(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) &noexcept -> bsl::errc_type
         {
-            if (i.is_zero()) {
-                return bsl::errc_success;
-            }
+            bsl::discard(tls);
+            bsl::discard(vps_pool);
 
             return bsl::errc_failure;
         }

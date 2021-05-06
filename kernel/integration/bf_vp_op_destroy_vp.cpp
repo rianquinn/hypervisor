@@ -24,6 +24,7 @@
 
 #include "integration_utils.hpp"
 
+#include <arch_support.hpp>
 #include <mk_interface.hpp>
 
 #include <bsl/debug.hpp>
@@ -37,18 +38,36 @@ namespace integration
     constinit inline syscall::bf_handle_t g_handle{};
 
     /// <!-- description -->
-    ///   @brief Implements the VMExit entry function.
+    ///   @brief Implements the VPExit entry function.
     ///
     /// <!-- inputs/outputs -->
-    ///   @param vpsid the ID of the VPS that generated the VMExit
-    ///   @param exit_reason the exit reason associated with the VMExit
+    ///   @param vpsid the ID of the VPS that generated the VPExit
+    ///   @param exit_reason the exit reason associated with the VPExit
     ///
     void
     // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
     vmexit_entry(bsl::uint16 const vpsid, bsl::uint64 const exit_reason) noexcept
     {
+        bsl::errc_type ret{};
+
         bsl::discard(vpsid);
         bsl::discard(exit_reason);
+
+        // ---------------------------------------------------------------------
+        // VPExit Tests
+        // ---------------------------------------------------------------------
+
+        // destroy assigned VP (turns VP into zombie)
+        ret = syscall::bf_vp_op_destroy_vp(g_handle, syscall::bf_tls_vpid());
+        integration::verify(bsl::errc_failure == ret);
+
+        // destroy zombie
+        ret = syscall::bf_vp_op_destroy_vp(g_handle, syscall::bf_tls_vpid());
+        integration::verify(bsl::errc_failure == ret);
+
+        // ---------------------------------------------------------------------
+        // Done
+        // ---------------------------------------------------------------------
 
         syscall::bf_control_op_exit();
     }
@@ -77,32 +96,84 @@ namespace integration
     // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
     bootstrap_entry(bsl::uint16 const ppid) noexcept
     {
-        bsl::discard(ppid);
-
         bsl::errc_type ret{};
-        bsl::safe_uint16 vmid{};
+
+        bsl::safe_uint16 vpid{};
+        bsl::safe_uint16 vpsid{};
 
         /// NOTE:
-        /// - The max number of VMs an extension can create is one less than
-        ///   the provided max because the microkernel creates the Root VM
+        /// - The max number of VPs an extension can create is one less than
+        ///   the provided max because the microkernel creates the Root VP
         ///   automatically for the extension as it cannot be deleted.
         ///
 
-        auto const max_vms{bsl::to_umax(HYPERVISOR_MAX_VMS) - bsl::ONE_UMAX};
+        // ---------------------------------------------------------------------
+        // Setup
+        // ---------------------------------------------------------------------
 
-        // create with invalid handle
-        ret = syscall::bf_vm_op_create_vm({}, vmid);
+        ret = syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, ppid, vpid);
+        integration::require(bsl::errc_success == ret);
+
+        // ---------------------------------------------------------------------
+        // Main Tests
+        // ---------------------------------------------------------------------
+
+        // destroy with invalid handle
+        ret = syscall::bf_vp_op_destroy_vp({}, vpid);
         integration::verify(bsl::errc_failure == ret);
 
-        // create all and prove that creating one more will fail
-        for (bsl::safe_uintmax i{}; i < max_vms; ++i) {
-            ret = syscall::bf_vm_op_create_vm(g_handle, vmid);
+        // destroy with invalid ID
+        ret = syscall::bf_vp_op_destroy_vp(g_handle, syscall::BF_INVALID_ID);
+        integration::verify(bsl::errc_failure == ret);
+
+        // destroy with ID that is greater than or equal to MAX_VPS
+        ret = syscall::bf_vp_op_destroy_vp(g_handle, bsl::to_u16(HYPERVISOR_MAX_VPS));
+        integration::verify(bsl::errc_failure == ret);
+
+        // destroy with VP that has not been created
+        ret = syscall::bf_vp_op_destroy_vp(g_handle, bsl::to_u16(0x2));
+        integration::verify(bsl::errc_failure == ret);
+
+        // destroy success
+        ret = syscall::bf_vp_op_destroy_vp(g_handle, vpid);
+        integration::verify(bsl::errc_success == ret);
+
+        // destroy same VP twice (double free bug)
+        ret = syscall::bf_vp_op_destroy_vp(g_handle, vpid);
+        integration::verify(bsl::errc_failure == ret);
+
+        // create all, then destroy all, prove that we can still create
+        for (bsl::safe_uintmax i{}; i < bsl::to_umax(HYPERVISOR_MAX_VPS); ++i) {
+            ret = syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, ppid, vpid);
+            integration::require(bsl::errc_success == ret);
+        }
+
+        for (bsl::safe_uintmax i{}; i < bsl::to_umax(HYPERVISOR_MAX_VPS); ++i) {
+            ret = syscall::bf_vp_op_destroy_vp(g_handle, bsl::to_u16(i));
             integration::verify(bsl::errc_success == ret);
         }
 
-        ret = syscall::bf_vm_op_create_vm(g_handle, vmid);
-        integration::verify(bsl::errc_failure == ret);
+        ret = syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, ppid, vpid);
+        integration::require(bsl::errc_success == ret);
+        integration::require(vpid == bsl::to_u16(0));
 
+        // ---------------------------------------------------------------------
+        // The following is needed to setup the remaining tests
+        // ---------------------------------------------------------------------
+
+        ret = syscall::bf_vps_op_create_vps(g_handle, vpid, ppid, vpsid);
+        integration::require(bsl::errc_success == ret);
+
+        ret = syscall::bf_vps_op_init_as_root(g_handle, vpsid);
+        integration::require(bsl::errc_success == ret);
+
+        ret = init_vps(g_handle, vpsid);
+        integration::require(bsl::errc_success == ret);
+
+        ret = syscall::bf_vps_op_run(g_handle, vpid, vpid, vpsid);
+        integration::require(bsl::errc_success == ret);
+
+        bsl::print<bsl::V>() << bsl::here();
         syscall::bf_control_op_exit();
     }
 

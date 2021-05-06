@@ -101,11 +101,11 @@ namespace mk
         VM_POOL_CONCEPT &vm_pool,
         VP_POOL_CONCEPT &vp_pool) -> bsl::errc_type
     {
-        auto const ret{
-            vm_pool.deallocate(tls, ext_pool, vp_pool, bsl::to_u16_unsafe(tls.ext_reg1))};
+        auto const vmid{bsl::to_u16_unsafe(tls.ext_reg1)};
+        auto const ret{vm_pool.deallocate(tls, ext_pool, vp_pool, vmid)};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();

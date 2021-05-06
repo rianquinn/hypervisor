@@ -158,7 +158,7 @@ namespace mk
             }
 
             case syscall::BF_VP_OP_VAL.get(): {
-                ret = dispatch_syscall_vp_op(tls, ext, vm_pool, vp_pool);
+                ret = dispatch_syscall_vp_op(tls, ext, vm_pool, vp_pool, vps_pool);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::exit_failure;

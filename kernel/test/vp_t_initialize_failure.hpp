@@ -22,10 +22,10 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VM_T_INITIALIZE_FAILURE_HPP
-#define VM_T_INITIALIZE_FAILURE_HPP
+#ifndef VP_T_INITIALIZE_FAILURE_HPP
+#define VP_T_INITIALIZE_FAILURE_HPP
 
-#include "vm_t_base.hpp"
+#include "vp_t_base.hpp"
 
 #include <bsl/discard.hpp>
 #include <bsl/safe_integral.hpp>
@@ -33,20 +33,20 @@
 
 namespace mk
 {
-    /// @class mk::vm_t_initialize_failure
+    /// @class mk::vp_t_initialize_failure
     ///
     /// <!-- description -->
     ///   @brief Returns failure on initialization
     ///
-    class vm_t_initialize_failure final    // --
-        : public vm_t_base<vm_t_initialize_failure>
+    class vp_t_initialize_failure final    // --
+        : public vp_t_base<vp_t_initialize_failure>
     {
     public:
         /// <!-- description -->
-        ///   @brief Initializes this vm_t
+        ///   @brief Initializes this vp_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @param i the ID for this vm_t
+        ///   @param i the ID for this vp_t
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///

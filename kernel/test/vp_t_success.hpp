@@ -22,44 +22,21 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VM_T_INITIALIZE_FAILURE_HPP
-#define VM_T_INITIALIZE_FAILURE_HPP
+#ifndef VP_T_SUCCESS_HPP
+#define VP_T_SUCCESS_HPP
 
-#include "vm_t_base.hpp"
-
-#include <bsl/discard.hpp>
-#include <bsl/safe_integral.hpp>
-#include <bsl/errc_type.hpp>
+#include "vp_t_base.hpp"
 
 namespace mk
 {
-    /// @class mk::vm_t_initialize_failure
+    /// @class mk::vp_t_success
     ///
     /// <!-- description -->
-    ///   @brief Returns failure on initialization
+    ///   @brief Returns success on initialization
     ///
-    class vm_t_initialize_failure final    // --
-        : public vm_t_base<vm_t_initialize_failure>
-    {
-    public:
-        /// <!-- description -->
-        ///   @brief Initializes this vm_t
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param i the ID for this vm_t
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     and friends otherwise
-        ///
-        [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
-        {
-            if (i.is_zero()) {
-                return bsl::errc_success;
-            }
-
-            return bsl::errc_failure;
-        }
-    };
+    class vp_t_success final    // --
+        : public vp_t_base<vp_t_success>
+    {};
 }
 
 #endif

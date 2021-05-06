@@ -32,7 +32,6 @@
 
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
-#include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
 #include <bsl/safe_integral.hpp>
@@ -149,7 +148,7 @@ namespace mk
                 this->zombify();
             }};
 
-            auto const vpid{vp_pool.is_assigned_to_vm(tls, m_id)};
+            auto const vpid{vp_pool.is_assigned_to_vm(m_id)};
             if (bsl::unlikely(vpid)) {
                 bsl::error() << "vp "                     // --
                              << bsl::hex(vpid)            // --
@@ -168,7 +167,7 @@ namespace mk
             if (bsl::unlikely(active_ppid)) {
                 bsl::error() << "vm "                     // --
                              << bsl::hex(m_id)            // --
-                             << " is active on pp "        // --
+                             << " is active on pp "       // --
                              << bsl::hex(active_ppid)     // --
                              << " and therefore vm "      // --
                              << bsl::hex(m_id)            // --
@@ -320,7 +319,7 @@ namespace mk
                 this->zombify();
             }};
 
-            auto const vpid{vp_pool.is_assigned_to_vm(tls, m_id)};
+            auto const vpid{vp_pool.is_assigned_to_vm(m_id)};
             if (bsl::unlikely(vpid)) {
                 bsl::error() << "vp "                     // --
                              << bsl::hex(vpid)            // --
@@ -339,7 +338,7 @@ namespace mk
             if (bsl::unlikely(active_ppid)) {
                 bsl::error() << "vm "                     // --
                              << bsl::hex(m_id)            // --
-                             << " is active on pp "        // --
+                             << " is active on pp "       // --
                              << bsl::hex(active_ppid)     // --
                              << " and therefore vm "      // --
                              << bsl::hex(m_id)            // --
@@ -451,17 +450,6 @@ namespace mk
                              << " has not been properly allocated and cannot be used"    // --
                              << bsl::endl                                                // --
                              << bsl::here();                                             // --
-
-                return bsl::errc_precondition;
-            }
-
-            if (bsl::unlikely(tls.active_vmid == m_id)) {
-                bsl::error() << "vm "                                 // --
-                             << bsl::hex(m_id)                        // --
-                             << " is already the active vm on pp "    // --
-                             << bsl::hex(tls.ppid)                    // --
-                             << bsl::endl                             // --
-                             << bsl::here();                          // --
 
                 return bsl::errc_precondition;
             }
@@ -588,15 +576,15 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Returns the ID of the first PP identified that this VM
-        ///     is still active on. If the VM is inactive, this function
+        ///   @brief Returns the ID of the first PP identified that this vm_t
+        ///     is still active on. If the vm_t is inactive, this function
         ///     returns bsl::safe_uint16::zero(true)
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
-        ///   @return Returns the ID of the first PP identified that this VM
-        ///     is still active on. If the VM is inactive, this function
+        ///   @return Returns the ID of the first PP identified that this vm_t
+        ///     is still active on. If the vm_t is inactive, this function
         ///     returns bsl::safe_uint16::zero(true)
         ///
         template<typename TLS_CONCEPT>

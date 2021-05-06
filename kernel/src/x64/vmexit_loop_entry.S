@@ -76,7 +76,7 @@ install_fast_fail_and_continue_loop:
      * NOTE:
      * - If we get here, it is because the VMExit was successful, in which
      *   case, we need to state that the next exit will not be our first,
-     *   and then insteall our fast fail entry point which is what will
+     *   and then install our fast fail entry point which is what will
      *   execute in the event of an error instead of the current fast fail
      *   entry point, which depends on what was executing at the time of the
      *   error occuring.

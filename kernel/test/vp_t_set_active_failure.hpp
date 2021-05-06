@@ -22,10 +22,10 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VM_T_INITIALIZE_FAILURE_HPP
-#define VM_T_INITIALIZE_FAILURE_HPP
+#ifndef VP_T_SET_ACTIVE_FAILURE_HPP
+#define VP_T_SET_ACTIVE_FAILURE_HPP
 
-#include "vm_t_base.hpp"
+#include "vp_t_base.hpp"
 
 #include <bsl/discard.hpp>
 #include <bsl/safe_integral.hpp>
@@ -33,30 +33,29 @@
 
 namespace mk
 {
-    /// @class mk::vm_t_initialize_failure
+    /// @class mk::vp_t_set_active_failure
     ///
     /// <!-- description -->
     ///   @brief Returns failure on initialization
     ///
-    class vm_t_initialize_failure final    // --
-        : public vm_t_base<vm_t_initialize_failure>
+    class vp_t_set_active_failure final    // --
+        : public vp_t_base<vp_t_set_active_failure>
     {
     public:
         /// <!-- description -->
-        ///   @brief Initializes this vm_t
+        ///   @brief Sets this vp_t as active.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param i the ID for this vm_t
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        set_active(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
         {
-            if (i.is_zero()) {
-                return bsl::errc_success;
-            }
-
+            bsl::discard(tls);
             return bsl::errc_failure;
         }
     };

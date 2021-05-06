@@ -22,44 +22,35 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VM_T_INITIALIZE_FAILURE_HPP
-#define VM_T_INITIALIZE_FAILURE_HPP
+#include "integration_utils.hpp"
 
-#include "vm_t_base.hpp"
+#include <mk_interface.hpp>
 
-#include <bsl/discard.hpp>
+#include <bsl/debug.hpp>
+#include <bsl/exit_code.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/errc_type.hpp>
+#include <bsl/unlikely.hpp>
 
-namespace mk
+namespace integration
 {
-    /// @class mk::vm_t_initialize_failure
-    ///
     /// <!-- description -->
-    ///   @brief Returns failure on initialization
+    ///   @brief Implements the main entry function for this integration
+    ///     test
     ///
-    class vm_t_initialize_failure final    // --
-        : public vm_t_base<vm_t_initialize_failure>
+    /// <!-- inputs/outputs -->
+    ///   @param version the version of the spec implemented by the
+    ///     microkernel. This can be used to ensure the extension and the
+    ///     microkernel speak the same ABI.
+    ///
+    extern "C" void
+    ext_main_entry(bsl::uint32 const version) noexcept
     {
-    public:
-        /// <!-- description -->
-        ///   @brief Initializes this vm_t
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param i the ID for this vm_t
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     and friends otherwise
-        ///
-        [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
-        {
-            if (i.is_zero()) {
-                return bsl::errc_success;
-            }
-
-            return bsl::errc_failure;
+        if (bsl::unlikely(!syscall::bf_is_spec1_supported(version))) {
+            bsl::error() << "integration test not supported\n" << bsl::here();
+            return syscall::bf_control_op_exit();
         }
-    };
-}
 
-#endif
+        bsl::error() << "extension purposely exiting early\n";
+        syscall::bf_control_op_exit();
+    }
+}

@@ -19,6 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+add_custom_target(integration)
+
 # Add's An Integration Test Target
 #
 macro(hypervisor_add_integration_target NAME)
@@ -49,4 +51,9 @@ macro(hypervisor_add_integration_target NAME)
     else()
         message(FATAL_ERROR "Unsupported CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
     endif()
+
+    add_custom_command(TARGET integration
+        COMMAND ${CMAKE_COMMAND} --build . --target integration_${NAME}
+        VERBATIM
+    )
 endmacro(hypervisor_add_integration_target)

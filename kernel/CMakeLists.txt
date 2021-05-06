@@ -56,6 +56,7 @@ list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_vm_op.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_vm_op_failure.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_vp_op.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_vp_op_failure.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_syscall_vps_op.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ext_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ext_t.hpp

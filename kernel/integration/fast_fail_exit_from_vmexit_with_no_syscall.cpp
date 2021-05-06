@@ -24,6 +24,7 @@
 
 #include "integration_utils.hpp"
 
+#include <arch_support.hpp>
 #include <mk_interface.hpp>
 
 #include <bsl/debug.hpp>
@@ -50,7 +51,7 @@ namespace integration
         bsl::discard(vpsid);
         bsl::discard(exit_reason);
 
-        syscall::bf_control_op_exit();
+        bsl::error() << "extension purposely not calling exit syscall. fault expected\n";
     }
 
     /// <!-- description -->
@@ -77,7 +78,27 @@ namespace integration
     // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
     bootstrap_entry(bsl::uint16 const ppid) noexcept
     {
-        bsl::discard(ppid);
+        bsl::errc_type ret{};
+
+        bsl::safe_uint16 vpid{};
+        bsl::safe_uint16 vpsid{};
+
+        ret = syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, ppid, vpid);
+        integration::require(bsl::errc_success == ret);
+
+        ret = syscall::bf_vps_op_create_vps(g_handle, vpid, ppid, vpsid);
+        integration::require(bsl::errc_success == ret);
+
+        ret = syscall::bf_vps_op_init_as_root(g_handle, vpsid);
+        integration::require(bsl::errc_success == ret);
+
+        ret = init_vps(g_handle, vpsid);
+        integration::require(bsl::errc_success == ret);
+
+        ret = syscall::bf_vps_op_run(g_handle, syscall::BF_ROOT_VMID, vpid, vpsid);
+        integration::require(bsl::errc_success == ret);
+
+        bsl::print<bsl::V>() << bsl::here();
         syscall::bf_control_op_exit();
     }
 
@@ -112,7 +133,6 @@ namespace integration
         ret = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
         integration::require(bsl::errc_success == ret);
 
-        bsl::error() << "extension purposely exiting early\n";
-        syscall::bf_control_op_exit();
+        syscall::bf_control_op_wait();
     }
 }

@@ -22,10 +22,10 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef VM_T_INITIALIZE_FAILURE_HPP
-#define VM_T_INITIALIZE_FAILURE_HPP
+#ifndef VP_T_MIGRATE_FAILURE_HPP
+#define VP_T_MIGRATE_FAILURE_HPP
 
-#include "vm_t_base.hpp"
+#include "vp_t_base.hpp"
 
 #include <bsl/discard.hpp>
 #include <bsl/safe_integral.hpp>
@@ -33,29 +33,40 @@
 
 namespace mk
 {
-    /// @class mk::vm_t_initialize_failure
+    /// @class mk::vp_t_migrate_failure
     ///
     /// <!-- description -->
     ///   @brief Returns failure on initialization
     ///
-    class vm_t_initialize_failure final    // --
-        : public vm_t_base<vm_t_initialize_failure>
+    class vp_t_migrate_failure final    // --
+        : public vp_t_base<vp_t_migrate_failure>
     {
     public:
         /// <!-- description -->
-        ///   @brief Initializes this vm_t
+        ///   @brief Migrates this vp_t from one PP to another. If this calls
+        ///     completes successfully, the VPS's assigned PP will not
+        ///     match the VP's assigned PP. Future calls to the run ABI
+        ///     will be able to detect this an migrate mismatched VPSs to
+        ///     the proper PP as needed. Note that since the VP doesn't control
+        ///     any hardware state, all we have to do here is set which PP
+        ///     this VP is allowed to execute on. The VPS is what actually
+        ///     needs to be migrated, and that will not happen until a call
+        ///     to the run ABIs made. Once the run ABI detects a mismatch with
+        ///     the VPS and it's assigned VP, it will be migrated then.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param i the ID for this vm_t
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param ppid the ID of the PP to migrate to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        migrate(TLS_CONCEPT &tls, bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
         {
-            if (i.is_zero()) {
-                return bsl::errc_success;
-            }
+            bsl::discard(tls);
+            bsl::discard(ppid);
 
             return bsl::errc_failure;
         }

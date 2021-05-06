@@ -32,7 +32,7 @@
 // #include <dispatch_syscall_intrinsic_op_failure.hpp>
 // #include <dispatch_syscall_mem_op_failure.hpp>
 #include <dispatch_syscall_vm_op_failure.hpp>
-// #include <dispatch_syscall_vp_op_failure.hpp>
+#include <dispatch_syscall_vp_op_failure.hpp>
 // #include <dispatch_syscall_vps_op_failure.hpp>
 #include <mk_interface.hpp>
 
@@ -137,8 +137,6 @@ namespace mk
         bsl::discard(intrinsic);
         bsl::discard(page_pool);
         bsl::discard(huge_pool);
-        bsl::discard(vp_pool);
-        bsl::discard(vps_pool);
         bsl::discard(log);
 
         switch (syscall::bf_syscall_opcode(tls.ext_syscall).get()) {
@@ -167,15 +165,10 @@ namespace mk
                 break;
             }
 
-                // case syscall::BF_VP_OP_VAL.get(): {
-                //     ret = dispatch_syscall_vp_op(tls, ext, vm_pool, vp_pool);
-                //     if (bsl::unlikely(!ret)) {
-                //         bsl::print<bsl::V>() << bsl::here();
-                //         return bsl::exit_failure;
-                //     }
-
-                //     return bsl::exit_success;
-                // }
+            case syscall::BF_VP_OP_VAL.get(): {
+                ret = dispatch_syscall_vp_op_failure(tls, vp_pool, vps_pool);
+                break;
+            }
 
                 //     case syscall::BF_VPS_OP_VAL.get(): {
                 //         ret = dispatch_syscall_vps_op(

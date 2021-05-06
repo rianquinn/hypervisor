@@ -45,21 +45,16 @@ namespace mk
         ///     bsl::safe_uint16::zero(true)
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @param tls the current TLS block
         ///   @param vmid the ID fo the VM to query
         ///   @return If a vp_t is assigned to the requested VM, the ID of
         ///     the vp_t is returned. Otherwise, this function will return
         ///     bsl::safe_uint16::zero(true)
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_assigned_to_vm(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept
+        is_assigned_to_vm(bsl::safe_uint16 const &vmid) const &noexcept
             -> bsl::safe_uint16
         {
-            bsl::discard(tls);
             bsl::discard(vmid);
-
             return bsl::safe_uint16::zero(true);
         }
     };

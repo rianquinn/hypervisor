@@ -62,14 +62,19 @@ namespace mk
         ///   @brief Initializes this vp_pool_t
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+        ///   @param tls the current TLS block
+        ///   @param vps_pool the VPS pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
+        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize() &noexcept -> bsl::errc_type
+        initialize(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) &noexcept -> bsl::errc_type
         {
-            bsl::finally release_on_error{[this]() noexcept -> void {
-                auto const ret{this->release()};
+            bsl::finally release_on_error{[this, &tls, &vps_pool]() noexcept -> void {
+                auto const ret{this->release(tls, vps_pool)};
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return;
@@ -98,14 +103,19 @@ namespace mk
         ///     vp_pool_t after calling this function will results in UB.
         ///
         /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
+        ///   @param tls the current TLS block
+        ///   @param vps_pool the VPS pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
+        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        release() &noexcept -> bsl::errc_type
+        release(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) &noexcept -> bsl::errc_type
         {
             for (auto const vp : m_pool) {
-                auto const ret{vp.data->release()};
+                auto const ret{vp.data->release(tls, vps_pool)};
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -122,20 +132,24 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
         ///   @param tls the current TLS block
+        ///   @param vm_pool the VM pool to use
         ///   @param vmid The ID of the VM to assign the newly created VP to
         ///   @param ppid The ID of the PP to assign the newly created VP to
         ///   @return Returns ID of the newly allocated vp
         ///
-        template<typename TLS_CONCEPT>
+        template<typename TLS_CONCEPT, typename VM_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
         allocate(
-            TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid, bsl::safe_uint16 const &ppid) &noexcept
-            -> bsl::safe_uint16
+            TLS_CONCEPT &tls,
+            VM_POOL_CONCEPT &vm_pool,
+            bsl::safe_uint16 const &vmid,
+            bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
         {
             lock_guard lock{tls, m_lock};
 
-            VM_CONCEPT *vp{};
+            VP_CONCEPT *vp{};
             for (auto const elem : m_pool) {
                 if (elem.data->is_deallocated()) {
                     vp = elem.data;
@@ -150,7 +164,7 @@ namespace mk
                 return bsl::safe_uint16::zero(true);
             }
 
-            return vp->allocate(tls, vmid, ppid);
+            return vp->allocate(tls, vm_pool, vmid, ppid);
         }
 
         /// <!-- description -->
@@ -159,14 +173,18 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
         ///   @param tls the current TLS block
+        ///   @param vps_pool the VPS pool to use
         ///   @param vpid the ID of the vp to deallocate
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
+        template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        deallocate(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid) &noexcept -> bsl::errc_type
+        deallocate(
+            TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool, bsl::safe_uint16 const &vpid) &noexcept
+            -> bsl::errc_type
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
@@ -180,7 +198,7 @@ namespace mk
                 return bsl::errc_index_out_of_bounds;
             }
 
-            return vp->deallocate(tls);
+            return vp->deallocate(tls, vps_pool);
         }
 
         /// <!-- description -->
@@ -304,19 +322,24 @@ namespace mk
         ///     function will return bsl::safe_uint16::zero(true)
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
-        ///   @param tls the current TLS block
         ///   @param vmid the ID fo the VM to query
         ///   @return If a vp_t in the pool is assigned to the requested VM,
         ///     the ID of the first vp_t found is returned. Otherwise, this
         ///     function will return bsl::safe_uint16::zero(true)
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_assigned_to_vm(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) const &noexcept
+        is_assigned_to_vm(bsl::safe_uint16 const &vmid) const &noexcept
             -> bsl::safe_uint16
         {
-            lock_guard lock{tls, m_lock};
+            if (bsl::unlikely(!vmid)) {
+                bsl::error() << "invalid vmid\n" << bsl::here();
+                return bsl::safe_uint16::zero(true);
+            }
+
+            if (bsl::unlikely(syscall::BF_INVALID_ID == vmid)) {
+                bsl::error() << "invalid vmid\n" << bsl::here();
+                return bsl::safe_uint16::zero(true);
+            }
 
             for (auto const elem : m_pool) {
                 if (elem.data->assigned_vm() == vmid) {
@@ -388,21 +411,22 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Returns true if the requested vp_t is active, false
-        ///     if the provided VPID is invalid, or if the vp_t is not
-        ///     active.
+        ///   @brief Returns true if the requested vp_t is active on the
+        ///     current PP, false if the provided ID is invalid, or if the
+        ///     vp_t is not active on the current PP.
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param vpid the ID of the vp_t to query
-        ///   @return Returns true if the requested vp_t is active, false
-        ///     if the provided VPID is invalid, or if the vp_t is not
-        ///     active.
+        ///   @return Returns true if the requested vp_t is active on the
+        ///     current PP, false if the provided ID is invalid, or if the
+        ///     vp_t is not active on the current PP.
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_active(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid) const &noexcept -> bool
+        is_active(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid) const &noexcept
+            -> bsl::safe_uint16
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
@@ -413,7 +437,7 @@ namespace mk
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
-                return false;
+                return bsl::safe_uint16::zero(true);
             }
 
             return vp->is_active(tls);
@@ -434,7 +458,8 @@ namespace mk
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_active_on_current_pp(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid) const &noexcept -> bool
+        is_active_on_current_pp(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid) const &noexcept
+            -> bool
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
@@ -457,15 +482,15 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
-        ///   @param vpid the ID of the vp_t to migrate
         ///   @param ppid the ID of the PP to migrate to
+        ///   @param vpid the ID of the vp_t to migrate
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         migrate(
-            TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid, bsl::safe_uint16 const &ppid) &noexcept
+            TLS_CONCEPT &tls, bsl::safe_uint16 const &ppid, bsl::safe_uint16 const &vpid) &noexcept
             -> bsl::errc_type
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
@@ -477,7 +502,7 @@ namespace mk
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
-                return false;
+                return bsl::errc_index_out_of_bounds;
             }
 
             return vp->migrate(tls, ppid);

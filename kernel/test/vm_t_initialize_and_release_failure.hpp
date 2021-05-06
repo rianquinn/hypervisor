@@ -28,8 +28,8 @@
 #include "vm_t_base.hpp"
 
 #include <bsl/discard.hpp>
-#include <bsl/debug.hpp>
 #include <bsl/safe_integral.hpp>
+#include <bsl/errc_type.hpp>
 
 namespace mk
 {
@@ -59,10 +59,6 @@ namespace mk
                 return bsl::errc_success;
             }
 
-            bsl::error() << "vm_t_initialize_and_release_failure failed as expected"    // --
-                         << bsl::endl                                                   // --
-                         << bsl::here();                                                // --
-
             return bsl::errc_failure;
         }
 
@@ -91,10 +87,6 @@ namespace mk
             if (m_id.is_zero()) {
                 return bsl::errc_success;
             }
-
-            bsl::error() << "vm_t_initialize_and_release_failure failed as expected"    // --
-                         << bsl::endl                                                   // --
-                         << bsl::here();                                                // --
 
             return bsl::errc_failure;
         }

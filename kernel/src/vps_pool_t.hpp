@@ -327,6 +327,37 @@ namespace mk
         }
 
         /// <!-- description -->
+        ///   @brief If a vps_t in the pool is assigned to the requested VP,
+        ///     the ID of the first vps_t found is returned. Otherwise, this
+        ///     function will return bsl::safe_uint16::zero(true)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @param vpid the ID fo the VP to query
+        ///   @return If a vps_t in the pool is assigned to the requested VP,
+        ///     the ID of the first vps_t found is returned. Otherwise, this
+        ///     function will return bsl::safe_uint16::zero(true)
+        ///
+        template<typename TLS_CONCEPT>
+        [[nodiscard]] constexpr auto
+        is_assigned_to_vp(TLS_CONCEPT &tls, bsl::safe_uint16 const &vpid) const &noexcept
+            -> bsl::safe_uint16
+        {
+            lock_guard lock{tls, m_lock};
+
+            for (auto const elem : m_pool) {
+                if (elem.data->assigned_vp() == vpid) {
+                    return elem.data->id();
+                }
+
+                bsl::touch();
+            }
+
+            return bsl::safe_uint16::zero(true);
+        }
+
+        /// <!-- description -->
         ///   @brief Sets the requested vps_t as active.
         ///
         /// <!-- inputs/outputs -->

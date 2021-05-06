@@ -456,7 +456,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = m_vp_pool.initialize();
+            ret = m_vp_pool.initialize(tls, m_vps_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -683,6 +683,10 @@ namespace mk
             /// going to look like, so good luck.
             /// Need to finish the migration stuff so that it makes sense.
 
+            // [ ] fast fail is not working right. Once the handler is
+            //     installed by the extension, any error should call this
+            //     and then we return based on what the extension tells us
+            //     to do. Right now, it is never called.
             // [ ] add a pointer to the TLS block to the top of the stack
             //     so that you can use the stack to get to the TLS block in
             //     addition to GS. This way, the SX handler has a way to
