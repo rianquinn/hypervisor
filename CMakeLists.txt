@@ -46,8 +46,8 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL RELEASE AND NOT CMAKE_BUILD_TYPE STREQUAL MINSI
     if(BUILD_TESTS AND NOT HYPERVISOR_BUILD_TESTS_OVERRIDE)
         add_subdirectory(kernel/test)
     endif()
+endif()
 
-    if(BUILD_TESTS AND NOT HYPERVISOR_BUILD_TESTS_OVERRIDE)
-        include(kernel/integration/integration_targets.cmake)
-    endif()
+if(BUILD_TESTS AND NOT HYPERVISOR_BUILD_TESTS_OVERRIDE)
+    include(kernel/integration/integration_targets.cmake)
 endif()

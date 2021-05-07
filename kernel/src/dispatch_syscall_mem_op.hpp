@@ -45,10 +45,6 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_mem_op_alloc_page(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
@@ -85,27 +81,15 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_mem_op_free_page(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
-        /// NOTE:
-        /// - ext.free_page is assumped to be exception UNSAFE
-        ///
-
         auto const ret{ext.free_page(bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
-
-        /// NOTE:
-        /// - The remaining is assumped to be exception safe
-        ///
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -122,27 +106,15 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_mem_op_alloc_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
-        /// NOTE:
-        /// - ext.alloc_huge is assumped to be exception UNSAFE
-        ///
-
         auto const huge{ext.alloc_huge(tls, bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!huge.virt)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }
-
-        /// NOTE:
-        /// - The remaining is assumped to be exception safe
-        ///
 
         tls.ext_reg0 = huge.virt.get();
         tls.ext_reg1 = huge.phys.get();
@@ -162,27 +134,15 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_mem_op_free_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
-        /// NOTE:
-        /// - ext.free_huge is assumped to be exception UNSAFE
-        ///
-
         auto const ret{ext.free_huge(bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
-
-        /// NOTE:
-        /// - The remaining is assumped to be exception safe
-        ///
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -199,27 +159,15 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_mem_op_alloc_heap(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
     {
-        /// NOTE:
-        /// - ext.alloc_heap is assumped to be exception UNSAFE
-        ///
-
         auto const previous_heap_virt{ext.alloc_heap(tls, bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!previous_heap_virt)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }
-
-        /// NOTE:
-        /// - The remaining is assumped to be exception safe
-        ///
 
         tls.ext_reg0 = previous_heap_virt.get();
 
@@ -237,10 +185,6 @@ namespace mk
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
-    ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto

@@ -73,7 +73,7 @@ namespace integration
         }
 
         ret = syscall::bf_handle_op_open_handle(syscall::BF_SPEC_ID1_VAL, g_handle);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_callback_op_register_vmexit(g_handle, nullptr);
         integration::verify(bsl::errc_failure == ret);

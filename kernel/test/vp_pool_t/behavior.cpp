@@ -268,8 +268,7 @@ namespace mk
                 bsl::ut_when{} = [&tls, &pool]() {
                     bsl::ut_required_step(pool.initialize(bsl::dontcare, bsl::dontcare));
                     auto const vpid{pool.allocate(tls, bsl::dontcare, VMID0, PPID0)};
-                    bsl::ut_required_step(
-                        pool.deallocate(bsl::dontcare, bsl::dontcare, vpid));
+                    bsl::ut_required_step(pool.deallocate(bsl::dontcare, bsl::dontcare, vpid));
                     bsl::ut_then{} = [&pool, &vpid]() {
                         bsl::ut_check(!pool.is_allocated(vpid));
                         bsl::ut_check(pool.is_deallocated(vpid));
@@ -468,7 +467,8 @@ namespace mk
                 vp_pool_t<vp_t_success, INTEGRATION_MAX_VPS.get()> pool{};
                 bsl::ut_when{} = [&pool]() {
                     bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.is_active_on_current_pp(bsl::dontcare, syscall::BF_INVALID_ID));
+                        bsl::ut_check(
+                            !pool.is_active_on_current_pp(bsl::dontcare, syscall::BF_INVALID_ID));
                     };
                 };
             };

@@ -27,7 +27,8 @@
 
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
-#include <bsl/likely.hpp>
+#include <bsl/unlikely.hpp>
+#include <bsl/touch.hpp>
 
 namespace integration
 {
@@ -36,18 +37,18 @@ namespace integration
     ///     failed text shows up in the log.
     ///
     /// <!-- inputs/outputs -->
-    ///   @param test prints passed if true, failed if false
-    ///   @return Returns test
+    ///   @param test the results to query
     ///
-    [[maybe_unused]] constexpr auto
-    verify(bool const test, bsl::source_location const &sloc = bsl::here()) noexcept -> bool
+    constexpr void
+    verify(bool const test, bsl::source_location const &sloc = bsl::here()) noexcept
     {
-        if (bsl::likely(!test)) {
+        if (bsl::unlikely(!test)) {
             bsl::print() << bsl::red << "integration test failed";
             bsl::print() << bsl::rst << sloc;
         }
-
-        return test;
+        else {
+            bsl::touch();
+        }
     }
 
     /// <!-- description -->
@@ -56,19 +57,40 @@ namespace integration
     ///     function will abort.
     ///
     /// <!-- inputs/outputs -->
-    ///   @param test prints passed if true, failed if false
-    ///   @return Returns test
+    ///   @param test the results to query
     ///
-    [[maybe_unused]] constexpr auto
-    require(bool const test, bsl::source_location const &sloc = bsl::here()) noexcept -> bool
+    constexpr void
+    require(bool const test, bsl::source_location const &sloc = bsl::here()) noexcept
     {
-        if (bsl::likely(!test)) {
+        if (bsl::unlikely(!test)) {
             bsl::print() << bsl::red << "integration test failed";
             bsl::print() << bsl::rst << sloc;
             syscall::bf_control_op_exit();
         }
+        else {
+            bsl::touch();
+        }
+    }
 
-        return test;
+    /// <!-- description -->
+    ///   @brief Reports passed/failed so that a script can detect if the
+    ///     failed text shows up in the log. If the test fails, this
+    ///     function will abort.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param ec the results to query
+    ///
+    constexpr void
+    require_success(bsl::errc_type const ec, bsl::source_location const &sloc = bsl::here()) noexcept
+    {
+        if (bsl::unlikely(!ec.success())) {
+            bsl::print() << bsl::red << "integration test failed";
+            bsl::print() << bsl::rst << sloc;
+            syscall::bf_control_op_exit();
+        }
+        else {
+            bsl::touch();
+        }
     }
 
     /// <!-- description -->

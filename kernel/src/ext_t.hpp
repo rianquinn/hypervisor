@@ -40,6 +40,7 @@
 #include <bsl/finally.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 /// TODO:
 /// - Add support for multiple extensions. For this to work, we will need
@@ -320,6 +321,10 @@ namespace mk
         [[nodiscard]] constexpr auto
         validate(bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
         {
+            if constexpr (BSL_RELEASE_MODE) {
+                return bsl::errc_success;
+            }
+
             if (bsl::unlikely(!bfelf::validate_elf64_ehdr(elf_file))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -453,7 +458,7 @@ namespace mk
                         bsl::touch();
                     }
                     else {
-                        if (bsl::unlikely(!page)) {
+                        if (bsl::unlikely_assert(!page)) {
                             bsl::error() << "The first ELF segment is invalid\n" << bsl::here();
                             return bsl::errc_failure;
                         }
@@ -471,13 +476,13 @@ namespace mk
                         }
 
                         auto *const dst_addr{page.at_if(bytes_into_page)};
-                        if (bsl::unlikely(nullptr == dst_addr)) {
+                        if (bsl::unlikely_assert(nullptr == dst_addr)) {
                             bsl::print<bsl::V>() << bsl::here();
                             return bsl::errc_failure;
                         }
 
                         auto const *const src_addr{elf_file.at_if(phdr->p_offset + bytes)};
-                        if (bsl::unlikely(nullptr == src_addr)) {
+                        if (bsl::unlikely_assert(nullptr == src_addr)) {
                             bsl::print<bsl::V>() << bsl::here();
                             return bsl::errc_failure;
                         }
@@ -857,18 +862,18 @@ namespace mk
             bsl::safe_uintmax const &arg0 = {},
             bsl::safe_uintmax const &arg1 = {}) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!ip)) {
+            if (bsl::unlikely_assert(!ip)) {
                 bsl::error() << "invalid instruction pointer\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(tls.active_vmid))};
-            if (bsl::unlikely(nullptr == rpt)) {
+            if (bsl::unlikely_assert(nullptr == rpt)) {
                 bsl::error() << "invalid active_vmid: "      // --
                              << bsl::hex(tls.active_vmid)    // --
                              << bsl::endl                    // --
@@ -878,7 +883,7 @@ namespace mk
             }
 
             if (tls.active_rpt != rpt) {
-                if (bsl::unlikely(!rpt->activate())) {
+                if (bsl::unlikely_assert(!rpt->activate())) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -949,7 +954,7 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(m_id)) {
+            if (bsl::unlikely_assert(m_id)) {
                 bsl::error() << "ext_t already initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -959,34 +964,34 @@ namespace mk
             }};
 
             m_intrinsic = intrinsic;
-            if (bsl::unlikely(nullptr == intrinsic)) {
+            if (bsl::unlikely_assert(nullptr == intrinsic)) {
                 bsl::error() << "invalid intrinsic\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             m_page_pool = page_pool;
-            if (bsl::unlikely(nullptr == page_pool)) {
+            if (bsl::unlikely_assert(nullptr == page_pool)) {
                 bsl::error() << "invalid page_pool\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             m_huge_pool = huge_pool;
-            if (bsl::unlikely(nullptr == huge_pool)) {
+            if (bsl::unlikely_assert(nullptr == huge_pool)) {
                 bsl::error() << "invalid huge_pool\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!i)) {
+            if (bsl::unlikely_assert(!i)) {
                 bsl::error() << "invalid id\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!this->validate(ext_elf_file))) {
+            if (bsl::unlikely_assert(!this->validate(ext_elf_file))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(nullptr == system_rpt)) {
+            if (bsl::unlikely_assert(nullptr == system_rpt)) {
                 bsl::error() << "invalid system_rpt\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -998,7 +1003,7 @@ namespace mk
             }
 
             m_entry_ip = bfelf::get_elf64_ip(ext_elf_file);
-            if (bsl::unlikely(!m_entry_ip)) {
+            if (bsl::unlikely_assert(!m_entry_ip)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1255,7 +1260,7 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
@@ -1268,13 +1273,13 @@ namespace mk
             }
 
             auto const page_phys{m_page_pool->virt_to_phys(page)};
-            if (bsl::unlikely(!page_phys)) {
+            if (bsl::unlikely_assert(!page_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
             auto const page_virt{EXT_PAGE_POOL_ADDR + page_phys};
-            if (bsl::unlikely(!page_virt)) {
+            if (bsl::unlikely_assert(!page_virt)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
@@ -1343,7 +1348,7 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
@@ -1364,13 +1369,13 @@ namespace mk
             }
 
             auto const huge_phys{m_huge_pool->virt_to_phys(huge)};
-            if (bsl::unlikely(!huge_phys)) {
+            if (bsl::unlikely_assert(!huge_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
             auto const huge_virt{EXT_PAGE_POOL_ADDR + huge_phys};
-            if (bsl::unlikely(!huge_virt)) {
+            if (bsl::unlikely_assert(!huge_virt)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
@@ -1447,7 +1452,7 @@ namespace mk
             constexpr auto pool_addr{bsl::to_umax(EXT_HEAP_POOL_ADDR)};
             constexpr auto pool_size{bsl::to_umax(EXT_HEAP_POOL_SIZE)};
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
                 return bsl::safe_uintmax::zero(true);
             }
@@ -1478,7 +1483,7 @@ namespace mk
             }
 
             auto const previous_heap_virt{m_heap_crsr + pool_addr};
-            if (bsl::unlikely(!previous_heap_virt)) {
+            if (bsl::unlikely_assert(!previous_heap_virt)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::safe_uintmax::zero(true);
             }
@@ -1492,13 +1497,13 @@ namespace mk
                 }
 
                 auto const page_phys{m_page_pool->virt_to_phys(page)};
-                if (bsl::unlikely(!page_phys)) {
+                if (bsl::unlikely_assert(!page_phys)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::safe_uintmax::zero(true);
                 }
 
                 auto const page_virt{m_heap_crsr + pool_addr};
-                if (bsl::unlikely(!page_virt)) {
+                if (bsl::unlikely_assert(!page_virt)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::safe_uintmax::zero(true);
                 }
@@ -1604,13 +1609,13 @@ namespace mk
         signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(vmid))};
-            if (bsl::unlikely(nullptr == rpt)) {
+            if (bsl::unlikely_assert(nullptr == rpt)) {
                 bsl::error() << "vmid "                                       // --
                              << bsl::hex(vmid)                                // --
                              << " is invalid or greater than the MAX_VMS "    // --
@@ -1645,13 +1650,13 @@ namespace mk
         signal_vm_destroyed(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(vmid))};
-            if (bsl::unlikely(nullptr == rpt)) {
+            if (bsl::unlikely_assert(nullptr == rpt)) {
                 bsl::error() << "vmid "                                       // --
                              << bsl::hex(vmid)                                // --
                              << " is invalid or greater than the MAX_VMS "    // --
@@ -1791,7 +1796,7 @@ namespace mk
                 return;
             }
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::print() << "[error]" << bsl::endl;
                 return;
             }

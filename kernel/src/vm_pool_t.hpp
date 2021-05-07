@@ -32,8 +32,9 @@
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
-#include <bsl/finally.hpp>
+#include <bsl/finally_assert.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace mk
 {
@@ -76,19 +77,20 @@ namespace mk
         initialize(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept
             -> bsl::errc_type
         {
-            bsl::finally release_on_error{[this, &tls, &ext_pool, &vp_pool]() noexcept -> void {
-                auto const ret{this->release(tls, ext_pool, vp_pool)};
-                if (bsl::unlikely(!ret)) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return;
-                }
+            bsl::finally_assert release_on_error{
+                [this, &tls, &ext_pool, &vp_pool]() noexcept -> void {
+                    auto const ret{this->release(tls, ext_pool, vp_pool)};
+                    if (bsl::unlikely(!ret)) {
+                        bsl::print<bsl::V>() << bsl::here();
+                        return;
+                    }
 
-                bsl::touch();
-            }};
+                    bsl::touch();
+                }};
 
             for (auto const vm : m_pool) {
                 auto const ret{vm.data->initialize(bsl::to_u16(vm.index))};
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }

@@ -28,8 +28,8 @@
 #include "vm_t_base.hpp"
 
 #include <bsl/discard.hpp>
-#include <bsl/safe_integral.hpp>
 #include <bsl/errc_type.hpp>
+#include <bsl/safe_integral.hpp>
 
 namespace mk
 {

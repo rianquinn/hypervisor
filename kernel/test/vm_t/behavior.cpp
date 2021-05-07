@@ -26,8 +26,8 @@
 #include "../ext_pool_t_signal_vm_created_failure.hpp"
 #include "../ext_pool_t_signal_vm_destroyed_failure.hpp"
 #include "../ext_pool_t_success.hpp"
+#include "../vp_pool_t_failure.hpp"
 #include "../vp_pool_t_success.hpp"
-#include "../vp_pool_t_vmid0_assigned.hpp"
 
 #include <tls_t.hpp>
 
@@ -166,7 +166,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vp_pool_t_vmid0_assigned vp_pool{};
+                vp_pool_t_failure vp_pool{};
                 vm_t<INTEGRATION_MAX_PPS.get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
@@ -335,11 +335,28 @@ namespace mk
             };
         };
 
+        bsl::ut_scenario{"deallocate already deallocated failure"} = []() {
+            bsl::ut_given{} = []() {
+                tls_t tls{};
+                ext_pool_t_success ext_pool{};
+                vp_pool_t_success vp_pool{};
+                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
+                    bsl::ut_required_step(vm.initialize(VMID1));
+                    bsl::ut_required_step(vm.allocate(tls, ext_pool));
+                    bsl::ut_required_step(vm.deallocate(tls, ext_pool, vp_pool));
+                    bsl::ut_then{} = [&tls, &ext_pool, &vp_pool, &vm]() {
+                        bsl::ut_check(!vm.deallocate(tls, ext_pool, vp_pool));
+                    };
+                };
+            };
+        };
+
         bsl::ut_scenario{"deallocate assigned failure results in zombie"} = []() {
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vp_pool_t_vmid0_assigned vp_pool{};
+                vp_pool_t_failure vp_pool{};
                 vm_t<INTEGRATION_MAX_PPS.get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
@@ -415,11 +432,12 @@ namespace mk
                 bsl::ut_when{} = [&vm]() {
                     vm.zombify();
                     bsl::ut_then{} = [&vm]() {
-                        bsl::ut_check(vm.is_zombie());
+                        bsl::ut_check(!vm.is_zombie());
                     };
                 };
             };
         };
+
         bsl::ut_scenario{"zombify success"} = []() {
             bsl::ut_given{} = []() {
                 vm_t<INTEGRATION_MAX_PPS.get()> vm{};
@@ -525,6 +543,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 vm_t<INTEGRATION_MAX_PPS.get()> vm{};
                 bsl::ut_when{} = [&vm]() {
+                    bsl::ut_required_step(vm.initialize(VMID1));
                     vm.zombify();
                     bsl::ut_then{} = [&vm]() {
                         bsl::ut_check(!vm.is_deallocated());

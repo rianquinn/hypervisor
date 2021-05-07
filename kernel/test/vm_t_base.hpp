@@ -28,8 +28,8 @@
 #include <allocated_status_t.hpp>
 
 #include <bsl/discard.hpp>
-#include <bsl/safe_integral.hpp>
 #include <bsl/errc_type.hpp>
+#include <bsl/safe_integral.hpp>
 
 namespace mk
 {

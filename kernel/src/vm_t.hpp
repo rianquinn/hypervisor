@@ -36,6 +36,7 @@
 #include <bsl/finally.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace mk
 {
@@ -95,18 +96,23 @@ namespace mk
         [[nodiscard]] constexpr auto
         initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(m_id)) {
+            if (bsl::unlikely_assert(m_id)) {
                 bsl::error() << "vm_t already initialized\n" << bsl::here();
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!i)) {
+            if (bsl::unlikely_assert(!i)) {
                 bsl::error() << "invalid id\n" << bsl::here();
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == i)) {
-                bsl::error() << "invalid id\n" << bsl::here();
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == i)) {
+                bsl::error() << "id "                                                  // --
+                             << bsl::hex(i)                                            // --
+                             << " is invalid and cannot be used for initialization"    // --
+                             << bsl::endl                                              // --
+                             << bsl::here();                                           // --
+
                 return bsl::errc_precondition;
             }
 
@@ -220,12 +226,12 @@ namespace mk
             bsl::errc_type ret{};
             lock_guard lock{tls, m_lock};
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vm_t not initialized\n" << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(m_allocated == allocated_status_t::zombie)) {
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::zombie)) {
                 bsl::error() << "vm "                                     // --
                              << bsl::hex(m_id)                            // --
                              << " is a zombie and cannot be allocated"    // --
@@ -235,7 +241,7 @@ namespace mk
                 return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(m_allocated == allocated_status_t::allocated)) {
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::allocated)) {
                 bsl::error() << "vm "                                            // --
                              << bsl::hex(m_id)                                   // --
                              << " is already allocated and cannot be created"    // --
@@ -279,7 +285,7 @@ namespace mk
             bsl::errc_type ret{};
             lock_guard lock{tls, m_lock};
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vm_t not initialized\n" << bsl::here();
                 return bsl::errc_precondition;
             }
@@ -368,6 +374,10 @@ namespace mk
         constexpr void
         zombify() &noexcept
         {
+            if (bsl::unlikely_assert(!m_id)) {
+                return;
+            }
+
             if (m_allocated == allocated_status_t::zombie) {
                 return;
             }
@@ -439,22 +449,22 @@ namespace mk
         {
             lock_guard lock{tls, m_lock};
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vm_t not initialized\n" << bsl::here();
                 return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
-                bsl::error() << "vm "                                                    // --
-                             << bsl::hex(m_id)                                           // --
-                             << " has not been properly allocated and cannot be used"    // --
-                             << bsl::endl                                                // --
-                             << bsl::here();                                             // --
+                bsl::error() << "vm "                                              // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID != tls.active_vmid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID != tls.active_vmid)) {
                 bsl::error() << "vm "                        // --
                              << bsl::hex(tls.active_vmid)    // --
                              << " is still active on pp "    // --
@@ -466,7 +476,7 @@ namespace mk
             }
 
             auto *const active{m_active.at_if(bsl::to_umax(tls.ppid))};
-            if (bsl::unlikely(nullptr == active)) {
+            if (bsl::unlikely_assert(nullptr == active)) {
                 bsl::error() << "tls.ppid "                        // --
                              << bsl::hex(m_id)                     // --
                              << " is greater than the MAX_PPS "    // --
@@ -477,7 +487,7 @@ namespace mk
                 return bsl::errc_index_out_of_bounds;
             }
 
-            if (bsl::unlikely(*active)) {
+            if (bsl::unlikely_assert(*active)) {
                 bsl::error() << "vm "                                 // --
                              << bsl::hex(m_id)                        // --
                              << " is already the active vm on pp "    // --
@@ -509,22 +519,22 @@ namespace mk
         {
             lock_guard lock{tls, m_lock};
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vm_t not initialized\n" << bsl::here();
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(m_allocated == allocated_status_t::deallocated)) {
-                bsl::error() << "vm "                                                    // --
-                             << bsl::hex(m_id)                                           // --
-                             << " has not been properly allocated and cannot be used"    // --
-                             << bsl::endl                                                // --
-                             << bsl::here();                                             // --
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::deallocated)) {
+                bsl::error() << "vm "                                              // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vmid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == tls.active_vmid)) {
                 bsl::error() << "vm "                      // --
                              << bsl::hex(m_id)             // --
                              << " is not active on pp "    // --
@@ -535,7 +545,7 @@ namespace mk
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.active_vmid != m_id)) {
+            if (bsl::unlikely_assert(tls.active_vmid != m_id)) {
                 bsl::error() << "vm "                        // --
                              << bsl::hex(tls.active_vmid)    // --
                              << " is still active on pp "    // --
@@ -547,7 +557,7 @@ namespace mk
             }
 
             auto *const active{m_active.at_if(bsl::to_umax(tls.ppid))};
-            if (bsl::unlikely(nullptr == active)) {
+            if (bsl::unlikely_assert(nullptr == active)) {
                 bsl::error() << "tls.ppid "                        // --
                              << bsl::hex(m_id)                     // --
                              << " is greater than the MAX_PPS "    // --
@@ -558,7 +568,7 @@ namespace mk
                 return bsl::errc_index_out_of_bounds;
             }
 
-            if (bsl::unlikely(!*active)) {
+            if (bsl::unlikely_assert(!*active)) {
                 bsl::error() << "vm "                      // --
                              << bsl::hex(m_id)             // --
                              << " is not active on pp "    // --

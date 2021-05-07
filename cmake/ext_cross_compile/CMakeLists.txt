@@ -27,10 +27,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../init_cross_compile_build.cmake)
 add_subdirectory(../../loader loader)
 add_subdirectory(../../runtime runtime)
 add_subdirectory(../../syscall syscall)
-
-if(NOT CMAKE_BUILD_TYPE STREQUAL RELEASE AND NOT CMAKE_BUILD_TYPE STREQUAL MINSIZEREL)
-    add_subdirectory(../../kernel/integration integration)
-endif()
+add_subdirectory(../../kernel/integration integration)
 
 if(DEFINED HYPERVISOR_EXTENSIONS_DIR)
     add_subdirectory(${HYPERVISOR_EXTENSIONS_DIR} extension)

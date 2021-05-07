@@ -48,10 +48,6 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vm_op_create_vm(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool)
@@ -84,10 +80,6 @@ namespace mk
     ///   @param vp_pool the VP pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
-    ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
     ///
     template<
         typename TLS_CONCEPT,
@@ -128,10 +120,6 @@ namespace mk
     ///   @param vp_pool the VM pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
-    ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
     ///
     template<
         typename TLS_CONCEPT,

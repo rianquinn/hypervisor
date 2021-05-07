@@ -60,7 +60,6 @@ namespace mk
             g_huge_pool,
             g_vps_pool,
             g_vp_pool,
-            g_vm_pool,
-            g_vmexit_log);
+            g_vm_pool);
     }
 }

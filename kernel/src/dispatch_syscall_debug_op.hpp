@@ -59,10 +59,6 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<
         typename TLS_CONCEPT,
         typename EXT_POOL_CONCEPT,

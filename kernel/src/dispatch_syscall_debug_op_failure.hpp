@@ -41,10 +41,6 @@ namespace mk
     ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @param tls the current TLS block
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT>
     constexpr void
     dispatch_syscall_debug_op_failure(TLS_CONCEPT &tls) noexcept

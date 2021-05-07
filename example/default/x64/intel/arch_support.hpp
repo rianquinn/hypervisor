@@ -33,7 +33,7 @@
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace example
 {
@@ -72,7 +72,7 @@ namespace example
         bsl::errc_type ret{};
 
         ret = syscall::bf_vps_op_read32(handle, vpsid, vmcs_procbased_ctls_idx, val);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -80,7 +80,7 @@ namespace example
         val |= vmcs_set_nmi_window_exiting;
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls_idx, val);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -118,7 +118,7 @@ namespace example
         bsl::errc_type ret{};
 
         ret = syscall::bf_vps_op_read32(handle, vpsid, vmcs_procbased_ctls_idx, val);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -126,7 +126,7 @@ namespace example
         val &= vmcs_clear_nmi_window_exiting;
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls_idx, val);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -143,7 +143,7 @@ namespace example
 
         ret = syscall::bf_vps_op_write32(
             handle, vpsid, vmcs_entry_interrupt_info_idx, vmcs_entry_interrupt_info_val);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -183,7 +183,7 @@ namespace example
         switch (exit_reason.get()) {
             case EXIT_REASON_NMI.get(): {
                 ret = handle_vmexit_nmi(handle, vpsid);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return;
                 }
@@ -195,7 +195,7 @@ namespace example
 
             case EXIT_REASON_NMI_WINDOW.get(): {
                 ret = handle_vmexit_nmi_window(handle, vpsid);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return;
                 }
@@ -207,7 +207,7 @@ namespace example
 
             case EXIT_REASON_CPUID.get(): {
                 ret = handle_vmexit_cpuid(handle, vpsid);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return;
                 }
@@ -258,7 +258,7 @@ namespace example
         constexpr bsl::safe_uint16 vmcs_vpid_val{bsl::to_u16(0x1)};
 
         ret = syscall::bf_vps_op_write16(handle, vpsid, vmcs_vpid_idx, vmcs_vpid_val);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -271,7 +271,7 @@ namespace example
         constexpr bsl::safe_uintmax vmcs_link_ptr_val{bsl::to_umax(0xFFFFFFFFFFFFFFFFU)};
 
         ret = syscall::bf_vps_op_write64(handle, vpsid, vmcs_link_ptr_idx, vmcs_link_ptr_val);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -324,13 +324,13 @@ namespace example
         ///
 
         ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_pinbased_ctls, ctls);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_pinbased_ctls_idx, mask(ctls));
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -343,7 +343,7 @@ namespace example
         constexpr bsl::safe_uintmax enable_procbased_ctls2{bsl::to_umax(0x80000000U)};
 
         ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_procbased_ctls, ctls);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -352,7 +352,7 @@ namespace example
         ctls |= enable_procbased_ctls2;
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls_idx, mask(ctls));
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -362,13 +362,13 @@ namespace example
         ///
 
         ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_exit_ctls, ctls);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_exit_ctls_idx, mask(ctls));
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -378,13 +378,13 @@ namespace example
         ///
 
         ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_entry_ctls, ctls);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_entry_ctls_idx, mask(ctls));
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -400,7 +400,7 @@ namespace example
         constexpr bsl::safe_uintmax enable_uwait{bsl::to_umax(0x04000000U)};
 
         ret = syscall::bf_intrinsic_op_rdmsr(handle, ia32_vmx_true_procbased_ctls2, ctls);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -412,7 +412,7 @@ namespace example
         ctls |= enable_uwait;
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, vmcs_procbased_ctls2_idx, mask(ctls));
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -428,14 +428,14 @@ namespace example
 
         if (nullptr == g_msr_bitmaps) {
             ret = syscall::bf_mem_op_alloc_page(handle, g_msr_bitmaps, g_msr_bitmaps_phys);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
         }
 
         ret = syscall::bf_vps_op_write64(handle, vpsid, vmcs_msr_bitmaps, g_msr_bitmaps_phys);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -448,7 +448,7 @@ namespace example
 
         ret = syscall::bf_vps_op_write_reg(
             handle, vpsid, syscall::bf_reg_t::bf_reg_t_rax, bsl::ZERO_UMAX);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }

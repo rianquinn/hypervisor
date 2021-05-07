@@ -101,16 +101,16 @@ namespace integration
         }
 
         ret = syscall::bf_handle_op_open_handle(syscall::BF_SPEC_ID1_VAL, g_handle);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_callback_op_register_bootstrap(g_handle, &bootstrap_entry);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_callback_op_register_vmexit(g_handle, &vmexit_entry);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         bsl::error() << "extension purposely not calling exit syscall. fault expected\n";
     }

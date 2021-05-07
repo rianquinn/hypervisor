@@ -31,9 +31,10 @@
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/exit_code.hpp>
-#include <bsl/finally.hpp>
+#include <bsl/finally_assert.hpp>
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace mk
 {
@@ -126,7 +127,7 @@ namespace mk
         verify_args(MK_ARGS_CONCEPT *const args, TLS_CONCEPT const &tls) noexcept -> bsl::errc_type
         {
             if (args->ppid == syscall::BF_BS_PPID) {
-                if (bsl::unlikely(syscall::BF_INVALID_ID != tls.active_vmid)) {
+                if (bsl::unlikely_assert(syscall::BF_INVALID_ID != tls.active_vmid)) {
                     bsl::error() << "cannot initialize the BSP more than once"    // --
                                  << bsl::endl                                     // --
                                  << bsl::here();                                  // --
@@ -137,7 +138,7 @@ namespace mk
                 bsl::touch();
             }
             else {
-                if (bsl::unlikely(syscall::BF_INVALID_ID != tls.active_vmid)) {
+                if (bsl::unlikely_assert(syscall::BF_INVALID_ID != tls.active_vmid)) {
                     bsl::error() << "cannot initialize the AP more than once"    // --
                                  << bsl::endl                                    // --
                                  << bsl::here();                                 // --
@@ -145,7 +146,7 @@ namespace mk
                     return bsl::errc_failure;
                 }
 
-                if (bsl::unlikely(!m_root_vmid)) {
+                if (bsl::unlikely_assert(!m_root_vmid)) {
                     bsl::error() << "cannot initialize an AP due to previous failure"    // --
                                  << bsl::endl                                            // --
                                  << bsl::here();                                         // --
@@ -156,7 +157,7 @@ namespace mk
                 bsl::touch();
             }
 
-            if (bsl::unlikely(tls.ppid != args->ppid)) {
+            if (bsl::unlikely_assert(tls.ppid != args->ppid)) {
                 bsl::error() << "tls.ppid ["                          // --
                              << bsl::hex(tls.ppid)                    // --
                              << "] doesn't match the args->ppid ["    // --
@@ -168,7 +169,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.ppid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == tls.ppid)) {
                 bsl::error() << "tls.ppid ["                          // --
                              << bsl::hex(tls.ppid)                    // --
                              << "] doesn't match the args->ppid ["    // --
@@ -180,7 +181,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(tls.online_pps != args->online_pps)) {
+            if (bsl::unlikely_assert(tls.online_pps != args->online_pps)) {
                 bsl::error() << "tls.online_pps ["                          // --
                              << bsl::hex(tls.online_pps)                    // --
                              << "] doesn't match the args->online_pps ["    // --
@@ -192,7 +193,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(tls.online_pps > MAX_PPS)) {
+            if (bsl::unlikely_assert(tls.online_pps > MAX_PPS)) {
                 bsl::error() << "tls.online_pps ["                            // --
                              << bsl::hex(tls.online_pps)                      // --
                              << "] is not less or equal to than the max ["    // --
@@ -204,7 +205,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!(args->ppid < args->online_pps))) {
+            if (bsl::unlikely_assert(!(args->ppid < args->online_pps))) {
                 bsl::error() << "the args->ppid ["                         // --
                              << bsl::hex(args->ppid)                       // --
                              << "] is not less than args->online_pps ["    // --
@@ -216,7 +217,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(nullptr == args->mk_state)) {
+            if (bsl::unlikely_assert(nullptr == args->mk_state)) {
                 bsl::error() << "args->mk_state is null"    // --
                              << bsl::endl                   // --
                              << bsl::here();                // --
@@ -224,7 +225,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(nullptr == args->root_vp_state)) {
+            if (bsl::unlikely_assert(nullptr == args->root_vp_state)) {
                 bsl::error() << "args->root_vp_state is null"    // --
                              << bsl::endl                        // --
                              << bsl::here();                     // --
@@ -232,7 +233,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(nullptr == args->debug_ring)) {
+            if (bsl::unlikely_assert(nullptr == args->debug_ring)) {
                 bsl::error() << "args->debug_ring is null"    // --
                              << bsl::endl                     // --
                              << bsl::here();                  // --
@@ -240,7 +241,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(args->mk_elf_file.empty())) {
+            if (bsl::unlikely_assert(args->mk_elf_file.empty())) {
                 bsl::error() << "args->mk_elf_file is empty"    // --
                              << bsl::endl                       // --
                              << bsl::here();                    // --
@@ -248,7 +249,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(args->mk_elf_file.size().is_zero())) {
+            if (bsl::unlikely_assert(args->mk_elf_file.size().is_zero())) {
                 bsl::error() << "args->mk_elf_file's size is zero"    // --
                              << bsl::endl                             // --
                              << bsl::here();                          // --
@@ -256,7 +257,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!(args->mk_elf_file.size() < MK_CODE_SIZE))) {
+            if (bsl::unlikely_assert(!(args->mk_elf_file.size() < MK_CODE_SIZE))) {
                 bsl::error() << "args->mk_elf_file's size is too big"    // --
                              << bsl::endl                                // --
                              << bsl::here();                             // --
@@ -264,7 +265,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(args->ext_elf_files.front().empty())) {
+            if (bsl::unlikely_assert(args->ext_elf_files.front().empty())) {
                 bsl::error() << "args->ext_elf_files.front() is empty"    // --
                              << bsl::endl                                 // --
                              << bsl::here();                              // --
@@ -272,7 +273,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(args->ext_elf_files.front().size().is_zero())) {
+            if (bsl::unlikely_assert(args->ext_elf_files.front().size().is_zero())) {
                 bsl::error() << "args->ext_elf_files.front()'s size is zero"    // --
                              << bsl::endl                                       // --
                              << bsl::here();                                    // --
@@ -280,7 +281,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!(args->ext_elf_files.front().size() < MK_CODE_SIZE))) {
+            if (bsl::unlikely_assert(!(args->ext_elf_files.front().size() < MK_CODE_SIZE))) {
                 bsl::error() << "args->ext_elf_files.front()'s size is too big"    // --
                              << bsl::endl                                          // --
                              << bsl::here();                                       // --
@@ -288,7 +289,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(nullptr == args->rpt)) {
+            if (bsl::unlikely_assert(nullptr == args->rpt)) {
                 bsl::error() << "args->rpt is null"    // --
                              << bsl::endl              // --
                              << bsl::here();           // --
@@ -296,7 +297,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(bsl::ZERO_UMAX == args->rpt_phys)) {
+            if (bsl::unlikely_assert(bsl::ZERO_UMAX == args->rpt_phys)) {
                 bsl::error() << "args->rpt_phys is 0"    // --
                              << bsl::endl                // --
                              << bsl::here();             // --
@@ -304,7 +305,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(args->page_pool.empty())) {
+            if (bsl::unlikely_assert(args->page_pool.empty())) {
                 bsl::error() << "args->page_pool is empty"    // --
                              << bsl::endl                     // --
                              << bsl::here();                  // --
@@ -312,7 +313,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(args->page_pool.size().is_zero())) {
+            if (bsl::unlikely_assert(args->page_pool.size().is_zero())) {
                 bsl::error() << "args->page_pool's size is zero"    // --
                              << bsl::endl                           // --
                              << bsl::here();                        // --
@@ -320,7 +321,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(args->page_pool.size() < PAGE_SIZE)) {
+            if (bsl::unlikely_assert(args->page_pool.size() < PAGE_SIZE)) {
                 bsl::error() << "args->page_pool's size is too small"    // --
                              << bsl::endl                                // --
                              << bsl::here();                             // --
@@ -328,7 +329,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(args->huge_pool.empty())) {
+            if (bsl::unlikely_assert(args->huge_pool.empty())) {
                 bsl::error() << "args->huge_pool is empty"    // --
                              << bsl::endl                     // --
                              << bsl::here();                  // --
@@ -336,7 +337,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(args->huge_pool.size().is_zero())) {
+            if (bsl::unlikely_assert(args->huge_pool.size().is_zero())) {
                 bsl::error() << "args->huge_pool's size is zero"    // --
                              << bsl::endl                           // --
                              << bsl::here();                        // --
@@ -344,7 +345,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(args->huge_pool.size() < PAGE_SIZE)) {
+            if (bsl::unlikely_assert(args->huge_pool.size() < PAGE_SIZE)) {
                 bsl::error() << "args->huge_pool's size is too small"    // --
                              << bsl::endl                                // --
                              << bsl::here();                             // --
@@ -570,7 +571,7 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            bsl::finally reset_root_vmid_on_error{[this]() noexcept -> void {
+            bsl::finally_assert reset_root_vmid_on_error{[this]() noexcept -> void {
                 m_root_vmid = bsl::safe_uint16::zero(true);
             }};
 
@@ -635,7 +636,7 @@ namespace mk
                 return bsl::exit_failure;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vmid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == tls.active_vmid)) {
                 bsl::error() << "bf_vps_op_run was never executed by an extension"    // --
                              << bsl::endl                                             // --
                              << bsl::here();                                          // --
@@ -643,7 +644,7 @@ namespace mk
                 return bsl::exit_failure;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vpid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == tls.active_vpid)) {
                 bsl::error() << "bf_vps_op_run was never executed by an extension"    // --
                              << bsl::endl                                             // --
                              << bsl::here();                                          // --
@@ -651,7 +652,7 @@ namespace mk
                 return bsl::exit_failure;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vpsid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == tls.active_vpsid)) {
                 bsl::error() << "bf_vps_op_run was never executed by an extension"    // --
                              << bsl::endl                                             // --
                              << bsl::here();                                          // --
@@ -659,7 +660,7 @@ namespace mk
                 return bsl::exit_failure;
             }
 
-            if (bsl::unlikely(nullptr == tls.active_rpt)) {
+            if (bsl::unlikely_assert(nullptr == tls.active_rpt)) {
                 bsl::error() << "bf_vps_op_run was never executed by an extension"    // --
                              << bsl::endl                                             // --
                              << bsl::here();                                          // --
@@ -683,6 +684,8 @@ namespace mk
             /// going to look like, so good luck.
             /// Need to finish the migration stuff so that it makes sense.
 
+            // [ ] what happens if a failure handler throws an exception?
+            // [ ] need fast fail integration tests
             // [ ] fast fail is not working right. Once the handler is
             //     installed by the extension, any error should call this
             //     and then we return based on what the extension tells us
@@ -748,6 +751,9 @@ namespace mk
             // [ ] implement checks for which MSRs can be read/written
             // [ ] implement checks for VMCS fields can be read/written
             // [ ] implement contants for all of the asm logic
+            // [ ] implement version of likely/unlikely that always returns true/false in release/minsizerel mode
+            //     Anything that is not part of the userspace ABI path should have
+            //     these checks removed in release/minsizerel mode
         }
     };
 }

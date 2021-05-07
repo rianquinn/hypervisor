@@ -33,6 +33,7 @@
 #include <bsl/finally.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace mk
 {
@@ -66,18 +67,23 @@ namespace mk
         [[nodiscard]] constexpr auto
         initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(m_id)) {
+            if (bsl::unlikely_assert(m_id)) {
                 bsl::error() << "vp_t already initialized\n" << bsl::here();
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!i)) {
+            if (bsl::unlikely_assert(!i)) {
                 bsl::error() << "invalid id\n" << bsl::here();
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == i)) {
-                bsl::error() << "invalid id\n" << bsl::here();
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == i)) {
+                bsl::error() << "id "                                                  // --
+                             << bsl::hex(i)                                            // --
+                             << " is invalid and cannot be used for initialization"    // --
+                             << bsl::endl                                              // --
+                             << bsl::here();                                           // --
+
                 return bsl::errc_precondition;
             }
 
@@ -109,7 +115,7 @@ namespace mk
                 this->zombify();
             }};
 
-            auto const vpsid{vps_pool.is_assigned_to_vp(tls, m_id)};
+            auto const vpsid{vps_pool.is_assigned_to_vp(m_id)};
             if (bsl::unlikely(vpsid)) {
                 bsl::error() << "vps "                    // --
                              << bsl::hex(vpsid)           // --
@@ -180,42 +186,74 @@ namespace mk
             bsl::safe_uint16 const &vmid,
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vp_t not initialized\n" << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(!vmid)) {
+            if (bsl::unlikely_assert(!vmid)) {
                 bsl::error() << "invalid vmid\n" << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID == vmid)) {
-                bsl::error() << "invalid vmid\n" << bsl::here();
+                bsl::error() << "vm "                                              // --
+                             << bsl::hex(vmid)                                     // --
+                             << " is invalid and a vp cannot be assigned to it"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
                 return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(!vm_pool.is_allocated(vmid))) {
-                bsl::error() << "invalid vmid\n" << bsl::here();
+            if (bsl::unlikely(vm_pool.is_zombie(vmid))) {
+                bsl::error() << "vm "                                               // --
+                             << bsl::hex(vmid)                                      // --
+                             << " is a zombie and a vp cannot be assigned to it"    // --
+                             << bsl::endl                                           // --
+                             << bsl::here();                                        // --
+
                 return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(!ppid)) {
+            if (bsl::unlikely(vm_pool.is_deallocated(vmid))) {
+                bsl::error() << "vm "                                                        // --
+                             << bsl::hex(vmid)                                               // --
+                             << " has not been created and a vp cannot be assigned to it"    // --
+                             << bsl::endl                                                    // --
+                             << bsl::here();                                                 // --
+
+                return bsl::safe_uint16::zero(true);
+            }
+
+            if (bsl::unlikely_assert(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
+                bsl::error() << "pp "                                              // --
+                             << bsl::hex(ppid)                                     // --
+                             << " is invalid and a vp cannot be assigned to it"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
                 return bsl::safe_uint16::zero(true);
             }
 
             if (bsl::unlikely(!(ppid < tls.online_pps))) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
+                bsl::error() << "pp "                                                  // --
+                             << bsl::hex(ppid)                                         // --
+                             << " is not less than the total number of online pps "    // --
+                             << bsl::hex(tls.online_pps)                               // --
+                             << " and a vp cannot be assigned to it"                   // --
+                             << bsl::endl                                              // --
+                             << bsl::here();                                           // --
+
                 return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(m_allocated == allocated_status_t::zombie)) {
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::zombie)) {
                 bsl::error() << "vp "                                     // --
                              << bsl::hex(m_id)                            // --
                              << " is a zombie and cannot be allocated"    // --
@@ -225,7 +263,7 @@ namespace mk
                 return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(m_allocated == allocated_status_t::allocated)) {
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::allocated)) {
                 bsl::error() << "vp "                                            // --
                              << bsl::hex(m_id)                                   // --
                              << " is already allocated and cannot be created"    // --
@@ -260,7 +298,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         deallocate(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vp_t not initialized\n" << bsl::here();
                 return bsl::errc_precondition;
             }
@@ -290,7 +328,7 @@ namespace mk
                 this->zombify();
             }};
 
-            auto const vpsid{vps_pool.is_assigned_to_vp(tls, m_id)};
+            auto const vpsid{vps_pool.is_assigned_to_vp(m_id)};
             if (bsl::unlikely(vpsid)) {
                 bsl::error() << "vps "                    // --
                              << bsl::hex(vpsid)           // --
@@ -334,6 +372,10 @@ namespace mk
         constexpr void
         zombify() &noexcept
         {
+            if (bsl::unlikely_assert(!m_id)) {
+                return;
+            }
+
             if (m_allocated == allocated_status_t::zombie) {
                 return;
             }
@@ -395,17 +437,30 @@ namespace mk
         [[nodiscard]] constexpr auto
         set_active(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vp_t not initialized\n" << bsl::here();
                 return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
-                bsl::error() << "vp "                                                    // --
-                             << bsl::hex(m_id)                                           // --
-                             << " has not been properly allocated and cannot be used"    // --
-                             << bsl::endl                                                // --
-                             << bsl::here();                                             // --
+                bsl::error() << "vp "                                              // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely(tls.active_vmid != m_assigned_vmid)) {
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to vm "                  // --
+                             << bsl::hex(m_assigned_vmid)              // --
+                             << " and cannot be activated with vm "    // --
+                             << bsl::hex(tls.active_vmid)              // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
                 return bsl::errc_precondition;
             }
@@ -423,7 +478,7 @@ namespace mk
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID != tls.active_vpid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID != tls.active_vpid)) {
                 bsl::error() << "vp "                        // --
                              << bsl::hex(tls.active_vpid)    // --
                              << " is still active on pp "    // --
@@ -464,35 +519,22 @@ namespace mk
         [[nodiscard]] constexpr auto
         set_inactive(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vp_t not initialized\n" << bsl::here();
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(m_allocated == allocated_status_t::deallocated)) {
-                bsl::error() << "vp "                                                    // --
-                             << bsl::hex(m_id)                                           // --
-                             << " has not been properly allocated and cannot be used"    // --
-                             << bsl::endl                                                // --
-                             << bsl::here();                                             // --
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::deallocated)) {
+                bsl::error() << "vp "                                              // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vp "                                  // --
-                             << bsl::hex(m_id)                         // --
-                             << " is assigned to pp "                  // --
-                             << bsl::hex(m_assigned_ppid)              // --
-                             << " and cannot be deactivated on pp "    // --
-                             << bsl::hex(tls.ppid)                     // --
-                             << bsl::endl                              // --
-                             << bsl::here();                           // --
-
-                return bsl::errc_precondition;
-            }
-
-            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vpid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == tls.active_vpid)) {
                 bsl::error() << "vp "                      // --
                              << bsl::hex(m_id)             // --
                              << " is not active on pp "    // --
@@ -503,7 +545,7 @@ namespace mk
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.active_vpid != m_id)) {
+            if (bsl::unlikely_assert(tls.active_vpid != m_id)) {
                 bsl::error() << "vp "                        // --
                              << bsl::hex(tls.active_vpid)    // --
                              << " is still active on pp "    // --
@@ -514,7 +556,7 @@ namespace mk
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_active_ppid)) {
+            if (bsl::unlikely_assert(!m_active_ppid)) {
                 bsl::error() << "vp "                // --
                              << bsl::hex(m_id)       // --
                              << " is not active "    // --
@@ -524,7 +566,7 @@ namespace mk
                 return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.ppid != m_active_ppid)) {
+            if (bsl::unlikely_assert(tls.ppid != m_active_ppid)) {
                 bsl::error() << "vp "                      // --
                              << bsl::hex(m_id)             // --
                              << " is not active on pp "    // --
@@ -601,76 +643,71 @@ namespace mk
         [[nodiscard]] constexpr auto
         migrate(TLS_CONCEPT &tls, bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
         {
-            bsl::discard(tls);
-            bsl::discard(ppid);
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vp_t not initialized\n" << bsl::here();
+                return bsl::errc_precondition;
+            }
 
-            // if (bsl::unlikely(!m_id)) {
-            //     bsl::error() << "vp_t not initialized\n" << bsl::here();
-            //     return bsl::errc_failure;
-            // }
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vp "                                              // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-            // if (bsl::unlikely(!m_allocated)) {
-            //     bsl::error() << "vp "                     // --
-            //                  << bsl::hex(m_id)            // --
-            //                  << " was never allocated"    // --
-            //                  << bsl::endl                 // --
-            //                  << bsl::here();              // --
+                return bsl::errc_precondition;
+            }
 
-            //     return bsl::errc_failure;
-            // }
+            if (bsl::unlikely_assert(!ppid)) {
+                bsl::error() << "invalid ppid\n" << bsl::here();
+                return bsl::errc_precondition;
+            }
 
-            // if (bsl::unlikely(!ppid)) {
-            //     bsl::error() << "invalid ppid\n" << bsl::here();
-            //     return bsl::errc_failure;
-            // }
+            if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
+                bsl::error() << "pp "                                              // --
+                             << bsl::hex(ppid)                                     // --
+                             << " is invalid and a vp cannot be assigned to it"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-            // if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
-            //     bsl::error() << "invalid ppid\n" << bsl::here();
-            //     return bsl::errc_failure;
-            // }
+                return bsl::errc_precondition;
+            }
 
-            // if (bsl::unlikely(!(ppid < tls.online_pps))) {
-            //     bsl::error() << "invalid ppid\n" << bsl::here();
-            //     return bsl::errc_failure;
-            // }
+            if (bsl::unlikely(!(ppid < tls.online_pps))) {
+                bsl::error() << "pp "                                                  // --
+                             << bsl::hex(ppid)                                         // --
+                             << " is not less than the total number of online pps "    // --
+                             << bsl::hex(tls.online_pps)                               // --
+                             << " and a vp cannot be assigned to it"                   // --
+                             << bsl::endl                                              // --
+                             << bsl::here();                                           // --
 
-            // if (bsl::unlikely(tls.ppid != ppid)) {
-            //     bsl::error() << "vp "                          // --
-            //                  << bsl::hex(m_id)                 // --
-            //                  << " is being migrated to pp "    // --
-            //                  << bsl::hex(ppid)                 // --
-            //                  << " by pp "                      // --
-            //                  << bsl::hex(tls.ppid)             // --
-            //                  << " which is not allowed "       // --
-            //                  << bsl::endl                      // --
-            //                  << bsl::here();                   // --
+                return bsl::errc_precondition;
+            }
 
-            //     return bsl::errc_failure;
-            // }
+            if (bsl::unlikely_assert(ppid == m_assigned_ppid)) {
+                bsl::error() << "vp "                              // --
+                             << bsl::hex(m_id)                     // --
+                             << " is already assigned to a pp "    // --
+                             << bsl::hex(m_assigned_ppid)          // --
+                             << bsl::endl                          // --
+                             << bsl::here();                       // --
 
-            // if (bsl::unlikely(ppid == m_assigned_ppid)) {
-            //     bsl::error() << "vp "                              // --
-            //                  << bsl::hex(m_id)                     // --
-            //                  << " is already assigned to a pp "    // --
-            //                  << bsl::hex(m_assigned_ppid)          // --
-            //                  << bsl::endl                          // --
-            //                  << bsl::here();                       // --
+                return bsl::errc_precondition;
+            }
 
-            //     return bsl::errc_failure;
-            // }
+            if (bsl::unlikely(m_active_ppid)) {
+                bsl::error() << "vp "                        // --
+                             << bsl::hex(m_id)               // --
+                             << " is still active on pp "    // --
+                             << bsl::hex(m_active_ppid)      // --
+                             << bsl::endl                    // --
+                             << bsl::here();                 // --
 
-            // if (bsl::unlikely(syscall::BF_INVALID_ID != m_active_ppid)) {
-            //     bsl::error() << "vp "                        // --
-            //                  << bsl::hex(m_id)               // --
-            //                  << " is still active on pp "    // --
-            //                  << bsl::hex(m_active_ppid)      // --
-            //                  << bsl::endl                    // --
-            //                  << bsl::here();                 // --
+                return bsl::errc_precondition;
+            }
 
-            //     return bsl::errc_failure;
-            // }
-
-            // m_assigned_ppid = ppid;
+            m_assigned_ppid = ppid;
             return bsl::errc_success;
         }
 

@@ -51,8 +51,7 @@ namespace mk
         ///     bsl::safe_uint16::zero(true)
         ///
         [[nodiscard]] constexpr auto
-        is_assigned_to_vm(bsl::safe_uint16 const &vmid) const &noexcept
-            -> bsl::safe_uint16
+        is_assigned_to_vm(bsl::safe_uint16 const &vmid) const &noexcept -> bsl::safe_uint16
         {
             bsl::discard(vmid);
             return bsl::safe_uint16::zero(true);

@@ -359,7 +359,7 @@ memset:
 
 
 
-    .data
+    .rodata
     .intel_syntax noprefix
 
     .globl  __stack_chk_guard

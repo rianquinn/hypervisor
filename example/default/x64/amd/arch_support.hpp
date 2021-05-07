@@ -33,7 +33,7 @@
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace example
 {
@@ -66,7 +66,7 @@ namespace example
         switch (exit_reason.get()) {
             case exit_reason_cpuid.get(): {
                 ret = handle_vmexit_cpuid(handle, vpsid);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return;
                 }
@@ -111,7 +111,7 @@ namespace example
         constexpr bsl::safe_uint32 guest_asid_val{bsl::to_u32(0x1U)};
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, guest_asid_idx, guest_asid_val);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -128,14 +128,14 @@ namespace example
 
         ret = syscall::bf_vps_op_write32(
             handle, vpsid, intercept_instruction1_idx, intercept_instruction1_val);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
 
         ret = syscall::bf_vps_op_write32(
             handle, vpsid, intercept_instruction2_idx, intercept_instruction2_val);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
@@ -148,7 +148,7 @@ namespace example
 
         ret = syscall::bf_vps_op_write_reg(
             handle, vpsid, syscall::bf_reg_t::bf_reg_t_rax, bsl::ZERO_UMAX);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }

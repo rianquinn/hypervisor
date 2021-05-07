@@ -36,7 +36,7 @@
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/touch.hpp>
-#include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace example
 {
@@ -83,13 +83,13 @@ namespace example
                     syscall::bf_tls_set_rax(handle, bsl::ZERO_UMAX);
 
                     ret = syscall::bf_vps_op_advance_ip(handle, vpsid);
-                    if (bsl::unlikely(!ret)) {
+                    if (bsl::unlikely_assert(!ret)) {
                         bsl::print<bsl::V>() << bsl::here();
                         return ret;
                     }
 
                     ret = syscall::bf_vps_op_promote(handle, vpsid);
-                    if (bsl::unlikely(!ret)) {
+                    if (bsl::unlikely_assert(!ret)) {
                         bsl::print<bsl::V>() << bsl::here();
                         return ret;
                     }
@@ -102,6 +102,15 @@ namespace example
                     bsl::debug() << bsl::rst << "host os is"                      // --
                                  << bsl::grn << " now "                           // --
                                  << bsl::rst << "in a vm (default example)\n";    // --
+
+                    if (vpsid + bsl::ONE_U16 == syscall::bf_tls_online_pps()) {
+                        bsl::print() << bsl::endl;
+                        syscall::bf_debug_op_dump_page_pool();
+                        bsl::print() << bsl::endl;
+                    }
+                    else {
+                        bsl::touch();
+                    }
 
                     return bsl::errc_success;
                 }

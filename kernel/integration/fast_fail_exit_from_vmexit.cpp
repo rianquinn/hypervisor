@@ -85,19 +85,19 @@ namespace integration
         bsl::safe_uint16 vpsid{};
 
         ret = syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, ppid, vpid);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_vps_op_create_vps(g_handle, vpid, ppid, vpsid);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_vps_op_init_as_root(g_handle, vpsid);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = init_vps(g_handle, vpsid);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_vps_op_run(g_handle, syscall::BF_ROOT_VMID, vpid, vpsid);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         bsl::print<bsl::V>() << bsl::here();
         syscall::bf_control_op_exit();
@@ -123,16 +123,16 @@ namespace integration
         }
 
         ret = syscall::bf_handle_op_open_handle(syscall::BF_SPEC_ID1_VAL, g_handle);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_callback_op_register_bootstrap(g_handle, &bootstrap_entry);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_callback_op_register_vmexit(g_handle, &vmexit_entry);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         syscall::bf_control_op_wait();
     }

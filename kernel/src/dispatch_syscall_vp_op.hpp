@@ -52,10 +52,9 @@ namespace mk
     syscall_vp_op_create_vp(TLS_CONCEPT &tls, VM_POOL_CONCEPT &vm_pool, VP_POOL_CONCEPT &vp_pool)
         -> bsl::errc_type
     {
-        auto const vmid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        auto const ppid{bsl::to_u16_unsafe(tls.ext_reg2)};
+        auto const vpid{vp_pool.allocate(
+            tls, vm_pool, bsl::to_u16_unsafe(tls.ext_reg1), bsl::to_u16_unsafe(tls.ext_reg2))};
 
-        auto const vpid{vp_pool.allocate(tls, vm_pool, vmid, ppid)};
         if (bsl::unlikely(!vpid)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
@@ -86,8 +85,7 @@ namespace mk
     syscall_vp_op_destroy_vp(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        auto const vpid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        auto const ret{vp_pool.deallocate(tls, vps_pool, vpid)};
+        auto const ret{vp_pool.deallocate(tls, vps_pool, bsl::to_u16_unsafe(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
@@ -112,10 +110,10 @@ namespace mk
     [[nodiscard]] constexpr auto
     syscall_vp_op_migrate(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) -> bsl::errc_type
     {
-        auto const vpid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        auto const ppid{bsl::to_u16_unsafe(tls.ext_reg2)};
+        auto const ret{vp_pool.migrate(
+            tls, bsl::to_u16_unsafe(tls.ext_reg1), bsl::to_u16_unsafe(tls.ext_reg2))};
 
-        if (bsl::unlikely(!vp_pool.migrate(tls, vpid, ppid))) {
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }

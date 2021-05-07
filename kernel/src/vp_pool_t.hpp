@@ -32,8 +32,9 @@
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
-#include <bsl/finally.hpp>
+#include <bsl/finally_assert.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace mk
 {
@@ -50,9 +51,9 @@ namespace mk
     class vp_pool_t final
     {
         /// @brief stores the VP_CONCEPTs in the VP_CONCEPT linked list
-        bsl::array<VP_CONCEPT, MAX_VPS> m_pool;
+        bsl::array<VP_CONCEPT, MAX_VPS> m_pool{};
         /// @brief safe guards operations on the pool.
-        mutable spinlock m_lock;
+        mutable spinlock m_lock{};
 
     public:
         /// @brief an alias for VP_CONCEPT
@@ -73,7 +74,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         initialize(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) &noexcept -> bsl::errc_type
         {
-            bsl::finally release_on_error{[this, &tls, &vps_pool]() noexcept -> void {
+            bsl::finally_assert release_on_error{[this, &tls, &vps_pool]() noexcept -> void {
                 auto const ret{this->release(tls, vps_pool)};
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
@@ -85,7 +86,7 @@ namespace mk
 
             for (auto const vp : m_pool) {
                 auto const ret{vp.data->initialize(bsl::to_u16(vp.index))};
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
@@ -328,15 +329,14 @@ namespace mk
         ///     function will return bsl::safe_uint16::zero(true)
         ///
         [[nodiscard]] constexpr auto
-        is_assigned_to_vm(bsl::safe_uint16 const &vmid) const &noexcept
-            -> bsl::safe_uint16
+        is_assigned_to_vm(bsl::safe_uint16 const &vmid) const &noexcept -> bsl::safe_uint16
         {
-            if (bsl::unlikely(!vmid)) {
+            if (bsl::unlikely_assert(!vmid)) {
                 bsl::error() << "invalid vmid\n" << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == vmid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == vmid)) {
                 bsl::error() << "invalid vmid\n" << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }

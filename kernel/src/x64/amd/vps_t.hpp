@@ -38,6 +38,7 @@
 #include <bsl/safe_integral.hpp>
 #include <bsl/string_view.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace mk
 {
@@ -84,18 +85,16 @@ namespace mk
     ///
     class vps_t final
     {
-        /// @brief stores the next vps_t in the vps_pool_t linked list
-        vps_t *m_next{};
-        /// @brief stores the ID associated with this vps_t
+        /// @brief stores the ID associated with this vp_t
         bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
-        /// @brief stores whether or not this vps_t is allocated.
-        bool m_allocated{};
+        /// @brief stores whether or not this vp_t is allocated.
+        allocated_status_t m_allocated{allocated_status_t::deallocated};
         /// @brief stores the ID of the VP this vps_t is assigned to
         bsl::safe_uint16 m_assigned_vpid{syscall::BF_INVALID_ID};
-        /// @brief stores the ID of the PP this vps_t is assigned to
+        /// @brief stores the ID of the PP this vp_t is assigned to
         bsl::safe_uint16 m_assigned_ppid{syscall::BF_INVALID_ID};
-        /// @brief stores the ID of the PP this vps_t is active on
-        bsl::safe_uint16 m_active_ppid{syscall::BF_INVALID_ID};
+        /// @brief stores the ID of the PP this vp_t is active on
+        bsl::safe_uint16 m_active_ppid{bsl::safe_uint16::zero(true)};
 
         /// @brief stores a pointer to the guest VMCB being managed by this VPS
         vmcb_t *m_guest_vmcb{};
@@ -120,6 +119,10 @@ namespace mk
         constexpr void
         dump_field(bsl::string_view const &str, bsl::safe_integral<T> const &val) const &noexcept
         {
+            if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
+                return;
+            }
+
             auto const *rowcolor{bsl::rst};
 
             if (val.is_zero()) {
@@ -155,50 +158,6 @@ namespace mk
 
     public:
         /// <!-- description -->
-        ///   @brief Default constructor
-        ///
-        constexpr vps_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief Destructor
-        ///
-        constexpr ~vps_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr vps_t(vps_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr vps_t(vps_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(vps_t const &o) &noexcept -> vps_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(vps_t &&o) &noexcept -> vps_t & = default;
-
-        /// <!-- description -->
         ///   @brief Initializes this vps_t
         ///
         /// <!-- inputs/outputs -->
@@ -209,19 +168,24 @@ namespace mk
         [[nodiscard]] constexpr auto
         initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(m_id)) {
-                bsl::error() << "vp_t already initialized\n" << bsl::here();
-                return bsl::errc_failure;
+            if (bsl::unlikely_assert(m_id)) {
+                bsl::error() << "vps_t already initialized\n" << bsl::here();
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!i)) {
+            if (bsl::unlikely_assert(!i)) {
                 bsl::error() << "invalid id\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == i)) {
-                bsl::error() << "invalid id\n" << bsl::here();
-                return bsl::errc_failure;
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == i)) {
+                bsl::error() << "id "                                                  // --
+                             << bsl::hex(i)                                            // --
+                             << " is invalid and cannot be used for initialization"    // --
+                             << bsl::endl                                              // --
+                             << bsl::here();                                           // --
+
+                return bsl::errc_precondition;
             }
 
             m_id = i;
@@ -245,14 +209,25 @@ namespace mk
         [[nodiscard]] constexpr auto
         release(TLS_CONCEPT &tls, PAGE_POOL_CONCEPT &page_pool) &noexcept -> bsl::errc_type
         {
-            if (syscall::BF_INVALID_ID != m_active_ppid) {
-                bsl::error() << "vps "                       // --
-                             << bsl::hex(m_id)               // --
-                             << " is still active on pp "    // --
-                             << bsl::hex(m_active_ppid)      // --
-                             << " and cannot be released"    // --
-                             << bsl::endl                    // --
-                             << bsl::here();                 // --
+            if (this->is_zombie()) {
+                return bsl::errc_success;
+            }
+
+            tls.state_reversal_required = true;
+            bsl::finally zombify_on_error{[this]() noexcept -> void {
+                this->zombify();
+            }};
+
+            if (bsl::unlikely(m_active_ppid)) {
+                bsl::error() << "vp "                      // --
+                             << bsl::hex(m_id)             // --
+                             << " is active on pp "        // --
+                             << bsl::hex(m_active_ppid)    // --
+                             << " and therefore vp "       // --
+                             << bsl::hex(m_id)             // --
+                             << " cannot be destroyed"     // --
+                             << bsl::endl                  // --
+                             << bsl::here();               // --
 
                 return bsl::errc_failure;
             }
@@ -269,9 +244,10 @@ namespace mk
 
             m_assigned_ppid = syscall::BF_INVALID_ID;
             m_assigned_vpid = syscall::BF_INVALID_ID;
-            m_allocated = {};
+            m_allocated = allocated_status_t::deallocated;
             m_id = bsl::safe_uint16::zero(true);
 
+            zombify_on_error.ignore();
             return bsl::errc_success;
         }
 
@@ -294,64 +270,120 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
+        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param page_pool the page pool to use
+        ///   @param vp_pool the VP pool to use
         ///   @param vpid The ID of the VP to assign the newly created VP to
         ///   @param ppid The ID of the PP to assign the newly created VP to
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     and friends otherwise
+        ///   @return Returns ID of the newly allocated vps
         ///
-        template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT>
+        template<
+            typename TLS_CONCEPT,
+            typename INTRINSIC_CONCEPT,
+            typename PAGE_POOL_CONCEPT,
+            typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
         allocate(
             TLS_CONCEPT &tls,
             INTRINSIC_CONCEPT &intrinsic,
             PAGE_POOL_CONCEPT &page_pool,
+            VP_POOL_CONCEPT &vp_pool,
             bsl::safe_uint16 const &vpid,
-            bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
         {
             bsl::discard(intrinsic);
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(m_allocated)) {
-                bsl::error() << "vps "                     // --
-                             << bsl::hex(m_id)             // --
-                             << " is already allocated"    // --
-                             << bsl::endl                  // --
-                             << bsl::here();               // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!vpid)) {
+            if (bsl::unlikely_assert(!vpid)) {
                 bsl::error() << "invalid vpid\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID == vpid)) {
-                bsl::error() << "invalid vpid\n" << bsl::here();
-                return bsl::errc_failure;
+                bsl::error() << "vp "                                               // --
+                             << bsl::hex(vpid)                                      // --
+                             << " is invalid and a vps cannot be assigned to it"    // --
+                             << bsl::endl                                           // --
+                             << bsl::here();                                        // --
+
+                return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(!ppid)) {
+            if (bsl::unlikely(vp_pool.is_zombie(vpid))) {
+                bsl::error() << "vp "                                                // --
+                             << bsl::hex(vpid)                                       // --
+                             << " is a zombie and a vps cannot be assigned to it"    // --
+                             << bsl::endl                                            // --
+                             << bsl::here();                                         // --
+
+                return bsl::safe_uint16::zero(true);
+            }
+
+            if (bsl::unlikely(vp_pool.is_deallocated(vpid))) {
+                bsl::error() << "vp "                                                         // --
+                             << bsl::hex(vpid)                                                // --
+                             << " has not been created and a vps cannot be assigned to it"    // --
+                             << bsl::endl                                                     // --
+                             << bsl::here();                                                  // --
+
+                return bsl::safe_uint16::zero(true);
+            }
+
+            if (bsl::unlikely_assert(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
+                bsl::error() << "pp "                                               // --
+                             << bsl::hex(ppid)                                      // --
+                             << " is invalid and a vps cannot be assigned to it"    // --
+                             << bsl::endl                                           // --
+                             << bsl::here();                                        // --
+
+                return bsl::safe_uint16::zero(true);
             }
 
             if (bsl::unlikely(!(ppid < tls.online_pps))) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
+                bsl::error() << "pp "                                                  // --
+                             << bsl::hex(ppid)                                         // --
+                             << " is not less than the total number of online pps "    // --
+                             << bsl::hex(tls.online_pps)                               // --
+                             << " and a vps cannot be assigned to it"                  // --
+                             << bsl::endl                                              // --
+                             << bsl::here();                                           // --
+
+                return bsl::safe_uint16::zero(true);
             }
+
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::zombie)) {
+                bsl::error() << "vps "                                    // --
+                             << bsl::hex(m_id)                            // --
+                             << " is a zombie and cannot be allocated"    // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
+
+                return bsl::safe_uint16::zero(true);
+            }
+
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                           // --
+                             << bsl::hex(m_id)                                   // --
+                             << " is already allocated and cannot be created"    // --
+                             << bsl::endl                                        // --
+                             << bsl::here();                                     // --
+
+                return bsl::safe_uint16::zero(true);
+            }
+
+            tls.state_reversal_required = true;
+            tls.log_vpsid = m_id.get();
 
             bsl::finally cleanup_on_error{[this, &tls, &page_pool]() noexcept -> void {
                 m_host_vmcb_phys = bsl::safe_uintmax::zero(true);
@@ -365,34 +397,34 @@ namespace mk
 
             m_guest_vmcb = page_pool.template allocate<vmcb_t>(tls, ALLOCATE_TAG_GUEST_VMCB);
             if (bsl::unlikely(nullptr == m_guest_vmcb)) {
-                bsl::print() << bsl::here();
-                return bsl::errc_failure;
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::safe_uint16::zero(true);
             }
 
             m_guest_vmcb_phys = page_pool.virt_to_phys(m_guest_vmcb);
             if (bsl::unlikely(!m_guest_vmcb_phys)) {
-                bsl::print() << bsl::here();
-                return bsl::errc_failure;
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::safe_uint16::zero(true);
             }
 
             m_host_vmcb = page_pool.template allocate<vmcb_t>(tls, ALLOCATE_TAG_HOST_VMCB);
             if (bsl::unlikely(nullptr == m_host_vmcb)) {
-                bsl::print() << bsl::here();
-                return bsl::errc_failure;
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::safe_uint16::zero(true);
             }
 
             m_host_vmcb_phys = page_pool.virt_to_phys(m_host_vmcb);
             if (bsl::unlikely(!m_host_vmcb_phys)) {
-                bsl::print() << bsl::here();
-                return bsl::errc_failure;
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::safe_uint16::zero(true);
             }
 
             m_assigned_vpid = vpid;
             m_assigned_ppid = ppid;
-            m_allocated = true;
+            m_allocated = allocated_status_t::allocated;
 
             cleanup_on_error.ignore();
-            return bsl::errc_success;
+            return m_id;
         }
 
         /// <!-- description -->
@@ -410,35 +442,46 @@ namespace mk
         [[nodiscard]] constexpr auto
         deallocate(TLS_CONCEPT &tls, PAGE_POOL_CONCEPT &page_pool) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
-                return bsl::errc_success;
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vps_t not initialized\n" << bsl::here();
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                return bsl::errc_success;
+            if (bsl::unlikely(m_allocated == allocated_status_t::zombie)) {
+                bsl::error() << "vps "                                    // --
+                             << bsl::hex(m_id)                            // --
+                             << " is a zombie and cannot be destroyed"    // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
+
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vps "                                 // --
-                             << bsl::hex(m_id)                         // --
-                             << " is assigned to pp "                  // --
-                             << bsl::hex(m_assigned_ppid)              // --
-                             << " and cannot be deallocated on pp "    // --
-                             << bsl::hex(tls.ppid)                     // --
-                             << bsl::endl                              // --
-                             << bsl::here();                           // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                               // --
+                             << bsl::hex(m_id)                                       // --
+                             << " is already deallocated and cannot be destroyed"    // --
+                             << bsl::endl                                            // --
+                             << bsl::here();                                         // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (syscall::BF_INVALID_ID != m_active_ppid) {
-                bsl::error() << "vps "                          // --
-                             << bsl::hex(m_id)                  // --
-                             << " is still active on pp "       // --
-                             << bsl::hex(m_active_ppid)         // --
-                             << " and cannot be deallocated"    // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+            tls.state_reversal_required = true;
+            bsl::finally zombify_on_error{[this]() noexcept -> void {
+                this->zombify();
+            }};
+
+            if (bsl::unlikely(m_active_ppid)) {
+                bsl::error() << "vps "                     // --
+                             << bsl::hex(m_id)             // --
+                             << " is active on pp "        // --
+                             << bsl::hex(m_active_ppid)    // --
+                             << " and therefore vps "      // --
+                             << bsl::hex(m_id)             // --
+                             << " cannot be destroyed"     // --
+                             << bsl::endl                  // --
+                             << bsl::here();               // --
 
                 return bsl::errc_failure;
             }
@@ -455,9 +498,45 @@ namespace mk
 
             m_assigned_ppid = syscall::BF_INVALID_ID;
             m_assigned_vpid = syscall::BF_INVALID_ID;
-            m_allocated = {};
+            m_allocated = allocated_status_t::deallocated;
 
+            zombify_on_error.ignore();
             return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets this vps_t's status as zombified, meaning it is no
+        ///     longer usable.
+        ///
+        constexpr void
+        zombify() &noexcept
+        {
+            if (bsl::unlikely_assert(!m_id)) {
+                return;
+            }
+
+            if (m_allocated == allocated_status_t::zombie) {
+                return;
+            }
+
+            bsl::alert() << "vps "                   // --
+                         << bsl::hex(m_id)           // --
+                         << " has been zombified"    // --
+                         << bsl::endl;               // --
+
+            m_allocated = allocated_status_t::zombie;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if this vps_t is deallocated, false otherwise
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns true if this vps_t is deallocated, false otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        is_deallocated() const &noexcept -> bool
+        {
+            return m_allocated == allocated_status_t::deallocated;
         }
 
         /// <!-- description -->
@@ -469,7 +548,19 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_allocated() const &noexcept -> bool
         {
-            return m_allocated;
+            return m_allocated == allocated_status_t::allocated;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if this vps_t is a zombie, false otherwise
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns true if this vps_t is a zombie, false otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        is_zombie() const &noexcept -> bool
+        {
+            return m_allocated == allocated_status_t::zombie;
         }
 
         /// <!-- description -->
@@ -487,19 +578,34 @@ namespace mk
         [[nodiscard]] constexpr auto
         set_active(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            bsl::discard(intrinsic);
+
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely(tls.active_vpid != m_assigned_vpid)) {
+                bsl::error() << "vps "                                 // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to vp "                  // --
+                             << bsl::hex(m_assigned_vpid)              // --
+                             << " and cannot be activated with vp "    // --
+                             << bsl::hex(tls.active_vpid)              // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
+
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
@@ -512,21 +618,10 @@ namespace mk
                              << bsl::endl                            // --
                              << bsl::here();                         // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.active_vpsid == m_id)) {
-                bsl::error() << "vps "                                 // --
-                             << bsl::hex(m_id)                         // --
-                             << " is already the active vps on pp "    // --
-                             << bsl::hex(tls.ppid)                     // --
-                             << bsl::endl                              // --
-                             << bsl::here();                           // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(syscall::BF_INVALID_ID != tls.active_vpsid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID != tls.active_vpsid)) {
                 bsl::error() << "vps "                        // --
                              << bsl::hex(tls.active_vpsid)    // --
                              << " is still active on pp "     // --
@@ -534,10 +629,10 @@ namespace mk
                              << bsl::endl                     // --
                              << bsl::here();                  // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID != m_active_ppid)) {
+            if (bsl::unlikely(m_active_ppid)) {
                 bsl::error() << "vps "                                 // --
                              << bsl::hex(m_id)                         // --
                              << " is already the active vps on pp "    // --
@@ -545,7 +640,7 @@ namespace mk
                              << bsl::endl                              // --
                              << bsl::here();                           // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             intrinsic.set_tls_reg(syscall::TLS_OFFSET_RAX, m_gprs.rax);
@@ -585,35 +680,22 @@ namespace mk
         [[nodiscard]] constexpr auto
         set_inactive(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::deallocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vps "                                 // --
-                             << bsl::hex(m_id)                         // --
-                             << " is assigned to pp "                  // --
-                             << bsl::hex(m_assigned_ppid)              // --
-                             << " and cannot be deactivated on pp "    // --
-                             << bsl::hex(tls.ppid)                     // --
-                             << bsl::endl                              // --
-                             << bsl::here();                           // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vpsid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == tls.active_vpsid)) {
                 bsl::error() << "vps "                     // --
                              << bsl::hex(m_id)             // --
                              << " is not active on pp "    // --
@@ -621,10 +703,10 @@ namespace mk
                              << bsl::endl                  // --
                              << bsl::here();               // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.active_vpsid != m_id)) {
+            if (bsl::unlikely_assert(tls.active_vpsid != m_id)) {
                 bsl::error() << "vps "                        // --
                              << bsl::hex(tls.active_vpsid)    // --
                              << " is still active on pp "     // --
@@ -632,10 +714,20 @@ namespace mk
                              << bsl::endl                     // --
                              << bsl::here();                  // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == m_active_ppid)) {
+            if (bsl::unlikely_assert(!m_active_ppid)) {
+                bsl::error() << "vps "               // --
+                             << bsl::hex(m_id)       // --
+                             << " is not active "    // --
+                             << bsl::endl            // --
+                             << bsl::here();         // --
+
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely_assert(tls.ppid != m_active_ppid)) {
                 bsl::error() << "vps "                     // --
                              << bsl::hex(m_id)             // --
                              << " is not active on pp "    // --
@@ -643,7 +735,7 @@ namespace mk
                              << bsl::endl                  // --
                              << bsl::here();               // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             m_gprs.rax = intrinsic.tls_reg(syscall::TLS_OFFSET_RAX).get();
@@ -663,21 +755,29 @@ namespace mk
             m_gprs.r15 = intrinsic.tls_reg(syscall::TLS_OFFSET_R15).get();
 
             tls.active_vpsid = syscall::BF_INVALID_ID.get();
-            m_active_ppid = syscall::BF_INVALID_ID;
+            m_active_ppid = bsl::safe_uint16::zero(true);
 
             return bsl::errc_success;
         }
 
         /// <!-- description -->
-        ///   @brief Returns true if this vps_t is active, false otherwise
+        ///   @brief Returns the ID of the PP that this vps_t is still active
+        ///     on. If the vps_t is inactive, this function returns
+        ///     bsl::safe_uint16::zero(true)
         ///
         /// <!-- inputs/outputs -->
-        ///   @return Returns true if this vps_t is active, false otherwise
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @return Returns the ID of the PP that this vps_t is still active
+        ///     on. If the vps_t is inactive, this function returns
+        ///     bsl::safe_uint16::zero(true)
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_active() const &noexcept -> bool
+        is_active(TLS_CONCEPT &tls) const &noexcept -> bsl::safe_uint16
         {
-            return syscall::BF_INVALID_ID != m_active_ppid;
+            bsl::discard(tls);
+            return m_active_ppid;
         }
 
         /// <!-- description -->
@@ -718,101 +818,111 @@ namespace mk
             TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, bsl::safe_uint16 const &ppid) &noexcept
             -> bsl::errc_type
         {
+            bsl::discard(tls);
             bsl::discard(intrinsic);
+            bsl::discard(ppid);
 
-            if (bsl::unlikely(!m_id)) {
-                bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
-            }
+            // if (bsl::unlikely_assert(!m_id)) {
+            //     bsl::error() << "vps_t not initialized\n" << bsl::here();
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            // if (bsl::unlikely(!m_allocated)) {
+            //     bsl::error() << "vps "                    // --
+            //                  << bsl::hex(m_id)            // --
+            //                  << " was never allocated"    // --
+            //                  << bsl::endl                 // --
+            //                  << bsl::here();              // --
 
-                return bsl::errc_failure;
-            }
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(!ppid)) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
-            }
+            // if (bsl::unlikely(!ppid)) {
+            //     bsl::error() << "invalid ppid\n" << bsl::here();
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
-            }
+            // if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
+            //     bsl::error() << "invalid ppid\n" << bsl::here();
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(!(ppid < tls.online_pps))) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
-            }
+            // if (bsl::unlikely(!(ppid < tls.online_pps))) {
+            //     bsl::error() << "invalid ppid\n" << bsl::here();
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(tls.ppid != ppid)) {
-                bsl::error() << "vps "                         // --
-                             << bsl::hex(m_id)                 // --
-                             << " is being migrated to pp "    // --
-                             << bsl::hex(ppid)                 // --
-                             << " by pp "                      // --
-                             << bsl::hex(tls.ppid)             // --
-                             << " which is not allowed "       // --
-                             << bsl::endl                      // --
-                             << bsl::here();                   // --
+            // if (bsl::unlikely(tls.ppid != ppid)) {
+            //     bsl::error() << "vps "                         // --
+            //                  << bsl::hex(m_id)                 // --
+            //                  << " is being migrated to pp "    // --
+            //                  << bsl::hex(ppid)                 // --
+            //                  << " by pp "                      // --
+            //                  << bsl::hex(tls.ppid)             // --
+            //                  << " which is not allowed "       // --
+            //                  << bsl::endl                      // --
+            //                  << bsl::here();                   // --
 
-                return bsl::errc_failure;
-            }
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(ppid == m_assigned_ppid)) {
-                bsl::error() << "vps "                             // --
-                             << bsl::hex(m_id)                     // --
-                             << " is already assigned to a pp "    // --
-                             << bsl::hex(m_assigned_ppid)          // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+            // if (bsl::unlikely(ppid == m_assigned_ppid)) {
+            //     bsl::error() << "vps "                             // --
+            //                  << bsl::hex(m_id)                     // --
+            //                  << " is already assigned to a pp "    // --
+            //                  << bsl::hex(m_assigned_ppid)          // --
+            //                  << bsl::endl                          // --
+            //                  << bsl::here();                       // --
 
-                return bsl::errc_failure;
-            }
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID != m_active_ppid)) {
-                bsl::error() << "vps "                       // --
-                             << bsl::hex(m_id)               // --
-                             << " is still active on pp "    // --
-                             << bsl::hex(m_active_ppid)      // --
-                             << bsl::endl                    // --
-                             << bsl::here();                 // --
+            // if (bsl::unlikely(syscall::BF_INVALID_ID != m_active_ppid)) {
+            //     bsl::error() << "vps "                       // --
+            //                  << bsl::hex(m_id)               // --
+            //                  << " is still active on pp "    // --
+            //                  << bsl::hex(m_active_ppid)      // --
+            //                  << bsl::endl                    // --
+            //                  << bsl::here();                 // --
 
-                return bsl::errc_failure;
-            }
+            //     return bsl::errc_failure;
+            // }
 
-            m_guest_vmcb->vmcb_clean_bits = bsl::ZERO_U32.get();
-            m_assigned_ppid = ppid;
+            // m_guest_vmcb->vmcb_clean_bits = bsl::ZERO_U32.get();
+            // m_assigned_ppid = ppid;
 
             return bsl::errc_success;
         }
 
         /// <!-- description -->
-        ///   @brief Returns the ID of the VP this vps_t is assigned to
+        ///   @brief Returns the ID of the VP this vp_t is assigned to
         ///
         /// <!-- inputs/outputs -->
-        ///   @return Returns the ID of the VP this vps_t is assigned to
+        ///   @return Returns the ID of the VP this vp_t is assigned to
         ///
         [[nodiscard]] constexpr auto
-        assigned_vp() const &noexcept -> bsl::safe_uint16 const &
+        assigned_vp() const &noexcept -> bsl::safe_uint16
         {
+            if (bsl::unlikely(syscall::BF_INVALID_ID == m_assigned_vpid)) {
+                return bsl::safe_uint16::zero(true);
+            }
+
             return m_assigned_vpid;
         }
 
         /// <!-- description -->
-        ///   @brief Returns the ID of the PP this vps_t is assigned to
+        ///   @brief Returns the ID of the PP this vp_t is assigned to
         ///
         /// <!-- inputs/outputs -->
-        ///   @return Returns the ID of the PP this vps_t is assigned to
+        ///   @return Returns the ID of the PP this vp_t is assigned to
         ///
         [[nodiscard]] constexpr auto
-        assigned_pp() const &noexcept -> bsl::safe_uint16 const &
+        assigned_pp() const &noexcept -> bsl::safe_uint16
         {
+            if (bsl::unlikely(syscall::BF_INVALID_ID == m_assigned_ppid)) {
+                return bsl::safe_uint16::zero(true);
+            }
+
             return m_assigned_ppid;
         }
 
@@ -836,19 +946,19 @@ namespace mk
             INTRINSIC_CONCEPT &intrinsic,
             STATE_SAVE_CONCEPT const &state) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
@@ -861,7 +971,7 @@ namespace mk
                              << bsl::endl                              // --
                              << bsl::here();                           // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (tls.active_vpsid == m_id) {
@@ -992,19 +1102,19 @@ namespace mk
             INTRINSIC_CONCEPT &intrinsic,
             STATE_SAVE_CONCEPT &state) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
@@ -1017,7 +1127,7 @@ namespace mk
                              << bsl::endl                              // --
                              << bsl::here();                           // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (tls.active_vpsid == m_id) {
@@ -1150,17 +1260,17 @@ namespace mk
         {
             bsl::discard(intrinsic);
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
                 return bsl::safe_integral<FIELD_TYPE>::zero(true);
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
                 return bsl::safe_integral<FIELD_TYPE>::zero(true);
             }
@@ -1220,22 +1330,22 @@ namespace mk
         {
             bsl::discard(intrinsic);
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!val)) {
+            if (bsl::unlikely_assert(!val)) {
                 bsl::error() << "invalid value\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1250,7 +1360,7 @@ namespace mk
                              << bsl::endl                              // --
                              << bsl::here();                           // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             auto view{bsl::as_writable_t<FIELD_TYPE>(m_guest_vmcb, sizeof(vmcb_t))};
@@ -1289,17 +1399,17 @@ namespace mk
         read_reg(TLS_CONCEPT const &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg)
             &noexcept -> bsl::safe_uintmax
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
                 return bsl::safe_uintmax::zero(true);
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
                 return bsl::safe_uintmax::zero(true);
             }
@@ -1701,22 +1811,22 @@ namespace mk
             syscall::bf_reg_t const reg,
             bsl::safe_uintmax const &val) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!val)) {
+            if (bsl::unlikely_assert(!val)) {
                 bsl::error() << "invalid value\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1731,7 +1841,7 @@ namespace mk
                              << bsl::endl                              // --
                              << bsl::here();                           // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             switch (reg) {
@@ -2204,22 +2314,22 @@ namespace mk
         run(TLS_CONCEPT const &tls, INTRINSIC_CONCEPT &intrinsic, VMEXIT_LOG_CONCEPT &log) &noexcept
             -> bsl::safe_uintmax
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
                 return bsl::safe_uintmax::zero(true);
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely_assert(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
                 return bsl::safe_uintmax::zero(true);
             }
 
-            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+            if (bsl::unlikely_assert(tls.ppid != m_assigned_ppid)) {
                 bsl::error() << "vp "                        // --
                              << bsl::hex(m_id)               // --
                              << " is assigned to pp "        // --
@@ -2289,19 +2399,19 @@ namespace mk
         {
             bsl::discard(intrinsic);
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
@@ -2314,7 +2424,7 @@ namespace mk
                              << bsl::endl                              // --
                              << bsl::here();                           // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             m_guest_vmcb->rip = m_guest_vmcb->nrip;
@@ -2340,19 +2450,19 @@ namespace mk
         {
             bsl::discard(intrinsic);
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
@@ -2365,35 +2475,11 @@ namespace mk
                              << bsl::endl                              // --
                              << bsl::here();                           // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             m_guest_vmcb->vmcb_clean_bits = bsl::ZERO_U32.get();
             return bsl::errc_success;
-        }
-
-        /// <!-- description -->
-        ///   @brief Returns the next vps_t in the vps_pool_t linked list
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns the next vps_t in the vps_pool_t linked list
-        ///
-        [[nodiscard]] constexpr auto
-        next() const &noexcept -> vps_t *
-        {
-            return m_next;
-        }
-
-        /// <!-- description -->
-        ///   @brief Sets the next vps_t in the vps_pool_t linked list
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param val the next vps_t in the vps_pool_t linked list to set
-        ///
-        constexpr void
-        set_next(vps_t *val) &noexcept
-        {
-            m_next = val;
         }
 
         /// <!-- description -->
@@ -2432,7 +2518,7 @@ namespace mk
             constexpr auto guest_instruction_bytes_d{bsl::to_umax(0xDU)};
             constexpr auto guest_instruction_bytes_e{bsl::to_umax(0xEU)};
 
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::print() << "[error]" << bsl::endl;
                 return;
             }

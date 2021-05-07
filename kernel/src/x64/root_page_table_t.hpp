@@ -46,6 +46,7 @@
 #include <bsl/safe_integral.hpp>
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace mk
 {
@@ -360,7 +361,7 @@ namespace mk
             }
 
             auto const table_phys{m_page_pool->virt_to_phys(table)};
-            if (bsl::unlikely(!table_phys)) {
+            if (bsl::unlikely_assert(!table_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
@@ -497,7 +498,7 @@ namespace mk
             }
 
             auto const table_phys{m_page_pool->virt_to_phys(table)};
-            if (bsl::unlikely(!table_phys)) {
+            if (bsl::unlikely_assert(!table_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
@@ -641,7 +642,7 @@ namespace mk
             }
 
             auto const table_phys{m_page_pool->virt_to_phys(table)};
-            if (bsl::unlikely(!table_phys)) {
+            if (bsl::unlikely_assert(!table_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
@@ -937,7 +938,7 @@ namespace mk
             }
 
             auto const page_phys{m_page_pool->virt_to_phys(page)};
-            if (bsl::unlikely(!page_phys)) {
+            if (bsl::unlikely_assert(!page_phys)) {
                 bsl::error() << "physical address is invalid: "    // --
                              << bsl::hex(page_phys)                // --
                              << bsl::endl                          // --
@@ -1004,52 +1005,6 @@ namespace mk
         using huge_pool_type = HUGE_POOL_CONCEPT;
 
         /// <!-- description -->
-        ///   @brief Creates a root_page_table_t
-        ///
-        constexpr root_page_table_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief Destructor
-        ///
-        constexpr ~root_page_table_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr root_page_table_t(root_page_table_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr root_page_table_t(root_page_table_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(root_page_table_t const &o) &noexcept
-            -> root_page_table_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(root_page_table_t &&o) &noexcept
-            -> root_page_table_t & = default;
-
-        /// <!-- description -->
         ///   @brief Initializes this root_page_table_t
         ///
         /// <!-- inputs/outputs -->
@@ -1069,7 +1024,7 @@ namespace mk
             PAGE_POOL_CONCEPT *const page_pool,
             HUGE_POOL_CONCEPT *const huge_pool) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(m_initialized)) {
+            if (bsl::unlikely_assert(m_initialized)) {
                 bsl::error() << "root_page_table_t already initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1079,19 +1034,19 @@ namespace mk
             }};
 
             m_intrinsic = intrinsic;
-            if (bsl::unlikely(nullptr == intrinsic)) {
+            if (bsl::unlikely_assert(nullptr == intrinsic)) {
                 bsl::error() << "invalid intrinsic\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             m_page_pool = page_pool;
-            if (bsl::unlikely(nullptr == page_pool)) {
+            if (bsl::unlikely_assert(nullptr == page_pool)) {
                 bsl::error() << "invalid page_pool\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             m_huge_pool = huge_pool;
-            if (bsl::unlikely(nullptr == huge_pool)) {
+            if (bsl::unlikely_assert(nullptr == huge_pool)) {
                 bsl::error() << "invalid huge_pool\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1103,7 +1058,7 @@ namespace mk
             }
 
             m_pml4t_phys = m_page_pool->virt_to_phys(m_pml4t);
-            if (bsl::unlikely(!m_pml4t_phys)) {
+            if (bsl::unlikely_assert(!m_pml4t_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1157,7 +1112,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         activate() const &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely_assert(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1187,13 +1142,13 @@ namespace mk
         {
             lock_guard lock{tls, m_lock};
 
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely_assert(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             auto const *const pml4t{static_cast<pml4t_t const *>(rpt)};
-            if (bsl::unlikely(nullptr == pml4t)) {
+            if (bsl::unlikely_assert(nullptr == pml4t)) {
                 bsl::error() << "invalid rpt\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -1261,12 +1216,12 @@ namespace mk
         {
             lock_guard lock{tls, m_lock};
 
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely_assert(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(page_virt.is_zero())) {
+            if (bsl::unlikely_assert(page_virt.is_zero())) {
                 bsl::error() << "virtual address is invalid: "    // --
                              << bsl::hex(page_virt)               // --
                              << bsl::endl                         // --
@@ -1275,7 +1230,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!this->is_page_aligned(page_virt))) {
+            if (bsl::unlikely_assert(!this->is_page_aligned(page_virt))) {
                 bsl::error() << "virtual address is not page aligned: "    // --
                              << bsl::hex(page_virt)                        // --
                              << bsl::endl                                  // --
@@ -1284,7 +1239,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(page_phys.is_zero())) {
+            if (bsl::unlikely_assert(page_phys.is_zero())) {
                 bsl::error() << "physical address is invalid: "    // --
                              << bsl::hex(page_phys)                // --
                              << bsl::endl                          // --
@@ -1293,7 +1248,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!this->is_page_aligned(page_phys))) {
+            if (bsl::unlikely_assert(!this->is_page_aligned(page_phys))) {
                 bsl::error() << "physical address is not page aligned: "    // --
                              << bsl::hex(page_phys)                         // --
                              << bsl::endl                                   // --
@@ -1302,7 +1257,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!page_flags)) {
+            if (bsl::unlikely_assert(!page_flags)) {
                 bsl::error() << "invalid flags: "       // --
                              << bsl::hex(page_flags)    // --
                              << bsl::endl               // --
@@ -1311,7 +1266,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!auto_release)) {
+            if (bsl::unlikely_assert(!auto_release)) {
                 bsl::error() << "invalid auto release: "    // --
                              << auto_release                // --
                              << bsl::endl                   // --
@@ -1494,12 +1449,12 @@ namespace mk
             bsl::safe_uintmax const &page_virt,
             bsl::safe_int32 const &auto_release) &noexcept -> void *
         {
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely_assert(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
                 return nullptr;
             }
 
-            if (bsl::unlikely(page_virt.is_zero())) {
+            if (bsl::unlikely_assert(page_virt.is_zero())) {
                 bsl::error() << "virtual address is invalid: "    // --
                              << bsl::hex(page_virt)               // --
                              << bsl::endl                         // --
@@ -1508,7 +1463,7 @@ namespace mk
                 return nullptr;
             }
 
-            if (bsl::unlikely(!this->is_page_aligned(page_virt))) {
+            if (bsl::unlikely_assert(!this->is_page_aligned(page_virt))) {
                 bsl::error() << "virtual address is not page aligned: "    // --
                              << bsl::hex(page_virt)                        // --
                              << bsl::endl                                  // --
@@ -1517,7 +1472,7 @@ namespace mk
                 return nullptr;
             }
 
-            if (bsl::unlikely(!auto_release)) {
+            if (bsl::unlikely_assert(!auto_release)) {
                 bsl::error() << "invalid auto release: "    // --
                              << auto_release                // --
                              << bsl::endl                   // --
@@ -1555,12 +1510,12 @@ namespace mk
             bsl::safe_uintmax const &page_virt,
             bsl::safe_int32 const &auto_release) &noexcept -> void *
         {
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely_assert(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
                 return nullptr;
             }
 
-            if (bsl::unlikely(page_virt.is_zero())) {
+            if (bsl::unlikely_assert(page_virt.is_zero())) {
                 bsl::error() << "virtual address is invalid: "    // --
                              << bsl::hex(page_virt)               // --
                              << bsl::endl                         // --
@@ -1569,7 +1524,7 @@ namespace mk
                 return nullptr;
             }
 
-            if (bsl::unlikely(!this->is_page_aligned(page_virt))) {
+            if (bsl::unlikely_assert(!this->is_page_aligned(page_virt))) {
                 bsl::error() << "virtual address is not page aligned: "    // --
                              << bsl::hex(page_virt)                        // --
                              << bsl::endl                                  // --
@@ -1578,7 +1533,7 @@ namespace mk
                 return nullptr;
             }
 
-            if (bsl::unlikely(!auto_release)) {
+            if (bsl::unlikely_assert(!auto_release)) {
                 bsl::error() << "invalid auto release: "    // --
                              << auto_release                // --
                              << bsl::endl                   // --
@@ -1601,7 +1556,7 @@ namespace mk
                 return;
             }
 
-            if (bsl::unlikely(!m_initialized)) {
+            if (bsl::unlikely_assert(!m_initialized)) {
                 bsl::print() << "[error]" << bsl::endl;
                 return;
             }

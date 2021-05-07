@@ -98,8 +98,8 @@ namespace integration
         integration::verify(bsl::errc_failure == ret);
 
         // create with ppid that is create than the total number of online pps
-        ret =
-            syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, bsl::to_u16(0xFFF0), vpid);
+        ret = syscall::bf_vp_op_create_vp(
+            g_handle, syscall::BF_ROOT_VMID, syscall::bf_tls_online_pps(), vpid);
         integration::verify(bsl::errc_failure == ret);
 
         // create all and prove that creating one more will fail
@@ -134,16 +134,16 @@ namespace integration
         }
 
         ret = syscall::bf_handle_op_open_handle(syscall::BF_SPEC_ID1_VAL, g_handle);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_callback_op_register_bootstrap(g_handle, &bootstrap_entry);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_callback_op_register_vmexit(g_handle, &vmexit_entry);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         ret = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
-        integration::require(bsl::errc_success == ret);
+        integration::require_success(ret);
 
         syscall::bf_control_op_wait();
     }

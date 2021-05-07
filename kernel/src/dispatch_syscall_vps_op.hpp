@@ -54,10 +54,6 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<
         typename TLS_CONCEPT,
         typename INTRINSIC_CONCEPT,
@@ -72,51 +68,18 @@ namespace mk
         VP_POOL_CONCEPT &vp_pool,
         VPS_POOL_CONCEPT &vps_pool) -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vp_pool.is_allocated is assumped to be exception safe
-        ///
+        auto const vpsid{vps_pool.allocate(
+            tls,
+            intrinsic,
+            page_pool,
+            vp_pool,
+            bsl::to_u16_unsafe(tls.ext_reg1),
+            bsl::to_u16_unsafe(tls.ext_reg2))};
 
-        auto const vpid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        if (bsl::unlikely(!vp_pool.is_allocated(vpid))) {
-            bsl::error() << "vp "                     // --
-                         << bsl::hex(vpid)            // --
-                         << " was never allocated"    // --
-                         << bsl::endl                 // --
-                         << bsl::here();              // --
-
-            tls.syscall_ret_status = syscall::BF_STATUS_INVALID_PARAMS1.get();
-            return bsl::errc_failure;
-        }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
-
-        auto const ppid{bsl::to_u16_unsafe(tls.ext_reg2)};
-        if (bsl::unlikely(!(ppid < tls.online_pps))) {
-            bsl::error() << "pp "                 // --
-                         << bsl::hex(ppid)        // --
-                         << " is out of range"    // --
-                         << bsl::endl             // --
-                         << bsl::here();          // --
-
-            tls.syscall_ret_status = syscall::BF_STATUS_INVALID_PARAMS2.get();
-            return bsl::errc_failure;
-        }
-
-        /// NOTE:
-        /// - vps_pool.allocate is assumped to be exception UNSAFE
-        ///
-
-        auto const vpsid{vps_pool.allocate(tls, intrinsic, page_pool, vpid, ppid)};
         if (bsl::unlikely(!vpsid)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vpsid)).get();
@@ -138,29 +101,17 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename PAGE_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_destroy_vps(
         TLS_CONCEPT &tls, PAGE_POOL_CONCEPT &page_pool, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.deallocate is assumped to be exception UNSAFE
-        ///
-
-        auto const vpsid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        if (bsl::unlikely(!vps_pool.deallocate(tls, page_pool, vpsid))) {
+        auto const ret{vps_pool.deallocate(tls, page_pool, bsl::to_u16_unsafe(tls.ext_reg1))};
+        if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
-            return bsl::errc_failure;
+            return ret;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -179,20 +130,12 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_init_as_root(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.state_save_to_vps is assumped to be exception UNSAFE
-        ///
-
         auto const ret{vps_pool.state_save_to_vps(
             tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1), *tls.root_vp_state)};
 
@@ -200,10 +143,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -222,19 +161,11 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_read8(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.read is assumped to be exception UNSAFE
-        ///
-
         auto const val{vps_pool.template read<bsl::uint8>(
             tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
 
@@ -242,10 +173,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFFFF00U};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(val)).get();
@@ -267,20 +194,12 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_read16(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.read is assumped to be exception UNSAFE
-        ///
-
         auto const val{vps_pool.template read<bsl::uint16>(
             tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
 
@@ -288,10 +207,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(val)).get();
@@ -313,20 +228,12 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_read32(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.read is assumped to be exception UNSAFE
-        ///
-
         auto const val{vps_pool.template read<bsl::uint32>(
             tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
 
@@ -334,10 +241,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         constexpr bsl::safe_uintmax mask{0xFFFFFFFF00000000U};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(val)).get();
@@ -359,20 +262,12 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_read64(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.read is assumped to be exception UNSAFE
-        ///
-
         auto const val{vps_pool.template read<bsl::uint64>(
             tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2)};
 
@@ -380,10 +275,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         tls.ext_reg0 = val.get();
 
@@ -404,20 +295,12 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_write8(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.write is assumped to be exception UNSAFE
-        ///
-
         auto const ret{vps_pool.template write<bsl::uint8>(
             tls,
             intrinsic,
@@ -429,10 +312,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -451,20 +330,12 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_write16(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.write is assumped to be exception UNSAFE
-        ///
-
         auto const ret{vps_pool.template write<bsl::uint16>(
             tls,
             intrinsic,
@@ -476,10 +347,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -498,20 +365,12 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_write32(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.write is assumped to be exception UNSAFE
-        ///
-
         auto const ret{vps_pool.template write<bsl::uint32>(
             tls,
             intrinsic,
@@ -523,10 +382,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -545,20 +400,12 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_write64(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.write is assumped to be exception UNSAFE
-        ///
-
         auto const ret{vps_pool.template write<bsl::uint64>(
             tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1), tls.ext_reg2, tls.ext_reg3)};
 
@@ -566,10 +413,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -588,20 +431,12 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_read_reg(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.read_reg is assumped to be exception UNSAFE
-        ///
-
         auto const val{vps_pool.read_reg(
             tls,
             intrinsic,
@@ -612,10 +447,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         tls.ext_reg0 = val.get();
 
@@ -636,20 +467,12 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_write_reg(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.write_reg is assumped to be exception UNSAFE
-        ///
-
         auto const ret{vps_pool.write_reg(
             tls,
             intrinsic,
@@ -661,10 +484,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -686,10 +505,6 @@ namespace mk
     ///   @param vps_pool the VPS pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
-    ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
     ///
     template<
         typename TLS_CONCEPT,
@@ -855,10 +670,6 @@ namespace mk
         // Done
         // ---------------------------------------------------------------------
 
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
-
         return_to_mk(bsl::exit_success);
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
@@ -878,10 +689,6 @@ namespace mk
     [[nodiscard]] inline auto
     syscall_vps_op_run_current(TLS_CONCEPT &tls) -> bsl::errc_type
     {
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
-
         return_to_mk(bsl::exit_success);
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
@@ -901,29 +708,17 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_advance_ip(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.advance_ip is assumped to be exception UNSAFE
-        ///
-
         auto const ret{vps_pool.advance_ip(tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -942,29 +737,17 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_advance_ip_and_run_current(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.advance_ip is assumped to be exception UNSAFE
-        ///
-
         auto const ret{vps_pool.advance_ip(tls, intrinsic, tls.active_vpsid)};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         return_to_mk(bsl::exit_success);
 
@@ -985,20 +768,12 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_promote(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.vps_to_state_save is assumped to be exception UNSAFE
-        ///
-
         auto const ret{vps_pool.vps_to_state_save(
             tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1), *tls.root_vp_state)};
 
@@ -1006,10 +781,6 @@ namespace mk
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         promote(tls.root_vp_state);
 
@@ -1030,29 +801,17 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
-    ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_clear_vps(
         TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
         -> bsl::errc_type
     {
-        /// NOTE:
-        /// - vps_pool.clear is assumped to be exception UNSAFE
-        ///
-
         auto const ret{vps_pool.clear(tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
-
-        /// NOTE:
-        /// - the following is assumped to be exception safe
-        ///
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
         return bsl::errc_success;
@@ -1078,10 +837,6 @@ namespace mk
     ///   @param vps_pool the VPS pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
-    ///
-    /// <!-- exception safety -->
-    ///   @note IMPORTANT: This call assumes exceptions ARE POSSIBLE and
-    ///     that state reversal MIGHT BE REQUIRED.
     ///
     template<
         typename TLS_CONCEPT,
