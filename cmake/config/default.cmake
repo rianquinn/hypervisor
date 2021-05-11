@@ -26,7 +26,11 @@ option(HYPERVISOR_BUILD_VMMCTL "Turns on/off building the vmmctl" ON)
 option(HYPERVISOR_BUILD_MICROKERNEL "Turns on/off building the microkernel" ON)
 option(HYPERVISOR_BUILD_EFI "Turns on/off building the EFI loader" OFF)
 
-if (NOT DEFINED HYPERVISOR_TARGET_ARCH)
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    set(HYPERVISOR_TARGET_ARCH ${CMAKE_SYSTEM_PROCESSOR})
+endif()
+
+if(NOT DEFINED HYPERVISOR_TARGET_ARCH)
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         execute_process(
             COMMAND ${CMAKE_CURRENT_LIST_DIR}/../../utils/linux/get_target_arch
@@ -46,7 +50,7 @@ else()
     set(HYPERVISOR_DEFAULT_TARGET_ARCH ${HYPERVISOR_TARGET_ARCH})
 endif()
 
-if (NOT DEFINED HYPERVISOR_CXX_LINKER)
+if(NOT DEFINED HYPERVISOR_CXX_LINKER)
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         set(HYPERVISOR_DEFAULT_CXX_LINKER "ld.lld")
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -58,7 +62,7 @@ else()
     set(HYPERVISOR_DEFAULT_CXX_LINKER ${HYPERVISOR_CXX_LINKER})
 endif()
 
-if (NOT DEFINED HYPERVISOR_EFI_LINKER)
+if(NOT DEFINED HYPERVISOR_EFI_LINKER)
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         set(HYPERVISOR_DEFAULT_EFI_LINKER "lld-link")
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -70,7 +74,7 @@ else()
     set(HYPERVISOR_DEFAULT_EFI_LINKER ${HYPERVISOR_EFI_LINKER})
 endif()
 
-if (NOT DEFINED HYPERVISOR_EFI_FS0)
+if(NOT DEFINED HYPERVISOR_EFI_FS0)
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         set(HYPERVISOR_DEFAULT_EFI_FS0 "/boot/efi/")
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -103,7 +107,7 @@ bf_add_config(
     CONFIG_TYPE STRING
     DEFAULT_VAL ${HYPERVISOR_DEFAULT_TARGET_ARCH}
     DESCRIPTION "The target architecture for the build"
-    OPTIONS AuthenticAMD GenuineIntel
+    OPTIONS AuthenticAMD GenuineIntel aarch64
 )
 
 bf_add_config(
