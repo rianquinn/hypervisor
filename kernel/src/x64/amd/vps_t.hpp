@@ -29,6 +29,7 @@
 #include <general_purpose_regs_t.hpp>
 #include <mk_interface.hpp>
 #include <vmcb_t.hpp>
+#include <allocated_status_t.hpp>
 
 #include <bsl/cstr_type.hpp>
 #include <bsl/debug.hpp>
@@ -402,7 +403,7 @@ namespace mk
             }
 
             m_guest_vmcb_phys = page_pool.virt_to_phys(m_guest_vmcb);
-            if (bsl::unlikely(!m_guest_vmcb_phys)) {
+            if (bsl::unlikely_assert(!m_guest_vmcb_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }
@@ -414,7 +415,7 @@ namespace mk
             }
 
             m_host_vmcb_phys = page_pool.virt_to_phys(m_host_vmcb);
-            if (bsl::unlikely(!m_host_vmcb_phys)) {
+            if (bsl::unlikely_assert(!m_host_vmcb_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }
@@ -578,8 +579,6 @@ namespace mk
         [[nodiscard]] constexpr auto
         set_active(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
         {
-            bsl::discard(intrinsic);
-
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
                 return bsl::errc_precondition;
@@ -792,7 +791,7 @@ namespace mk
         ///
         template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_active_on_current_pp(TLS_CONCEPT const &tls) const &noexcept -> bool
+        is_active_on_current_pp(TLS_CONCEPT &tls) const &noexcept -> bool
         {
             return tls.ppid == m_active_ppid;
         }
@@ -942,7 +941,7 @@ namespace mk
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
         state_save_to_vps(
-            TLS_CONCEPT const &tls,
+            TLS_CONCEPT &tls,
             INTRINSIC_CONCEPT &intrinsic,
             STATE_SAVE_CONCEPT const &state) &noexcept -> bsl::errc_type
         {
@@ -1098,7 +1097,7 @@ namespace mk
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
         vps_to_state_save(
-            TLS_CONCEPT const &tls,
+            TLS_CONCEPT &tls,
             INTRINSIC_CONCEPT &intrinsic,
             STATE_SAVE_CONCEPT &state) &noexcept -> bsl::errc_type
         {
@@ -1255,7 +1254,7 @@ namespace mk
         ///
         template<typename FIELD_TYPE, typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        read(TLS_CONCEPT const &tls, INTRINSIC_CONCEPT &intrinsic, bsl::safe_uintmax const &index)
+        read(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, bsl::safe_uintmax const &index)
             &noexcept -> bsl::safe_integral<FIELD_TYPE>
         {
             bsl::discard(intrinsic);
@@ -1323,7 +1322,7 @@ namespace mk
         template<typename FIELD_TYPE, typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
         write(
-            TLS_CONCEPT const &tls,
+            TLS_CONCEPT &tls,
             INTRINSIC_CONCEPT &intrinsic,
             bsl::safe_uintmax const &index,
             bsl::safe_integral<FIELD_TYPE> const &val) &noexcept -> bsl::errc_type
@@ -1396,7 +1395,7 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        read_reg(TLS_CONCEPT const &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg)
+        read_reg(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg)
             &noexcept -> bsl::safe_uintmax
         {
             if (bsl::unlikely_assert(!m_id)) {
@@ -1806,7 +1805,7 @@ namespace mk
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
         write_reg(
-            TLS_CONCEPT const &tls,
+            TLS_CONCEPT &tls,
             INTRINSIC_CONCEPT &intrinsic,
             syscall::bf_reg_t const reg,
             bsl::safe_uintmax const &val) &noexcept -> bsl::errc_type
@@ -2311,7 +2310,7 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VMEXIT_LOG_CONCEPT>
         [[nodiscard]] constexpr auto
-        run(TLS_CONCEPT const &tls, INTRINSIC_CONCEPT &intrinsic, VMEXIT_LOG_CONCEPT &log) &noexcept
+        run(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VMEXIT_LOG_CONCEPT &log) &noexcept
             -> bsl::safe_uintmax
         {
             if (bsl::unlikely_assert(!m_id)) {
@@ -2395,7 +2394,7 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        advance_ip(TLS_CONCEPT const &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
+        advance_ip(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
         {
             bsl::discard(intrinsic);
 
@@ -2446,7 +2445,7 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        clear(TLS_CONCEPT const &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
+        clear(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
         {
             bsl::discard(intrinsic);
 
@@ -2493,7 +2492,7 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         constexpr void
-        dump(TLS_CONCEPT const &tls, INTRINSIC_CONCEPT &intrinsic) const &noexcept
+        dump(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) const &noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;

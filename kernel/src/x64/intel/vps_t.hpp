@@ -30,6 +30,7 @@
 #include <mk_interface.hpp>
 #include <vmcs_missing_registers_t.hpp>
 #include <vmcs_t.hpp>
+#include <allocated_status_t.hpp>
 
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
@@ -39,6 +40,7 @@
 #include <bsl/safe_integral.hpp>
 #include <bsl/string_view.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace mk
 {
@@ -79,18 +81,16 @@ namespace mk
     ///
     class vps_t final
     {
-        /// @brief stores the next vps_t in the vps_pool_t linked list
-        vps_t *m_next{};
-        /// @brief stores the ID associated with this vps_t
+        /// @brief stores the ID associated with this vp_t
         bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
-        /// @brief stores whether or not this vps_t is allocated.
-        bool m_allocated{};
+        /// @brief stores whether or not this vp_t is allocated.
+        allocated_status_t m_allocated{allocated_status_t::deallocated};
         /// @brief stores the ID of the VP this vps_t is assigned to
         bsl::safe_uint16 m_assigned_vpid{syscall::BF_INVALID_ID};
-        /// @brief stores the ID of the PP this vps_t is assigned to
+        /// @brief stores the ID of the PP this vp_t is assigned to
         bsl::safe_uint16 m_assigned_ppid{syscall::BF_INVALID_ID};
-        /// @brief stores the ID of the PP this vps_t is active on
-        bsl::safe_uint16 m_active_ppid{syscall::BF_INVALID_ID};
+        /// @brief stores the ID of the PP this vp_t is active on
+        bsl::safe_uint16 m_active_ppid{bsl::safe_uint16::zero(true)};
 
         /// @brief stores a pointer to the guest vmcs being managed by this VPS
         vmcs_t *m_vmcs{};
@@ -122,55 +122,55 @@ namespace mk
 
             if (bsl::ZERO_U16 == state.es_selector) {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_ES_SELECTOR, bsl::ZERO_U16);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_ES_ACCESS_RIGHTS, VMCS_UNUSABLE_SEGMENT);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_ES_LIMIT, bsl::ZERO_U32);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_ES_BASE, bsl::ZERO_U64);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
             }
             else {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_ES_SELECTOR, state.es_selector);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret =
                     intrinsic.vmwrite32(VMCS_GUEST_ES_ACCESS_RIGHTS, bsl::to_u32(state.es_attrib));
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_ES_LIMIT, state.es_limit);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_ES_BASE, state.es_base);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
@@ -200,55 +200,55 @@ namespace mk
 
             if (bsl::ZERO_U16 == state.cs_selector) {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_CS_SELECTOR, bsl::ZERO_U16);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_CS_ACCESS_RIGHTS, VMCS_UNUSABLE_SEGMENT);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_CS_LIMIT, bsl::ZERO_U32);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_CS_BASE, bsl::ZERO_U64);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
             }
             else {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_CS_SELECTOR, state.cs_selector);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret =
                     intrinsic.vmwrite32(VMCS_GUEST_CS_ACCESS_RIGHTS, bsl::to_u32(state.cs_attrib));
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_CS_LIMIT, state.cs_limit);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_CS_BASE, state.cs_base);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
@@ -278,55 +278,55 @@ namespace mk
 
             if (bsl::ZERO_U16 == state.ss_selector) {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_SS_SELECTOR, bsl::ZERO_U16);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_SS_ACCESS_RIGHTS, VMCS_UNUSABLE_SEGMENT);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_SS_LIMIT, bsl::ZERO_U32);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_SS_BASE, bsl::ZERO_U64);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
             }
             else {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_SS_SELECTOR, state.ss_selector);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret =
                     intrinsic.vmwrite32(VMCS_GUEST_SS_ACCESS_RIGHTS, bsl::to_u32(state.ss_attrib));
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_SS_LIMIT, state.ss_limit);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_SS_BASE, state.ss_base);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
@@ -356,55 +356,55 @@ namespace mk
 
             if (bsl::ZERO_U16 == state.ds_selector) {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_DS_SELECTOR, bsl::ZERO_U16);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_DS_ACCESS_RIGHTS, VMCS_UNUSABLE_SEGMENT);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_DS_LIMIT, bsl::ZERO_U32);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_DS_BASE, bsl::ZERO_U64);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
             }
             else {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_DS_SELECTOR, state.ds_selector);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret =
                     intrinsic.vmwrite32(VMCS_GUEST_DS_ACCESS_RIGHTS, bsl::to_u32(state.ds_attrib));
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_DS_LIMIT, state.ds_limit);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_DS_BASE, state.ds_base);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
@@ -434,55 +434,55 @@ namespace mk
 
             if (bsl::ZERO_U16 == state.fs_selector) {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_FS_SELECTOR, bsl::ZERO_U16);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_FS_ACCESS_RIGHTS, VMCS_UNUSABLE_SEGMENT);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_FS_LIMIT, bsl::ZERO_U32);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_FS_BASE, bsl::ZERO_U64);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
             }
             else {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_FS_SELECTOR, state.fs_selector);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret =
                     intrinsic.vmwrite32(VMCS_GUEST_FS_ACCESS_RIGHTS, bsl::to_u32(state.fs_attrib));
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_FS_LIMIT, state.fs_limit);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_FS_BASE, state.fs_base);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
@@ -512,55 +512,55 @@ namespace mk
 
             if (bsl::ZERO_U16 == state.gs_selector) {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_GS_SELECTOR, bsl::ZERO_U16);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_GS_ACCESS_RIGHTS, VMCS_UNUSABLE_SEGMENT);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_GS_LIMIT, bsl::ZERO_U32);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_GS_BASE, bsl::ZERO_U64);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
             }
             else {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_GS_SELECTOR, state.gs_selector);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret =
                     intrinsic.vmwrite32(VMCS_GUEST_GS_ACCESS_RIGHTS, bsl::to_u32(state.gs_attrib));
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_GS_LIMIT, state.gs_limit);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_GS_BASE, state.gs_base);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
@@ -590,55 +590,55 @@ namespace mk
 
             if (bsl::ZERO_U16 == state.ldtr_selector) {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_LDTR_SELECTOR, bsl::ZERO_U16);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_LDTR_ACCESS_RIGHTS, VMCS_UNUSABLE_SEGMENT);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_LDTR_LIMIT, bsl::ZERO_U32);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_LDTR_BASE, bsl::ZERO_U64);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
             }
             else {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_LDTR_SELECTOR, state.ldtr_selector);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(
                     VMCS_GUEST_LDTR_ACCESS_RIGHTS, bsl::to_u32(state.ldtr_attrib));
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_LDTR_LIMIT, state.ldtr_limit);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_LDTR_BASE, state.ldtr_base);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
@@ -668,55 +668,55 @@ namespace mk
 
             if (bsl::ZERO_U16 == state.tr_selector) {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_TR_SELECTOR, bsl::ZERO_U16);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_TR_ACCESS_RIGHTS, VMCS_UNUSABLE_SEGMENT);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_TR_LIMIT, bsl::ZERO_U32);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_TR_BASE, bsl::ZERO_U64);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
             }
             else {
                 ret = intrinsic.vmwrite16(VMCS_GUEST_TR_SELECTOR, state.tr_selector);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret =
                     intrinsic.vmwrite32(VMCS_GUEST_TR_ACCESS_RIGHTS, bsl::to_u32(state.tr_attrib));
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite32(VMCS_GUEST_TR_LIMIT, state.tr_limit);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 ret = intrinsic.vmwrite64(VMCS_GUEST_TR_BASE, state.tr_base);
-                if (bsl::unlikely(!ret)) {
+                if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::errc_failure;
+                    return ret;
                 }
 
                 bsl::touch();
@@ -749,27 +749,27 @@ namespace mk
             bsl::safe_uint64 base{};
 
             ret = intrinsic.vmread16(VMCS_GUEST_ES_SELECTOR, selector.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_ES_ACCESS_RIGHTS, access_rights.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_ES_LIMIT, limit.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_ES_BASE, base.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
@@ -812,27 +812,27 @@ namespace mk
             bsl::safe_uint64 base{};
 
             ret = intrinsic.vmread16(VMCS_GUEST_CS_SELECTOR, selector.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_CS_ACCESS_RIGHTS, access_rights.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_CS_LIMIT, limit.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_CS_BASE, base.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
@@ -875,27 +875,27 @@ namespace mk
             bsl::safe_uint64 base{};
 
             ret = intrinsic.vmread16(VMCS_GUEST_SS_SELECTOR, selector.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_SS_ACCESS_RIGHTS, access_rights.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_SS_LIMIT, limit.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_SS_BASE, base.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
@@ -938,27 +938,27 @@ namespace mk
             bsl::safe_uint64 base{};
 
             ret = intrinsic.vmread16(VMCS_GUEST_DS_SELECTOR, selector.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_DS_ACCESS_RIGHTS, access_rights.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_DS_LIMIT, limit.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_DS_BASE, base.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
@@ -1001,27 +1001,27 @@ namespace mk
             bsl::safe_uint64 base{};
 
             ret = intrinsic.vmread16(VMCS_GUEST_GS_SELECTOR, selector.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_GS_ACCESS_RIGHTS, access_rights.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_GS_LIMIT, limit.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_GS_BASE, base.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
@@ -1064,27 +1064,27 @@ namespace mk
             bsl::safe_uint64 base{};
 
             ret = intrinsic.vmread16(VMCS_GUEST_FS_SELECTOR, selector.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_FS_ACCESS_RIGHTS, access_rights.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_FS_LIMIT, limit.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_FS_BASE, base.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
@@ -1127,27 +1127,27 @@ namespace mk
             bsl::safe_uint64 base{};
 
             ret = intrinsic.vmread16(VMCS_GUEST_LDTR_SELECTOR, selector.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_LDTR_ACCESS_RIGHTS, access_rights.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_LDTR_LIMIT, limit.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_LDTR_BASE, base.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
@@ -1190,27 +1190,27 @@ namespace mk
             bsl::safe_uint64 base{};
 
             ret = intrinsic.vmread16(VMCS_GUEST_TR_SELECTOR, selector.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_TR_ACCESS_RIGHTS, access_rights.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread32(VMCS_GUEST_TR_LIMIT, limit.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_TR_BASE, base.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
@@ -1252,7 +1252,7 @@ namespace mk
             }
 
             ret = intrinsic.vmload(&m_vmcs_phys);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
@@ -1283,140 +1283,147 @@ namespace mk
             bsl::errc_type ret{};
             auto *const state{tls.mk_state};
 
-            m_vmcs->revision_id = bsl::to_u32_unsafe(intrinsic.rdmsr(IA32_VMX_BASIC)).get();
-
-            if (bsl::unlikely(!this->ensure_this_vps_is_loaded(tls, intrinsic))) {
+            auto const id{intrinsic.rdmsr(IA32_VMX_BASIC)};
+            if (bsl::unlikely_assert(!id)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
+            }
+
+            m_vmcs->revision_id = bsl::to_u32_unsafe(id).get();
+
+            ret = this->ensure_this_vps_is_loaded(tls, intrinsic);
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
             }
 
             ret = intrinsic.vmwrite16(VMCS_HOST_ES_SELECTOR, intrinsic.es_selector());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite16(VMCS_HOST_CS_SELECTOR, intrinsic.cs_selector());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite16(VMCS_HOST_SS_SELECTOR, intrinsic.ss_selector());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite16(VMCS_HOST_DS_SELECTOR, intrinsic.ds_selector());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite16(VMCS_HOST_FS_SELECTOR, intrinsic.fs_selector());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite16(VMCS_HOST_GS_SELECTOR, intrinsic.gs_selector());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite16(VMCS_HOST_TR_SELECTOR, intrinsic.tr_selector());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_HOST_IA32_PAT, intrinsic.rdmsr(IA32_PAT));
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_HOST_IA32_EFER, intrinsic.rdmsr(IA32_EFER));
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret =
                 intrinsic.vmwrite64(VMCS_HOST_IA32_SYSENTER_CS, intrinsic.rdmsr(IA32_SYSENTER_CS));
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_HOST_CR0, intrinsic.cr0());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_HOST_CR3, intrinsic.cr3());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_HOST_CR4, intrinsic.cr4());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_HOST_FS_BASE, intrinsic.rdmsr(IA32_FS_BASE));
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_HOST_GS_BASE, intrinsic.rdmsr(IA32_GS_BASE));
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_HOST_TR_BASE, state->tr_base);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_HOST_GDTR_BASE, bsl::to_umax(state->gdtr.base));
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_HOST_IDTR_BASE, bsl::to_umax(state->idtr.base));
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(
                 VMCS_HOST_IA32_SYSENTER_ESP, intrinsic.rdmsr(IA32_SYSENTER_ESP));
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(
                 VMCS_HOST_IA32_SYSENTER_EIP, intrinsic.rdmsr(IA32_SYSENTER_EIP));
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_HOST_RIP, bsl::to_umax(&intrinsic_vmexit));
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             m_vmcs_missing_registers.host_ia32_star =              // --
@@ -1485,50 +1492,6 @@ namespace mk
 
     public:
         /// <!-- description -->
-        ///   @brief Default constructor
-        ///
-        constexpr vps_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief Destructor
-        ///
-        constexpr ~vps_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr vps_t(vps_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr vps_t(vps_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(vps_t const &o) &noexcept -> vps_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(vps_t &&o) &noexcept -> vps_t & = default;
-
-        /// <!-- description -->
         ///   @brief Initializes this vps_t
         ///
         /// <!-- inputs/outputs -->
@@ -1539,19 +1502,24 @@ namespace mk
         [[nodiscard]] constexpr auto
         initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(m_id)) {
-                bsl::error() << "vp_t already initialized\n" << bsl::here();
-                return bsl::errc_failure;
+            if (bsl::unlikely_assert(m_id)) {
+                bsl::error() << "vps_t already initialized\n" << bsl::here();
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!i)) {
+            if (bsl::unlikely_assert(!i)) {
                 bsl::error() << "invalid id\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == i)) {
-                bsl::error() << "invalid id\n" << bsl::here();
-                return bsl::errc_failure;
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == i)) {
+                bsl::error() << "id "                                                  // --
+                             << bsl::hex(i)                                            // --
+                             << " is invalid and cannot be used for initialization"    // --
+                             << bsl::endl                                              // --
+                             << bsl::here();                                           // --
+
+                return bsl::errc_precondition;
             }
 
             m_id = i;
@@ -1575,14 +1543,25 @@ namespace mk
         [[nodiscard]] constexpr auto
         release(TLS_CONCEPT &tls, PAGE_POOL_CONCEPT &page_pool) &noexcept -> bsl::errc_type
         {
-            if (syscall::BF_INVALID_ID != m_active_ppid) {
-                bsl::error() << "vps "                       // --
-                             << bsl::hex(m_id)               // --
-                             << " is still active on pp "    // --
-                             << bsl::hex(m_active_ppid)      // --
-                             << " and cannot be released"    // --
-                             << bsl::endl                    // --
-                             << bsl::here();                 // --
+            if (this->is_zombie()) {
+                return bsl::errc_success;
+            }
+
+            tls.state_reversal_required = true;
+            bsl::finally zombify_on_error{[this]() noexcept -> void {
+                this->zombify();
+            }};
+
+            if (bsl::unlikely(m_active_ppid)) {
+                bsl::error() << "vp "                      // --
+                             << bsl::hex(m_id)             // --
+                             << " is active on pp "        // --
+                             << bsl::hex(m_active_ppid)    // --
+                             << " and therefore vp "       // --
+                             << bsl::hex(m_id)             // --
+                             << " cannot be destroyed"     // --
+                             << bsl::endl                  // --
+                             << bsl::here();               // --
 
                 return bsl::errc_failure;
             }
@@ -1596,9 +1575,10 @@ namespace mk
 
             m_assigned_ppid = syscall::BF_INVALID_ID;
             m_assigned_vpid = syscall::BF_INVALID_ID;
-            m_allocated = {};
+            m_allocated = allocated_status_t::deallocated;
             m_id = bsl::safe_uint16::zero(true);
 
+            zombify_on_error.ignore();
             return bsl::errc_success;
         }
 
@@ -1621,62 +1601,120 @@ namespace mk
         ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
+        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param page_pool the page pool to use
+        ///   @param vp_pool the VP pool to use
         ///   @param vpid The ID of the VP to assign the newly created VP to
         ///   @param ppid The ID of the PP to assign the newly created VP to
-        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-        ///     and friends otherwise
+        ///   @return Returns ID of the newly allocated vps
         ///
-        template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT>
+        template<
+            typename TLS_CONCEPT,
+            typename INTRINSIC_CONCEPT,
+            typename PAGE_POOL_CONCEPT,
+            typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
         allocate(
             TLS_CONCEPT &tls,
             INTRINSIC_CONCEPT &intrinsic,
             PAGE_POOL_CONCEPT &page_pool,
+            VP_POOL_CONCEPT &vp_pool,
             bsl::safe_uint16 const &vpid,
-            bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
         {
-            if (bsl::unlikely(!m_id)) {
+            bsl::errc_type ret{};
+
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(m_allocated)) {
-                bsl::error() << "vps "                     // --
-                             << bsl::hex(m_id)             // --
-                             << " is already allocated"    // --
-                             << bsl::endl                  // --
-                             << bsl::here();               // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(!vpid)) {
+            if (bsl::unlikely_assert(!vpid)) {
                 bsl::error() << "invalid vpid\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID == vpid)) {
-                bsl::error() << "invalid vpid\n" << bsl::here();
-                return bsl::errc_failure;
+                bsl::error() << "vp "                                               // --
+                             << bsl::hex(vpid)                                      // --
+                             << " is invalid and a vps cannot be assigned to it"    // --
+                             << bsl::endl                                           // --
+                             << bsl::here();                                        // --
+
+                return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(!ppid)) {
+            if (bsl::unlikely(vp_pool.is_zombie(vpid))) {
+                bsl::error() << "vp "                                                // --
+                             << bsl::hex(vpid)                                       // --
+                             << " is a zombie and a vps cannot be assigned to it"    // --
+                             << bsl::endl                                            // --
+                             << bsl::here();                                         // --
+
+                return bsl::safe_uint16::zero(true);
+            }
+
+            if (bsl::unlikely(vp_pool.is_deallocated(vpid))) {
+                bsl::error() << "vp "                                                         // --
+                             << bsl::hex(vpid)                                                // --
+                             << " has not been created and a vps cannot be assigned to it"    // --
+                             << bsl::endl                                                     // --
+                             << bsl::here();                                                  // --
+
+                return bsl::safe_uint16::zero(true);
+            }
+
+            if (bsl::unlikely_assert(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
+                bsl::error() << "pp "                                               // --
+                             << bsl::hex(ppid)                                      // --
+                             << " is invalid and a vps cannot be assigned to it"    // --
+                             << bsl::endl                                           // --
+                             << bsl::here();                                        // --
+
+                return bsl::safe_uint16::zero(true);
             }
 
             if (bsl::unlikely(!(ppid < tls.online_pps))) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
+                bsl::error() << "pp "                                                  // --
+                             << bsl::hex(ppid)                                         // --
+                             << " is not less than the total number of online pps "    // --
+                             << bsl::hex(tls.online_pps)                               // --
+                             << " and a vps cannot be assigned to it"                  // --
+                             << bsl::endl                                              // --
+                             << bsl::here();                                           // --
+
+                return bsl::safe_uint16::zero(true);
             }
+
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::zombie)) {
+                bsl::error() << "vps "                                    // --
+                             << bsl::hex(m_id)                            // --
+                             << " is a zombie and cannot be allocated"    // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
+
+                return bsl::safe_uint16::zero(true);
+            }
+
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                           // --
+                             << bsl::hex(m_id)                                   // --
+                             << " is already allocated and cannot be created"    // --
+                             << bsl::endl                                        // --
+                             << bsl::here();                                     // --
+
+                return bsl::safe_uint16::zero(true);
+            }
+
+            tls.state_reversal_required = true;
+            tls.log_vpsid = m_id.get();
 
             bsl::finally cleanup_on_error{[this, &tls, &page_pool]() noexcept -> void {
                 m_vmcs_phys = bsl::safe_uintmax::zero(true);
@@ -1687,26 +1725,27 @@ namespace mk
             m_vmcs = page_pool.template allocate<vmcs_t>(tls, ALLOCATE_TAG_VMCS);
             if (bsl::unlikely(nullptr == m_vmcs)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
             m_vmcs_phys = page_pool.virt_to_phys(m_vmcs);
-            if (bsl::unlikely(!m_vmcs_phys)) {
+            if (bsl::unlikely_assert(!m_vmcs_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
-            if (bsl::unlikely(!this->init_vmcs(tls, intrinsic))) {
+            ret = this->init_vmcs(tls, intrinsic);
+            if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return bsl::safe_uint16::zero(true);
             }
 
             m_assigned_vpid = vpid;
             m_assigned_ppid = ppid;
-            m_allocated = true;
+            m_allocated = allocated_status_t::allocated;
 
             cleanup_on_error.ignore();
-            return bsl::errc_success;
+            return m_id;
         }
 
         /// <!-- description -->
@@ -1724,35 +1763,46 @@ namespace mk
         [[nodiscard]] constexpr auto
         deallocate(TLS_CONCEPT &tls, PAGE_POOL_CONCEPT &page_pool) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
-                return bsl::errc_success;
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vps_t not initialized\n" << bsl::here();
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                return bsl::errc_success;
+            if (bsl::unlikely(m_allocated == allocated_status_t::zombie)) {
+                bsl::error() << "vps "                                    // --
+                             << bsl::hex(m_id)                            // --
+                             << " is a zombie and cannot be destroyed"    // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
+
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vps "                                 // --
-                             << bsl::hex(m_id)                         // --
-                             << " is assigned to pp "                  // --
-                             << bsl::hex(m_assigned_ppid)              // --
-                             << " and cannot be deallocated on pp "    // --
-                             << bsl::hex(tls.ppid)                     // --
-                             << bsl::endl                              // --
-                             << bsl::here();                           // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                               // --
+                             << bsl::hex(m_id)                                       // --
+                             << " is already deallocated and cannot be destroyed"    // --
+                             << bsl::endl                                            // --
+                             << bsl::here();                                         // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (syscall::BF_INVALID_ID != m_active_ppid) {
-                bsl::error() << "vps "                          // --
-                             << bsl::hex(m_id)                  // --
-                             << " is still active on pp "       // --
-                             << bsl::hex(m_active_ppid)         // --
-                             << " and cannot be deallocated"    // --
-                             << bsl::endl                       // --
-                             << bsl::here();                    // --
+            tls.state_reversal_required = true;
+            bsl::finally zombify_on_error{[this]() noexcept -> void {
+                this->zombify();
+            }};
+
+            if (bsl::unlikely(m_active_ppid)) {
+                bsl::error() << "vps "                     // --
+                             << bsl::hex(m_id)             // --
+                             << " is active on pp "        // --
+                             << bsl::hex(m_active_ppid)    // --
+                             << " and therefore vps "      // --
+                             << bsl::hex(m_id)             // --
+                             << " cannot be destroyed"     // --
+                             << bsl::endl                  // --
+                             << bsl::here();               // --
 
                 return bsl::errc_failure;
             }
@@ -1766,9 +1816,45 @@ namespace mk
 
             m_assigned_ppid = syscall::BF_INVALID_ID;
             m_assigned_vpid = syscall::BF_INVALID_ID;
-            m_allocated = {};
+            m_allocated = allocated_status_t::deallocated;
 
+            zombify_on_error.ignore();
             return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets this vps_t's status as zombified, meaning it is no
+        ///     longer usable.
+        ///
+        constexpr void
+        zombify() &noexcept
+        {
+            if (bsl::unlikely_assert(!m_id)) {
+                return;
+            }
+
+            if (m_allocated == allocated_status_t::zombie) {
+                return;
+            }
+
+            bsl::alert() << "vps "                   // --
+                         << bsl::hex(m_id)           // --
+                         << " has been zombified"    // --
+                         << bsl::endl;               // --
+
+            m_allocated = allocated_status_t::zombie;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if this vps_t is deallocated, false otherwise
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns true if this vps_t is deallocated, false otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        is_deallocated() const &noexcept -> bool
+        {
+            return m_allocated == allocated_status_t::deallocated;
         }
 
         /// <!-- description -->
@@ -1780,7 +1866,19 @@ namespace mk
         [[nodiscard]] constexpr auto
         is_allocated() const &noexcept -> bool
         {
-            return m_allocated;
+            return m_allocated == allocated_status_t::allocated;
+        }
+
+        /// <!-- description -->
+        ///   @brief Returns true if this vps_t is a zombie, false otherwise
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @return Returns true if this vps_t is a zombie, false otherwise
+        ///
+        [[nodiscard]] constexpr auto
+        is_zombie() const &noexcept -> bool
+        {
+            return m_allocated == allocated_status_t::zombie;
         }
 
         /// <!-- description -->
@@ -1798,19 +1896,32 @@ namespace mk
         [[nodiscard]] constexpr auto
         set_active(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely(tls.active_vpid != m_assigned_vpid)) {
+                bsl::error() << "vps "                                 // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to vp "                  // --
+                             << bsl::hex(m_assigned_vpid)              // --
+                             << " and cannot be activated with vp "    // --
+                             << bsl::hex(tls.active_vpid)              // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
+
+                return bsl::errc_precondition;
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
@@ -1823,21 +1934,10 @@ namespace mk
                              << bsl::endl                            // --
                              << bsl::here();                         // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.active_vpsid == m_id)) {
-                bsl::error() << "vps "                                 // --
-                             << bsl::hex(m_id)                         // --
-                             << " is already the active vps on pp "    // --
-                             << bsl::hex(tls.ppid)                     // --
-                             << bsl::endl                              // --
-                             << bsl::here();                           // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(syscall::BF_INVALID_ID != tls.active_vpsid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID != tls.active_vpsid)) {
                 bsl::error() << "vps "                        // --
                              << bsl::hex(tls.active_vpsid)    // --
                              << " is still active on pp "     // --
@@ -1845,10 +1945,10 @@ namespace mk
                              << bsl::endl                     // --
                              << bsl::here();                  // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID != m_active_ppid)) {
+            if (bsl::unlikely(m_active_ppid)) {
                 bsl::error() << "vps "                                 // --
                              << bsl::hex(m_id)                         // --
                              << " is already the active vps on pp "    // --
@@ -1856,7 +1956,7 @@ namespace mk
                              << bsl::endl                              // --
                              << bsl::here();                           // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             intrinsic.set_tls_reg(syscall::TLS_OFFSET_RAX, m_gprs.rax);
@@ -1896,35 +1996,22 @@ namespace mk
         [[nodiscard]] constexpr auto
         set_inactive(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely(!m_id)) {
+            if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            if (bsl::unlikely_assert(m_allocated == allocated_status_t::deallocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
-                bsl::error() << "vps "                                 // --
-                             << bsl::hex(m_id)                         // --
-                             << " is assigned to pp "                  // --
-                             << bsl::hex(m_assigned_ppid)              // --
-                             << " and cannot be deactivated on pp "    // --
-                             << bsl::hex(tls.ppid)                     // --
-                             << bsl::endl                              // --
-                             << bsl::here();                           // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely(syscall::BF_INVALID_ID == tls.active_vpsid)) {
+            if (bsl::unlikely_assert(syscall::BF_INVALID_ID == tls.active_vpsid)) {
                 bsl::error() << "vps "                     // --
                              << bsl::hex(m_id)             // --
                              << " is not active on pp "    // --
@@ -1932,10 +2019,10 @@ namespace mk
                              << bsl::endl                  // --
                              << bsl::here();               // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(tls.active_vpsid != m_id)) {
+            if (bsl::unlikely_assert(tls.active_vpsid != m_id)) {
                 bsl::error() << "vps "                        // --
                              << bsl::hex(tls.active_vpsid)    // --
                              << " is still active on pp "     // --
@@ -1943,10 +2030,20 @@ namespace mk
                              << bsl::endl                     // --
                              << bsl::here();                  // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == m_active_ppid)) {
+            if (bsl::unlikely_assert(!m_active_ppid)) {
+                bsl::error() << "vps "               // --
+                             << bsl::hex(m_id)       // --
+                             << " is not active "    // --
+                             << bsl::endl            // --
+                             << bsl::here();         // --
+
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely_assert(tls.ppid != m_active_ppid)) {
                 bsl::error() << "vps "                     // --
                              << bsl::hex(m_id)             // --
                              << " is not active on pp "    // --
@@ -1954,7 +2051,7 @@ namespace mk
                              << bsl::endl                  // --
                              << bsl::here();               // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             m_gprs.rax = intrinsic.tls_reg(syscall::TLS_OFFSET_RAX).get();
@@ -1974,21 +2071,29 @@ namespace mk
             m_gprs.r15 = intrinsic.tls_reg(syscall::TLS_OFFSET_R15).get();
 
             tls.active_vpsid = syscall::BF_INVALID_ID.get();
-            m_active_ppid = syscall::BF_INVALID_ID;
+            m_active_ppid = bsl::safe_uint16::zero(true);
 
             return bsl::errc_success;
         }
 
         /// <!-- description -->
-        ///   @brief Returns true if this vps_t is active, false otherwise
+        ///   @brief Returns the ID of the PP that this vps_t is still active
+        ///     on. If the vps_t is inactive, this function returns
+        ///     bsl::safe_uint16::zero(true)
         ///
         /// <!-- inputs/outputs -->
-        ///   @return Returns true if this vps_t is active, false otherwise
+        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+        ///   @param tls the current TLS block
+        ///   @return Returns the ID of the PP that this vps_t is still active
+        ///     on. If the vps_t is inactive, this function returns
+        ///     bsl::safe_uint16::zero(true)
         ///
+        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        is_active() const &noexcept -> bool
+        is_active(TLS_CONCEPT &tls) const &noexcept -> bsl::safe_uint16
         {
-            return syscall::BF_INVALID_ID != m_active_ppid;
+            bsl::discard(tls);
+            return m_active_ppid;
         }
 
         /// <!-- description -->
@@ -2029,101 +2134,111 @@ namespace mk
             TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, bsl::safe_uint16 const &ppid) &noexcept
             -> bsl::errc_type
         {
+            bsl::discard(tls);
             bsl::discard(intrinsic);
+            bsl::discard(ppid);
 
-            if (bsl::unlikely(!m_id)) {
-                bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::errc_failure;
-            }
+            // if (bsl::unlikely_assert(!m_id)) {
+            //     bsl::error() << "vps_t not initialized\n" << bsl::here();
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(!m_allocated)) {
-                bsl::error() << "vps "                    // --
-                             << bsl::hex(m_id)            // --
-                             << " was never allocated"    // --
-                             << bsl::endl                 // --
-                             << bsl::here();              // --
+            // if (bsl::unlikely(!m_allocated)) {
+            //     bsl::error() << "vps "                    // --
+            //                  << bsl::hex(m_id)            // --
+            //                  << " was never allocated"    // --
+            //                  << bsl::endl                 // --
+            //                  << bsl::here();              // --
 
-                return bsl::errc_failure;
-            }
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(!ppid)) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
-            }
+            // if (bsl::unlikely(!ppid)) {
+            //     bsl::error() << "invalid ppid\n" << bsl::here();
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
-            }
+            // if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
+            //     bsl::error() << "invalid ppid\n" << bsl::here();
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(!(ppid < tls.online_pps))) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_failure;
-            }
+            // if (bsl::unlikely(!(ppid < tls.online_pps))) {
+            //     bsl::error() << "invalid ppid\n" << bsl::here();
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(tls.ppid != ppid)) {
-                bsl::error() << "vps "                         // --
-                             << bsl::hex(m_id)                 // --
-                             << " is being migrated to pp "    // --
-                             << bsl::hex(ppid)                 // --
-                             << " by pp "                      // --
-                             << bsl::hex(tls.ppid)             // --
-                             << " which is not allowed "       // --
-                             << bsl::endl                      // --
-                             << bsl::here();                   // --
+            // if (bsl::unlikely(tls.ppid != ppid)) {
+            //     bsl::error() << "vps "                         // --
+            //                  << bsl::hex(m_id)                 // --
+            //                  << " is being migrated to pp "    // --
+            //                  << bsl::hex(ppid)                 // --
+            //                  << " by pp "                      // --
+            //                  << bsl::hex(tls.ppid)             // --
+            //                  << " which is not allowed "       // --
+            //                  << bsl::endl                      // --
+            //                  << bsl::here();                   // --
 
-                return bsl::errc_failure;
-            }
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(ppid == m_assigned_ppid)) {
-                bsl::error() << "vps "                             // --
-                             << bsl::hex(m_id)                     // --
-                             << " is already assigned to a pp "    // --
-                             << bsl::hex(m_assigned_ppid)          // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+            // if (bsl::unlikely(ppid == m_assigned_ppid)) {
+            //     bsl::error() << "vps "                             // --
+            //                  << bsl::hex(m_id)                     // --
+            //                  << " is already assigned to a pp "    // --
+            //                  << bsl::hex(m_assigned_ppid)          // --
+            //                  << bsl::endl                          // --
+            //                  << bsl::here();                       // --
 
-                return bsl::errc_failure;
-            }
+            //     return bsl::errc_failure;
+            // }
 
-            if (bsl::unlikely(syscall::BF_INVALID_ID != m_active_ppid)) {
-                bsl::error() << "vps "                       // --
-                             << bsl::hex(m_id)               // --
-                             << " is still active on pp "    // --
-                             << bsl::hex(m_active_ppid)      // --
-                             << bsl::endl                    // --
-                             << bsl::here();                 // --
+            // if (bsl::unlikely(syscall::BF_INVALID_ID != m_active_ppid)) {
+            //     bsl::error() << "vps "                       // --
+            //                  << bsl::hex(m_id)               // --
+            //                  << " is still active on pp "    // --
+            //                  << bsl::hex(m_active_ppid)      // --
+            //                  << bsl::endl                    // --
+            //                  << bsl::here();                 // --
 
-                return bsl::errc_failure;
-            }
+            //     return bsl::errc_failure;
+            // }
 
             // m_guest_vmcb->vmcb_clean_bits = bsl::ZERO_U32.get();
-            m_assigned_ppid = ppid;
+            // m_assigned_ppid = ppid;
 
             return bsl::errc_success;
         }
 
         /// <!-- description -->
-        ///   @brief Returns the ID of the VP this vps_t is assigned to
+        ///   @brief Returns the ID of the VP this vp_t is assigned to
         ///
         /// <!-- inputs/outputs -->
-        ///   @return Returns the ID of the VP this vps_t is assigned to
+        ///   @return Returns the ID of the VP this vp_t is assigned to
         ///
         [[nodiscard]] constexpr auto
-        assigned_vp() const &noexcept -> bsl::safe_uint16 const &
+        assigned_vp() const &noexcept -> bsl::safe_uint16
         {
+            if (bsl::unlikely(syscall::BF_INVALID_ID == m_assigned_vpid)) {
+                return bsl::safe_uint16::zero(true);
+            }
+
             return m_assigned_vpid;
         }
 
         /// <!-- description -->
-        ///   @brief Returns the ID of the PP this vps_t is assigned to
+        ///   @brief Returns the ID of the PP this vp_t is assigned to
         ///
         /// <!-- inputs/outputs -->
-        ///   @return Returns the ID of the PP this vps_t is assigned to
+        ///   @return Returns the ID of the PP this vp_t is assigned to
         ///
         [[nodiscard]] constexpr auto
-        assigned_pp() const &noexcept -> bsl::safe_uint16 const &
+        assigned_pp() const &noexcept -> bsl::safe_uint16
         {
+            if (bsl::unlikely(syscall::BF_INVALID_ID == m_assigned_ppid)) {
+                return bsl::safe_uint16::zero(true);
+            }
+
             return m_assigned_ppid;
         }
 
@@ -2149,14 +2264,38 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(!this->is_allocated())) {
-                bsl::error() << "invalid vps\n" << bsl::here();
-                return bsl::errc_failure;
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vps_t not initialized\n" << bsl::here();
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!this->ensure_this_vps_is_loaded(tls, intrinsic))) {
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
+                             << " and cannot be operated on by pp "    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
+
+                return bsl::errc_precondition;
+            }
+
+            ret = this->ensure_this_vps_is_loaded(tls, intrinsic);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             if (tls.active_vpsid == m_id) {
@@ -2195,123 +2334,131 @@ namespace mk
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_RSP, state.rsp);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_RIP, state.rip);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_RFLAGS, state.rflags);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             auto const gdtr_limit{bsl::to_u32(state.gdtr.limit)};
             ret = intrinsic.vmwrite32(VMCS_GUEST_GDTR_LIMIT, gdtr_limit);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             auto const gdtr_base{bsl::to_umax(state.gdtr.base)};
             ret = intrinsic.vmwrite64(VMCS_GUEST_GDTR_BASE, gdtr_base);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             auto const idtr_limit{bsl::to_u32(state.idtr.limit)};
             ret = intrinsic.vmwrite32(VMCS_GUEST_IDTR_LIMIT, idtr_limit);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             auto const idtr_base{bsl::to_umax(state.idtr.base)};
             ret = intrinsic.vmwrite64(VMCS_GUEST_IDTR_BASE, idtr_base);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->set_es_segment_descriptor(intrinsic, state))) {
+            ret = this->set_es_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->set_cs_segment_descriptor(intrinsic, state))) {
+            ret = this->set_cs_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->set_ss_segment_descriptor(intrinsic, state))) {
+            ret = this->set_ss_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->set_ds_segment_descriptor(intrinsic, state))) {
+            ret = this->set_ds_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->set_fs_segment_descriptor(intrinsic, state))) {
+            ret = this->set_fs_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->set_gs_segment_descriptor(intrinsic, state))) {
+            ret = this->set_gs_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->set_ldtr_segment_descriptor(intrinsic, state))) {
+            ret = this->set_ldtr_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->set_tr_segment_descriptor(intrinsic, state))) {
+            ret = this->set_tr_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_CR0, state.cr0);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             m_vmcs_missing_registers.cr2 = state.cr2;
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_CR3, state.cr3);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_CR4, state.cr4);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             m_vmcs_missing_registers.dr6 = state.dr6;
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_DR7, state.dr7);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_IA32_EFER, state.ia32_efer);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             m_vmcs_missing_registers.guest_ia32_star = state.ia32_star;
@@ -2320,47 +2467,47 @@ namespace mk
             m_vmcs_missing_registers.guest_ia32_fmask = state.ia32_fmask;
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_FS_BASE, state.ia32_fs_base);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_GS_BASE, state.ia32_gs_base);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             m_vmcs_missing_registers.guest_ia32_kernel_gs_base = state.ia32_kernel_gs_base;
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_IA32_SYSENTER_CS, state.ia32_sysenter_cs);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_IA32_SYSENTER_ESP, state.ia32_sysenter_esp);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_IA32_SYSENTER_EIP, state.ia32_sysenter_eip);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_IA32_PAT, state.ia32_pat);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_IA32_DEBUGCTL, state.ia32_debugctl);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             return bsl::errc_success;
@@ -2382,19 +2529,44 @@ namespace mk
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
         vps_to_state_save(
-            TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) &noexcept
-            -> bsl::errc_type
+            TLS_CONCEPT &tls,
+            INTRINSIC_CONCEPT &intrinsic,
+            STATE_SAVE_CONCEPT &state) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(!this->is_allocated())) {
-                bsl::error() << "invalid vps\n" << bsl::here();
-                return bsl::errc_failure;
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vps_t not initialized\n" << bsl::here();
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!this->ensure_this_vps_is_loaded(tls, intrinsic))) {
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
+                             << " and cannot be operated on by pp "    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
+
+                return bsl::errc_precondition;
+            }
+
+            ret = this->ensure_this_vps_is_loaded(tls, intrinsic);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             if (tls.active_vpsid == m_id) {
@@ -2433,125 +2605,133 @@ namespace mk
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_RSP, &state.rsp);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_RIP, &state.rip);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_RFLAGS, &state.rflags);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread16(VMCS_GUEST_GDTR_LIMIT, &state.gdtr.limit);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             bsl::safe_uint64 gdtr_base{};
             ret = intrinsic.vmread64(VMCS_GUEST_GDTR_BASE, gdtr_base.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             state.gdtr.base = bsl::to_ptr<bsl::uint64 *>(gdtr_base);
 
             ret = intrinsic.vmread16(VMCS_GUEST_IDTR_LIMIT, &state.idtr.limit);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             bsl::safe_uint64 idtr_base{};
             ret = intrinsic.vmread64(VMCS_GUEST_IDTR_BASE, idtr_base.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             state.idtr.base = bsl::to_ptr<bsl::uint64 *>(idtr_base);
 
-            if (bsl::unlikely(!this->get_es_segment_descriptor(intrinsic, state))) {
+            ret = this->get_es_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->get_cs_segment_descriptor(intrinsic, state))) {
+            ret = this->get_cs_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->get_ss_segment_descriptor(intrinsic, state))) {
+            ret = this->get_ss_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->get_ds_segment_descriptor(intrinsic, state))) {
+            ret = this->get_ds_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->get_fs_segment_descriptor(intrinsic, state))) {
+            ret = this->get_fs_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->get_gs_segment_descriptor(intrinsic, state))) {
+            ret = this->get_gs_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->get_ldtr_segment_descriptor(intrinsic, state))) {
+            ret = this->get_ldtr_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
-            if (bsl::unlikely(!this->get_tr_segment_descriptor(intrinsic, state))) {
+            ret = this->get_tr_segment_descriptor(intrinsic, state);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_CR0, &state.cr0);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             state.cr2 = m_vmcs_missing_registers.cr2;
 
             ret = intrinsic.vmread64(VMCS_GUEST_CR3, &state.cr3);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_CR4, &state.cr4);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             state.dr6 = m_vmcs_missing_registers.dr6;
 
             ret = intrinsic.vmread64(VMCS_GUEST_DR7, &state.dr7);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_IA32_EFER, &state.ia32_efer);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             state.ia32_star = m_vmcs_missing_registers.guest_ia32_star;
@@ -2560,47 +2740,47 @@ namespace mk
             state.ia32_fmask = m_vmcs_missing_registers.guest_ia32_fmask;
 
             ret = intrinsic.vmread64(VMCS_GUEST_FS_BASE, &state.ia32_fs_base);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_GS_BASE, &state.ia32_gs_base);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             state.ia32_kernel_gs_base = m_vmcs_missing_registers.guest_ia32_kernel_gs_base;
 
             ret = intrinsic.vmread64(VMCS_GUEST_IA32_SYSENTER_CS, &state.ia32_sysenter_cs);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_IA32_SYSENTER_ESP, &state.ia32_sysenter_esp);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_IA32_SYSENTER_EIP, &state.ia32_sysenter_eip);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_IA32_PAT, &state.ia32_pat);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_IA32_DEBUGCTL, &state.ia32_debugctl);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             return bsl::errc_success;
@@ -2635,12 +2815,36 @@ namespace mk
             bsl::errc_type ret{};
             bsl::safe_integral<FIELD_TYPE> val{};
 
-            if (bsl::unlikely(!this->is_allocated())) {
-                bsl::error() << "invalid vps\n" << bsl::here();
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vps_t not initialized\n" << bsl::here();
                 return bsl::safe_integral<FIELD_TYPE>::zero(true);
             }
 
-            if (bsl::unlikely(!this->ensure_this_vps_is_loaded(tls, intrinsic))) {
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
+                return bsl::safe_integral<FIELD_TYPE>::zero(true);
+            }
+
+            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
+                             << " and cannot be operated on by pp "    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
+
+                return bsl::safe_integral<FIELD_TYPE>::zero(true);
+            }
+
+            ret = this->ensure_this_vps_is_loaded(tls, intrinsic);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::safe_integral<FIELD_TYPE>::zero(true);
             }
@@ -2710,23 +2914,43 @@ namespace mk
 
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(!this->is_allocated())) {
-                bsl::error() << "invalid vps\n" << bsl::here();
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vps_t not initialized\n" << bsl::here();
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely_assert(!val)) {
+                bsl::error() << "invalid value\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!val)) {
-                bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
+                             << " and cannot be operated on by pp "    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!this->ensure_this_vps_is_loaded(tls, intrinsic))) {
+            ret = this->ensure_this_vps_is_loaded(tls, intrinsic);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             constexpr auto vmcs_pinbased_ctls_idx{bsl::to_umax(0x4000U)};
@@ -2763,25 +2987,28 @@ namespace mk
             else {
                 switch (index.get()) {
                     case vmcs_pinbased_ctls_idx.get(): {
-                        bsl::error()
-                            << "invalid integer type for field: " << bsl::hex(index) << bsl::endl
-                            << bsl::here();
+                        bsl::error() << "invalid integer type for field: " // --
+                                     << bsl::hex(index) // --
+                                     << bsl::endl // --
+                                     << bsl::here();// --
 
                         return bsl::errc_failure;
                     }
 
                     case vmcs_exit_ctls_idx.get(): {
-                        bsl::error()
-                            << "invalid integer type for field: " << bsl::hex(index) << bsl::endl
-                            << bsl::here();
+                        bsl::error() << "invalid integer type for field: " // --
+                                     << bsl::hex(index) // --
+                                     << bsl::endl // --
+                                     << bsl::here();// --
 
                         return bsl::errc_failure;
                     }
 
                     case vmcs_entry_ctls_idx.get(): {
-                        bsl::error()
-                            << "invalid integer type for field: " << bsl::hex(index) << bsl::endl
-                            << bsl::here();
+                        bsl::error() << "invalid integer type for field: " // --
+                                     << bsl::hex(index) // --
+                                     << bsl::endl // --
+                                     << bsl::here();// --
 
                         return bsl::errc_failure;
                     }
@@ -2841,14 +3068,36 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        read_reg(
-            TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg) &noexcept
-            -> bsl::safe_uintmax
+        read_reg(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg)
+            &noexcept -> bsl::safe_uintmax
         {
             bsl::safe_uint64 index{bsl::safe_uint64::zero(true)};
 
-            if (bsl::unlikely(!this->is_allocated())) {
-                bsl::error() << "invalid vps\n" << bsl::here();
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vps_t not initialized\n" << bsl::here();
+                return bsl::safe_uintmax::zero(true);
+            }
+
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
+                return bsl::safe_uintmax::zero(true);
+            }
+
+            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
+                             << " and cannot be operated on by pp "    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
+
                 return bsl::safe_uintmax::zero(true);
             }
 
@@ -3262,7 +3511,7 @@ namespace mk
                 }
             }
 
-            auto val{this->read<bsl::uint64>(tls, intrinsic, index)};
+            auto const val{this->read<bsl::uint64>(tls, intrinsic, index)};
             if (bsl::unlikely(!val)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return val;
@@ -3295,18 +3544,37 @@ namespace mk
         {
             bsl::safe_uint64 index{bsl::safe_uint64::zero(true)};
 
-            if (bsl::unlikely(!this->is_allocated())) {
-                bsl::error() << "invalid vps\n" << bsl::here();
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vps_t not initialized\n" << bsl::here();
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely_assert(!val)) {
+                bsl::error() << "invalid value\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(!val)) {
-                bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
+                             << " and cannot be operated on by pp "    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
 
-                return bsl::errc_failure;
+                return bsl::errc_precondition;
             }
 
             switch (reg) {
@@ -3785,14 +4053,39 @@ namespace mk
         run(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VMEXIT_LOG_CONCEPT &log) &noexcept
             -> bsl::safe_uintmax
         {
+            bsl::errc_type ret{};
             constexpr bsl::safe_uintmax invalid_exit_reason{bsl::to_umax(0xFFFFFFFF00000000U)};
 
-            if (bsl::unlikely(!this->is_allocated())) {
-                bsl::error() << "invalid vps\n" << bsl::here();
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vps_t not initialized\n" << bsl::here();
                 return bsl::safe_uintmax::zero(true);
             }
 
-            if (bsl::unlikely(!this->ensure_this_vps_is_loaded(tls, intrinsic))) {
+            if (bsl::unlikely_assert(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
+                return bsl::safe_uintmax::zero(true);
+            }
+
+            if (bsl::unlikely_assert(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                        // --
+                             << bsl::hex(m_id)               // --
+                             << " is assigned to pp "        // --
+                             << bsl::hex(m_assigned_ppid)    // --
+                             << " and cannot run by pp "     // --
+                             << bsl::hex(tls.ppid)           // --
+                             << bsl::endl                    // --
+                             << bsl::here();                 // --
+
+                return bsl::safe_uintmax::zero(true);
+            }
+
+            ret = this->ensure_this_vps_is_loaded(tls, intrinsic);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::safe_uintmax::zero(true);
             }
@@ -3863,30 +4156,54 @@ namespace mk
             bsl::safe_uint64 rip{};
             bsl::safe_uint64 len{};
 
-            if (bsl::unlikely(!this->is_allocated())) {
-                bsl::error() << "invalid vps\n" << bsl::here();
-                return bsl::errc_failure;
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vps_t not initialized\n" << bsl::here();
+                return bsl::errc_precondition;
             }
 
-            if (bsl::unlikely(!this->ensure_this_vps_is_loaded(tls, intrinsic))) {
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
+                             << " and cannot be operated on by pp "    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
+
+                return bsl::errc_precondition;
+            }
+
+            ret = this->ensure_this_vps_is_loaded(tls, intrinsic);
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_GUEST_RIP, rip.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmread64(VMCS_VMEXIT_INSTRUCTION_LENGTH, len.data());
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
+                return ret;
             }
 
             ret = intrinsic.vmwrite64(VMCS_GUEST_RIP, rip + len);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
@@ -3913,19 +4230,48 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::unlikely(!this->is_allocated())) {
-                bsl::error() << "invalid vps\n" << bsl::here();
-                return bsl::errc_failure;
+            if (bsl::unlikely_assert(!m_id)) {
+                bsl::error() << "vps_t not initialized\n" << bsl::here();
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
+                bsl::error() << "vps "                                             // --
+                             << bsl::hex(m_id)                                     // --
+                             << "'s status is not allocated and cannot be used"    // --
+                             << bsl::endl                                          // --
+                             << bsl::here();                                       // --
+
+                return bsl::errc_precondition;
+            }
+
+            if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
+                bsl::error() << "vp "                                  // --
+                             << bsl::hex(m_id)                         // --
+                             << " is assigned to pp "                  // --
+                             << bsl::hex(m_assigned_ppid)              // --
+                             << " and cannot be operated on by pp "    // --
+                             << bsl::hex(tls.ppid)                     // --
+                             << bsl::endl                              // --
+                             << bsl::here();                           // --
+
+                return bsl::errc_precondition;
+            }
+
+            ret = this->ensure_this_vps_is_loaded(tls, intrinsic);
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
             }
 
             ret = intrinsic.vmclear(&m_vmcs_phys);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
 
             ret = intrinsic.vmload(&m_vmcs_phys);
-            if (bsl::unlikely(!ret)) {
+            if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
@@ -3934,30 +4280,6 @@ namespace mk
             m_vmcs_missing_registers.launched = {};
 
             return ret;
-        }
-
-        /// <!-- description -->
-        ///   @brief Returns the next vps_t in the vps_pool_t linked list
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @return Returns the next vps_t in the vps_pool_t linked list
-        ///
-        [[nodiscard]] constexpr auto
-        next() const &noexcept -> vps_t *
-        {
-            return m_next;
-        }
-
-        /// <!-- description -->
-        ///   @brief Sets the next vps_t in the vps_pool_t linked list
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param val the next vps_t in the vps_pool_t linked list to set
-        ///
-        constexpr void
-        set_next(vps_t *val) &noexcept
-        {
-            m_next = val;
         }
 
         /// <!-- description -->

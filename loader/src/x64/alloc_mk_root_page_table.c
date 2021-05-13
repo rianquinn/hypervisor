@@ -29,6 +29,7 @@
 #include <platform.h>
 #include <root_page_table_t.h>
 #include <types.h>
+#include <pml4t_t.h>
 
 /**
  * <!-- description -->
