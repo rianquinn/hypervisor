@@ -28,6 +28,7 @@
 #include <mk_interface.hpp>
 
 #include <bsl/discard.hpp>
+#include <bsl/errc_type.hpp>
 
 namespace mk
 {
@@ -64,7 +65,7 @@ namespace mk
         EXT_CONCEPT &ext,
         VM_POOL_CONCEPT &vm_pool,
         VP_POOL_CONCEPT &vp_pool,
-        VPS_POOL_CONCEPT &vps_pool) -> syscall::bf_status_t
+        VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(ext_pool);
@@ -73,7 +74,7 @@ namespace mk
         bsl::discard(vp_pool);
         bsl::discard(vps_pool);
 
-        return syscall::BF_STATUS_SUCCESS;
+        return bsl::errc_success;
     }
 }
 

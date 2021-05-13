@@ -28,6 +28,7 @@
 #include <mk_interface.hpp>
 
 #include <bsl/discard.hpp>
+#include <bsl/errc_type.hpp>
 
 namespace mk
 {
@@ -44,12 +45,12 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_handle_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> syscall::bf_status_t
+    dispatch_syscall_handle_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(ext);
 
-        return syscall::BF_STATUS_SUCCESS;
+        return bsl::errc_success;
     }
 }
 

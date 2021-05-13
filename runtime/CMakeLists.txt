@@ -19,13 +19,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-include(${CMAKE_CURRENT_LIST_DIR}/../cmake/function/hypervisor_add_header_depends.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../cmake/function/hypervisor_target_source.cmake)
 
 add_library(runtime)
 
-target_include_directories(runtime PRIVATE
-    ../syscall/include/cpp/
-)
+# ------------------------------------------------------------------------------
+# Includes
+# ------------------------------------------------------------------------------
 
 target_include_directories(runtime SYSTEM PRIVATE
     ${CMAKE_BINARY_DIR}/include
@@ -34,6 +34,10 @@ target_include_directories(runtime SYSTEM PRIVATE
 target_include_directories(runtime PUBLIC
     include
 )
+
+# ------------------------------------------------------------------------------
+# Headers
+# ------------------------------------------------------------------------------
 
 list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/include/bsl/cstdio.hpp
@@ -44,20 +48,34 @@ list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/include/bsl/details/puts_stdout.hpp
 )
 
-target_sources(runtime PRIVATE
-    src/_start.S
-    src/msg_stack_chk_fail.cpp
-)
+# ------------------------------------------------------------------------------
+# Sources
+# ------------------------------------------------------------------------------
 
-hypervisor_add_header_depends(src/msg_stack_chk_fail.cpp ${HEADERS})
+hypervisor_target_source(runtime src/msg_stack_chk_fail.cpp ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    target_sources(runtime PRIVATE
-        src/x64/memops.S
-    )
+    hypervisor_target_source(runtime src/x64/_start.S ${HEADERS})
+    hypervisor_target_source(runtime src/x64/memops.S ${HEADERS})
 endif()
 
-target_link_libraries(runtime PUBLIC
+if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
+    hypervisor_target_source(runtime src/arm/aarch64/_start.S ${HEADERS})
+    hypervisor_target_source(runtime src/arm/aarch64/memcpy.S ${HEADERS})
+    hypervisor_target_source(runtime src/arm/aarch64/memset.S ${HEADERS})
+endif()
+
+# ------------------------------------------------------------------------------
+# Libraries
+# ------------------------------------------------------------------------------
+
+target_link_libraries(runtime PRIVATE
     bsl
     syscall
 )
+
+# ------------------------------------------------------------------------------
+# Install
+# ------------------------------------------------------------------------------
+
+install(TARGETS runtime DESTINATION lib)

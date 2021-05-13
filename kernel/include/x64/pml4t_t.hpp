@@ -35,17 +35,17 @@
 
 namespace mk
 {
-    /// @brief defined the expected size of the pml4t_t struct
+    /// @brief defines total number of entries in the pml4t
     constexpr bsl::safe_uintmax NUM_PML4T_ENTRIES{bsl::to_umax(512)};
 
     /// @struct mk::pml4t_t
     ///
     /// <!-- description -->
-    ///   @brief Defines the layout of a page-map level-4 table (pml4).
+    ///   @brief Defines the layout of a page-map level-4 table (pml4t).
     ///
     struct pml4t_t final
     {
-        /// @brief stores the entires in the table
+        /// @brief stores the entries for this page table
         bsl::array<loader::pml4te_t, NUM_PML4T_ENTRIES.get()> entries;
     };
 }

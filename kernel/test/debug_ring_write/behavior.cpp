@@ -22,9 +22,6 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define HYPERVISOR_DEBUG_RING_SIZE 0x7FF0
-
 #include "../../src/debug_ring_write.hpp"
 
 #include <bsl/ut.hpp>

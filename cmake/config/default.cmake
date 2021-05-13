@@ -21,14 +21,30 @@
 
 include(${bsl_SOURCE_DIR}/cmake/function/bf_add_config.cmake)
 
-option(HYPERVISOR_BUILD_LOADER "Turns on/off building the loader" ON)
-option(HYPERVISOR_BUILD_VMMCTL "Turns on/off building the vmmctl" ON)
-option(HYPERVISOR_BUILD_MICROKERNEL "Turns on/off building the microkernel" ON)
-option(HYPERVISOR_BUILD_EFI "Turns on/off building the EFI loader" OFF)
+if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    bf_add_config(
+        CONFIG_NAME HYPERVISOR_DEFAULT_BUILD_VMMCTL
+        CONFIG_TYPE BOOL
+        DEFAULT_VAL ON
+        DESCRIPTION "Define the default value for HYPERVISOR_BUILD_VMMCTL"
+        SKIP_VALIDATION
+    )
+else()
+    bf_add_config(
+        CONFIG_NAME HYPERVISOR_DEFAULT_BUILD_EFI
+        CONFIG_TYPE BOOL
+        DEFAULT_VAL ON
+        DESCRIPTION "Define the default value for HYPERVISOR_BUILD_EFI"
+        SKIP_VALIDATION
+    )
 
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     set(HYPERVISOR_TARGET_ARCH ${CMAKE_SYSTEM_PROCESSOR})
 endif()
+
+option(HYPERVISOR_BUILD_LOADER "Turns on/off building the loader" ON)
+option(HYPERVISOR_BUILD_VMMCTL "Turns on/off building the vmmctl" ${HYPERVISOR_DEFAULT_BUILD_VMMCTL})
+option(HYPERVISOR_BUILD_MICROKERNEL "Turns on/off building the microkernel" ON)
+option(HYPERVISOR_BUILD_EFI "Turns on/off building the EFI loader" ${HYPERVISOR_DEFAULT_BUILD_EFI})
 
 if(NOT DEFINED HYPERVISOR_TARGET_ARCH)
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

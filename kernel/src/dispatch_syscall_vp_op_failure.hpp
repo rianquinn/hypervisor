@@ -50,7 +50,7 @@ namespace mk
     template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vp_op_create_vp_failure(
-        TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool, VPS_POOL_CONCEPT &vps_pool) -> bsl::errc_type
+        TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool, VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -80,7 +80,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vp_op_destroy_vp_failure(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) -> bsl::errc_type
+    syscall_vp_op_destroy_vp_failure(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -113,7 +113,7 @@ namespace mk
     template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_vp_op_failure(
-        TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool, VPS_POOL_CONCEPT &vps_pool) -> bsl::errc_type
+        TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool, VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

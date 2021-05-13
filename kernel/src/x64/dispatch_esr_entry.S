@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-   .code64
+    .code64
     .intel_syntax noprefix
 
     .globl  dispatch_esr_entry

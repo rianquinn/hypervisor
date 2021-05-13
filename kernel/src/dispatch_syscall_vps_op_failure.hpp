@@ -56,7 +56,7 @@ namespace mk
     syscall_vps_op_create_vps_failure(
         TLS_CONCEPT &tls,
         PAGE_POOL_CONCEPT &page_pool,
-        VPS_POOL_CONCEPT &vps_pool) -> bsl::errc_type
+        VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -86,7 +86,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vps_op_destroy_vps_failure(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool)
+    syscall_vps_op_destroy_vps_failure(TLS_CONCEPT &tls, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         bsl::errc_type ret{};
@@ -120,7 +120,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_init_as_root_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const ret{vps_pool.state_save_to_vps(
@@ -150,7 +150,7 @@ namespace mk
     // ///
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
-    // syscall_vps_op_read8_failure(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    // syscall_vps_op_read8_failure(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const val{vps_pool.template read<bsl::uint8>(
@@ -184,7 +184,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_read16_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const val{vps_pool.template read<bsl::uint16>(
@@ -218,7 +218,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_read32_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const val{vps_pool.template read<bsl::uint32>(
@@ -252,7 +252,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_read64_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const val{vps_pool.template read<bsl::uint64>(
@@ -285,7 +285,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_write8_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const ret{vps_pool.template write<bsl::uint8>(
@@ -320,7 +320,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_write16_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const ret{vps_pool.template write<bsl::uint16>(
@@ -355,7 +355,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_write32_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const ret{vps_pool.template write<bsl::uint32>(
@@ -390,7 +390,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_write64_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const ret{vps_pool.template write<bsl::uint64>(
@@ -421,7 +421,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_read_reg_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const val{vps_pool.read_reg(
@@ -457,7 +457,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_write_reg_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const ret{vps_pool.write_reg(
@@ -505,7 +505,7 @@ namespace mk
     //     INTRINSIC_CONCEPT &intrinsic,
     //     VM_POOL_CONCEPT &vm_pool,
     //     VP_POOL_CONCEPT &vp_pool,
-    //     VPS_POOL_CONCEPT &vps_pool) -> bsl::errc_type
+    //     VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
     // {
     //     bsl::errc_type ret{};
 
@@ -674,7 +674,7 @@ namespace mk
     // ///
     // template<typename TLS_CONCEPT>
     // [[nodiscard]] inline auto
-    // syscall_vps_op_run_current_failure(TLS_CONCEPT &tls) -> bsl::errc_type
+    // syscall_vps_op_run_current_failure(TLS_CONCEPT &tls) noexcept -> bsl::errc_type
     // {
     //     return_to_mk(bsl::exit_success);
 
@@ -698,7 +698,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_advance_ip_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const ret{vps_pool.advance_ip(tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1))};
@@ -727,7 +727,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_advance_ip_and_run_current_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const ret{vps_pool.advance_ip(tls, intrinsic, tls.active_vpsid)};
@@ -758,7 +758,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_promote_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const ret{vps_pool.vps_to_state_save(
@@ -791,7 +791,7 @@ namespace mk
     // template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     // [[nodiscard]] constexpr auto
     // syscall_vps_op_clear_vps_failure(
-    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool)
+    //     TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
     //     -> bsl::errc_type
     // {
     //     auto const ret{vps_pool.clear(tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1))};
@@ -841,7 +841,7 @@ namespace mk
         PAGE_POOL_CONCEPT &page_pool,
         VM_POOL_CONCEPT &vm_pool,
         VP_POOL_CONCEPT &vp_pool,
-        VPS_POOL_CONCEPT &vps_pool) -> bsl::errc_type
+        VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

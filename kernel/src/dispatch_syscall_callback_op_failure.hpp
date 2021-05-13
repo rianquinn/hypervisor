@@ -47,7 +47,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     constexpr void
-    syscall_callback_op_register_bootstrap_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext)
+    syscall_callback_op_register_bootstrap_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
     {
         if (!tls.state_reversal_required) {
             return;
@@ -67,7 +67,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     constexpr void
-    syscall_callback_op_register_vmexit_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext)
+    syscall_callback_op_register_vmexit_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
     {
         if (!tls.state_reversal_required) {
             return;
@@ -88,7 +88,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     constexpr void
-    syscall_callback_op_register_fail_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext)
+    syscall_callback_op_register_fail_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
     {
         if (!tls.state_reversal_required) {
             return;
@@ -109,7 +109,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     constexpr void
-    dispatch_syscall_callback_op_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext)
+    dispatch_syscall_callback_op_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
     {
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_CALLBACK_OP_REGISTER_BOOTSTRAP_IDX_VAL.get(): {

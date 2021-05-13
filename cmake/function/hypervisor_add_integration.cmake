@@ -28,12 +28,18 @@ macro(hypervisor_add_integration NAME HEADERS)
         target_include_directories(integration_${NAME} PRIVATE
             x64/amd
         )
-    elseif(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+    endif()
+
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
         target_include_directories(integration_${NAME} PRIVATE
             x64/intel
         )
-    else()
-        message(FATAL_ERROR "Unsupported HYPERVISOR_TARGET_ARCH: ${HYPERVISOR_TARGET_ARCH}")
+    endif()
+
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
+        target_include_directories(integration_${NAME} PRIVATE
+            arm/aarch64
+        )
     endif()
 
     target_sources(integration_${NAME} PRIVATE
@@ -46,6 +52,7 @@ macro(hypervisor_add_integration NAME HEADERS)
         runtime
         bsl
         loader
+        syscall
     )
 
     if(CMAKE_BUILD_TYPE STREQUAL RELEASE OR CMAKE_BUILD_TYPE STREQUAL MINSIZEREL)

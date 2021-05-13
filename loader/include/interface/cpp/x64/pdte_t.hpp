@@ -25,9 +25,7 @@
 #ifndef PDTE_T_HPP
 #define PDTE_T_HPP
 
-#include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>
-#include <bsl/safe_integral.hpp>
 
 #pragma pack(push, 1)
 

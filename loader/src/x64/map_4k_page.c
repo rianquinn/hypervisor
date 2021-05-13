@@ -42,6 +42,7 @@
 #include <pte_t.h>
 #include <pto.h>
 #include <types.h>
+#include <root_page_table_t.h>
 
 /**
  * <!-- description -->
@@ -57,11 +58,11 @@
  *   @param virt the virtual address to map phys to
  *   @param phys the physical address to map
  *   @param flags the p_flags field from the segment associated with this page
- *   @param pml4t the root page table to place the resulting map
+ *   @param rpt the root page table to place the resulting map
  *   @return 0 on success, LOADER_FAILURE on failure.
  */
 int64_t
-map_4k_page(uint64_t const virt, uint64_t phys, uint32_t const flags, struct pml4t_t *const pml4t)
+map_4k_page(uint64_t const virt, uint64_t phys, uint32_t const flags, root_page_table_t *const rpt)
 {
     struct pdpt_t *pdpt = ((void *)0);
     struct pdt_t *pdt = ((void *)0);
@@ -91,9 +92,9 @@ map_4k_page(uint64_t const virt, uint64_t phys, uint32_t const flags, struct pml
         return LOADER_FAILURE;
     }
 
-    pdpt = pml4t->tables[pml4to(virt)];
+    pdpt = rpt->tables[pml4to(virt)];
     if (((void *)0) == pdpt) {
-        pdpt = alloc_pdpt(pml4t, virt);
+        pdpt = alloc_pdpt(rpt, virt);
     }
 
     pdt = pdpt->tables[pdpto(virt)];

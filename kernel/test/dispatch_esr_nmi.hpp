@@ -26,7 +26,7 @@
 #define TEST_DISPATCH_ESR_NMI_HPP
 
 #include <bsl/discard.hpp>
-#include <bsl/exit_code.hpp>
+#include <bsl/errc_type.hpp>
 
 namespace mk
 {
@@ -43,12 +43,12 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_esr_nmi(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) noexcept -> bsl::exit_code
+    dispatch_esr_nmi(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) noexcept -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(intrinsic);
 
-        return bsl::exit_success;
+        return bsl::errc_success;
     }
 }
 

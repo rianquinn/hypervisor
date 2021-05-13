@@ -35,7 +35,7 @@
 
 namespace mk
 {
-    /// @brief defined the expected size of the pdt_t struct
+    /// @brief defines total number of entries in the pdt
     constexpr bsl::safe_uintmax NUM_PDT_ENTRIES{bsl::to_umax(512)};
 
     /// @struct mk::pdt_t
@@ -45,7 +45,7 @@ namespace mk
     ///
     struct pdt_t final
     {
-        /// @brief stores the entires in the table
+        /// @brief stores the entries for this page table
         bsl::array<loader::pdte_t, NUM_PDT_ENTRIES.get()> entries;
     };
 }

@@ -27,10 +27,6 @@
     .code64
     .intel_syntax noprefix
 
-    .globl  _start
-    .type   _start, @function
-_start:
-
     .globl  mk_main_entry
     .type   mk_main_entry, @function
 mk_main_entry:
@@ -325,7 +321,9 @@ mk_main_fast_fail_entry:
 
     .size mk_main_fast_fail_entry, .-mk_main_fast_fail_entry
 
-
+    /**************************************************************************/
+    /* Runtime Helpers                                                        */
+    /**************************************************************************/
 
     .globl  memcpy
     .type   memcpy, @function

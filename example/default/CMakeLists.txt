@@ -21,40 +21,77 @@
 
 add_executable(example_default)
 
-# NOTE:
-# - Include your headers and include directories
-#
+# ------------------------------------------------------------------------------
+# Includes
+# ------------------------------------------------------------------------------
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     target_include_directories(example_default PRIVATE
         x64
     )
+
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
+        target_include_directories(example_default PRIVATE
+            x64/amd
+        )
+    endif()
+
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+        target_include_directories(example_default PRIVATE
+            x64/intel
+        )
+    endif()
+endif()
+
+if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
+    target_include_directories(example_default PRIVATE
+        arm
+    )
+
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
+        target_include_directories(example_default PRIVATE
+            arm/aarch64
+        )
+    endif()
+endif()
+
+# ------------------------------------------------------------------------------
+# Headers
+# ------------------------------------------------------------------------------
+
+if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     list(APPEND HEADERS
         ${CMAKE_CURRENT_LIST_DIR}/x64/common_arch_support.hpp
     )
+
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
+        list(APPEND HEADERS
+            ${CMAKE_CURRENT_LIST_DIR}/x64/amd/arch_support.hpp
+        )
+    endif()
+
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+        list(APPEND HEADERS
+            ${CMAKE_CURRENT_LIST_DIR}/x64/intel/arch_support.hpp
+        )
+    endif()
 endif()
 
-if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
-    target_include_directories(example_default PRIVATE
-        x64/amd
-    )
+if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
     list(APPEND HEADERS
-        ${CMAKE_CURRENT_LIST_DIR}/x64/amd/arch_support.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/arm/common_arch_support.hpp
     )
-elseif(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    target_include_directories(example_default PRIVATE
-        x64/intel
-    )
-    list(APPEND HEADERS
-        ${CMAKE_CURRENT_LIST_DIR}/x64/intel/arch_support.hpp
-    )
-else()
-    message(FATAL_ERROR "Unsupported HYPERVISOR_TARGET_ARCH: ${HYPERVISOR_TARGET_ARCH}")
+
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
+        list(APPEND HEADERS
+            ${CMAKE_CURRENT_LIST_DIR}/arm/aarch64/arch_support.hpp
+        )
+    endif()
 endif()
 
-# NOTE:
-# - Include your source files and dependencies
-#
+# ------------------------------------------------------------------------------
+# Sources
+# ------------------------------------------------------------------------------
 
 target_sources(example_default PRIVATE
     main.cpp
@@ -66,40 +103,28 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
     target_sources(example_default PRIVATE
         x64/intrinsic_cpuid.S
     )
+
+    set_property(SOURCE x64/intrinsic_cpuid.S APPEND PROPERTY OBJECT_DEPENDS ${HEADERS})
 endif()
 
-if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
-    # target_sources(example_default PRIVATE
-    # )
-elseif(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    # target_sources(example_default PRIVATE
-    # )
-else()
-    message(FATAL_ERROR "Unsupported HYPERVISOR_TARGET_ARCH: ${HYPERVISOR_TARGET_ARCH}")
-endif()
 
-# NOTE:
-# - Include your libraries. Note that if you use our runtime libary,
-#   you must include it first, otherwise your extension will try to use
-#   files from the BSL that the runtime library is meant to replace.
-#
+# ------------------------------------------------------------------------------
+# Libraries
+# ------------------------------------------------------------------------------
 
 target_link_libraries(example_default PRIVATE
     runtime
     bsl
     loader
+    syscall
 )
 
-# NOTE:
-# - Strip the binary if this is a release build
-#
+# ------------------------------------------------------------------------------
+# Install
+# ------------------------------------------------------------------------------
 
 if(CMAKE_BUILD_TYPE STREQUAL RELEASE OR CMAKE_BUILD_TYPE STREQUAL MINSIZEREL)
     add_custom_command(TARGET example_default POST_BUILD COMMAND ${CMAKE_STRIP} example_default)
 endif()
-
-# NOTE:
-# - Install your extension somewhere.
-#
 
 install(TARGETS example_default DESTINATION bin)

@@ -240,10 +240,10 @@ load_images_and_start(void)
     start_args.ver = ((uint64_t)1);
     start_args.num_pages_in_page_pool = ((uint32_t)0);
 
-    if (start_vmm(&start_args)) {
-        bferror("start_vmm failed");
-        return EFI_LOAD_ERROR;
-    }
+    // if (start_vmm(&start_args)) {
+    //     bferror("start_vmm failed");
+    //     return EFI_LOAD_ERROR;
+    // }
 
     return EFI_SUCCESS;
 }
@@ -280,20 +280,6 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     serial_init();
 
-    /**
-     * TODO:
-     * - The arch_init() logic needs an additional function to enable as many
-     *   hardward security features as possible. For example, SMEP/SMAP. Right
-     *   now all it does is ensure that CR0/CR4 are configured to support
-     *   virtualization. The values that UEFI sets up however are what the
-     *   microkernel will inherit and use so the UEFI loader needs to turn as
-     *   many of these features on as possible so that the microkernel can
-     *   use them. Once virtualization is started, the root OS can configure
-     *   itself however it wants, which will not affect the microkernel unless
-     *   the feature is outside of the control of the VMCS/VMCB, in which
-     *   case it will be up to the extension to deal with.
-     */
-
     if (loader_init()) {
         bferror("loader_init failed");
         return EFI_SUCCESS;
@@ -314,6 +300,6 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     platform_dump_vmm();
 
-    g_st->ConOut->OutputString(g_st->ConOut, L"bareflank successfully started\r\n");
+    g_st->ConOut->OutputString(g_st->ConOut, L"hello from el2\r\n");
     return EFI_SUCCESS;
 }

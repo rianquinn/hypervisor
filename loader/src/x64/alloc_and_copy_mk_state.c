@@ -40,7 +40,7 @@
 #include <intrinsic_scs.h>
 #include <intrinsic_sss.h>
 #include <platform.h>
-#include <pml4t_t.h>
+#include <root_page_table_t.h>
 #include <set_gdt_descriptor.h>
 #include <set_idt_descriptor.h>
 #include <span_t.h>
@@ -173,7 +173,7 @@
  *     microkernel.
  *
  * <!-- inputs/outputs -->
- *   @param pml4t the mkcrokernel's root page table
+ *   @param rpt the mkcrokernel's root page table
  *   @param mk_elf_file the microkernel's ELF file
  *   @param mk_stack the microkernel's stack
  *   @param mk_stack_virt the microkernel's virtual address of the stack
@@ -182,7 +182,7 @@
  */
 int64_t
 alloc_and_copy_mk_state(
-    struct pml4t_t const *const pml4t,
+    root_page_table_t const *const rpt,
     struct span_t const *const mk_elf_file,
     struct span_t const *const mk_stack,
     uint64_t const mk_stack_virt,
@@ -649,7 +649,7 @@ alloc_and_copy_mk_state(
     /**************************************************************************/
 
     (*state)->cr0 = (intrinsic_scr0() | DEFAULT_CR0) & DEFAULT_CR0_OFF;
-    (*state)->cr3 = platform_virt_to_phys(pml4t);
+    (*state)->cr3 = platform_virt_to_phys(rpt);
     (*state)->cr4 = (intrinsic_scr4() | DEFAULT_CR4) & DEFAULT_CR4_OFF;
 
     if (((uint64_t)0) == (*state)->cr3) {

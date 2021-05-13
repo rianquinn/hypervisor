@@ -50,7 +50,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vm_op_create_vm(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool)
+    syscall_vm_op_create_vm(TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool) noexcept
         -> bsl::errc_type
     {
         auto const vmid{vm_pool.allocate(tls, ext_pool)};
@@ -91,7 +91,7 @@ namespace mk
         TLS_CONCEPT &tls,
         EXT_POOL_CONCEPT &ext_pool,
         VM_POOL_CONCEPT &vm_pool,
-        VP_POOL_CONCEPT &vp_pool) -> bsl::errc_type
+        VP_POOL_CONCEPT &vp_pool) noexcept -> bsl::errc_type
     {
         auto const vmid{bsl::to_u16_unsafe(tls.ext_reg1)};
         auto const ret{vm_pool.deallocate(tls, ext_pool, vp_pool, vmid)};

@@ -140,19 +140,6 @@ namespace example
             return ret;
         }
 
-        /// NOTE:
-        /// - Report success. Specifically, when we return to the root OS,
-        ///   setting RAX tells the loader that the hypervisor was successfully
-        ///   set up.
-        ///
-
-        ret = syscall::bf_vps_op_write_reg(
-            handle, vpsid, syscall::bf_reg_t::bf_reg_t_rax, bsl::ZERO_UMAX);
-        if (bsl::unlikely_assert(!ret)) {
-            bsl::print<bsl::V>() << bsl::here();
-            return ret;
-        }
-
         return ret;
     }
 }

@@ -37,6 +37,7 @@
 #include <bsl/likely.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/conditional.hpp>
 
 namespace syscall
 {
@@ -91,7 +92,7 @@ namespace syscall
     // IWYU is more important here, and this rule would make this interface
     // needlessly overcomplicated.
     // NOLINTNEXTLINE(bsl-user-defined-type-names-match-header-name)
-    enum class bf_reg_t : bsl::uint64
+    enum class bf_reg_t_x64 : bsl::uint64
     {
         /// @brief defines the rax register
         bf_reg_t_rax = static_cast<bsl::uint64>(0),
@@ -244,6 +245,17 @@ namespace syscall
         /// @brief defines the ia32_debugctl register
         bf_reg_t_ia32_debugctl = static_cast<bsl::uint64>(72),
     };
+
+    /// @brief Defines which register is being requested by certain syscalls
+    // IWYU is more important here, and this rule would make this interface
+    // needlessly overcomplicated.
+    // NOLINTNEXTLINE(bsl-user-defined-type-names-match-header-name)
+    enum class bf_reg_t_aarch64 : bsl::uint64
+    {
+    };
+
+    /// @brief Defines bf_reg_t based on which archiecture is used
+    using bf_reg_t = bsl::conditional_t<HYPERVISOR_X64, bf_reg_t_x64, bf_reg_t_aarch64>;
 
     // -------------------------------------------------------------------------
     // Exit Type

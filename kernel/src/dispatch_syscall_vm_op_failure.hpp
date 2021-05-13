@@ -60,7 +60,7 @@ namespace mk
         TLS_CONCEPT &tls,
         EXT_POOL_CONCEPT &ext_pool,
         VM_POOL_CONCEPT &vm_pool,
-        VP_POOL_CONCEPT &vp_pool) -> bsl::errc_type
+        VP_POOL_CONCEPT &vp_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -96,7 +96,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vm_op_destroy_vm_failure(TLS_CONCEPT &tls, VM_POOL_CONCEPT &vm_pool) -> bsl::errc_type
+    syscall_vm_op_destroy_vm_failure(TLS_CONCEPT &tls, VM_POOL_CONCEPT &vm_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -138,7 +138,7 @@ namespace mk
         TLS_CONCEPT &tls,
         EXT_POOL_CONCEPT &ext_pool,
         VM_POOL_CONCEPT &vm_pool,
-        VP_POOL_CONCEPT &vp_pool) -> bsl::errc_type
+        VP_POOL_CONCEPT &vp_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

@@ -33,7 +33,7 @@
 
 #pragma pack(push, 1)
 
-/** @brief defines total number of entries in the PDPT */
+/** @brief defines total number of entries in the pdpt */
 #define LOADER_NUM_PDPT_ENTRIES ((uint64_t)512)
 
 /**

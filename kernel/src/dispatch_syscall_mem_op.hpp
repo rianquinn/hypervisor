@@ -47,7 +47,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_page(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    syscall_mem_op_alloc_page(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         /// NOTE:
         /// - ext.alloc_page is assumped to be exception UNSAFE
@@ -83,7 +83,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_free_page(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    syscall_mem_op_free_page(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         auto const ret{ext.free_page(bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
@@ -108,7 +108,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    syscall_mem_op_alloc_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         auto const huge{ext.alloc_huge(tls, bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!huge.virt)) {
@@ -136,7 +136,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_free_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    syscall_mem_op_free_huge(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         auto const ret{ext.free_huge(bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
@@ -161,7 +161,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_heap(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    syscall_mem_op_alloc_heap(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         auto const previous_heap_virt{ext.alloc_heap(tls, bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!previous_heap_virt)) {
@@ -188,7 +188,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_mem_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    dispatch_syscall_mem_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

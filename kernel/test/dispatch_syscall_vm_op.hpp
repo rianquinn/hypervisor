@@ -28,6 +28,7 @@
 #include <mk_interface.hpp>
 
 #include <bsl/discard.hpp>
+#include <bsl/errc_type.hpp>
 
 namespace mk
 {
@@ -56,14 +57,14 @@ namespace mk
         TLS_CONCEPT &tls,
         EXT_POOL_CONCEPT &ext_pool,
         EXT_CONCEPT const &ext,
-        VM_POOL_CONCEPT &vm_pool) -> syscall::bf_status_t
+        VM_POOL_CONCEPT &vm_pool) noexcept -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(ext_pool);
         bsl::discard(ext);
         bsl::discard(vm_pool);
 
-        return syscall::BF_STATUS_SUCCESS;
+        return bsl::errc_success;
     }
 }
 

@@ -39,9 +39,9 @@
  *     provide the physical address of a page that is mapped into the
  *     executable portion of a kernel module (e.g., Linux). To overcome this
  *     the executable code is copied into an alias page. When the function
- *     is executed using the kernel module's CR3, nothing changes, but when
- *     the code is executed from the microkernel's root page tables, the
- *     pages stored here provide the page that store the executable code
+ *     is executed using the kernel module's page tables, nothing changes, but
+ *     when the code is executed from the microkernel's page tables, the
+ *     pages stored here provide the page that stores the executable code
  *     instead, ensuring we have a means to get a physical address of a page
  *     that has the code we want.
  */

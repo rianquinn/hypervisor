@@ -23,24 +23,14 @@ set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_C_COMPILER_WORKS 1)
 
 string(CONCAT HYPERVISOR_EFI_C_FLAGS
-    "--target=x86_64-unknown-windows "
+    "--target=aarch64-unknown-windows "
     "-ffreestanding "
     "-fshort-wchar "
-    "-mno-mmx "
-    "-mno-sse "
-    "-mno-sse2 "
-    "-mno-sse3 "
-    "-mno-ssse3 "
-    "-mno-sse4.1 "
-    "-mno-sse4.2 "
-    "-mno-sse4 "
-    "-mno-avx "
-    "-mno-aes "
-    "-mno-sse4a "
+    "-mno-implicit-float "
 )
 
 string(CONCAT HYPERVISOR_EFI_LINK_FLAGS
-    "--target=x86_64-unknown-windows "
+    "--target=aarch64-unknown-windows "
     "-nostdlib "
     "-Wl,-entry:efi_main "
     "-Wl,-subsystem:efi_application "

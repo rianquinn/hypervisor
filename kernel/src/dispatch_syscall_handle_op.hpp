@@ -45,7 +45,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_handle_op_open_handle(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    syscall_handle_op_open_handle(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         if (bsl::unlikely(bsl::to_u32(tls.ext_reg0) != syscall::BF_SPEC_ID1_VAL)) {
             bsl::error() << "unsupported syscall interface: "    //--
@@ -84,7 +84,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_handle_op_close_handle(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    syscall_handle_op_close_handle(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
             bsl::error() << "invalid handle: "        // --
@@ -122,7 +122,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_handle_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    dispatch_syscall_handle_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

@@ -30,6 +30,7 @@
 #include <bsl/exit_code.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace example
 {
@@ -57,7 +58,7 @@ namespace example
         ///
 
         bsl::print<bsl::V>() << bsl::here();
-        syscall::bf_control_op_exit();
+        return syscall::bf_control_op_exit();
     }
 
     /// <!-- description -->
@@ -99,7 +100,7 @@ namespace example
         ///
 
         bsl::print<bsl::V>() << bsl::here();
-        syscall::bf_control_op_exit();
+        return syscall::bf_control_op_exit();
     }
 
     /// <!-- description -->
@@ -132,13 +133,13 @@ namespace example
         ///
 
         ret = syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, ppid, vpid);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
         }
 
         ret = syscall::bf_vps_op_create_vps(g_handle, vpid, ppid, vpsid);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
         }
@@ -152,7 +153,7 @@ namespace example
         ///
 
         ret = syscall::bf_vps_op_init_as_root(g_handle, vpsid);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
         }
@@ -161,7 +162,7 @@ namespace example
         /// - Initialize architecture specific logic in the VPS.
         ///
 
-        if (bsl::unlikely(!init_vps(g_handle, vpsid))) {
+        if (bsl::unlikely_assert(!init_vps(g_handle, vpsid))) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
         }
@@ -219,7 +220,7 @@ namespace example
         ///
 
         ret = syscall::bf_handle_op_open_handle(syscall::BF_SPEC_ID1_VAL, g_handle);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
         }
@@ -230,7 +231,7 @@ namespace example
         ///
 
         ret = syscall::bf_callback_op_register_bootstrap(g_handle, &bootstrap_entry);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
         }
@@ -241,7 +242,7 @@ namespace example
         ///
 
         ret = syscall::bf_callback_op_register_vmexit(g_handle, &vmexit_entry);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
         }
@@ -252,7 +253,7 @@ namespace example
         ///
 
         ret = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
-        if (bsl::unlikely(!ret)) {
+        if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
         }

@@ -26,6 +26,7 @@
 #define TEST_DISPATCH_ESR_PAGE_FAULT_HPP
 
 #include <bsl/discard.hpp>
+#include <bsl/errc_type.hpp>
 
 namespace mk
 {
@@ -42,12 +43,12 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_esr_page_fault(TLS_CONCEPT &tls, EXT_CONCEPT *const ext) noexcept -> bsl::exit_code
+    dispatch_esr_page_fault(TLS_CONCEPT &tls, EXT_CONCEPT *const ext) noexcept -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(ext);
 
-        return bsl::exit_success;
+        return bsl::errc_success;
     }
 }
 

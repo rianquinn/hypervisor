@@ -23,19 +23,9 @@ set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_CXX_COMPILER_WORKS 1)
 
 string(CONCAT HYPERVISOR_EXT_CXX_FLAGS
-    "--target=x86_64-elf "
+    "--target=aarch64-elf "
     "-ffreestanding "
-    "-mno-mmx "
-    "-mno-sse "
-    "-mno-sse2 "
-    "-mno-sse3 "
-    "-mno-ssse3 "
-    "-mno-sse4.1 "
-    "-mno-sse4.2 "
-    "-mno-sse4 "
-    "-mno-avx "
-    "-mno-aes "
-    "-mno-sse4a "
+    "-mno-implicit-float "
     "-mcmodel=large "
     "-std=c++20 "
 )
@@ -51,7 +41,7 @@ string(CONCAT HYPERVISOR_EXT_LINK_FLAGS
     "-static "
     "-nostdlib "
     "-z noexecstack "
-    "-T ${CMAKE_BINARY_DIR}/toolchain/x64/ext.ld "
+    "-T ${CMAKE_BINARY_DIR}/toolchain/arm/aarch64/ext.ld "
 )
 
 set(CMAKE_ASM_COMPILE_OBJECT

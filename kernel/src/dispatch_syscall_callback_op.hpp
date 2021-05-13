@@ -49,7 +49,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_callback_op_register_bootstrap(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    syscall_callback_op_register_bootstrap(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
@@ -89,7 +89,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_callback_op_register_vmexit(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    syscall_callback_op_register_vmexit(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
@@ -139,7 +139,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_callback_op_register_fail(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    syscall_callback_op_register_fail(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
@@ -189,7 +189,7 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_callback_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) -> bsl::errc_type
+    dispatch_syscall_callback_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
