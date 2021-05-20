@@ -1,3 +1,4 @@
+
 /**
  * @copyright
  * Copyright (C) 2020 Assured Information Security, Inc.
@@ -24,26 +25,18 @@
  * SOFTWARE.
  */
 
-#ifndef STATE_SAVE_T_H
-#define STATE_SAVE_T_H
+#ifndef READ_CURRENTEL_H
+#define READ_CURRENTEL_H
 
 #include <types.h>
 
-#pragma pack(push, 1)
-
 /**
- * @struct state_save_t
- *
  * <!-- description -->
- *   @brief TODO
+ *   @brief Returns the value of CurrentEL
+ *
+ * <!-- inputs/outputs -->
+ *   @return Returns the value of CurrentEL
  */
-struct state_save_t
-{
-    /**************************************************************************/
-    /* General Purpose Registers                                              */
-    /**************************************************************************/
-};
-
-#pragma pack(pop)
+uint64_t read_currentel();
 
 #endif

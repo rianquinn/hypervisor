@@ -26,6 +26,7 @@
 #define MK_INTERFACE_H
 
 #include <bsl/char_type.hpp>
+#include <bsl/conditional.hpp>
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>
 #include <bsl/cstr_type.hpp>
@@ -37,7 +38,6 @@
 #include <bsl/likely.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
-#include <bsl/conditional.hpp>
 
 namespace syscall
 {

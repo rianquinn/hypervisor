@@ -24,20 +24,8 @@
  * SOFTWARE.
  */
 
-#include <constants.h>
-#include <debug.h>
-#include <types.h>
+	.global read_currentel
+read_currentel:
 
-/**
- * <!-- description -->
- *   @brief This function checks to see if AMD SVM support is available on
- *     the currently running CPU
- *
- * <!-- inputs/outputs -->
- *   @return Returns 0 on success
- */
-int64_t
-check_for_hve_support(void)
-{
-    return LOADER_SUCCESS;
-}
+    mrs x0, CurrentEL
+    ret

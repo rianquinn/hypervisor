@@ -47,6 +47,6 @@
 int64_t
 alloc_and_copy_root_vp_state(struct state_save_t **const state)
 {
-    (void) state;
+    (void)state;
     return LOADER_SUCCESS;
 }

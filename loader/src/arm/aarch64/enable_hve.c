@@ -31,7 +31,7 @@
 
 /**
  * <!-- description -->
- *   @brief Enables AMD SVE
+ *   @brief Enables Hardware Virtualization Extensions
  *
  * <!-- inputs/outputs -->
  *   @param state the mk state save containing the HVE page
@@ -40,6 +40,14 @@
 int64_t
 enable_hve(struct state_save_t *const state)
 {
-    (void) state;
+    (void)state;
+
+    /**
+     * NOTE:
+     * - Nothing to do here as virtualization support is always provided by
+     *   ARMv8 or higher. We do not use ARM's VHE which is used to added Type 2
+     *   support (something we do not need)
+     */
+
     return LOADER_SUCCESS;
 }

@@ -281,18 +281,19 @@ platform_copy_to_user(void *const dst, void const *const src, uint64_t const num
 uint32_t
 platform_num_online_cpus(void)
 {
-    EFI_STATUS status = EFI_SUCCESS;
-    UINTN NumberOfProcessors;
-    UINTN NumberOfEnabledProcessors;
+    // EFI_STATUS status = EFI_SUCCESS;
+    // UINTN NumberOfProcessors;
+    // UINTN NumberOfEnabledProcessors;
 
-    status = g_mp_services_protocol->GetNumberOfProcessors(
-        g_mp_services_protocol, &NumberOfProcessors, &NumberOfEnabledProcessors);
-    if (EFI_ERROR(status)) {
-        bferror_x64("GetNumberOfProcessors failed", status);
-        return ((uint32_t)0);
-    }
+    // status = g_mp_services_protocol->GetNumberOfProcessors(
+    //     g_mp_services_protocol, &NumberOfProcessors, &NumberOfEnabledProcessors);
+    // if (EFI_ERROR(status)) {
+    //     bferror_x64("GetNumberOfProcessors failed", status);
+    //     return ((uint32_t)0);
+    // }
 
-    return (uint32_t)NumberOfProcessors;
+    // return (uint32_t)NumberOfProcessors;
+    return 1;
 }
 
 /**

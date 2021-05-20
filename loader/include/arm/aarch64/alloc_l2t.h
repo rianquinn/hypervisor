@@ -24,25 +24,25 @@
  * SOFTWARE.
  */
 
-#ifndef L1TE_T
-#define L1TE_T
+#ifndef ALLOC_L2T_H
+#define ALLOC_L2T_H
 
+#include <l1t_t.h>
+#include <l2t_t.h>
 #include <types.h>
 
-#pragma pack(push, 1)
-
 /**
- * @struct l1te_t
- *
  * <!-- description -->
- *   @brief Defines the layout of a level-1 table entry (L1TE).
+ *   @brief Given a l1t_t and a virtual address, this function allocates a
+ *     l2t_t and adds it to the l1t_t. If an l2t_t has already been allocated,
+ *     this function will fail.
+ *
+ * <!-- inputs/outputs -->
+ *   @param l1 the l1t_t to add the newly allocated l2t_t to
+ *   @param virt the virtual address to get the l1t_t offset from.
+ *   @return a pointer to the newly allocated l2t_t on success, ((void *)0)
+ *     otherwise.
  */
-struct l1te_t
-{
-    /** @brief TODO */
-    uint64_t dummy;
-};
-
-#pragma pack(pop)
+struct l2t_t *alloc_l2t(struct l1t_t *const l1, uint64_t const virt);
 
 #endif

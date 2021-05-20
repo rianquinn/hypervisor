@@ -38,8 +38,42 @@ namespace loader
     ///
     struct l3te_t final
     {
-        /// @brief TODO
-        bsl::uint64 dummy;
+        /// @brief defines the "present" field in the page
+        bsl::uint64 p : static_cast<bsl::uint64>(1);
+        /// @brief defines the "page" field in the page
+        bsl::uint64 page : static_cast<bsl::uint64>(1);
+        /// @brief defines the "AttrIndx" field in the page
+        bsl::uint64 attr_indx : static_cast<bsl::uint64>(3);
+        /// @brief defines the "NS" field in the page
+        bsl::uint64 ns : static_cast<bsl::uint64>(1);
+        /// @brief defines the "AP" field in the page
+        bsl::uint64 ap : static_cast<bsl::uint64>(2);
+        /// @brief defines the "SH" field in the page
+        bsl::uint64 sh : static_cast<bsl::uint64>(2);
+        /// @brief defines the "AF" field in the page
+        bsl::uint64 af : static_cast<bsl::uint64>(1);
+        /// @brief defines the "nG" field in the page
+        bsl::uint64 ng : static_cast<bsl::uint64>(1);
+        /// @brief defines the "physical address" field in the page
+        bsl::uint64 phys : static_cast<bsl::uint64>(38);
+        /// @brief defines the "GP" field in the page
+        bsl::uint64 gp : static_cast<bsl::uint64>(1);
+        /// @brief defines the "DBM" field in the page
+        bsl::uint64 dbm : static_cast<bsl::uint64>(1);
+        /// @brief defines the "Contiguous" field in the page
+        bsl::uint64 contiguous : static_cast<bsl::uint64>(1);
+        /// @brief defines the "PXN" field in the page
+        bsl::uint64 pxn : static_cast<bsl::uint64>(1);
+        /// @brief defines the "UXN or XN" field in the page
+        bsl::uint64 xn : static_cast<bsl::uint64>(1);
+        /// @brief defines our "auto_release" field in the page
+        bsl::uint64 auto_release : static_cast<bsl::uint64>(3);
+        /// @brief defines the "available to software" field in the page
+        bsl::uint64 available1 : static_cast<bsl::uint64>(1);
+        /// @brief defines the "PBHA" field in the page
+        bsl::uint64 pbha : static_cast<bsl::uint64>(4);
+        /// @brief defines the "available to software" field in the page
+        bsl::uint64 available2 : static_cast<bsl::uint64>(1);
     };
 }
 

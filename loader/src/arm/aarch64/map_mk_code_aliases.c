@@ -29,8 +29,8 @@
 #include <demote.h>
 #include <map_4k_page_rx.h>
 #include <platform.h>
-#include <root_page_table_t.h>
 #include <promote.h>
+#include <root_page_table_t.h>
 
 /**
  * <!-- description -->

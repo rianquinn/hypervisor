@@ -24,11 +24,13 @@
  * SOFTWARE.
  */
 
+#define DEBUG_LOADER
+
 #include <alloc_and_copy_mk_state.h>
 #include <alloc_and_copy_root_vp_state.h>
 #include <alloc_mk_args.h>
 #include <alloc_mk_stack.h>
-#include <check_for_hve_support.h>
+#include <check_cpu_configuration.h>
 #include <constants.h>
 #include <debug.h>
 #include <demote.h>
@@ -75,6 +77,7 @@
 int64_t
 start_vmm_per_cpu(uint32_t const cpu)
 {
+    int *yourmom = (int *)0x42;
     int64_t ret;
     uint64_t idx;
     uint8_t *addr;
@@ -96,8 +99,8 @@ start_vmm_per_cpu(uint32_t const cpu)
         return LOADER_FAILURE;
     }
 
-    if (check_for_hve_support()) {
-        bferror("check_for_hve_support failed");
+    if (check_cpu_configuration()) {
+        bferror("check_cpu_configuration failed");
         return LOADER_FAILURE;
     }
 
@@ -150,11 +153,11 @@ start_vmm_per_cpu(uint32_t const cpu)
     g_mk_args[cpu]->ppid = ((uint16_t)cpu);
 
     /**
-     * NOTE:
-     * - We cannot ask for the total number of CPUs on any AP from UEFI, so
-     *   we only do this for the BSP, and then use the BSP value to get the
-     *   total CPU count from that point on.
-     */
+         * NOTE:
+         * - We cannot ask for the total number of CPUs on any AP from UEFI, so
+         *   we only do this for the BSP, and then use the BSP value to get the
+         *   total CPU count from that point on.
+         */
 
     if (((uint64_t)0) == cpu) {
         g_mk_args[cpu]->online_pps = ((uint16_t)platform_num_online_cpus());
@@ -203,6 +206,7 @@ start_vmm_per_cpu(uint32_t const cpu)
     if (demote(g_mk_args[cpu], g_mk_state[cpu], g_root_vp_state[cpu])) {
         platform_dump_vmm();
         bferror("demote failed");
+        bferror_x64("yourmom", *yourmom);
         goto demote_failed;
     }
 

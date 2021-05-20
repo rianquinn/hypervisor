@@ -27,6 +27,7 @@
 #include <constants.h>
 #include <debug.h>
 #include <l0t_t.h>
+#include <l0to.h>
 #include <l1t_t.h>
 #include <platform.h>
 #include <types.h>
@@ -46,8 +47,39 @@
 struct l1t_t *
 alloc_l1t(struct l0t_t *const l0t, uint64_t const virt)
 {
-    (void) l0t;
-    (void) virt;
+    uint64_t phys;
+    struct l1t_t *l1t;
+    struct l0te_t *l0te;
+
+    l0te = &l0t->entires[l0to(virt)];
+    if (l0te->p != ((uint64_t)0)) {
+        bferror_x64("l1t already present", virt);
+        return ((void *)0);
+    }
+
+    l1t = (struct l1t_t *)platform_alloc(sizeof(struct l1t_t));
+    if (((void *)0) == l1t) {
+        bferror("platform_alloc failed");
+        goto platform_alloc_l1t_failed;
+    }
+
+    phys = platform_virt_to_phys(l1t);
+    if (((uint64_t)0) == phys) {
+        bferror("platform_virt_to_phys_l1t failed");
+        goto platform_virt_to_phys_l1t_failed;
+    }
+
+    l0t->tables[l0to(virt)] = l1t;
+    l0te->phys = (phys >> HYPERVISOR_PAGE_SHIFT);
+    l0te->p = ((uint64_t)1);
+    l0te->bt = ((uint64_t)1);
+
+    return l1t;
+
+platform_virt_to_phys_l1t_failed:
+
+    platform_free(l1t, sizeof(struct l1t_t));
+platform_alloc_l1t_failed:
 
     return ((void *)0);
 }

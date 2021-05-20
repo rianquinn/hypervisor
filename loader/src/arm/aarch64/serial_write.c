@@ -24,26 +24,22 @@
  * SOFTWARE.
  */
 
-#ifndef ALLOC_L1T_H
-#define ALLOC_L1T_H
-
-#include <l1t_t.h>
-#include <l0t_t.h>
+#include <serial_write_c.h>
 #include <types.h>
 
 /**
  * <!-- description -->
- *   @brief Given a l0t_t and a virtual address, this function allocates a
- *     l1t_t and adds it to the l0t_t. If an l1t_t has already been allocated,
- *     this function will fail.
+ *   @brief Writes a string to the serial. Note that you must initialize
+ *     the serial before you can use it.
  *
  * <!-- inputs/outputs -->
- *   @param l0 the l0t_t to add the newly allocated l1t_t to
- *   @param virt the virtual address to get the l0t_t offset from.
- *   @return a pointer to the newly allocated l1t_t on success, ((void *)0)
- *     otherwise.
+ *   @param str the string to write to the serial.
  */
-struct l1t_t *
-alloc_l1t(struct l0t_t *const l0, uint64_t const virt);
-
-#endif
+void
+serial_write(char const *const str)
+{
+    int i;
+    for (i = 0; str[i] != '\0'; ++i) {
+        serial_write_c(str[i]);
+    }
+}

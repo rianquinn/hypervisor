@@ -44,8 +44,10 @@
 int64_t
 map_mk_state(struct state_save_t const *const state, root_page_table_t *const rpt)
 {
-    (void) state;
-    (void) rpt;
+    (void)state;
+    (void)rpt;
+
+    // - map UART0
 
     return LOADER_SUCCESS;
 }

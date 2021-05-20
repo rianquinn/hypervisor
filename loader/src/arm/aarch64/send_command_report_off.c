@@ -33,5 +33,4 @@
  */
 void
 send_command_report_off(void)
-{
-}
+{}

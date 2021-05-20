@@ -26,16 +26,16 @@
 #define ROOT_PAGE_TABLE_T_HPP
 
 #include <allocate_tags.hpp>
-#include <lock_guard.hpp>
-#include <map_page_flags.hpp>
+#include <l0t_t.hpp>
+#include <l0te_t.hpp>
 #include <l1t_t.hpp>
 #include <l1te_t.hpp>
 #include <l2t_t.hpp>
 #include <l2te_t.hpp>
-#include <l0t_t.hpp>
-#include <l0te_t.hpp>
 #include <l3t_t.hpp>
 #include <l3te_t.hpp>
+#include <lock_guard.hpp>
+#include <map_page_flags.hpp>
 #include <spinlock.hpp>
 
 #include <bsl/convert.hpp>

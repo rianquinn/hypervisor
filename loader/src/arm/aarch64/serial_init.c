@@ -24,19 +24,19 @@
  * SOFTWARE.
  */
 
-#ifndef CHECK_FOR_HVE_SUPPORT_H
-#define CHECK_FOR_HVE_SUPPORT_H
-
-#include <types.h>
-
 /**
  * <!-- description -->
- *   @brief This function checks to see if the CPU supports the required
- *     hardware needed by Bareflank.
- *
- * <!-- inputs/outputs -->
- *   @return Returns 0 on success
+ *   @brief Initializes the serial port for use
  */
-int64_t check_for_hve_support(void);
-
-#endif
+void
+serial_init(void)
+{
+    /**
+     * NOTE:
+     * - The UART should be enabled by the bootloader automatically, so on
+     *   the platforms that we currently support, there is no need to set up
+     *   the UART manually.
+     *
+     *   https://www.raspberrypi.org/documentation/configuration/config-txt/
+     */
+}

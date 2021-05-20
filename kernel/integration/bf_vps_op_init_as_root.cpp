@@ -123,7 +123,6 @@ namespace integration
         ret = syscall::bf_vps_op_init_as_root({}, syscall::BF_INVALID_ID);
         integration::require_success(ret);
 
-
         // ret = syscall::bf_vps_op_destroy_vps(g_handle, syscall::BF_INVALID_ID);
         // integration::verify(bsl::errc_failure == ret);
 

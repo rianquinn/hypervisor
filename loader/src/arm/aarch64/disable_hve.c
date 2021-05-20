@@ -29,9 +29,15 @@
 
 /**
  * <!-- description -->
- *   @brief Disables AMD SVE
+ *   @brief Disables Hardware Virtualization Extensions
  */
 void
 disable_hve(void)
 {
+    /**
+     * NOTE:
+     * - Nothing to do here as virtualization support is always provided by
+     *   ARMv8 or higher. We do not use ARM's VHE which is used to added Type 2
+     *   support (something we do not need)
+     */
 }

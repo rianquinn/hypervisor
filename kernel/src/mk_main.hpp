@@ -684,6 +684,9 @@ namespace mk
             /// going to look like, so good luck.
             /// Need to finish the migration stuff so that it makes sense.
 
+            // [ ] implement serial_write_c for Intel/AMD and remove hardcoded
+            //     serial port values. Search for all 0x3F8 so that we are
+            //     only use what comes from constants.h
             // [ ] what happens if a failure handler throws an exception?
             // [ ] need fast fail integration tests
             // [ ] fast fail is not working right. Once the handler is

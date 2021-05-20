@@ -41,8 +41,8 @@
 #include <pt_t.h>
 #include <pte_t.h>
 #include <pto.h>
-#include <types.h>
 #include <root_page_table_t.h>
+#include <types.h>
 
 /**
  * <!-- description -->

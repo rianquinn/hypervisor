@@ -24,28 +24,19 @@
  * SOFTWARE.
  */
 
-#include <debug.h>
-#include <map_4k_page_rw.h>
-#include <platform.h>
-#include <root_page_table_t.h>
-#include <state_save_t.h>
+#ifndef CHECK_CPU_CONFIGURATION_H
+#define CHECK_CPU_CONFIGURATION_H
+
+#include <types.h>
 
 /**
  * <!-- description -->
- *   @brief This function maps the root VP's state into the microkernel's
- *     root page tables.
+ *   @brief This function checks to see if the CPU is supported as well as
+ *     it's system configuration.
  *
  * <!-- inputs/outputs -->
- *   @param state a pointer to a state_save_t that stores the state
- *     being mapped
- *   @param rpt the root page table to map the state into
- *   @return 0 on success, LOADER_FAILURE on failure.
+ *   @return Returns 0 on success
  */
-int64_t
-map_root_vp_state(struct state_save_t const *const state, root_page_table_t *const rpt)
-{
-    (void)state;
-    (void)rpt;
+int64_t check_cpu_configuration(void);
 
-    return LOADER_SUCCESS;
-}
+#endif

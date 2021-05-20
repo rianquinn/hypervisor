@@ -48,15 +48,11 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<
-        typename TLS_CONCEPT,
-        typename PAGE_POOL_CONCEPT,
-        typename VPS_POOL_CONCEPT>
+    template<typename TLS_CONCEPT, typename PAGE_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_create_vps_failure(
-        TLS_CONCEPT &tls,
-        PAGE_POOL_CONCEPT &page_pool,
-        VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
+        TLS_CONCEPT &tls, PAGE_POOL_CONCEPT &page_pool, VPS_POOL_CONCEPT &vps_pool) noexcept
+        -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -864,90 +860,90 @@ namespace mk
                 return ret;
             }
 
-            // case syscall::BF_VPS_OP_INIT_AS_ROOT_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_init_as_root_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_INIT_AS_ROOT_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_init_as_root_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_READ8_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_read8_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_READ8_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_read8_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_READ16_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_read16_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_READ16_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_read16_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_READ32_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_read32_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_READ32_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_read32_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_READ64_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_read64_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_READ64_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_read64_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_WRITE8_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_write8_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_WRITE8_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_write8_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_WRITE16_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_write16_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_WRITE16_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_write16_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_WRITE32_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_write32_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_WRITE32_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_write32_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_WRITE64_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_write64_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_WRITE64_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_write64_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_READ_REG_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_read_reg_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_READ_REG_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_read_reg_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_WRITE_REG_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_write_reg_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_WRITE_REG_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_write_reg_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_RUN_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_run_failure(tls, intrinsic, vm_pool, vp_pool, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_RUN_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_run_failure(tls, intrinsic, vm_pool, vp_pool, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_RUN_CURRENT_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_run_current_failure(tls);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_RUN_CURRENT_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_run_current_failure(tls);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_ADVANCE_IP_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_advance_ip_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_ADVANCE_IP_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_advance_ip_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_ADVANCE_IP_AND_RUN_CURRENT_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_advance_ip_and_run_current_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_ADVANCE_IP_AND_RUN_CURRENT_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_advance_ip_and_run_current_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_PROMOTE_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_promote_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_PROMOTE_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_promote_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
-            // case syscall::BF_VPS_OP_CLEAR_VPS_IDX_VAL.get(): {
-            //     ret = syscall_vps_op_clear_vps_failure(tls, intrinsic, vps_pool);
-            //     return ret;
-            // }
+                // case syscall::BF_VPS_OP_CLEAR_VPS_IDX_VAL.get(): {
+                //     ret = syscall_vps_op_clear_vps_failure(tls, intrinsic, vps_pool);
+                //     return ret;
+                // }
 
             default: {
                 break;

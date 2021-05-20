@@ -171,14 +171,14 @@ check_the_configuration_of_efer(void)
 
 /**
  * <!-- description -->
- *   @brief This function checks to see if AMD SVM support is available on
- *     the currently running CPU
+ *   @brief This function checks to see if the CPU is supported as well as
+ *     it's system configuration.
  *
  * <!-- inputs/outputs -->
  *   @return Returns 0 on success
  */
 int64_t
-check_for_hve_support(void)
+check_cpu_configuration(void)
 {
     if (check_for_amd()) {
         bferror("check_for_amd failed");

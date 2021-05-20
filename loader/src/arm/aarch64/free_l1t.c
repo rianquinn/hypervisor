@@ -25,8 +25,10 @@
  */
 
 #include <debug.h>
-#include <platform.h>
+#include <free_l2t.h>
 #include <l1t_t.h>
+#include <l2t_t.h>
+#include <platform.h>
 #include <types.h>
 
 /**
@@ -40,5 +42,13 @@
 void
 free_l1t(struct l1t_t *const l1t)
 {
-    (void)l1t;
+    uint64_t idx;
+
+    for (idx = ((uint64_t)0); idx < LOADER_NUM_L1T_ENTRIES; ++idx) {
+        struct l2t_t *const l2t = l1t->tables[idx];
+        if (((void *)0) != l2t) {
+            free_l2t(l2t);
+            platform_free(l2t, sizeof(struct l2t_t));
+        }
+    }
 }

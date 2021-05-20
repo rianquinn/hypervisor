@@ -41,6 +41,7 @@
  *   @param rpt the root page table to map the debug_ring into
  *   @return 0 on success, LOADER_FAILURE on failure.
  */
-int64_t map_mk_debug_ring(struct debug_ring_t const *const debug_ring, root_page_table_t *const rpt);
+int64_t
+map_mk_debug_ring(struct debug_ring_t const *const debug_ring, root_page_table_t *const rpt);
 
 #endif

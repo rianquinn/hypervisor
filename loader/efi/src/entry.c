@@ -36,6 +36,7 @@
 #include <span_t.h>
 #include <start_vmm.h>
 #include <start_vmm_args_t.h>
+#include <dump_vmm_on_error_if_needed.h>
 
 /**
  * NOTE:
@@ -187,12 +188,12 @@ locate_protocols(void)
     EFI_GUID efi_mp_services_protocol_guid = EFI_MP_SERVICES_PROTOCOL_GUID;
     EFI_GUID efi_simple_file_system_protocol_guid = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
 
-    status = g_st->BootServices->LocateProtocol(
-        &efi_mp_services_protocol_guid, NULL, (VOID **)&g_mp_services_protocol);
-    if (EFI_ERROR(status)) {
-        bferror_x64("LocateProtocol EFI_MP_SERVICES_PROTOCOL failed", status);
-        return status;
-    }
+    // status = g_st->BootServices->LocateProtocol(
+    //     &efi_mp_services_protocol_guid, NULL, (VOID **)&g_mp_services_protocol);
+    // if (EFI_ERROR(status)) {
+    //     bferror_x64("LocateProtocol EFI_MP_SERVICES_PROTOCOL failed", status);
+    //     return status;
+    // }
 
     status = g_st->BootServices->LocateProtocol(
         &efi_simple_file_system_protocol_guid, NULL, (VOID **)&g_simple_file_system);
@@ -240,15 +241,18 @@ load_images_and_start(void)
     start_args.ver = ((uint64_t)1);
     start_args.num_pages_in_page_pool = ((uint32_t)0);
 
-    // if (start_vmm(&start_args)) {
-    //     bferror("start_vmm failed");
-    //     return EFI_LOAD_ERROR;
-    // }
+    if (start_vmm(&start_args)) {
+        bferror("start_vmm failed");
+        return EFI_LOAD_ERROR;
+    }
 
     return EFI_SUCCESS;
 }
 
-#include <dump_vmm_on_error_if_needed.h>
+
+
+
+void serial_write_hex(uint64_t const val);
 
 /**
  * <!-- description -->
@@ -300,6 +304,6 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     platform_dump_vmm();
 
-    g_st->ConOut->OutputString(g_st->ConOut, L"hello from el2\r\n");
+    g_st->ConOut->OutputString(g_st->ConOut, L"bareflank successfully started\r\n");
     return EFI_SUCCESS;
 }

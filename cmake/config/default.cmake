@@ -166,13 +166,23 @@ bf_add_config(
     OPTIONS 12
 )
 
-bf_add_config(
-    CONFIG_NAME HYPERVISOR_SERIAL_PORT
-    CONFIG_TYPE STRING
-    DEFAULT_VAL "0x03F8"
-    DESCRIPTION "Defines the hypervisor's serial port"
-    SKIP_VALIDATION
-)
+if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+    bf_add_config(
+        CONFIG_NAME HYPERVISOR_SERIAL_PORT
+        CONFIG_TYPE STRING
+        DEFAULT_VAL "0x03F8"
+        DESCRIPTION "Defines the hypervisor's serial port"
+        SKIP_VALIDATION
+    )
+else()
+    bf_add_config(
+        CONFIG_NAME HYPERVISOR_SERIAL_PORT
+        CONFIG_TYPE STRING
+        DEFAULT_VAL "0xFE201000"
+        DESCRIPTION "Defines the hypervisor's UART0 base address (defaults to RPi4)"
+        SKIP_VALIDATION
+    )
+endif()
 
 bf_add_config(
     CONFIG_NAME HYPERVISOR_DEBUG_RING_SIZE

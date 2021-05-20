@@ -163,7 +163,8 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vps_op_read8(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+    syscall_vps_op_read8(
+        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const val{vps_pool.template read<bsl::uint8>(

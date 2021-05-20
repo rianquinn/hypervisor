@@ -275,14 +275,14 @@ check_cr4(void)
 
 /**
  * <!-- description -->
- *   @brief This function checks to see if Intel VT-x support is available on
- *     the currently running CPU
+ *   @brief This function checks to see if the CPU is supported as well as
+ *     it's system configuration.
  *
  * <!-- inputs/outputs -->
  *   @return Returns 0 on success
  */
 int64_t
-check_for_hve_support(void)
+check_cpu_configuration(void)
 {
     if (check_for_intel()) {
         bferror("check_for_intel failed");

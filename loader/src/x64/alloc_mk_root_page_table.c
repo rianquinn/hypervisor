@@ -27,9 +27,9 @@
 #include <debug.h>
 #include <map_4k_page_rw.h>
 #include <platform.h>
+#include <pml4t_t.h>
 #include <root_page_table_t.h>
 #include <types.h>
-#include <pml4t_t.h>
 
 /**
  * <!-- description -->

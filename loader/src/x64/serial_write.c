@@ -30,9 +30,6 @@
 #include <types.h>
 
 /** @brief defines the line status register  */
-#define SERIAL_PORT ((uint16_t)HYPERVISOR_SERIAL_PORT)
-
-/** @brief defines the line status register  */
 #define LSR ((uint16_t)5)
 /** @brief defines the transmit FIFO empty bit in the LSR  */
 #define LSR_TRANSMIT_FIFO_EMPTY ((uint8_t)(((uint8_t)1) << ((uint8_t)5)))
@@ -48,7 +45,7 @@
 static uint8_t
 serial_inb(uint16_t reg)
 {
-    reg += SERIAL_PORT;
+    reg += HYPERVISOR_SERIAL_PORT;
     return intrinsic_inb(reg);
 }
 
@@ -63,7 +60,7 @@ serial_inb(uint16_t reg)
 static void
 serial_outb(uint16_t reg, uint8_t const val)
 {
-    reg += SERIAL_PORT;
+    reg += HYPERVISOR_SERIAL_PORT;
     intrinsic_outb(reg, val);
 }
 
@@ -80,10 +77,10 @@ serial_write(char const *const str)
 {
     int i;
 
-    while ((serial_inb(LSR) & LSR_TRANSMIT_FIFO_EMPTY) == 0) {
-    }
-
     for (i = 0; str[i] != '\0'; ++i) {
+        while ((serial_inb(LSR) & LSR_TRANSMIT_FIFO_EMPTY) == 0) {
+        }
+
         serial_outb(0, str[i]);
     }
 }

@@ -24,25 +24,30 @@
  * SOFTWARE.
  */
 
-#ifndef L3TE_T
-#define L3TE_T
-
-#include <types.h>
-
-#pragma pack(push, 1)
+#define ASSEMBLY
+#include <constants.h>
 
 /**
- * @struct l3te_t
- *
- * <!-- description -->
- *   @brief Defines the layout of a level-3 table entry (L3TE).
+ * NOTE:
+ * - We implemented this function in assembly so that it can be used from
+ *   other assembly routines for debugging.
  */
-struct l3te_t
-{
-    /** @brief TODO */
-    uint64_t dummy;
-};
 
-#pragma pack(pop)
+	.global serial_write_c
+	.align 12
+serial_write_c:
 
-#endif
+    movz x1, #HYPERVISOR_SERIAL_PORTL
+    movk x1, #HYPERVISOR_SERIAL_PORTH, LSL #16
+    add  x1, x1, #0x18
+    ldr  x1, [x1]
+
+    and  x1, x1, #0x20
+    cbnz x1, serial_write_c
+
+    movz x1, #HYPERVISOR_SERIAL_PORTL
+    movk x1, #HYPERVISOR_SERIAL_PORTH, LSL #16
+    str  x0, [x1]
+
+    ret
+

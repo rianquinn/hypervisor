@@ -24,13 +24,25 @@
  * SOFTWARE.
  */
 
+#include <alloc_l1t.h>
+#include <alloc_l2t.h>
+#include <alloc_l3t.h>
 #include <bfelf_elf64_phdr_t.h>
 #include <constants.h>
 #include <debug.h>
+#include <l0t_t.h>
+#include <l0to.h>
+#include <l1t_t.h>
+#include <l1to.h>
+#include <l2t_t.h>
+#include <l2to.h>
+#include <l3t_t.h>
+#include <l3te_t.h>
+#include <l3to.h>
 #include <map_4k_page.h>
 #include <platform.h>
-#include <types.h>
 #include <root_page_table_t.h>
+#include <types.h>
 
 /**
  * <!-- description -->
@@ -52,10 +64,66 @@
 int64_t
 map_4k_page(uint64_t const virt, uint64_t phys, uint32_t const flags, root_page_table_t *const rpt)
 {
-    (void)virt;
-    (void)phys;
-    (void)flags;
-    (void)rpt;
+    struct l1t_t *l1t = ((void *)0);
+    struct l2t_t *l2t = ((void *)0);
+    struct l3t_t *l3t = ((void *)0);
+    struct l3te_t *l3te = ((void *)0);
+
+    if (((uint64_t)0) == virt) {
+        bferror_x64("virt is NULL", virt);
+        return LOADER_FAILURE;
+    }
+
+    if (((uint64_t)0) == phys) {
+        phys = platform_virt_to_phys((void *)virt);
+        if (((uint64_t)0) == phys) {
+            bferror("platform_virt_to_phys failed");
+            return LOADER_FAILURE;
+        }
+    }
+
+    if ((virt & (HYPERVISOR_PAGE_SIZE - ((uint64_t)1))) != ((uint64_t)0)) {
+        bferror_x64("virt is not page aligned", virt);
+        return LOADER_FAILURE;
+    }
+
+    if ((phys & (HYPERVISOR_PAGE_SIZE - ((uint64_t)1))) != ((uint64_t)0)) {
+        bferror_x64("phys is not page aligned", phys);
+        return LOADER_FAILURE;
+    }
+
+    l1t = rpt->tables[l0to(virt)];
+    if (((void *)0) == l1t) {
+        l1t = alloc_l1t(rpt, virt);
+    }
+
+    l2t = l1t->tables[l1to(virt)];
+    if (((void *)0) == l2t) {
+        l2t = alloc_l2t(l1t, virt);
+    }
+
+    l3t = l2t->tables[l2to(virt)];
+    if (((void *)0) == l3t) {
+        l3t = alloc_l3t(l2t, virt);
+    }
+
+    l3te = &l3t->entires[l3to(virt)];
+    if (l3te->p != ((uint64_t)0)) {
+        bferror_x64("virt already mapped", virt);
+        return LOADER_FAILURE;
+    }
+
+    l3te->phys = (phys >> HYPERVISOR_PAGE_SHIFT);
+    l3te->p = ((uint64_t)1);
+    l3te->page = ((uint64_t)1);
+
+    if ((flags & bfelf_pf_w) == 0U) {
+        l3te->ap = ((uint64_t)2);
+    }
+
+    if ((flags & bfelf_pf_x) == 0U) {
+        l3te->xn = ((uint64_t)1);
+    }
 
     return LOADER_SUCCESS;
 }

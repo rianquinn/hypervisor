@@ -27,8 +27,8 @@
 
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
-#include <bsl/unlikely.hpp>
 #include <bsl/touch.hpp>
+#include <bsl/unlikely.hpp>
 
 namespace integration
 {
@@ -81,7 +81,8 @@ namespace integration
     ///   @param ec the results to query
     ///
     constexpr void
-    require_success(bsl::errc_type const ec, bsl::source_location const &sloc = bsl::here()) noexcept
+    require_success(
+        bsl::errc_type const ec, bsl::source_location const &sloc = bsl::here()) noexcept
     {
         if (bsl::unlikely(!ec.success())) {
             bsl::print() << bsl::red << "integration test failed";

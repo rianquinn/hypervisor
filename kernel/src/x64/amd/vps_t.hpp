@@ -26,10 +26,10 @@
 #define VPS_T_HPP
 
 #include <allocate_tags.hpp>
+#include <allocated_status_t.hpp>
 #include <general_purpose_regs_t.hpp>
 #include <mk_interface.hpp>
 #include <vmcb_t.hpp>
-#include <allocated_status_t.hpp>
 
 #include <bsl/cstr_type.hpp>
 #include <bsl/debug.hpp>
@@ -1097,9 +1097,8 @@ namespace mk
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
         vps_to_state_save(
-            TLS_CONCEPT &tls,
-            INTRINSIC_CONCEPT &intrinsic,
-            STATE_SAVE_CONCEPT &state) &noexcept -> bsl::errc_type
+            TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) &noexcept
+            -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
@@ -1395,8 +1394,9 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        read_reg(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg)
-            &noexcept -> bsl::safe_uintmax
+        read_reg(
+            TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg) &noexcept
+            -> bsl::safe_uintmax
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();

@@ -28,10 +28,10 @@
 #include <bsl/char_type.hpp>
 #include <bsl/convert.hpp>
 #include <bsl/cstr_type.hpp>
+#include <bsl/discard.hpp>
 #include <bsl/is_constant_evaluated.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/touch.hpp>
-#include <bsl/discard.hpp>
 
 namespace mk
 {

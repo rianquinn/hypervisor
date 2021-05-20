@@ -24,23 +24,41 @@
  * SOFTWARE.
  */
 
-#ifndef L2TE_T
-#define L2TE_T
+#ifndef L0TE_T
+#define L0TE_T
 
 #include <types.h>
 
 #pragma pack(push, 1)
 
 /**
- * @struct l2te_t
+ * @struct l0te_t
  *
  * <!-- description -->
- *   @brief Defines the layout of a level-2 table entry (L2TE).
+ *   @brief Defines the layout of a level-0 table entry (L0TE).
  */
-struct l2te_t
+struct l0te_t
 {
-    /** @brief TODO */
-    uint64_t dummy;
+    /** @brief defines the "present" field in the page */
+    uint64_t p : ((uint64_t)1);
+    /** @brief defines the "block/table" field in the page */
+    uint64_t bt : ((uint64_t)1);
+    /** @brief defines our "aliased" field in the page */
+    uint64_t alias : ((uint64_t)1);
+    /** @brief defines the "available to software" field in the page */
+    uint64_t available1 : ((uint64_t)9);
+    /** @brief defines the "physical address" field in the page */
+    uint64_t phys : ((uint64_t)40);
+    /** @brief defines the "available to software" field in the page */
+    uint64_t available2 : ((uint64_t)7);
+    /** @brief defines the "PXNTable" field in the page */
+    uint64_t pxntable : ((uint64_t)1);
+    /** @brief defines the "XNTable" field in the page */
+    uint64_t xntable : ((uint64_t)1);
+    /** @brief defines the "APTable" field in the page */
+    uint64_t aptable : ((uint64_t)2);
+    /** @brief defines the "NSTable" field in the page */
+    uint64_t nstable : ((uint64_t)1);
 };
 
 #pragma pack(pop)

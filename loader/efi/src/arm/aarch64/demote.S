@@ -28,4 +28,20 @@
 	.align 12
 demote:
 
+    msr daifset, #0b1111
+
+    #define HCR_EL2_AMO (1 << 5)
+    #define HCR_EL2_IMO (1 << 4)
+    #define HCR_EL2_FMO (1 << 3)
+
+    mrs x0, HCR_EL2
+    orr x0, x0, #(HCR_EL2_AMO)
+    orr x0, x0, #(HCR_EL2_IMO)
+    orr x0, x0, #(HCR_EL2_FMO)
+    msr HCR_EL2, x0
+
+	adr  x0, exception_vectors
+	msr  vbar_el2, x0
+
+    mov x0, #1
     ret

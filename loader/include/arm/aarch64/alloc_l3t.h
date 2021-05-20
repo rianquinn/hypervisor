@@ -27,8 +27,8 @@
 #ifndef ALLOC_L3T_H
 #define ALLOC_L3T_H
 
-#include <l3t_t.h>
 #include <l2t_t.h>
+#include <l3t_t.h>
 #include <types.h>
 
 /**
@@ -43,7 +43,6 @@
  *   @return a pointer to the newly allocated l3t_t on success, ((void *)0)
  *     otherwise.
  */
-struct l3t_t *
-alloc_l3t(struct l2t_t *const l2, uint64_t const virt);
+struct l3t_t *alloc_l3t(struct l2t_t *const l2, uint64_t const virt);
 
 #endif

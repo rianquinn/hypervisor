@@ -34,8 +34,8 @@
 #include <esr_pf.h>
 #include <map_4k_page_rx.h>
 #include <platform.h>
-#include <root_page_table_t.h>
 #include <promote.h>
+#include <root_page_table_t.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4152)

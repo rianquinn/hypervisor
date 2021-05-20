@@ -1071,7 +1071,6 @@ namespace mk
 
             bsl::error() << "write not supported on aarch64\n" << bsl::here();
             return bsl::errc_failure;
-
         }
 
         /// <!-- description -->

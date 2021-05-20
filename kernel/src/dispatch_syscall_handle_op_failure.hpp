@@ -72,7 +72,8 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_handle_op_close_handle_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_handle_op_close_handle_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
+        -> bsl::errc_type
     {
         if (!tls.state_reversal_required) {
             return bsl::errc_success;
@@ -107,7 +108,8 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_handle_op_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    dispatch_syscall_handle_op_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
+        -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

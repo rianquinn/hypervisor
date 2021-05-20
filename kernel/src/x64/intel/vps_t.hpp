@@ -26,11 +26,11 @@
 #define VPS_T_HPP
 
 #include <allocate_tags.hpp>
+#include <allocated_status_t.hpp>
 #include <general_purpose_regs_t.hpp>
 #include <mk_interface.hpp>
 #include <vmcs_missing_registers_t.hpp>
 #include <vmcs_t.hpp>
-#include <allocated_status_t.hpp>
 
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
@@ -2529,9 +2529,8 @@ namespace mk
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
         vps_to_state_save(
-            TLS_CONCEPT &tls,
-            INTRINSIC_CONCEPT &intrinsic,
-            STATE_SAVE_CONCEPT &state) &noexcept -> bsl::errc_type
+            TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) &noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -2987,28 +2986,28 @@ namespace mk
             else {
                 switch (index.get()) {
                     case vmcs_pinbased_ctls_idx.get(): {
-                        bsl::error() << "invalid integer type for field: " // --
-                                     << bsl::hex(index) // --
-                                     << bsl::endl // --
-                                     << bsl::here();// --
+                        bsl::error() << "invalid integer type for field: "    // --
+                                     << bsl::hex(index)                       // --
+                                     << bsl::endl                             // --
+                                     << bsl::here();                          // --
 
                         return bsl::errc_failure;
                     }
 
                     case vmcs_exit_ctls_idx.get(): {
-                        bsl::error() << "invalid integer type for field: " // --
-                                     << bsl::hex(index) // --
-                                     << bsl::endl // --
-                                     << bsl::here();// --
+                        bsl::error() << "invalid integer type for field: "    // --
+                                     << bsl::hex(index)                       // --
+                                     << bsl::endl                             // --
+                                     << bsl::here();                          // --
 
                         return bsl::errc_failure;
                     }
 
                     case vmcs_entry_ctls_idx.get(): {
-                        bsl::error() << "invalid integer type for field: " // --
-                                     << bsl::hex(index) // --
-                                     << bsl::endl // --
-                                     << bsl::here();// --
+                        bsl::error() << "invalid integer type for field: "    // --
+                                     << bsl::hex(index)                       // --
+                                     << bsl::endl                             // --
+                                     << bsl::here();                          // --
 
                         return bsl::errc_failure;
                     }
@@ -3068,8 +3067,9 @@ namespace mk
         ///
         template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        read_reg(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg)
-            &noexcept -> bsl::safe_uintmax
+        read_reg(
+            TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg) &noexcept
+            -> bsl::safe_uintmax
         {
             bsl::safe_uint64 index{bsl::safe_uint64::zero(true)};
 

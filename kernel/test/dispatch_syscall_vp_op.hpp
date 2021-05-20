@@ -47,7 +47,8 @@ namespace mk
     ///
     template<typename TLS_CONCEPT, typename EXT_CONCEPT, typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_vp_op(TLS_CONCEPT &tls, EXT_CONCEPT const &ext, VP_POOL_CONCEPT &vp_pool) noexcept
+    dispatch_syscall_vp_op(
+        TLS_CONCEPT &tls, EXT_CONCEPT const &ext, VP_POOL_CONCEPT &vp_pool) noexcept
         -> bsl::errc_type
     {
         bsl::discard(tls);

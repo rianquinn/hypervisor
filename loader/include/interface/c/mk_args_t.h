@@ -27,11 +27,11 @@
 #ifndef MK_ARGS_T_H
 #define MK_ARGS_T_H
 
-#include "../debug_ring_t.h"
-#include "../mutable_span_t.h"
-#include "../span_t.h"
-#include "state_save_t.h"
+#include "debug_ring_t.h"
+#include "mutable_span_t.h"
+#include "span_t.h"
 
+#include <state_save_t.h>
 #include <constants.h>
 #include <types.h>
 

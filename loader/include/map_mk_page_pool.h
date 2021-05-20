@@ -54,6 +54,7 @@
  *   @param rpt the root page table to map the page pool into
  *   @return 0 on success, LOADER_FAILURE on failure.
  */
-int64_t map_mk_page_pool(struct mutable_span_t const *const page_pool, root_page_table_t *const rpt);
+int64_t
+map_mk_page_pool(struct mutable_span_t const *const page_pool, root_page_table_t *const rpt);
 
 #endif

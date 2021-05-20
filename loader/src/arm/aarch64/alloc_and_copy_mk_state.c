@@ -28,10 +28,10 @@
 #include <constants.h>
 #include <debug.h>
 #include <platform.h>
+#include <root_page_table_t.h>
 #include <span_t.h>
 #include <state_save_t.h>
 #include <types.h>
-#include <root_page_table_t.h>
 
 /**
  * <!-- description -->
@@ -54,11 +54,32 @@ alloc_and_copy_mk_state(
     uint64_t const mk_stack_virt,
     struct state_save_t **const state)
 {
-    (void) rpt;
-    (void) mk_elf_file;
-    (void) mk_stack;
-    (void) mk_stack_virt;
-    (void) state;
+    // /// --------------------------------------------------------------------
+    // /// Exceptions
+    // /// --------------------------------------------------------------------
+
+    // /// @brief stores the value of elr_el2 (0x110)
+    // bsl::uint64 elr_el2;
+
+    // /// --------------------------------------------------------------------
+    // /// System Registers
+    // /// --------------------------------------------------------------------
+
+    // /// @brief stores the value of hcr_el2 (0x118)
+    // bsl::uint64 hcr_el2;
+    // /// @brief stores the value of mair_el2 (0x120)
+    // bsl::uint64 mair_el2;
+    // /// @brief stores the value of sctlr_el2 (0x128)
+    // bsl::uint64 sctlr_el2;
+    // /// @brief stores the value of tcr_el2 (0x130)
+    // bsl::uint64 tcr_el2;
+    // /// @brief stores the value of ttbr0_el2 (0x138)
+    // bsl::uint64 ttbr0_el2;
+    // /// @brief stores the value of ttbr1_el2 (0x140)
+    // bsl::uint64 ttbr1_el2;
+    // /// @brief stores the value of vbar_el2 (0x148)
+    // bsl::uint64 vbar_el2;
+
 
     return LOADER_SUCCESS;
 }

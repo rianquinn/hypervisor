@@ -62,19 +62,11 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-    target_include_directories(bareflank_efi_loader PUBLIC
-		include/arm
-		../include/arm/
-		../include/interface/c/arm
-    )
-
-	if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-		target_include_directories(bareflank_efi_loader PUBLIC
-			include/arm/aarch64
-			../include/arm/aarch64
-			../include/interface/c/arm/aarch64
-		)
-	endif()
+	target_include_directories(bareflank_efi_loader PUBLIC
+		include/arm/aarch64
+		../include/arm/aarch64
+		../include/interface/c/arm/aarch64
+	)
 endif()
 
 # ------------------------------------------------------------------------------
@@ -84,6 +76,8 @@ endif()
 list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/include/arch_init.h
 	${CMAKE_CURRENT_LIST_DIR}/include/debug.h
+	${CMAKE_CURRENT_LIST_DIR}/include/types.h
+	${CMAKE_CURRENT_LIST_DIR}/include/work_on_cpu_callback_args.h
 	${CMAKE_CURRENT_LIST_DIR}/include/efi/efi_allocate_type.h
 	${CMAKE_CURRENT_LIST_DIR}/include/efi/efi_boot_services.h
 	${CMAKE_CURRENT_LIST_DIR}/include/efi/efi_configuration_table.h
@@ -113,17 +107,6 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/include/efi/efi_timer_delay.h
 	${CMAKE_CURRENT_LIST_DIR}/include/efi/efi_types.h
 	${CMAKE_CURRENT_LIST_DIR}/include/efi/extened_processor_information.h
-	${CMAKE_CURRENT_LIST_DIR}/include/types.h
-	${CMAKE_CURRENT_LIST_DIR}/include/work_on_cpu_callback_args.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/bfelf/bfelf_elf64_ehdr_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/bfelf/bfelf_elf64_phdr_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/bfelf/bfelf_types.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/debug_ring_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/dump_vmm_args_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/mutable_span_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/span_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/start_vmm_args_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/stop_vmm_args_t.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/alloc_and_copy_ext_elf_files_from_user.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/alloc_and_copy_mk_code_aliases.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/alloc_and_copy_mk_elf_file_from_user.h
@@ -136,7 +119,7 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/alloc_mk_page_pool.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/alloc_mk_root_page_table.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/alloc_mk_stack.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/check_for_hve_support.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/check_cpu_configuration.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/demote.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/disable_hve.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/dump_ext_elf_files.h
@@ -151,8 +134,8 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/dump_mk_stack.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/dump_mk_state.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/dump_root_vp_state.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/dump_vmm_on_error_if_needed.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/dump_vmm.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/dump_vmm_on_error_if_needed.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/elf_segment_t.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/enable_hve.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/free_ext_elf_files.h
@@ -168,6 +151,8 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/free_mk_state.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/free_root_vp_state.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_cpu_status.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/get_mk_huge_pool_addr.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/get_mk_page_pool_addr.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_ext_elf_files.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_mk_args.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_mk_code_aliases.h
@@ -181,8 +166,6 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_mk_state.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_root_vp_state.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/g_vmm_status.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/get_mk_huge_pool_addr.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/get_mk_page_pool_addr.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/itoa.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/loader_fini.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/loader_init.h
@@ -212,14 +195,26 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_and_free_the_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_vmm_per_cpu.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/debug_ring_t.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/dump_vmm_args_t.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/mk_args_t.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/mutable_span_t.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/span_t.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/start_vmm_args_t.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/stop_vmm_args_t.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/bfelf/bfelf_elf64_ehdr_t.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/bfelf/bfelf_elf64_phdr_t.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/bfelf/bfelf_types.h
 )
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
 	list(APPEND HEADERS
+		${CMAKE_CURRENT_LIST_DIR}/include/x64/setup_cr0.h
+		${CMAKE_CURRENT_LIST_DIR}/include/x64/setup_cr4.h
+		${CMAKE_CURRENT_LIST_DIR}/include/x64/setup_tss.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/cpuid_commands.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/global_descriptor_table_register_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/interrupt_descriptor_table_register_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/mk_args_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/pdpte_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/pdte_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/pml4te_t.h
@@ -243,7 +238,10 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/get_gdt_descriptor_limit.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/intrinsic_cpuid.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/intrinsic_inb.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/x64/intrinsic_lcr0.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/intrinsic_lcr4.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/x64/intrinsic_lgdt.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/x64/intrinsic_ltr.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/intrinsic_outb.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/intrinsic_rdmsr.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/intrinsic_scr0.h
@@ -282,29 +280,30 @@ endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
 	list(APPEND HEADERS
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/cpuid_commands.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/l0te_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/l1te_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/l2te_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/l3te_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/mk_args_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/state_save_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/alloc_l1t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/alloc_l2t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/alloc_l3t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/code_aliases_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/free_l0t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/free_l1t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/free_l2t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/l0t_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/l0to.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/l1t_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/l1to.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/l2t_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/l2to.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/l3t_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/l3to.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/root_page_table_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/cpuid_commands.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/l0te_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/l1te_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/l2te_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/l3te_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/state_save_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/alloc_l1t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/alloc_l2t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/alloc_l3t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/code_aliases_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/free_l0t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/free_l1t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/free_l2t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l0to.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l0t_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l1to.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l1t_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l2to.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l2t_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l3to.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l3t_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_currentel.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/root_page_table_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/serial_write_c.h
 	)
 endif()
 
@@ -312,8 +311,8 @@ endif()
 # Sources
 # ------------------------------------------------------------------------------
 
-hypervisor_target_source(bareflank_efi_loader src/platform.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader src/entry.c ${HEADERS})
+hypervisor_target_source(bareflank_efi_loader src/platform.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/alloc_and_copy_ext_elf_files_from_user.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/alloc_and_copy_mk_elf_file_from_user.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/alloc_and_copy_mk_elf_segments.c ${HEADERS})
@@ -341,6 +340,8 @@ hypervisor_target_source(bareflank_efi_loader ../src/free_mk_huge_pool.c ${HEADE
 hypervisor_target_source(bareflank_efi_loader ../src/free_mk_page_pool.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/free_mk_stack.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/g_cpu_status.c ${HEADERS})
+hypervisor_target_source(bareflank_efi_loader ../src/get_mk_huge_pool_addr.c ${HEADERS})
+hypervisor_target_source(bareflank_efi_loader ../src/get_mk_page_pool_addr.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/g_ext_elf_files.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/g_mk_args.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/g_mk_code_aliases.c ${HEADERS})
@@ -354,8 +355,6 @@ hypervisor_target_source(bareflank_efi_loader ../src/g_mk_stack.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/g_mk_state.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/g_root_vp_state.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/g_vmm_status.c ${HEADERS})
-hypervisor_target_source(bareflank_efi_loader ../src/get_mk_huge_pool_addr.c ${HEADERS})
-hypervisor_target_source(bareflank_efi_loader ../src/get_mk_page_pool_addr.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/loader_fini.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/loader_init.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/map_4k_page_rw.c ${HEADERS})
@@ -368,11 +367,11 @@ hypervisor_target_source(bareflank_efi_loader ../src/map_mk_elf_segments.c ${HEA
 hypervisor_target_source(bareflank_efi_loader ../src/map_mk_huge_pool.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/map_mk_page_pool.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/map_mk_stack.c ${HEADERS})
-hypervisor_target_source(bareflank_efi_loader ../src/start_vmm_per_cpu.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/start_vmm.c ${HEADERS})
+hypervisor_target_source(bareflank_efi_loader ../src/start_vmm_per_cpu.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/stop_and_free_the_vmm.c ${HEADERS})
-hypervisor_target_source(bareflank_efi_loader ../src/stop_vmm_per_cpu.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/stop_vmm.c ${HEADERS})
+hypervisor_target_source(bareflank_efi_loader ../src/stop_vmm_per_cpu.c ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
 	hypervisor_target_source(bareflank_efi_loader src/x64/arch_init.c ${HEADERS})
@@ -443,9 +442,9 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 		hypervisor_target_source(bareflank_efi_loader src/x64/amd/enable_interrupts.S ${HEADERS})
 		hypervisor_target_source(bareflank_efi_loader src/x64/amd/setup_cr0.c ${HEADERS})
 		hypervisor_target_source(bareflank_efi_loader src/x64/amd/setup_cr4.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/x64/amd/enable_hve.c ${HEADERS})
+		hypervisor_target_source(bareflank_efi_loader ../src/x64/amd/check_cpu_configuration.c ${HEADERS})
 		hypervisor_target_source(bareflank_efi_loader ../src/x64/amd/disable_hve.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/x64/amd/check_for_hve_support.c ${HEADERS})
+		hypervisor_target_source(bareflank_efi_loader ../src/x64/amd/enable_hve.c ${HEADERS})
 	endif()
 
 	if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
@@ -455,50 +454,56 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 		hypervisor_target_source(bareflank_efi_loader src/x64/intel/intrinsic_vmxon.S ${HEADERS})
 		hypervisor_target_source(bareflank_efi_loader src/x64/intel/setup_cr0.c ${HEADERS})
 		hypervisor_target_source(bareflank_efi_loader src/x64/intel/setup_cr4.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/x64/intel/enable_hve.c ${HEADERS})
+		hypervisor_target_source(bareflank_efi_loader ../src/x64/intel/check_cpu_configuration.c ${HEADERS})
 		hypervisor_target_source(bareflank_efi_loader ../src/x64/intel/disable_hve.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/x64/intel/check_for_hve_support.c ${HEADERS})
+		hypervisor_target_source(bareflank_efi_loader ../src/x64/intel/enable_hve.c ${HEADERS})
 	endif()
 endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-	hypervisor_target_source(bareflank_efi_loader src/arm/arch_init.c ${HEADERS})
-	hypervisor_target_source(bareflank_efi_loader ../src/arm/serial_init.c ${HEADERS})
-	hypervisor_target_source(bareflank_efi_loader ../src/arm/serial_write.c ${HEADERS})
-
-	if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-		hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/demote.S ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/memcpy.S ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/memset.S ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/promote.S ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_and_copy_mk_code_aliases.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_and_copy_mk_state.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_and_copy_root_vp_state.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_l1t.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_l2t.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_l3t.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_mk_root_page_table.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/check_for_hve_support.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/disable_hve.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/dump_mk_code_aliases.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/dump_mk_state.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/dump_root_vp_state.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/enable_hve.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_l0t.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_l1t.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_l2t.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_mk_code_aliases.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_mk_root_page_table.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_mk_state.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_root_vp_state.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/map_4k_page.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/map_mk_code_aliases.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/map_mk_state.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/map_root_vp_state.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/send_command_report_off.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/send_command_report_on.c ${HEADERS})
-		hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/send_command_stop.c ${HEADERS})
-	endif()
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/arch_init.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/demote.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/esr.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/exception_vectors.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/memcpy.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/memset.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/promote.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/read_currentel.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/serial_write_c.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/serial_write_hex.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_and_copy_mk_code_aliases.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_and_copy_mk_state.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_and_copy_root_vp_state.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_l1t.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_l2t.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_l3t.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_mk_root_page_table.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/check_cpu_configuration.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/disable_hve.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/dump_mk_code_aliases.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/dump_mk_state.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/dump_root_vp_state.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/enable_hve.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_l0t.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_l1t.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_l2t.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_mk_code_aliases.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_mk_root_page_table.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_mk_state.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_root_vp_state.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/map_4k_page.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/map_mk_code_aliases.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/map_mk_state.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/map_root_vp_state.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/send_command_report_off.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/send_command_report_on.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/send_command_stop.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/serial_init.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/serial_write.c ${HEADERS})
 endif()
+
+# ------------------------------------------------------------------------------
+# Install
+# ------------------------------------------------------------------------------
 
 install(TARGETS bareflank_efi_loader DESTINATION bin)
