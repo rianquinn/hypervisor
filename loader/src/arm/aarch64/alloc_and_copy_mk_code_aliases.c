@@ -28,8 +28,12 @@
 #include <constants.h>
 #include <debug.h>
 #include <demote.h>
+#include <esr.h>
+#include <exception_vectors.h>
 #include <platform.h>
 #include <promote.h>
+#include <serial_write_c.h>
+#include <serial_write_hex.h>
 #include <types.h>
 
 /**
@@ -71,28 +75,6 @@
 int64_t
 alloc_and_copy_mk_code_aliases(struct code_aliases_t *const a)
 {
-    a->demote = platform_alloc(HYPERVISOR_PAGE_SIZE);
-    if (((void *)0) == a->demote) {
-        bferror("platform_alloc failed");
-        goto platform_alloc_demote_failed;
-    }
-
-    a->promote = platform_alloc(HYPERVISOR_PAGE_SIZE);
-    if (((void *)0) == a->promote) {
-        bferror("platform_alloc failed");
-        goto platform_alloc_promote_failed;
-    }
-
-    platform_memcpy(a->demote, demote, HYPERVISOR_PAGE_SIZE);
-    platform_memcpy(a->promote, promote, HYPERVISOR_PAGE_SIZE);
-
+    (void)a;
     return LOADER_SUCCESS;
-
-platform_alloc_promote_failed:
-
-    platform_free(a->demote, HYPERVISOR_PAGE_SIZE);
-platform_alloc_demote_failed:
-
-    platform_memset(a, 0, sizeof(struct code_aliases_t));
-    return LOADER_FAILURE;
 }

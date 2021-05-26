@@ -132,10 +132,21 @@ macro(hypervisor_add_info)
         VERBATIM
     )
 
-    add_custom_command(TARGET info
-        COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_SERIAL_PORT         ${BF_COLOR_CYN}${HYPERVISOR_SERIAL_PORT}${BF_COLOR_RST}"
-        VERBATIM
-    )
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+        add_custom_command(TARGET info
+            COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_SERIAL_PORT         ${BF_COLOR_CYN}${HYPERVISOR_SERIAL_PORT}${BF_COLOR_RST}"
+            VERBATIM
+        )
+    else()
+        add_custom_command(TARGET info
+            COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_SERIAL_PORTH         ${BF_COLOR_CYN}${HYPERVISOR_SERIAL_PORTH}${BF_COLOR_RST}"
+            VERBATIM
+        )
+        add_custom_command(TARGET info
+            COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_SERIAL_PORTL         ${BF_COLOR_CYN}${HYPERVISOR_SERIAL_PORTL}${BF_COLOR_RST}"
+            VERBATIM
+        )
+    endif()
 
     add_custom_command(TARGET info
         COMMAND ${CMAKE_COMMAND} -E echo "${BF_COLOR_YLW}   HYPERVISOR_DEBUG_RING_SIZE     ${BF_COLOR_CYN}${HYPERVISOR_DEBUG_RING_SIZE}${BF_COLOR_RST}"

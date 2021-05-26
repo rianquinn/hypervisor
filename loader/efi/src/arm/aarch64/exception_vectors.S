@@ -39,24 +39,24 @@ exception_vectors:
     /* current el with sp_el0, irq or virq */
     .align  7
     mov x0, #0x080
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr
 
     /* current el with sp_el0, fiq or vfiq */
     .align  7
     mov x0, #0x100
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr
 
     /* current el with sp_el0, serror or vserror */
     .align  7
     mov x0, #0x180
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr
 
@@ -71,24 +71,24 @@ exception_vectors:
     /* current el with sp_elx, irq or virq */
     .align  7
     mov x0, #0x280
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr
 
     /* current el with sp_elx, fiq or vfiq */
     .align  7
     mov x0, #0x300
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr
 
     /* current el with sp_elx, serror or vserror */
     .align  7
     mov x0, #0x380
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr
 
@@ -103,24 +103,24 @@ exception_vectors:
     /* lower el from aarch64, irq or virq */
     .align  7
     mov x0, #0x480
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr
 
     /* lower el from aarch64, fiq or vfiq */
     .align  7
     mov x0, #0x500
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr
 
     /* lower el from aarch64, serror or vserror */
     .align  7
     mov x0, #0x580
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr
 
@@ -135,23 +135,23 @@ exception_vectors:
     /* lower el from aarch32, irq or virq */
     .align  7
     mov x0, #0x680
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr
 
     /* lower el from aarch32, fiq or vfiq */
     .align  7
     mov x0, #0x700
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr
 
     /* lower el from aarch32, serror or vserror */
     .align  7
     mov x0, #0x780
-    mrs x1, esr_el2
-    mrs x2, far_el2
+    mov x1, xzr
+    mov x2, xzr
     mrs x3, spsr_el2
     b   esr

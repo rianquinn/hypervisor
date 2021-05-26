@@ -27,6 +27,14 @@
 #include <constants.h>
 #include <debug.h>
 #include <platform.h>
+#include <read_daif.h>
+#include <read_hcr_el2.h>
+#include <read_mair_el2.h>
+#include <read_sctlr_el2.h>
+#include <read_spsel.h>
+#include <read_tcr_el2.h>
+#include <read_ttbr0_el2.h>
+#include <read_vbar_el2.h>
 #include <state_save_t.h>
 #include <types.h>
 
@@ -47,6 +55,34 @@
 int64_t
 alloc_and_copy_root_vp_state(struct state_save_t **const state)
 {
-    (void)state;
+    *state = (struct state_save_t *)platform_alloc(HYPERVISOR_PAGE_SIZE);
+    if (((void *)0) == *state) {
+        bferror("platform_alloc failed");
+        return LOADER_FAILURE;
+    }
+
+    /**************************************************************************/
+    /* Saved Program Status Registers (SPSR)                                  */
+    /**************************************************************************/
+
+    (*state)->daif = read_daif();
+    (*state)->spsel = read_spsel();
+
+    /**************************************************************************/
+    /* Exceptions                                                             */
+    /**************************************************************************/
+
+    (*state)->vbar_el2 = read_vbar_el2();
+
+    /**************************************************************************/
+    /* System Registers                                                       */
+    /**************************************************************************/
+
+    (*state)->hcr_el2 = read_hcr_el2();
+    (*state)->mair_el2 = read_mair_el2();
+    (*state)->sctlr_el2 = read_sctlr_el2();
+    (*state)->tcr_el2 = read_tcr_el2();
+    (*state)->ttbr0_el2 = read_ttbr0_el2();
+
     return LOADER_SUCCESS;
 }

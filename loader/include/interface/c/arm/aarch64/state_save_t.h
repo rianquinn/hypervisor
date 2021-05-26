@@ -116,34 +116,35 @@ struct state_save_t
     /* Saved Program Status Registers (SPSR)                                  */
     /**************************************************************************/
 
-    /** @brief stores the value of spsr_el2 (0x108) */
-    uint64_t spsr_el2;
+    /** @brief stores the value of daif (0x108) */
+    uint64_t daif;
+    /** @brief stores the value of spsel (0x110) */
+    uint64_t spsel;
+
+    /** @brief reserved for future use (0x118) */
+    uint64_t reserved0[0xE];
 
     /**************************************************************************/
     /* Exceptions                                                             */
     /**************************************************************************/
 
-    /** @brief stores the value of elr_el2 (0x110) */
-    uint64_t elr_el2;
-
-    /**************************************************************************/
-    /* System Registers                                                             */
-    /**************************************************************************/
-
-    /** @brief stores the value of hcr_el2 (0x118) */
-    uint64_t hcr_el2;
-    /** @brief stores the value of mair_el2 (0x120) */
-    uint64_t mair_el2;
-    /** @brief stores the value of sctlr_el2 (0x128) */
-    uint64_t sctlr_el2;
-    /** @brief stores the value of tcr_el2 (0x130) */
-    uint64_t tcr_el2;
-    /** @brief stores the value of ttbr0_el2 (0x138) */
-    uint64_t ttbr0_el2;
-    /** @brief stores the value of ttbr1_el2 (0x140) */
-    uint64_t ttbr1_el2;
-    /** @brief stores the value of vbar_el2 (0x148) */
+    /** @brief stores the value of vbar_el2 (0x188) */
     uint64_t vbar_el2;
+
+    /**************************************************************************/
+    /* System Registers                                                       */
+    /**************************************************************************/
+
+    /** @brief stores the value of hcr_el2 (0x190) */
+    uint64_t hcr_el2;
+    /** @brief stores the value of mair_el2 (0x198) */
+    uint64_t mair_el2;
+    /** @brief stores the value of sctlr_el2 (0x1A0) */
+    uint64_t sctlr_el2;
+    /** @brief stores the value of tcr_el2 (0x1A8) */
+    uint64_t tcr_el2;
+    /** @brief stores the value of ttbr0_el2 (0x1B0) */
+    uint64_t ttbr0_el2;
 };
 
 #pragma pack(pop)

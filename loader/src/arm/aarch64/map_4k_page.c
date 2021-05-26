@@ -43,6 +43,7 @@
 #include <platform.h>
 #include <root_page_table_t.h>
 #include <types.h>
+#include <flush_cache.h>
 
 /**
  * <!-- description -->
@@ -114,16 +115,23 @@ map_4k_page(uint64_t const virt, uint64_t phys, uint32_t const flags, root_page_
     }
 
     l3te->phys = (phys >> HYPERVISOR_PAGE_SHIFT);
-    l3te->p = ((uint64_t)1);
-    l3te->page = ((uint64_t)1);
+    l3te->p = ((uint64_t)0x1);
+    l3te->page = ((uint64_t)0x1);
+    l3te->af = ((uint64_t)0x1);
 
     if ((flags & bfelf_pf_w) == 0U) {
-        l3te->ap = ((uint64_t)2);
+        l3te->ap = ((uint64_t)0x2);
     }
 
     if ((flags & bfelf_pf_x) == 0U) {
-        l3te->xn = ((uint64_t)1);
+        l3te->xn = ((uint64_t)0x1);
     }
 
+    if ((flags & bfelf_pf_nc) == 0U) {
+        l3te->attr_indx = ((uint64_t)0x3);
+        l3te->sh = ((uint64_t)0x3);
+    }
+
+    flush_cache(l3te);
     return LOADER_SUCCESS;
 }

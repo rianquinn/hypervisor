@@ -48,23 +48,23 @@
 #include <tss_t.h>
 #include <types.h>
 
-/** @brief defines the default value of rflags  */
+/** @brief defines the default value of rflags */
 #define DEFAULT_RFLAGS ((uint64_t)0x40002)
 
-/** @brief defines the default value of CR0  */
+/** @brief defines the default value of CR0 */
 #define DEFAULT_CR0 ((uint64_t)0x80050033)
-/** @brief defines the default value of CR4  */
+/** @brief defines the default value of CR4 */
 #define DEFAULT_CR4 ((uint64_t)0x003000E0)
 
-/** @brief defines the default value of CR0 bits that must be off  */
+/** @brief defines the default value of CR0 bits that must be off */
 #define DEFAULT_CR0_OFF ((uint64_t)0xFFFFFFFFFFFFFFFF)
 /** @brief defines the default value of CR4 bits that must be off */
 // #define DEFAULT_CR4_OFF ((uint64_t)0xFFFFFFFFFF9FFFFF)
 #define DEFAULT_CR4_OFF ((uint64_t)0xFFFFFFFFFFFFFFFF)
 
-/** @brief defines the MSR_IA32_EFER MSR  */
+/** @brief defines the MSR_IA32_EFER MSR */
 #define MSR_IA32_EFER ((uint32_t)0xC0000080)
-/** @brief defines the default value of EFER  */
+/** @brief defines the default value of EFER */
 #define DEFAULT_EFER ((uint64_t)0x00000D01)
 
 /** @brief defines the microkernel's CS selector */

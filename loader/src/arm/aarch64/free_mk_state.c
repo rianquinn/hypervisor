@@ -25,7 +25,6 @@
  */
 
 #include <constants.h>
-#include <disable_hve.h>
 #include <platform.h>
 #include <state_save_t.h>
 #include <types.h>
@@ -41,5 +40,10 @@
 void
 free_mk_state(struct state_save_t **const state)
 {
-    (void)state;
+    if (((void *)0) == *state) {
+        return;
+    }
+
+    platform_free(*state, HYPERVISOR_PAGE_SIZE);
+    *state = ((void *)0);
 }

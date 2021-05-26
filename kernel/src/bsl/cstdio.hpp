@@ -27,6 +27,7 @@
 
 #include <debug_ring_write.hpp>
 #include <serial_write.hpp>
+#include <serial_write_c.hpp>
 
 #include <bsl/char_type.hpp>
 #include <bsl/cstr_type.hpp>
@@ -48,7 +49,7 @@ namespace bsl
         }
 
         mk::debug_ring_write(c);
-        mk::serial_write(c);
+        mk::serial_write_c(c);
     }
 
     /// <!-- description -->

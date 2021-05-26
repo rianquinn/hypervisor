@@ -40,7 +40,5 @@
 void
 free_mk_code_aliases(struct code_aliases_t *const a)
 {
-    platform_free(a->demote, HYPERVISOR_PAGE_SIZE);
-    platform_free(a->promote, HYPERVISOR_PAGE_SIZE);
-    platform_memset(a, 0, sizeof(struct code_aliases_t));
+    (void)a;
 }

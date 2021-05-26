@@ -24,20 +24,8 @@
  * SOFTWARE.
  */
 
-#include <debug.h>
-#include <types.h>
+	.global read_mair_el2
+read_mair_el2:
 
-/**
- * <!-- description -->
- *   @brief Disables Hardware Virtualization Extensions
- */
-void
-disable_hve(void)
-{
-    /**
-     * NOTE:
-     * - Nothing to do here as virtualization support is always provided by
-     *   ARMv8 or higher. We do not use ARM's VHE which is used to added Type 2
-     *   support (something we do not need)
-     */
-}
+    mrs x0, mair_el2
+    ret

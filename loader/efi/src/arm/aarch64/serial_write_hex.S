@@ -24,17 +24,12 @@
  * SOFTWARE.
  */
 
-/**
- * NOTE:
- * - We implemented this function in assembly so that it can be used from
- *   other assembly routines for debugging.
- */
-
 	.global serial_write_hex
 	.align 12
 serial_write_hex:
     stp x29, x30, [sp, #-0x10]!
     stp x19, x20, [sp, #-0x10]!
+    stp x0, x1, [sp, #-0x10]!
 
     mov x19, x0
     mov x20, #0xF
@@ -93,6 +88,7 @@ serial_write_hex:
     and x0, x20, x19
     bl serial_write_hex_digit
 
+    ldp x0, x1, [sp], #0x10
     ldp x19, x20, [sp], #0x10
     ldp x29, x30, [sp], #0x10
     ret

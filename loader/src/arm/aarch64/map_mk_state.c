@@ -24,7 +24,11 @@
  * SOFTWARE.
  */
 
+#include <bfelf_elf64_phdr_t.h>
+#include <constants.h>
 #include <debug.h>
+#include <l3te_t.h>
+#include <map_4k_page.h>
 #include <map_4k_page_rw.h>
 #include <platform.h>
 #include <root_page_table_t.h>
@@ -44,10 +48,21 @@
 int64_t
 map_mk_state(struct state_save_t const *const state, root_page_table_t *const rpt)
 {
-    (void)state;
-    (void)rpt;
+    uint64_t uart0_addr = 0;
+    bfelf_elf64_word const rwnc = bfelf_pf_w | bfelf_pf_r | bfelf_pf_nc;
 
-    // - map UART0
+    if (map_4k_page_rw(state, ((uint64_t)0), rpt)) {
+        bferror("map_4k_page_rw failed");
+        return LOADER_FAILURE;
+    }
+
+    uart0_addr |= ((uint64_t)HYPERVISOR_SERIAL_PORTH) << ((uint64_t)16);
+    uart0_addr |= ((uint64_t)HYPERVISOR_SERIAL_PORTL);
+
+    if (map_4k_page(uart0_addr, ((uint64_t)0), rwnc, rpt)) {
+        bferror("map_4k_page failed");
+        return LOADER_FAILURE;
+    }
 
     return LOADER_SUCCESS;
 }

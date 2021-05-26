@@ -30,6 +30,7 @@
 #include <platform.h>
 #include <root_page_table_t.h>
 #include <types.h>
+#include <flush_cache.h>
 
 /**
  * <!-- description -->
@@ -42,10 +43,16 @@
 int64_t
 alloc_mk_root_page_table(root_page_table_t **const rpt)
 {
+    uint64_t i;
+
     *rpt = (root_page_table_t *)platform_alloc(sizeof(root_page_table_t));
     if (((void *)0) == *rpt) {
         bferror("platform_alloc failed");
         return LOADER_FAILURE;
+    }
+
+    for (i = 0; i < LOADER_NUM_L0T_ENTRIES; ++i) {
+        flush_cache(&rpt[i]);
     }
 
     if (map_4k_page_rw(*rpt, ((uint64_t)0), *rpt)) {

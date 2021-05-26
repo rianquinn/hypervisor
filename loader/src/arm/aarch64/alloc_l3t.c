@@ -31,6 +31,7 @@
 #include <l3t_t.h>
 #include <platform.h>
 #include <types.h>
+#include <flush_cache.h>
 
 /**
  * <!-- description -->
@@ -47,6 +48,7 @@
 struct l3t_t *
 alloc_l3t(struct l2t_t *const l2t, uint64_t const virt)
 {
+    uint64_t i;
     uint64_t phys;
     struct l3t_t *l3t;
     struct l2te_t *l2te;
@@ -63,6 +65,10 @@ alloc_l3t(struct l2t_t *const l2t, uint64_t const virt)
         goto platform_alloc_l3t_failed;
     }
 
+    for (i = 0; i < LOADER_NUM_L3T_ENTRIES; ++i) {
+        flush_cache(&l3t[i]);
+    }
+
     phys = platform_virt_to_phys(l3t);
     if (((uint64_t)0) == phys) {
         bferror("platform_virt_to_phys_l3t failed");
@@ -74,6 +80,7 @@ alloc_l3t(struct l2t_t *const l2t, uint64_t const virt)
     l2te->p = ((uint64_t)1);
     l2te->bt = ((uint64_t)1);
 
+    flush_cache(l2te);
     return l3t;
 
 platform_virt_to_phys_l3t_failed:

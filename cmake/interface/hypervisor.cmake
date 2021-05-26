@@ -21,6 +21,17 @@
 
 add_library(hypervisor INTERFACE)
 
+if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+    target_compile_definitions(hypervisor INTERFACE
+        HYPERVISOR_SERIAL_PORT=${HYPERVISOR_SERIAL_PORT}
+    )
+else()
+    target_compile_definitions(hypervisor INTERFACE
+        HYPERVISOR_SERIAL_PORTH=${HYPERVISOR_SERIAL_PORTH}
+        HYPERVISOR_SERIAL_PORTL=${HYPERVISOR_SERIAL_PORTL}
+    )
+endif()
+
 target_compile_definitions(hypervisor INTERFACE
     HYPERVISOR_PAGE_SIZE=${HYPERVISOR_PAGE_SIZE}
     HYPERVISOR_PAGE_SHIFT=${HYPERVISOR_PAGE_SHIFT}

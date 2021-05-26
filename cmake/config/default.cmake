@@ -176,10 +176,18 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
     )
 else()
     bf_add_config(
-        CONFIG_NAME HYPERVISOR_SERIAL_PORT
+        CONFIG_NAME HYPERVISOR_SERIAL_PORTH
         CONFIG_TYPE STRING
-        DEFAULT_VAL "0xFE201000"
-        DESCRIPTION "Defines the hypervisor's UART0 base address (defaults to RPi4)"
+        DEFAULT_VAL "0xFE20"
+        DESCRIPTION "Defines the upper 16 bits of the hypervisor's UART0 base address (defaults to RPi4)"
+        SKIP_VALIDATION
+    )
+
+    bf_add_config(
+        CONFIG_NAME HYPERVISOR_SERIAL_PORTL
+        CONFIG_TYPE STRING
+        DEFAULT_VAL "0x1000"
+        DESCRIPTION "Defines the lower 16 bits of the hypervisor's UART0 base address (defaults to RPi4)"
         SKIP_VALIDATION
     )
 endif()

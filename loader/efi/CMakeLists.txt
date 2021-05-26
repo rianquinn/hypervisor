@@ -121,7 +121,6 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/alloc_mk_stack.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/check_cpu_configuration.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/demote.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/disable_hve.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/dump_ext_elf_files.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/dump_mk_args.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/dump_mk_code_aliases.h
@@ -137,7 +136,7 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/dump_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/dump_vmm_on_error_if_needed.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/elf_segment_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/enable_hve.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/flush_cache.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/free_ext_elf_files.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/free_mk_args.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/free_mk_code_aliases.h
@@ -189,6 +188,8 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/send_command_report_on.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/send_command_stop.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/serial_init.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/serial_write_c.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/serial_write_hex.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/serial_write.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/start_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/start_vmm_per_cpu.h
@@ -225,6 +226,8 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/alloc_pdt.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/alloc_pt.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/code_aliases_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/x64/disable_hve.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/x64/enable_hve.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/esr_default.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/esr_df.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/esr_gpf.h
@@ -302,8 +305,15 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l3to.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l3t_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_currentel.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_daif.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_hcr_el2.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_mair_el2.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_sctlr_el2.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_spsel.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_tcr_el2.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_ttbr0_el2.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_vbar_el2.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/root_page_table_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/serial_write_c.h
 	)
 endif()
 
@@ -465,10 +475,19 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/demote.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/esr.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/exception_vectors.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/flush_cache.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/memcpy.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/memset.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/promote.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/read_currentel.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/read_daif.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/read_hcr_el2.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/read_mair_el2.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/read_sctlr_el2.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/read_spsel.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/read_tcr_el2.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/read_ttbr0_el2.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/read_vbar_el2.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/serial_write_c.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/serial_write_hex.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_and_copy_mk_code_aliases.c ${HEADERS})
@@ -479,11 +498,9 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
 	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_l3t.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/alloc_mk_root_page_table.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/check_cpu_configuration.c ${HEADERS})
-	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/disable_hve.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/dump_mk_code_aliases.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/dump_mk_state.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/dump_root_vp_state.c ${HEADERS})
-	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/enable_hve.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_l0t.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_l1t.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/arm/aarch64/free_l2t.c ${HEADERS})

@@ -232,6 +232,31 @@ bfdebug_x64(char const *const str, uint64_t const val)
 
 /**
  * <!-- description -->
+ *   @brief Outputs a string and an 64bit hex to the console
+ *
+ * <!-- inputs/outputs -->
+ *   @param str the string to output
+ *   @param idx an index (for an array)
+ *   @param val the 64bit hex value to output
+ */
+static inline void
+bfdebug_x64_idx(char const *const str, uint64_t const idx, uint64_t const val)
+{
+    char idx_num[65] = {0};
+    char val_num[65] = {0};
+    bfitoa(((uint64_t)idx), idx_num, BASE16);
+    bfitoa(((uint64_t)val), val_num, BASE16);
+
+    serial_write(str);
+    serial_write("[0x");
+    serial_write(idx_num);
+    serial_write("]: 0x");
+    serial_write(val_num);
+    serial_write("\n");
+}
+
+/**
+ * <!-- description -->
  *   @brief Outputs a string and an 8bit dec to the console
  *
  * <!-- inputs/outputs -->

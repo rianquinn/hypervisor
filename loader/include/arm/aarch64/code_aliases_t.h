@@ -47,10 +47,7 @@
  */
 struct code_aliases_t
 {
-    /** @brief stores an alias page to the demote code */
-    void *demote;
-    /** @brief stores an alias page to the promote code */
-    void *promote;
+    void *ignored;
 };
 
 #pragma pack(pop)

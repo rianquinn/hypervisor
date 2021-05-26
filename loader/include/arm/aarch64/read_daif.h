@@ -1,3 +1,4 @@
+
 /**
  * @copyright
  * Copyright (C) 2020 Assured Information Security, Inc.
@@ -24,18 +25,18 @@
  * SOFTWARE.
  */
 
-    .text
+#ifndef READ_DAIF_H
+#define READ_DAIF_H
 
-    .globl  serial_in
-    .type   serial_in, @function
-serial_in:
+#include <types.h>
 
-    .size serial_in, .-serial_in
+/**
+ * <!-- description -->
+ *   @brief Returns the value of DAIF
+ *
+ * <!-- inputs/outputs -->
+ *   @return Returns the value of DAIF
+ */
+uint64_t read_daif();
 
-
-
-    .globl  serial_out
-    .type   serial_out, @function
-serial_out:
-
-    .size serial_out, .-serial_out
+#endif

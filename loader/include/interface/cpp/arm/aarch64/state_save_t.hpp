@@ -34,6 +34,9 @@
 
 namespace loader
 {
+    /// @brief the size of reserved #0 in the state_save_t
+    constexpr bsl::safe_uintmax SS_RESERVED0_SIZE{bsl::to_umax(0xE)};
+
     /// @struct loader::state_save_t
     ///
     /// <!-- description -->
@@ -118,34 +121,35 @@ namespace loader
         /// Saved Program Status Registers (SPSR)
         /// --------------------------------------------------------------------
 
-        /// @brief stores the value of spsr_el2 (0x108)
-        bsl::uint64 spsr_el2;
+        /// @brief stores the value of daif (0x108)
+        bsl::uint64 daif;
+        /// @brief stores the value of spsel (0x110)
+        bsl::uint64 spsel;
+
+        /// @brief reserved for future use (0x118)
+        bsl::details::carray<bsl::uint64, SS_RESERVED0_SIZE.get()> reserved0;
 
         /// --------------------------------------------------------------------
         /// Exceptions
         /// --------------------------------------------------------------------
 
-        /// @brief stores the value of elr_el2 (0x110)
-        bsl::uint64 elr_el2;
+        /// @brief stores the value of vbar_el2 (0x188)
+        bsl::uint64 vbar_el2;
 
         /// --------------------------------------------------------------------
         /// System Registers
         /// --------------------------------------------------------------------
 
-        /// @brief stores the value of hcr_el2 (0x118)
+        /// @brief stores the value of hcr_el2 (0x190)
         bsl::uint64 hcr_el2;
-        /// @brief stores the value of mair_el2 (0x120)
+        /// @brief stores the value of mair_el2 (0x198)
         bsl::uint64 mair_el2;
-        /// @brief stores the value of sctlr_el2 (0x128)
+        /// @brief stores the value of sctlr_el2 (0x1A0)
         bsl::uint64 sctlr_el2;
-        /// @brief stores the value of tcr_el2 (0x130)
+        /// @brief stores the value of tcr_el2 (0x1A8)
         bsl::uint64 tcr_el2;
-        /// @brief stores the value of ttbr0_el2 (0x138)
+        /// @brief stores the value of ttbr0_el2 (0x1B0)
         bsl::uint64 ttbr0_el2;
-        /// @brief stores the value of ttbr1_el2 (0x140)
-        bsl::uint64 ttbr1_el2;
-        /// @brief stores the value of vbar_el2 (0x148)
-        bsl::uint64 vbar_el2;
     };
 }
 

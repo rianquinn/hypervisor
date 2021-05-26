@@ -27,10 +27,14 @@
 #include <code_aliases_t.h>
 #include <debug.h>
 #include <demote.h>
+#include <esr.h>
+#include <exception_vectors.h>
 #include <map_4k_page_rx.h>
 #include <platform.h>
 #include <promote.h>
 #include <root_page_table_t.h>
+#include <serial_write_c.h>
+#include <serial_write_hex.h>
 
 /**
  * <!-- description -->
@@ -47,35 +51,32 @@
 int64_t
 map_mk_code_aliases(struct code_aliases_t const *const a, root_page_table_t *const rpt)
 {
-    uint64_t phys;
-
-    /**
-     * NOTE:
-     * - The map functions will automatically get the physical address
-     *   if we pass 0, but in this case, we want the physical address of
-     *   the alias, so we need to get it explicitly, otherwise we would
-     *   end up trying to get the physical address of the code itself,
-     *   which on some platforms is garbage.
-     */
-
-    phys = platform_virt_to_phys(a->demote);
-    if (((uint64_t)0) == phys) {
-        bferror("platform_virt_to_phys failed");
-        return LOADER_FAILURE;
-    }
-
-    if (map_4k_page_rx(demote, phys, rpt)) {
+    if (map_4k_page_rx(demote, ((uint64_t)0), rpt)) {
         bferror("map_4k_page_rx failed");
         return LOADER_FAILURE;
     }
 
-    phys = platform_virt_to_phys(a->promote);
-    if (((uint64_t)0) == phys) {
-        bferror("platform_virt_to_phys failed");
+    if (map_4k_page_rx(promote, ((uint64_t)0), rpt)) {
+        bferror("map_4k_page_rx failed");
         return LOADER_FAILURE;
     }
 
-    if (map_4k_page_rx(promote, phys, rpt)) {
+    if (map_4k_page_rx(esr, ((uint64_t)0), rpt)) {
+        bferror("map_4k_page_rx failed");
+        return LOADER_FAILURE;
+    }
+
+    if (map_4k_page_rx(exception_vectors, ((uint64_t)0), rpt)) {
+        bferror("map_4k_page_rx failed");
+        return LOADER_FAILURE;
+    }
+
+    if (map_4k_page_rx(serial_write_c, ((uint64_t)0), rpt)) {
+        bferror("map_4k_page_rx failed");
+        return LOADER_FAILURE;
+    }
+
+    if (map_4k_page_rx(serial_write_hex, ((uint64_t)0), rpt)) {
         bferror("map_4k_page_rx failed");
         return LOADER_FAILURE;
     }

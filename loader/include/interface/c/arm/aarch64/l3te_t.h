@@ -31,6 +31,9 @@
 
 #pragma pack(push, 1)
 
+/** @brief used to signal that the page should be non-cached */
+#define bfelf_pf_nc ((uint32_t)0x01000000U)
+
 /**
  * @struct l3te_t
  *

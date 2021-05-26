@@ -54,7 +54,7 @@
     mov [r8 + 068h], r14
     mov [r8 + 070h], r15
 
-    lea rax, [demotion_success]
+    lea rax, [demotion_return]
     mov [r8 + 078h], rax
     mov [r8 + 080h], rsp
 
@@ -276,6 +276,10 @@ gdt_and_cs_loaded:
     mov rax, [r14 + 158h]
     mov cr3, rax
 
+    ; **************************************************************************
+    ; Stack
+    ; **************************************************************************
+
     mov rsp, [r14 + 080h]
 
     ; **************************************************************************
@@ -301,7 +305,7 @@ gdt_and_cs_loaded:
     ret
     int 3
 
-demotion_success:
+demotion_return:
 
 
     ; NOTE:

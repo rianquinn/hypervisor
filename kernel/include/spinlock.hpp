@@ -128,7 +128,7 @@ namespace mk
             ///   lock with no means that unlock.
             ///
 
-            if (tls.esr_rip == bsl::ZERO_UMAX) {
+            if (tls.esr_ip == bsl::ZERO_UMAX) {
                 if (tls.ppid == m_std_ppid) {
                     bsl::alert() << "pp "                                       // --
                                  << bsl::hex(tls.ppid)                          // --
@@ -185,7 +185,7 @@ namespace mk
                 }
             }
 
-            if (tls.esr_rip == bsl::ZERO_UMAX) {
+            if (tls.esr_ip == bsl::ZERO_UMAX) {
                 m_std_ppid = tls.ppid;
             }
             else {
@@ -215,7 +215,7 @@ namespace mk
             ///   to release the lock.
             ///
 
-            if (tls.esr_rip == bsl::ZERO_UMAX) {
+            if (tls.esr_ip == bsl::ZERO_UMAX) {
                 m_std_ppid = syscall::BF_INVALID_ID;
             }
             else {

@@ -154,9 +154,9 @@ namespace mk
         /// @brief stores the value of r15 for the ESR (0x120)
         bsl::uintmax esr_r15;
         /// @brief stores the value of rip for the ESR (0x128)
-        bsl::uintmax esr_rip;
+        bsl::uintmax esr_ip;
         /// @brief stores the value of rsp for the ESR (0x130)
-        bsl::uintmax esr_rsp;
+        bsl::uintmax esr_sp;
 
         /// @brief stores the value of the ESR vector (0x138)
         bsl::uintmax esr_vector;

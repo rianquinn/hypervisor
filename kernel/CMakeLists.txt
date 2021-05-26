@@ -82,6 +82,9 @@ list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/include/promote.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/return_to_mk.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/return_to_vmexit_loop.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/serial_write_c.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/serial_write_hex.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/spinlock.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/vmexit_loop_entry.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/debug_ring_write.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/dispatch_esr_page_fault.hpp
@@ -222,8 +225,6 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-    hypervisor_target_source(kernel src/arm/serial_write.S ${HEADERS})
-
     if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
         hypervisor_target_source(kernel src/arm/aarch64/__stack_chk_fail.S ${HEADERS})
         hypervisor_target_source(kernel src/arm/aarch64/call_ext.S ${HEADERS})
@@ -237,6 +238,8 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
         hypervisor_target_source(kernel src/arm/aarch64/return_to_current_fast_fail.S ${HEADERS})
         hypervisor_target_source(kernel src/arm/aarch64/return_to_mk.S ${HEADERS})
         hypervisor_target_source(kernel src/arm/aarch64/return_to_vmexit_loop.S ${HEADERS})
+        hypervisor_target_source(kernel src/arm/aarch64/serial_write_c.S ${HEADERS})
+        hypervisor_target_source(kernel src/arm/aarch64/serial_write_hex.S ${HEADERS})
         hypervisor_target_source(kernel src/arm/aarch64/vmexit_loop_entry.S ${HEADERS})
     endif()
 endif()

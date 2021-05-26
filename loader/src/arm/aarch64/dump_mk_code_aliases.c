@@ -39,7 +39,5 @@
 void
 dump_mk_code_aliases(struct code_aliases_t *const a)
 {
-    bfdebug("mk code aliases:");
-    bfdebug_ptr(" - demote", a->demote);
-    bfdebug_ptr(" - promote", a->promote);
+    (void)a;
 }

@@ -34,7 +34,6 @@
     <ClInclude Include="..\include\alloc_mk_stack.h" />
     <ClInclude Include="..\include\check_cpu_configuration.h" />
     <ClInclude Include="..\include\demote.h" />
-    <ClInclude Include="..\include\disable_hve.h" />
     <ClInclude Include="..\include\dump_ext_elf_files.h" />
     <ClInclude Include="..\include\dump_mk_args.h" />
     <ClInclude Include="..\include\dump_mk_code_aliases.h" />
@@ -50,7 +49,6 @@
     <ClInclude Include="..\include\dump_vmm.h" />
     <ClInclude Include="..\include\dump_vmm_on_error_if_needed.h" />
     <ClInclude Include="..\include\elf_segment_t.h" />
-    <ClInclude Include="..\include\enable_hve.h" />
     <ClInclude Include="..\include\free_ext_elf_files.h" />
     <ClInclude Include="..\include\free_mk_args.h" />
     <ClInclude Include="..\include\free_mk_code_aliases.h" />
@@ -131,6 +129,8 @@
     <ClInclude Include="..\include\x64\alloc_pdt.h" />
     <ClInclude Include="..\include\x64\alloc_pt.h" />
     <ClInclude Include="..\include\x64\code_aliases_t.h" />
+    <ClInclude Include="..\include\x64\disable_hve.h" />
+    <ClInclude Include="..\include\x64\enable_hve.h" />
     <ClInclude Include="..\include\x64\esr_default.h" />
     <ClInclude Include="..\include\x64\esr_df.h" />
     <ClInclude Include="..\include\x64\esr_gpf.h" />

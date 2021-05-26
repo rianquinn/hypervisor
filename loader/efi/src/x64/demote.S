@@ -57,7 +57,7 @@ demote:
     mov [r8 + 0x068], r14
     mov [r8 + 0x070], r15
 
-    lea rax, [rip + demotion_success]
+    lea rax, [rip + demotion_return]
     mov [r8 + 0x078], rax
     mov [r8 + 0x080], rsp
 
@@ -280,6 +280,10 @@ gdt_and_cs_loaded:
     mov rax, [r14 + 0x158]
     mov cr3, rax
 
+    /**************************************************************************/
+    /* Stack                                                                  */
+    /**************************************************************************/
+
     mov rsp, [r14 + 0x080]
 
     /**************************************************************************/
@@ -305,7 +309,7 @@ gdt_and_cs_loaded:
     ret
     int 3
 
-demotion_success:
+demotion_return:
 
     /**
      * NOTE:

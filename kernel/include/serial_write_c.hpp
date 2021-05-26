@@ -22,50 +22,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef SERIAL_WRITE_HPP
-#define SERIAL_WRITE_HPP
-
-#include <bsl/char_type.hpp>
-#include <bsl/convert.hpp>
-#include <bsl/cstr_type.hpp>
-#include <bsl/discard.hpp>
-#include <bsl/is_constant_evaluated.hpp>
-#include <bsl/safe_integral.hpp>
-#include <bsl/touch.hpp>
+#ifndef SERIAL_WRITE_C_HPP
+#define SERIAL_WRITE_C_HPP
 
 namespace mk
 {
     /// <!-- description -->
-    ///   @brief Outputs a character to the serial port.
+    ///   @brief Writes a character "c" to the serial device.
     ///
     /// <!-- inputs/outputs -->
-    ///   @param c the character to output
+    ///   @param c the character to write
     ///
-    constexpr void
-    serial_write(bsl::char_type const c) noexcept
-    {
-        if (bsl::is_constant_evaluated()) {
-            return;
-        }
-
-        bsl::discard(c);
-    }
-
-    /// <!-- description -->
-    ///   @brief Outputs a string to the serial port.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param str the string to output
-    ///
-    constexpr void
-    serial_write(bsl::cstr_type const str) noexcept
-    {
-        if (bsl::is_constant_evaluated()) {
-            return;
-        }
-
-        bsl::discard(str);
-    }
+    extern "C" void serial_write_c(char const c) noexcept;
 }
 
 #endif

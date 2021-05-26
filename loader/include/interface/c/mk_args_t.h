@@ -31,8 +31,8 @@
 #include "mutable_span_t.h"
 #include "span_t.h"
 
-#include <state_save_t.h>
 #include <constants.h>
+#include <state_save_t.h>
 #include <types.h>
 
 #pragma pack(push, 1)

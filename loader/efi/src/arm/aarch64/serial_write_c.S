@@ -27,27 +27,23 @@
 #define ASSEMBLY
 #include <constants.h>
 
-/**
- * NOTE:
- * - We implemented this function in assembly so that it can be used from
- *   other assembly routines for debugging.
- */
-
 	.global serial_write_c
 	.align 12
 serial_write_c:
+    stp x0, x1, [sp, #-0x10]!
 
+wait_for_ffio_empty:
     movz x1, #HYPERVISOR_SERIAL_PORTL
     movk x1, #HYPERVISOR_SERIAL_PORTH, LSL #16
     add  x1, x1, #0x18
     ldr  x1, [x1]
 
     and  x1, x1, #0x20
-    cbnz x1, serial_write_c
+    cbnz x1, wait_for_ffio_empty
 
     movz x1, #HYPERVISOR_SERIAL_PORTL
     movk x1, #HYPERVISOR_SERIAL_PORTH, LSL #16
     str  x0, [x1]
 
+    ldp x0, x1, [sp], #0x10
     ret
-
