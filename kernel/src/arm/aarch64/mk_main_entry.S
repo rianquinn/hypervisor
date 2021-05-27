@@ -98,11 +98,13 @@ mk_main_entry:
      *   which TLS block to grab based on the size of each TLS block.
      */
 
-    ldrh x23, [x20], #ARGS_OFFSET_PPID
+    mvn  x23, xzr
+    add  x21, x20, #ARGS_OFFSET_PPID
+    ldrh w23, [x21]
 
     mov  x21, #TLS_SIZE
     mul  x22, x21, x23
-    adr  x21, g_tls_blocks
+    adrp x21, g_tls_blocks
     add  x22, x21, x22
 
     /**
@@ -163,9 +165,10 @@ mk_main_entry:
      *   up it's internal resources.
      */
 
-    ldrh x22, [x20], #ARGS_OFFSET_ONLINE_PPS
+    add  x21, x20, #ARGS_OFFSET_ONLINE_PPS
+    ldrh w22, [x21]
     add  x21, x18, #TLS_OFFSET_ONLINE_PPS
-    strh x22, [x21]
+    strh w22, [x21]
 
     /**
      * NOTE:
@@ -177,11 +180,13 @@ mk_main_entry:
      *   is really unware of the state that the loader gives it.
      */
 
-    ldr  x22, [x20], #ARGS_OFFSET_MK_STATE
+    add  x21, x20, #ARGS_OFFSET_MK_STATE
+    ldr  x22, [x21]
     add  x21, x18, #TLS_OFFSET_MK_STATE
     str  x22, [x21]
 
-    ldr  x22, [x20], #ARGS_OFFSET_ROOT_VP_STATE
+    add  x21, x20, #ARGS_OFFSET_ROOT_VP_STATE
+    ldr  x22, [x21]
     add  x21, x18, #TLS_OFFSET_ROOT_VP_STATE
     str  x22, [x21]
 
@@ -215,10 +220,11 @@ mk_main_entry:
      *   so that we know where to return to in the event of an error.
      */
 
+    mov  x22, sp
     add  x21, x18, #TLS_OFFSET_MK_MAIN_FAST_FAIL_SP
-    str  sp,  [x21]
+    str  x22, [x21]
     add  x21, x18, #TLS_OFFSET_CURRENT_FAST_FAIL_SP
-    str  sp,  [x21]
+    str  x22, [x21]
 
     add  x21, x18, #TLS_OFFSET_MK_MAIN_FAST_FAIL_IP
     ldr  x22, [x21]
@@ -232,7 +238,7 @@ mk_main_entry:
 
     mov  x0, x20
     mov  x1, x18
-    br   mk_main_trampoline
+    bl   mk_main_trampoline
 
     /**
      * NOTE:
@@ -260,14 +266,15 @@ mk_main_fast_fail_entry:
      *   16 byte aligned, so we just add x1 as a place holder.
      */
 
-    ldp  x20, x1, [sp], #0x10
+    ldp  x0, x1, [sp], #0x10
 
     /**
      * NOTE:
      * - Promote back to the root OS on failure.
      */
 
-    ldr  x0, [x20], #ARGS_OFFSET_ROOT_VP_STATE
+    add  x1, x0, #ARGS_OFFSET_ROOT_VP_STATE
+    ldr  x0, [x1]
     mov  x1, #1
     b    promote
 

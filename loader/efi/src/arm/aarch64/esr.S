@@ -33,13 +33,13 @@ esr:
     mov x21, x2
     mov x22, x3
 
-    mov x0, #0xA
+    mov x0, #'\n'
     bl serial_write_c
 
-    mov x0, #0xA
+    mov x0, #'\n'
     bl serial_write_c
 
-    mov x0, #0xA
+    mov x0, #'\n'
     bl serial_write_c
 
     /**
@@ -47,37 +47,37 @@ esr:
      * - output: "exception:"
      */
 
-    mov x0, #0x65
+    mov x0, #'e'
     bl serial_write_c
 
-    mov x0, #0x78
+    mov x0, #'x'
     bl serial_write_c
 
-    mov x0, #0x63
+    mov x0, #'c'
     bl serial_write_c
 
-    mov x0, #0x65
+    mov x0, #'e'
     bl serial_write_c
 
-    mov x0, #0x70
+    mov x0, #'p'
     bl serial_write_c
 
-    mov x0, #0x74
+    mov x0, #'t'
     bl serial_write_c
 
-    mov x0, #0x69
+    mov x0, #'i'
     bl serial_write_c
 
-    mov x0, #0x6F
+    mov x0, #'o'
     bl serial_write_c
 
-    mov x0, #0x6E
+    mov x0, #'n'
     bl serial_write_c
 
-    mov x0, #0x3A
+    mov x0, #':'
     bl serial_write_c
 
-    mov x0, #0xA
+    mov x0, #'\n'
     bl serial_write_c
 
     /**
@@ -85,34 +85,34 @@ esr:
      * - output: " - vec: <vector #>"
      */
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
-    mov x0, #0x2D
+    mov x0, #'-'
     bl serial_write_c
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
-    mov x0, #0x76
+    mov x0, #'v'
     bl serial_write_c
 
-    mov x0, #0x65
+    mov x0, #'e'
     bl serial_write_c
 
-    mov x0, #0x63
+    mov x0, #'c'
     bl serial_write_c
 
-    mov x0, #0x3A
+    mov x0, #':'
     bl serial_write_c
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
     mov x0, x19
     bl serial_write_hex
 
-    mov x0, #0xA
+    mov x0, #'\n'
     bl serial_write_c
 
     /**
@@ -120,34 +120,34 @@ esr:
      * - output: " - esr: <esr_el2>"
      */
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
-    mov x0, #0x2D
+    mov x0, #'-'
     bl serial_write_c
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
-    mov x0, #0x65
+    mov x0, #'e'
     bl serial_write_c
 
-    mov x0, #0x73
+    mov x0, #'s'
     bl serial_write_c
 
-    mov x0, #0x72
+    mov x0, #'r'
     bl serial_write_c
 
-    mov x0, #0x3A
+    mov x0, #':'
     bl serial_write_c
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
     mov x0, x20
     bl serial_write_hex
 
-    mov x0, #0xA
+    mov x0, #'\n'
     bl serial_write_c
 
     /**
@@ -155,34 +155,34 @@ esr:
      * - output: " - far: <far_el2>"
      */
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
-    mov x0, #0x2D
+    mov x0, #'-'
     bl serial_write_c
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
-    mov x0, #0x66
+    mov x0, #'f'
     bl serial_write_c
 
-    mov x0, #0x61
+    mov x0, #'a'
     bl serial_write_c
 
-    mov x0, #0x72
+    mov x0, #'r'
     bl serial_write_c
 
-    mov x0, #0x3A
+    mov x0, #':'
     bl serial_write_c
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
     mov x0, x21
     bl serial_write_hex
 
-    mov x0, #0xA
+    mov x0, #'\n'
     bl serial_write_c
 
     /**
@@ -190,37 +190,37 @@ esr:
      * - output: " - spsr: <spsr_el2>"
      */
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
-    mov x0, #0x2D
+    mov x0, #'-'
     bl serial_write_c
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
-    mov x0, #0x73
+    mov x0, #'s'
     bl serial_write_c
 
-    mov x0, #0x70
+    mov x0, #'p'
     bl serial_write_c
 
-    mov x0, #0x73
+    mov x0, #'s'
     bl serial_write_c
 
-    mov x0, #0x72
+    mov x0, #'e'
     bl serial_write_c
 
-    mov x0, #0x3A
+    mov x0, #':'
     bl serial_write_c
 
-    mov x0, #0x20
+    mov x0, #' '
     bl serial_write_c
 
     mov x0, x22
     bl serial_write_hex
 
-    mov x0, #0xA
+    mov x0, #'\n'
     bl serial_write_c
 
 loop_forever:

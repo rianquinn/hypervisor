@@ -35,7 +35,7 @@
 extern "C"
 {
     /// @brief stores the TLS blocks used by the microkernel.
-    constinit bsl::array<mk::tls_t, bsl::to_umax(HYPERVISOR_MAX_PPS).get()> g_tls_blocks{};
+    alignas(HYPERVISOR_PAGE_SIZE) constinit bsl::array<mk::tls_t, bsl::to_umax(HYPERVISOR_MAX_PPS).get()> g_tls_blocks{};
 }
 
 namespace mk

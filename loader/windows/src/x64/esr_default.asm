@@ -22,26 +22,62 @@
 ; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
+#define ASSEMBLY
+#include <constants.h>
+
     esr_default_text SEGMENT ALIGN(1000h) 'CODE'
     esr_default PROC
 
-    mov rdx, 03F8h
-    mov rax, 45h
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'e'
     out dx, al
 
-    mov rdx, 03F8h
-    mov rax, 53h
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 's'
     out dx, al
 
-    mov rdx, 03F8h
-    mov rax, 52h
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'r'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, '_'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'd'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'e'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'f'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'a'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'u'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'l'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 't'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, '\n'
     out dx, al
 
     cli
     hlt
-
-    ret
-    int 3
 
     esr_default ENDP
     esr_default_text ENDS

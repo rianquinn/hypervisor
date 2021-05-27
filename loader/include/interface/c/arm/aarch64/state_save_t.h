@@ -145,6 +145,20 @@ struct state_save_t
     uint64_t tcr_el2;
     /** @brief stores the value of ttbr0_el2 (0x1B0) */
     uint64_t ttbr0_el2;
+    /** @brief stores the value of tpidr_el2 (0x1B8) */
+    uint64_t tpidr_el2;
+
+    /** @brief reserved for future use (0x1C0) */
+    uint64_t reserved1[0xA];
+
+    /**************************************************************************/
+    /* Handlers                                                               */
+    /**************************************************************************/
+
+    /** @brief stores the promote handler (0x210) */
+    void *promote_handler;
+    /** @brief stores the exception vectors (0x218) */
+    void *exception_vectors;
 };
 
 #pragma pack(pop)

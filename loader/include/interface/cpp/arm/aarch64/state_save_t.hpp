@@ -36,6 +36,8 @@ namespace loader
 {
     /// @brief the size of reserved #0 in the state_save_t
     constexpr bsl::safe_uintmax SS_RESERVED0_SIZE{bsl::to_umax(0xE)};
+    /// @brief the size of reserved #1 in the state_save_t
+    constexpr bsl::safe_uintmax SS_RESERVED1_SIZE{bsl::to_umax(0xA)};
 
     /// @struct loader::state_save_t
     ///
@@ -150,6 +152,20 @@ namespace loader
         bsl::uint64 tcr_el2;
         /// @brief stores the value of ttbr0_el2 (0x1B0)
         bsl::uint64 ttbr0_el2;
+        /// @brief stores the value of tpidr_el2 (0x1B8)
+        bsl::uint64 tpidr_el2;
+
+        /// @brief reserved for future use (0x1C0)
+        bsl::details::carray<bsl::uint64, SS_RESERVED1_SIZE.get()> reserved1;
+
+        /// --------------------------------------------------------------------
+        /// Handlers
+        /// --------------------------------------------------------------------
+
+        /// @brief stores the promote handler (0x210)
+        void *promote_handler;
+        /// @brief stores the exception vectors (0x218)
+        void *exception_vectors;
     };
 }
 

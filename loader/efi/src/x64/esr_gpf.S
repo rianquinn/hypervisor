@@ -24,6 +24,9 @@
  * SOFTWARE.
  */
 
+#define ASSEMBLY
+#include <constants.h>
+
     .code64
     .intel_syntax noprefix
 
@@ -31,36 +34,37 @@
     .align  0x1000
 esr_gpf:
 
-    mov rdx, 0x03F8
-    mov rax, 0x45
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'e'
     out dx, al
 
-    mov rdx, 0x03F8
-    mov rax, 0x53
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 's'
     out dx, al
 
-    mov rdx, 0x03F8
-    mov rax, 0x52
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'r'
     out dx, al
 
-    mov rdx, 0x03F8
-    mov rax, 0x20
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, '_'
     out dx, al
 
-    mov rdx, 0x03F8
-    mov rax, 0x47
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'g'
     out dx, al
 
-    mov rdx, 0x03F8
-    mov rax, 0x50
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'p'
     out dx, al
 
-    mov rdx, 0x03F8
-    mov rax, 0x46
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'f'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, '\n'
     out dx, al
 
     cli
     hlt
-
-    ret
-    int 3

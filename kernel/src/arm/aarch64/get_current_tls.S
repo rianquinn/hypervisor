@@ -30,4 +30,7 @@
     .type   get_current_tls, @function
 get_current_tls:
 
+    mrs  x0, tpidr_el2
+    ret
+
     .size get_current_tls, .-get_current_tls

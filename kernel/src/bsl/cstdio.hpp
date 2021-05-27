@@ -28,6 +28,7 @@
 #include <debug_ring_write.hpp>
 #include <serial_write.hpp>
 #include <serial_write_c.hpp>
+#include <serial_write_hex.hpp>
 
 #include <bsl/char_type.hpp>
 #include <bsl/cstr_type.hpp>

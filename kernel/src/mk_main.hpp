@@ -439,6 +439,17 @@ namespace mk
                 return bsl::errc_failure;
             }
 
+            if constexpr (HYPERVISOR_AARCH64) {
+                bsl::print() << bsl::rst << "Hello from ARMv8 on a Raspberry Pi 4!!!\n";
+                bsl::print() << bsl::endl;
+
+                bsl::error() << "aarch64 support not complete"    // --
+                             << bsl::endl                                // --
+                             << bsl::here();                             // --
+
+                return bsl::errc_failure;
+            }
+
             ret = m_system_rpt.initialize(tls, &m_intrinsic, &m_page_pool, &m_huge_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -677,86 +688,6 @@ namespace mk
 
             reset_root_vmid_on_error.ignore();
             return bsl::exit_success;
-
-            /// Need to finish porting the VP and VPS and possibly any other
-            /// object that supports release().
-            /// Need to reimplement the run function. No idea what that is
-            /// going to look like, so good luck.
-            /// Need to finish the migration stuff so that it makes sense.
-
-            // [ ] implement serial_write_c for Intel/AMD and remove hardcoded
-            //     serial port values. Search for all 0x3F8 so that we are
-            //     only use what comes from constants.h
-            // [ ] what happens if a failure handler throws an exception?
-            // [ ] need fast fail integration tests
-            // [ ] fast fail is not working right. Once the handler is
-            //     installed by the extension, any error should call this
-            //     and then we return based on what the extension tells us
-            //     to do. Right now, it is never called.
-            // [ ] add a pointer to the TLS block to the top of the stack
-            //     so that you can use the stack to get to the TLS block in
-            //     addition to GS. This way, the SX handler has a way to
-            //     change TLS data without needing GS, which is a problem.
-            //     Will also need a way to get to the size of the stack from
-            //     constants.h inside of assembly logic.
-            // [ ] Most of the syscalls need to verify that the ext has started that it registered for VMExits.
-            // [ ] VP and VPS calls should only occur on the PP the VP/VPS was assigned to?
-            //     what about the migration case? You need to update a VPS. The VP has
-            //     been migrated, but the VPS has not. Why do we care?
-            // [x] What happens if you try to delete a VM that has VPs assigned to it?
-            // [ ] What happens if you try to delete a VP that has VPSs assigned to it?
-            // [ ] Provide syscall handlers with real error codes?
-            // [ ] lock protect the initialize main function in case initialization happens in parallel. mimic call_once init?
-            // [ ] What do I do if an exception fires for each syscall.
-            //     - Will I end up in deadlock?
-            //     = What about the state. Is it corrupt?
-            // [ ] What do I do if an exception fires for non-syscalls
-            //     - Will I end up in deadlock?
-            //     = What about the state. Is it corrupt?
-            // [ ] detect if the microkernel attempt to map in physical memory and generates a page fault.
-            //     only userspace should be allowed to map to the direct map
-            // [ ] The intrinsic run function should be a function in the class and not a global?
-            // [ ] Simplify the Intel VPS destriptor stuff by using a template?
-            // [ ] Grep for bsl::errc_failure and use other error codes where
-            //     it makes sense
-            // [ ] Remove pool and intrinsic points from remaining classes
-            // [ ] Finish migration stuff
-            // [ ] The syscalls should not be doing all of the checks. This
-            //     should be done by the APIs themselves for safety.
-            // [ ] We need assigned ABIs
-            // [ ] We need an umap routines. One routine should unmap a
-            //     single address, and another should unmap over an array
-            //     that is provided by the extension so that any attempt
-            //     to do a TLB flush only occurs after everything is complete.
-            // [ ] We need a memset ABI so that extensions do not have
-            //     to map in large amounts of memory to set it if needed.
-            // [ ] We need a memcpy ABI so that extensions do not have
-            //     to map in large amounts of memory to copy it if needed.
-            // [ ] Resource cleanup.
-            //     - cannot destroy VM until all VPs are destroyed
-            //     - cannot destroy VP until all VPSs are destroyed
-            //     - cannot load a VPS that is already loaded on another PP
-            // [ ] If you destroy a VPS, it should be cleared before it is
-            //     destroyed.
-            // [ ] make sure the VPS has a migrate function, and make sure
-            //     we check that the PP has the same revision ID. Make a
-            //     note about the revision issue for AMD.
-            // [ ] What about optimizations for read/write MSRs so that the
-            //     APIC is fast for an extension.
-            // [ ] Make sure all function inputs are checked.
-            // [ ] Make sure all rule of 5 crap is moved to the top or removed
-            // [ ] What about assignment and active ABIs
-            // [ ] Validate upper limit of VM, VP and VPS in config and test with 1 and max
-            // [ ] What about IO operations. Need to make sure that an extension can execute port IO
-            // [ ] What about an IPI ABI
-            // [ ] What about a WBINVLD ABI
-            // [ ] implement migration APIs
-            // [ ] implement checks for which MSRs can be read/written
-            // [ ] implement checks for VMCS fields can be read/written
-            // [ ] implement contants for all of the asm logic
-            // [ ] implement version of likely/unlikely that always returns true/false in release/minsizerel mode
-            //     Anything that is not part of the userspace ABI path should have
-            //     these checks removed in release/minsizerel mode
         }
     };
 }

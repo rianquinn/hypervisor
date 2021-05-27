@@ -26,6 +26,8 @@
  * SOFTWARE.
  */
 
+#define ASSEMBLY
+#include <constants.h>
 #include <asm/unwind_hints.h>
 
     .code64
@@ -36,22 +38,55 @@
 esr_default:
     UNWIND_HINT_EMPTY
 
-    mov rdx, 0x03F8
-    mov rax, 0x45
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'e'
     out dx, al
 
-    mov rdx, 0x03F8
-    mov rax, 0x53
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 's'
     out dx, al
 
-    mov rdx, 0x03F8
-    mov rax, 0x52
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'r'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, '_'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'd'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'e'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'f'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'a'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'u'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 'l'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, 't'
+    out dx, al
+
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, '\n'
     out dx, al
 
     cli
     hlt
-
-    ret
-    int 3
 
     .size esr_default, 0x1000

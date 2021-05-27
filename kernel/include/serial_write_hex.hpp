@@ -35,7 +35,7 @@ namespace mk
     /// <!-- inputs/outputs -->
     ///   @param val the hexidecimal number to write
     ///
-    extern "C" void serial_write_c(bsl::uint64 const val) noexcept;
+    extern "C" void serial_write_hex(bsl::uint64 const val) noexcept;
 }
 
 #endif

@@ -37,6 +37,8 @@
 #include <read_vbar_el2.h>
 #include <state_save_t.h>
 #include <types.h>
+#include <promote.h>
+#include <exception_vectors.h>
 
 /**
  * <!-- description -->
@@ -83,6 +85,13 @@ alloc_and_copy_root_vp_state(struct state_save_t **const state)
     (*state)->sctlr_el2 = read_sctlr_el2();
     (*state)->tcr_el2 = read_tcr_el2();
     (*state)->ttbr0_el2 = read_ttbr0_el2();
+
+    /**************************************************************************/
+    /* Handlers                                                               */
+    /**************************************************************************/
+
+    (*state)->promote_handler = &promote;
+    (*state)->exception_vectors = &exception_vectors;
 
     return LOADER_SUCCESS;
 }

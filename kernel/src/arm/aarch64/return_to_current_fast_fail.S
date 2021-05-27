@@ -24,10 +24,29 @@
  * SOFTWARE.
  */
 
+    /** @brief defines the offset of tls_t.current_fast_fail_ip */
+    #define TLS_OFFSET_CURRENT_FAST_FAIL_IP 0x290
+    /** @brief defines the offset of tls_t.current_fast_fail_sp */
+    #define TLS_OFFSET_CURRENT_FAST_FAIL_SP 0x298
+
     .text
 
     .globl  return_to_current_fast_fail
     .type   return_to_current_fast_fail, @function
 return_to_current_fast_fail:
+
+    mrs  x18, tpidr_el2
+
+    add  x11, x18, #TLS_OFFSET_CURRENT_FAST_FAIL_SP
+    ldr  x10, [x11]
+
+    cbz  x10, use_current_stack
+    mov  sp, x10
+use_current_stack:
+
+    add  x11, x18, #TLS_OFFSET_CURRENT_FAST_FAIL_IP
+    ldr  x10, [x11]
+
+    ret  x10
 
     .size return_to_current_fast_fail, .-return_to_current_fast_fail

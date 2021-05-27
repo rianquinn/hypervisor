@@ -200,8 +200,6 @@ start_vmm_per_cpu(uint32_t const cpu)
     dump_mk_args(g_mk_args[cpu], cpu);
 #endif
 
-    bferror("about to demote:");
-
     if (demote(g_mk_args[cpu], g_mk_state[cpu], g_root_vp_state[cpu])) {
         platform_dump_vmm();
         bferror("demote failed1");

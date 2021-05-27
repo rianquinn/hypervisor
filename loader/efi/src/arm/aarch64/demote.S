@@ -26,42 +26,6 @@
 
     /** @brief defines the offset of state_save_t.x0 */
     #define SS_OFFSET_X0 0x000
-    /** @brief defines the offset of state_save_t.x1 */
-    #define SS_OFFSET_X1 0x008
-    /** @brief defines the offset of state_save_t.x2 */
-    #define SS_OFFSET_X2 0x010
-    /** @brief defines the offset of state_save_t.x3 */
-    #define SS_OFFSET_X3 0x018
-    /** @brief defines the offset of state_save_t.x4 */
-    #define SS_OFFSET_X4 0x020
-    /** @brief defines the offset of state_save_t.x5 */
-    #define SS_OFFSET_X5 0x028
-    /** @brief defines the offset of state_save_t.x6 */
-    #define SS_OFFSET_X6 0x030
-    /** @brief defines the offset of state_save_t.x7 */
-    #define SS_OFFSET_X7 0x038
-    /** @brief defines the offset of state_save_t.x8 */
-    #define SS_OFFSET_X8 0x040
-    /** @brief defines the offset of state_save_t.x9 */
-    #define SS_OFFSET_X9 0x048
-    /** @brief defines the offset of state_save_t.x10 */
-    #define SS_OFFSET_X10 0x050
-    /** @brief defines the offset of state_save_t.x11 */
-    #define SS_OFFSET_X11 0x058
-    /** @brief defines the offset of state_save_t.x12 */
-    #define SS_OFFSET_X12 0x060
-    /** @brief defines the offset of state_save_t.x13 */
-    #define SS_OFFSET_X13 0x068
-    /** @brief defines the offset of state_save_t.x14 */
-    #define SS_OFFSET_X14 0x070
-    /** @brief defines the offset of state_save_t.x15 */
-    #define SS_OFFSET_X15 0x078
-    /** @brief defines the offset of state_save_t.x16 */
-    #define SS_OFFSET_X16 0x080
-    /** @brief defines the offset of state_save_t.x17 */
-    #define SS_OFFSET_X17 0x088
-    /** @brief defines the offset of state_save_t.x18 */
-    #define SS_OFFSET_X18 0x090
     /** @brief defines the offset of state_save_t.x19 */
     #define SS_OFFSET_X19 0x098
     /** @brief defines the offset of state_save_t.x20 */
@@ -109,6 +73,8 @@
     #define SS_OFFSET_TCR_EL2 0x1A8
     /** @brief defines the offset of state_save_t.ttbr0_el2 */
     #define SS_OFFSET_TTBR0_EL2 0x1B0
+    /** @brief defines the offset of state_save_t.tpidr_el2 */
+    #define SS_OFFSET_TPIDR_EL2 0x1B8
 
     /**************************************************************************/
     /* demote                                                                 */
@@ -183,6 +149,17 @@ demote:
     mov  x22, x2       /* root_vp_state */
 
     /**************************************************************************/
+    /* Disable Interrupts                                                     */
+    /**************************************************************************/
+
+    mrs  x10, hcr_el2
+    add  x12, x22, #SS_OFFSET_HCR_EL2
+    str  x10, [x12]
+    add  x11, x21, #SS_OFFSET_HCR_EL2
+    ldr  x10, [x11]
+    msr  hcr_el2, x10
+
+    /**************************************************************************/
     /* Saved Program Status Registers (SPSR)                                  */
     /**************************************************************************/
 
@@ -222,13 +199,6 @@ demote:
     /* System Registers                                                       */
     /**************************************************************************/
 
-    mrs  x10, hcr_el2
-    add  x12, x22, #SS_OFFSET_HCR_EL2
-    str  x10, [x12]
-    add  x11, x21, #SS_OFFSET_HCR_EL2
-    ldr  x10, [x11]
-    msr  hcr_el2, x10
-
     mrs  x10, mair_el2
     add  x12, x22, #SS_OFFSET_MAIR_EL2
     str  x10, [x12]
@@ -260,6 +230,13 @@ demote:
     tlbi alle2
     isb  sy
     dsb  sy
+
+    mrs  x10, tpidr_el2
+    add  x12, x22, #SS_OFFSET_TPIDR_EL2
+    str  x10, [x12]
+    add  x11, x21, #SS_OFFSET_TPIDR_EL2
+    ldr  x10, [x11]
+    msr  tpidr_el2, x10
 
     /**************************************************************************/
     /* Stack                                                                  */
