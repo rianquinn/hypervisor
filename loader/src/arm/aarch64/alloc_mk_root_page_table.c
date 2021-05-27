@@ -52,7 +52,7 @@ alloc_mk_root_page_table(root_page_table_t **const rpt)
     }
 
     for (i = 0; i < LOADER_NUM_L0T_ENTRIES; ++i) {
-        flush_cache(&rpt[i]);
+        flush_cache(&((*rpt)->entires[i]));
     }
 
     if (map_4k_page_rw(*rpt, ((uint64_t)0), *rpt)) {

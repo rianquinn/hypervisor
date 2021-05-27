@@ -24,8 +24,6 @@
  * SOFTWARE.
  */
 
-#define DEBUG_LOADER
-
 #include <alloc_and_copy_ext_elf_files_from_user.h>
 #include <alloc_and_copy_mk_elf_file_from_user.h>
 #include <alloc_and_copy_mk_elf_segments.h>

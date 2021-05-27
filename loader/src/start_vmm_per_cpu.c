@@ -24,8 +24,6 @@
  * SOFTWARE.
  */
 
-#define DEBUG_LOADER
-
 #include <alloc_and_copy_mk_state.h>
 #include <alloc_and_copy_root_vp_state.h>
 #include <alloc_mk_args.h>

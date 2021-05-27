@@ -66,7 +66,7 @@ alloc_pdt(struct pdpt_t *const pdpt, uint64_t const virt)
     }
 
     for (i = 0; i < LOADER_NUM_PDT_ENTRIES; ++i) {
-        flush_cache(&pdt[i]);
+        flush_cache(&(pdt->entires[i]));
     }
 
     phys = platform_virt_to_phys(pdt);

@@ -24,6 +24,9 @@
  * SOFTWARE.
  */
 
+    .code64
+    .intel_syntax noprefix
+
 	.global flush_cache
 flush_cache:
 

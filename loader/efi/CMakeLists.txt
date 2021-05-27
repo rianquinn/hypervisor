@@ -391,6 +391,7 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 	hypervisor_target_source(bareflank_efi_loader src/x64/esr_gpf.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/x64/esr_nmi.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/x64/esr_pf.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/x64/flush_cache.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/x64/intrinsic_cpuid.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/x64/intrinsic_inb.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/x64/intrinsic_lcr0.S ${HEADERS})

@@ -66,7 +66,7 @@ alloc_pdpt(struct pml4t_t *const pml4t, uint64_t const virt)
     }
 
     for (i = 0; i < LOADER_NUM_PDPT_ENTRIES; ++i) {
-        flush_cache(&pdpt[i]);
+        flush_cache(&(pdpt->entires[i]));
     }
 
     phys = platform_virt_to_phys(pdpt);

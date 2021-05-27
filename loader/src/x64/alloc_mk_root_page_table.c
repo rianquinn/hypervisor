@@ -40,6 +40,7 @@
  *   @param rpt where to return the resulting root page table
  *   @return 0 on success, LOADER_FAILURE on failure.
  */
+int64_t
 alloc_mk_root_page_table(root_page_table_t **const rpt)
 {
     uint64_t i;
@@ -51,7 +52,7 @@ alloc_mk_root_page_table(root_page_table_t **const rpt)
     }
 
     for (i = 0; i < LOADER_NUM_PML4T_ENTRIES; ++i) {
-        flush_cache(&rpt[i]);
+        flush_cache(&((*rpt)->entires[i]));
     }
 
     if (map_4k_page_rw(*rpt, ((uint64_t)0), *rpt)) {
