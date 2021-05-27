@@ -291,8 +291,8 @@ namespace mk
         bsl::uint16 ppid;
         /// @brief stores the total number of online PPs (0x30A)
         bsl::uint16 online_pps;
-        /// @brief stores the VPSID whose VMCS is loaded on Intel (0x30C)
-        bsl::uint16 loaded_vpsid;
+        /// @brief reserved (0x30C)
+        bsl::uint16 reserved_padding0;
         /// @brief reserved (0x30E)
         bsl::uint16 reserved_padding1;
 

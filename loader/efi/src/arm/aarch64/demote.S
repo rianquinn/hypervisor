@@ -25,90 +25,90 @@
  */
 
     /** @brief defines the offset of state_save_t.x0 */
-    #define SS_X0_OFFSET 0x000
+    #define SS_OFFSET_X0 0x000
     /** @brief defines the offset of state_save_t.x1 */
-    #define SS_X1_OFFSET 0x008
+    #define SS_OFFSET_X1 0x008
     /** @brief defines the offset of state_save_t.x2 */
-    #define SS_X2_OFFSET 0x010
+    #define SS_OFFSET_X2 0x010
     /** @brief defines the offset of state_save_t.x3 */
-    #define SS_X3_OFFSET 0x018
+    #define SS_OFFSET_X3 0x018
     /** @brief defines the offset of state_save_t.x4 */
-    #define SS_X4_OFFSET 0x020
+    #define SS_OFFSET_X4 0x020
     /** @brief defines the offset of state_save_t.x5 */
-    #define SS_X5_OFFSET 0x028
+    #define SS_OFFSET_X5 0x028
     /** @brief defines the offset of state_save_t.x6 */
-    #define SS_X6_OFFSET 0x030
+    #define SS_OFFSET_X6 0x030
     /** @brief defines the offset of state_save_t.x7 */
-    #define SS_X7_OFFSET 0x038
+    #define SS_OFFSET_X7 0x038
     /** @brief defines the offset of state_save_t.x8 */
-    #define SS_X8_OFFSET 0x040
+    #define SS_OFFSET_X8 0x040
     /** @brief defines the offset of state_save_t.x9 */
-    #define SS_X9_OFFSET 0x048
+    #define SS_OFFSET_X9 0x048
     /** @brief defines the offset of state_save_t.x10 */
-    #define SS_X10_OFFSET 0x050
+    #define SS_OFFSET_X10 0x050
     /** @brief defines the offset of state_save_t.x11 */
-    #define SS_X11_OFFSET 0x058
+    #define SS_OFFSET_X11 0x058
     /** @brief defines the offset of state_save_t.x12 */
-    #define SS_X12_OFFSET 0x060
+    #define SS_OFFSET_X12 0x060
     /** @brief defines the offset of state_save_t.x13 */
-    #define SS_X13_OFFSET 0x068
+    #define SS_OFFSET_X13 0x068
     /** @brief defines the offset of state_save_t.x14 */
-    #define SS_X14_OFFSET 0x070
+    #define SS_OFFSET_X14 0x070
     /** @brief defines the offset of state_save_t.x15 */
-    #define SS_X15_OFFSET 0x078
+    #define SS_OFFSET_X15 0x078
     /** @brief defines the offset of state_save_t.x16 */
-    #define SS_X16_OFFSET 0x080
+    #define SS_OFFSET_X16 0x080
     /** @brief defines the offset of state_save_t.x17 */
-    #define SS_X17_OFFSET 0x088
+    #define SS_OFFSET_X17 0x088
     /** @brief defines the offset of state_save_t.x18 */
-    #define SS_X18_OFFSET 0x090
+    #define SS_OFFSET_X18 0x090
     /** @brief defines the offset of state_save_t.x19 */
-    #define SS_X19_OFFSET 0x098
+    #define SS_OFFSET_X19 0x098
     /** @brief defines the offset of state_save_t.x20 */
-    #define SS_X20_OFFSET 0x0A0
+    #define SS_OFFSET_X20 0x0A0
     /** @brief defines the offset of state_save_t.x21 */
-    #define SS_X21_OFFSET 0x0A8
+    #define SS_OFFSET_X21 0x0A8
     /** @brief defines the offset of state_save_t.x22 */
-    #define SS_X22_OFFSET 0x0B0
+    #define SS_OFFSET_X22 0x0B0
     /** @brief defines the offset of state_save_t.x23 */
-    #define SS_X23_OFFSET 0x0B8
+    #define SS_OFFSET_X23 0x0B8
     /** @brief defines the offset of state_save_t.x24 */
-    #define SS_X24_OFFSET 0x0C0
+    #define SS_OFFSET_X24 0x0C0
     /** @brief defines the offset of state_save_t.x25 */
-    #define SS_X25_OFFSET 0x0C8
+    #define SS_OFFSET_X25 0x0C8
     /** @brief defines the offset of state_save_t.x26 */
-    #define SS_X26_OFFSET 0x0D0
+    #define SS_OFFSET_X26 0x0D0
     /** @brief defines the offset of state_save_t.x27 */
-    #define SS_X27_OFFSET 0x0D8
+    #define SS_OFFSET_X27 0x0D8
     /** @brief defines the offset of state_save_t.x28 */
-    #define SS_X28_OFFSET 0x0E0
+    #define SS_OFFSET_X28 0x0E0
     /** @brief defines the offset of state_save_t.x29 */
-    #define SS_X29_OFFSET 0x0E8
+    #define SS_OFFSET_X29 0x0E8
     /** @brief defines the offset of state_save_t.x30 */
-    #define SS_X30_OFFSET 0x0F0
+    #define SS_OFFSET_X30 0x0F0
     /** @brief defines the offset of state_save_t.sp_el2 */
-    #define SS_SP_EL2_OFFSET 0x0F8
+    #define SS_OFFSET_SP_EL2 0x0F8
     /** @brief defines the offset of state_save_t.pc_el2 */
-    #define SS_PC_EL2_OFFSET 0x100
+    #define SS_OFFSET_PC_EL2 0x100
 
     /** @brief defines the offset of state_save_t.daif */
-    #define SS_DAIF_OFFSET 0x108
+    #define SS_OFFSET_DAIF 0x108
     /** @brief defines the offset of state_save_t.spsel */
-    #define SS_SPSEL_OFFSET 0x110
+    #define SS_OFFSET_SPSEL 0x110
 
     /** @brief defines the offset of state_save_t.vbar_el2 */
-    #define SS_VBAR_EL2_OFFSET 0x188
+    #define SS_OFFSET_VBAR_EL2 0x188
 
     /** @brief defines the offset of state_save_t.hcr_el2 */
-    #define SS_HCR_EL2_OFFSET 0x190
+    #define SS_OFFSET_HCR_EL2 0x190
     /** @brief defines the offset of state_save_t.mair_el2 */
-    #define SS_MAIR_EL2_OFFSET 0x198
+    #define SS_OFFSET_MAIR_EL2 0x198
     /** @brief defines the offset of state_save_t.sctlr_el2 */
-    #define SS_SCTLR_EL2_OFFSET 0x1A0
+    #define SS_OFFSET_SCTLR_EL2 0x1A0
     /** @brief defines the offset of state_save_t.tcr_el2 */
-    #define SS_TCR_EL2_OFFSET 0x1A8
+    #define SS_OFFSET_TCR_EL2 0x1A8
     /** @brief defines the offset of state_save_t.ttbr0_el2 */
-    #define SS_TTBR0_EL2_OFFSET 0x1B0
+    #define SS_OFFSET_TTBR0_EL2 0x1B0
 
     /**************************************************************************/
     /* demote                                                                 */
@@ -134,44 +134,44 @@ demote:
     /* Report Success On Completion                                           */
     /**************************************************************************/
 
-    add  x11, x2, #SS_X0_OFFSET
+    add  x11, x2, #SS_OFFSET_X0
     str  xzr, [x11]
 
     /**************************************************************************/
     /* General Purpose Registers (non-volatile)                               */
     /**************************************************************************/
 
-    add  x12, x2, #SS_X19_OFFSET
+    add  x12, x2, #SS_OFFSET_X19
     str  x19, [x12]
-    add  x12, x2, #SS_X20_OFFSET
+    add  x12, x2, #SS_OFFSET_X20
     str  x20, [x12]
-    add  x12, x2, #SS_X21_OFFSET
+    add  x12, x2, #SS_OFFSET_X21
     str  x21, [x12]
-    add  x12, x2, #SS_X22_OFFSET
+    add  x12, x2, #SS_OFFSET_X22
     str  x22, [x12]
-    add  x12, x2, #SS_X23_OFFSET
+    add  x12, x2, #SS_OFFSET_X23
     str  x23, [x12]
-    add  x12, x2, #SS_X24_OFFSET
+    add  x12, x2, #SS_OFFSET_X24
     str  x24, [x12]
-    add  x12, x2, #SS_X25_OFFSET
+    add  x12, x2, #SS_OFFSET_X25
     str  x25, [x12]
-    add  x12, x2, #SS_X26_OFFSET
+    add  x12, x2, #SS_OFFSET_X26
     str  x26, [x12]
-    add  x12, x2, #SS_X27_OFFSET
+    add  x12, x2, #SS_OFFSET_X27
     str  x27, [x12]
-    add  x12, x2, #SS_X28_OFFSET
+    add  x12, x2, #SS_OFFSET_X28
     str  x28, [x12]
-    add  x12, x2, #SS_X29_OFFSET
+    add  x12, x2, #SS_OFFSET_X29
     str  x29, [x12]
-    add  x12, x2, #SS_X30_OFFSET
+    add  x12, x2, #SS_OFFSET_X30
     str  x30, [x12]
 
     mov  x10, sp
-    add  x12, x2, #SS_SP_EL2_OFFSET
+    add  x12, x2, #SS_OFFSET_SP_EL2
     str  x10, [x12]
 
     adr  x10, demotion_return
-    add  x12, x2, #SS_PC_EL2_OFFSET
+    add  x12, x2, #SS_OFFSET_PC_EL2
     str  x10, [x12]
 
     /**************************************************************************/
@@ -194,16 +194,16 @@ demote:
      */
 
     mrs  x10, daif
-    add  x12, x22, #SS_DAIF_OFFSET
+    add  x12, x22, #SS_OFFSET_DAIF
     str  x10, [x12]
-    add  x11, x21, #SS_DAIF_OFFSET
+    add  x11, x21, #SS_OFFSET_DAIF
     ldr  x10, [x11]
     msr  daif, x10
 
     mrs  x10, spsel
-    add  x12, x22, #SS_SPSEL_OFFSET
+    add  x12, x22, #SS_OFFSET_SPSEL
     str  x10, [x12]
-    add  x11, x21, #SS_SPSEL_OFFSET
+    add  x11, x21, #SS_OFFSET_SPSEL
     ldr  x10, [x11]
     msr  spsel, x10
 
@@ -212,9 +212,9 @@ demote:
     /**************************************************************************/
 
     mrs  x10, vbar_el2
-    add  x12, x22, #SS_VBAR_EL2_OFFSET
+    add  x12, x22, #SS_OFFSET_VBAR_EL2
     str  x10, [x12]
-    add  x11, x21, #SS_VBAR_EL2_OFFSET
+    add  x11, x21, #SS_OFFSET_VBAR_EL2
     ldr  x10, [x11]
     msr  vbar_el2, x10
 
@@ -223,37 +223,37 @@ demote:
     /**************************************************************************/
 
     mrs  x10, hcr_el2
-    add  x12, x22, #SS_HCR_EL2_OFFSET
+    add  x12, x22, #SS_OFFSET_HCR_EL2
     str  x10, [x12]
-    add  x11, x21, #SS_HCR_EL2_OFFSET
+    add  x11, x21, #SS_OFFSET_HCR_EL2
     ldr  x10, [x11]
     msr  hcr_el2, x10
 
     mrs  x10, mair_el2
-    add  x12, x22, #SS_MAIR_EL2_OFFSET
+    add  x12, x22, #SS_OFFSET_MAIR_EL2
     str  x10, [x12]
-    add  x11, x21, #SS_MAIR_EL2_OFFSET
+    add  x11, x21, #SS_OFFSET_MAIR_EL2
     ldr  x10, [x11]
     msr  mair_el2, x10
 
     mrs  x10, sctlr_el2
-    add  x12, x22, #SS_SCTLR_EL2_OFFSET
+    add  x12, x22, #SS_OFFSET_SCTLR_EL2
     str  x10, [x12]
-    add  x11, x21, #SS_SCTLR_EL2_OFFSET
+    add  x11, x21, #SS_OFFSET_SCTLR_EL2
     ldr  x10, [x11]
     msr  sctlr_el2, x10
 
     mrs  x10, tcr_el2
-    add  x12, x22, #SS_TCR_EL2_OFFSET
+    add  x12, x22, #SS_OFFSET_TCR_EL2
     str  x10, [x12]
-    add  x11, x21, #SS_TCR_EL2_OFFSET
+    add  x11, x21, #SS_OFFSET_TCR_EL2
     ldr  x10, [x11]
     msr  tcr_el2, x10
 
     mrs  x10, ttbr0_el2
-    add  x12, x22, #SS_TTBR0_EL2_OFFSET
+    add  x12, x22, #SS_OFFSET_TTBR0_EL2
     str  x10, [x12]
-    add  x11, x21, #SS_TTBR0_EL2_OFFSET
+    add  x11, x21, #SS_OFFSET_TTBR0_EL2
     ldr  x10, [x11]
     msr  ttbr0_el2, x10
 
@@ -265,7 +265,7 @@ demote:
     /* Stack                                                                  */
     /**************************************************************************/
 
-    add  x11, x21, #SS_SP_EL2_OFFSET
+    add  x11, x21, #SS_OFFSET_SP_EL2
     ldr  x10, [x11]
     mov  sp, x10
 
@@ -273,7 +273,7 @@ demote:
     /* Call Microkernel                                                       */
     /**************************************************************************/
 
-    add  x11, x21, #SS_PC_EL2_OFFSET
+    add  x11, x21, #SS_OFFSET_PC_EL2
     ldr  x10, [x11]
 
     mov  x0, x20

@@ -24,6 +24,44 @@
  * SOFTWARE.
  */
 
+    /** @brief defines the offset of mk_args_t.ppid */
+    #define ARGS_OFFSET_PPID 0x0
+    /** @brief defines the offset of mk_args_t.online_pps */
+    #define ARGS_OFFSET_ONLINE_PPS 0x002
+    /** @brief defines the offset of mk_args_t.mk_state */
+    #define ARGS_OFFSET_MK_STATE 0x008
+    /** @brief defines the offset of mk_args_t.root_vp_state */
+    #define ARGS_OFFSET_ROOT_VP_STATE 0x010
+    /** @brief defines the offset of mk_args_t.debug_ring */
+    #define ARGS_OFFSET_DEBUG_RING 0x018
+
+    /** @brief defines the size of the TLS block */
+    #define TLS_SIZE 0x400
+    /** @brief defines the offset of tls_t.current_fast_fail_ip */
+    #define TLS_OFFSET_CURRENT_FAST_FAIL_IP 0x290
+    /** @brief defines the offset of tls_t.current_fast_fail_sp */
+    #define TLS_OFFSET_CURRENT_FAST_FAIL_SP 0x298
+    /** @brief defines the offset of tls_t.mk_main_fast_fail_ip */
+    #define TLS_OFFSET_MK_MAIN_FAST_FAIL_IP 0x2A0
+    /** @brief defines the offset of tls_t.mk_main_fast_fail_sp */
+    #define TLS_OFFSET_MK_MAIN_FAST_FAIL_SP 0x2A8
+    /** @brief defines the offset of tls_t.call_ext_fast_fail_ip */
+    #define TLS_OFFSET_CALL_EXT_FAST_FAIL_IP 0x2B0
+    /** @brief defines the offset of tls_t.dispatch_syscall_fast_fail_ip */
+    #define TLS_OFFSET_DISPATCH_SYSCALL_FAST_FAIL_IP 0x2C0
+    /** @brief defines the offset of tls_t.self */
+    #define TLS_OFFSET_SELF 0x300
+    /** @brief defines the offset of tls_t.ppid */
+    #define TLS_OFFSET_PPID 0x308
+    /** @brief defines the offset of tls_t.online_pps */
+    #define TLS_OFFSET_ONLINE_PPS 0x30A
+    /** @brief defines the offset of tls_t.mk_state */
+    #define TLS_OFFSET_MK_STATE 0x328
+    /** @brief defines the offset of tls_t.root_vp_state */
+    #define TLS_OFFSET_ROOT_VP_STATE 0x330
+    /** @brief defines the offset of tls_t.active_<>id */
+    #define TLS_OFFSET_ACTIVE_IDS 0x338
+
     .text
 
     .globl  mk_main_entry
@@ -41,9 +79,12 @@ mk_main_entry:
      *   with this return address on it.
      * - On ARMv8, we push x1 as well because all stack operations must be
      *   16 byte aligned, so we just add x1 as a place holder.
+     * - We also store x0 into x20 so that we can call functions if needed
+     *   without losing the arguments.
      */
 
-    stp x0, x1, [sp, #-0x10]!
+    stp  x0, x1, [sp, #-0x10]!
+    mov  x20, x0
 
     /**
      * NOTE:
@@ -57,21 +98,23 @@ mk_main_entry:
      *   which TLS block to grab based on the size of each TLS block.
      */
 
-    ldr x1, [x0]
-    and x1, x1, #0xFFFF
+    ldrh x23, [x20], #ARGS_OFFSET_PPID
 
-    mov x2, #0x400
-    mul x1, x1, x2
-    adr x2, g_tls_blocks
-    add x1, x1, x2
+    mov  x21, #TLS_SIZE
+    mul  x22, x21, x23
+    adr  x21, g_tls_blocks
+    add  x22, x21, x22
 
     /**
      * NOTE:
      * - Next we program the platform register with the location of the TLS
-     *   block so that we can index into the TLS block using x18.
+     *   block so that we can index into the TLS block using x18. We also
+     *   put the TLS block into TPIDR_EL2 so that we can restore x18 when
+     *   an exception is taken.
      */
 
-    mov x18, x1
+    mov  x18, x22
+    msr  tpidr_el2, x22
 
     /**
      * NOTE:
@@ -80,21 +123,19 @@ mk_main_entry:
      *   PPID is no matter where we are.
      */
 
-    add  x1, x2, #SS_X23_OFFSET
-    str  x23, [x12]
-
-    x18
-
-    mov gs:[0x200], rsi
-    mov gs:[0x208], bx
+    add  x21, x18, #TLS_OFFSET_SELF
+    str  x18, [x21]
+    add  x21, x18, #TLS_OFFSET_PPID
+    str  x23, [x21]
 
     /**
      * NOTE:
      * - To start, there are no active extensions, VMs, VPs or VPSs.
      */
 
-    mov rax, 0xFFFFFFFFFFFFFFFF
-    mov gs:[0x238], rax
+    mvn  x22, xzr
+    add  x21, x18, #TLS_OFFSET_ACTIVE_IDS
+    str  x22, [x21]
 
     /**
      * NOTE:
@@ -103,12 +144,17 @@ mk_main_entry:
      *   we can gracefully handle issues.
      */
 
-    lea rax, [rip + mk_main_fast_fail_entry]
-    mov gs:[0x190], rax
-    lea rax, [rip + call_ext_fast_fail_entry]
-    mov gs:[0x1A0], rax
-    lea rax, [rip + dispatch_syscall_fast_fail_entry]
-    mov gs:[0x1B0], rax
+    adr  x22, mk_main_fast_fail_entry
+    add  x21, x18, #TLS_OFFSET_MK_MAIN_FAST_FAIL_IP
+    str  x22, [x21]
+
+    adr  x22, call_ext_fast_fail_entry
+    add  x21, x18, #TLS_OFFSET_CALL_EXT_FAST_FAIL_IP
+    str  x22, [x21]
+
+    adr  x22, dispatch_syscall_fast_fail_entry
+    add  x21, x18, #TLS_OFFSET_DISPATCH_SYSCALL_FAST_FAIL_IP
+    str  x22, [x21]
 
     /**
      * NOTE:
@@ -117,19 +163,9 @@ mk_main_entry:
      *   up it's internal resources.
      */
 
-    mov ax, [rdi + 0x002]
-    mov gs:[0x20A], ax
-
-    /**
-     * NOTE:
-     * - Next we need to invalidate the loaded VPSID. This is only used on
-     *   Intel CPUs and is used to determine which VMCS is currently loaded.
-     *   We cannot use the active VPSID here because an extension can read
-     *   and write to any VPS it wants, even if it is not active.
-     */
-
-    mov ax, 0xFFFF
-    mov gs:[0x20C], ax
+    ldrh x22, [x20], #ARGS_OFFSET_ONLINE_PPS
+    add  x21, x18, #TLS_OFFSET_ONLINE_PPS
+    strh x22, [x21]
 
     /**
      * NOTE:
@@ -141,10 +177,13 @@ mk_main_entry:
      *   is really unware of the state that the loader gives it.
      */
 
-    mov rax, [rdi + 0x008]
-    mov gs:[0x228], rax
-    mov rax, [rdi + 0x010]
-    mov gs:[0x230], rax
+    ldr  x22, [x20], #ARGS_OFFSET_MK_STATE
+    add  x21, x18, #TLS_OFFSET_MK_STATE
+    str  x22, [x21]
+
+    ldr  x22, [x20], #ARGS_OFFSET_ROOT_VP_STATE
+    add  x21, x18, #TLS_OFFSET_ROOT_VP_STATE
+    str  x22, [x21]
 
     /**
      * NOTE:
@@ -153,138 +192,19 @@ mk_main_entry:
      *   debug information.
      */
 
-    lea rax, [rip + g_debug_ring]
-    mov rdx, [rdi + 0x018]
-    mov [rax], rdx
+    add  x21, x20, #ARGS_OFFSET_DEBUG_RING
+    ldr  x22, [x21]
+    adr  x21, g_debug_ring
+    str  x22, [x21]
 
     /**
      * NOTE:
-     * - Before we can continue, we need to save off the arguments for
-     *   the mk_main_trampoline function. These will be poped right before
-     *   calling this function.
+     * - Set up the exception vectors. Currently we are using exception
+     *   vectors provided by the loader. This loads the exception vectors
+     *   that the actual kernel will use.
      */
 
-    push rsi
-    push rdi
-
-    /**
-     * NOTE:
-     * - Set up the IDT with the actual ESRs. Before we can do this, we need
-     *   to lock NMIs. Any NMIs that come in can only set the pending bit
-     *   in the TLS until a run occurs. Once a run occurs, we can handle
-     *   the NMI from there (or the promote logic will handle it in the
-     *   event that an error occurs).
-     * - Once we install the new ESRs, we can transfer the NMI bit from the
-     *   root state to the TLS.
-     */
-
-    mov rax, 0x1
-    mov gs:[0x258], rax
-
-    mov rdi, 0
-    lea rsi, [rip + dispatch_esr_entry_0]
-    call set_esr
-
-    mov rdi, 1
-    lea rsi, [rip + dispatch_esr_entry_1]
-    call set_esr
-
-    mov rdi, 2
-    lea rsi, [rip + dispatch_esr_entry_2]
-    call set_esr
-
-    mov rdi, 3
-    lea rsi, [rip + dispatch_esr_entry_3]
-    call set_esr
-
-    mov rdi, 4
-    lea rsi, [rip + dispatch_esr_entry_4]
-    call set_esr
-
-    mov rdi, 5
-    lea rsi, [rip + dispatch_esr_entry_5]
-    call set_esr
-
-    mov rdi, 6
-    lea rsi, [rip + dispatch_esr_entry_6]
-    call set_esr
-
-    mov rdi, 7
-    lea rsi, [rip + dispatch_esr_entry_7]
-    call set_esr
-
-    mov rdi, 8
-    lea rsi, [rip + dispatch_esr_entry_8]
-    call set_esr
-
-    mov rdi, 10
-    lea rsi, [rip + dispatch_esr_entry_10]
-    call set_esr
-
-    mov rdi, 11
-    lea rsi, [rip + dispatch_esr_entry_11]
-    call set_esr
-
-    mov rdi, 12
-    lea rsi, [rip + dispatch_esr_entry_12]
-    call set_esr
-
-    mov rdi, 13
-    lea rsi, [rip + dispatch_esr_entry_13]
-    call set_esr
-
-    mov rdi, 14
-    lea rsi, [rip + dispatch_esr_entry_14]
-    call set_esr
-
-    mov rdi, 16
-    lea rsi, [rip + dispatch_esr_entry_16]
-    call set_esr
-
-    mov rdi, 17
-    lea rsi, [rip + dispatch_esr_entry_17]
-    call set_esr
-
-    mov rdi, 18
-    lea rsi, [rip + dispatch_esr_entry_18]
-    call set_esr
-
-    mov rdi, 19
-    lea rsi, [rip + dispatch_esr_entry_19]
-    call set_esr
-
-    /**
-     * NOTE:
-     * - Next, we need to store the syscall handler location. This will be
-     *   used by extensions to make syscalls.
-     */
-
-    mov ecx, 0xC0000082
-    lea rax, [rip + dispatch_syscall_entry]
-    mov rdx, rax
-    shr rdx, 32
-    wrmsr
-
-    /**
-     * NOTE:
-     * - Next we transfer the NMI pending bit. If this is set, we need to hand
-     *   it to the extension so that it can handle the NMI appropriately as
-     *   the microkernel has no way of handling NMIs, so basically any NMI
-     *   that might fire at any point during the loading process has to be
-     *   recorded and transfered all the way to the extension so that it can
-     *   handle it properly.
-     */
-
-    pop rdi
-
-    mov rdx, [rdi + 0x010]
-    mov rax, [rdx + 0x318]
-    mov gs:[0x260], rax
-
-    xor rax, rax
-    mov [rdx + 0x318], rax
-
-    pop rsi
+    /** TODO */
 
     /**
      * NOTE:
@@ -295,14 +215,32 @@ mk_main_entry:
      *   so that we know where to return to in the event of an error.
      */
 
-    mov gs:[0x198], rsp
-    mov rax, gs:[0x190]
-    mov gs:[0x180], rax
-    mov rax, gs:[0x198]
-    mov gs:[0x188], rax
+    add  x21, x18, #TLS_OFFSET_MK_MAIN_FAST_FAIL_SP
+    str  sp,  [x21]
+    add  x21, x18, #TLS_OFFSET_CURRENT_FAST_FAIL_SP
+    str  sp,  [x21]
 
-    call mk_main_trampoline
-    jmp return_to_current_fast_fail
+    add  x21, x18, #TLS_OFFSET_MK_MAIN_FAST_FAIL_IP
+    ldr  x22, [x21]
+    add  x21, x18, #TLS_OFFSET_CURRENT_FAST_FAIL_IP
+    str  x22, [x21]
+
+    /**
+     * NOTE:
+     * - Finally, call the main trampoline.
+     */
+
+    mov  x0, x20
+    mov  x1, x18
+    br   mk_main_trampoline
+
+    /**
+     * NOTE:
+     * - If we get here, it is because an error occurred and we need to
+     *   fast fail.
+     */
+
+    b    return_to_current_fast_fail
 
     .size mk_main_entry, .-mk_main_entry
 
@@ -314,11 +252,24 @@ mk_main_entry:
     .type   mk_main_fast_fail_entry, @function
 mk_main_fast_fail_entry:
 
-    pop rdi
+    /**
+     * NOTE:
+     * - In the beginning of mk_main_entry, we saved the original arguments
+     *   to the stack which we will use here.
+     * - On ARMv8, we pop x1 as well because all stack operations must be
+     *   16 byte aligned, so we just add x1 as a place holder.
+     */
 
-    mov rdi, [rdi + 0x010]
-    mov rsi, 1
-    jmp promote
+    ldp  x20, x1, [sp], #0x10
+
+    /**
+     * NOTE:
+     * - Promote back to the root OS on failure.
+     */
+
+    ldr  x0, [x20], #ARGS_OFFSET_ROOT_VP_STATE
+    mov  x1, #1
+    b    promote
 
     .size mk_main_fast_fail_entry, .-mk_main_fast_fail_entry
 
