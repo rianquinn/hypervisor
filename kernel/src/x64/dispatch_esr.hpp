@@ -251,7 +251,7 @@ namespace mk
             ///   properly.
             ///
 
-            tls.esr_rip = {};
+            tls.esr_ip = {};
         }};
 
         switch (tls.esr_vector) {
@@ -306,8 +306,8 @@ namespace mk
         /// IP/SP
         ///
 
-        dispatch_esr_dump_with_segment("rip", tls.esr_rip, tls.esr_cs);
-        dispatch_esr_dump_with_segment("rsp", tls.esr_rsp, tls.esr_ss);
+        dispatch_esr_dump_with_segment("rip", tls.esr_ip, tls.esr_cs);
+        dispatch_esr_dump_with_segment("rsp", tls.esr_sp, tls.esr_ss);
 
         /// Flags
         ///

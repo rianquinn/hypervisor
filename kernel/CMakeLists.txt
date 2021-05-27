@@ -113,6 +113,7 @@ list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/src/mk_main.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/page_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/page_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/serial_write.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vm_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vm_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vmexit_loop.hpp
@@ -209,7 +210,8 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
     hypervisor_target_source(kernel src/x64/return_to_current_fast_fail.S ${HEADERS})
     hypervisor_target_source(kernel src/x64/return_to_mk.S ${HEADERS})
     hypervisor_target_source(kernel src/x64/return_to_vmexit_loop.S ${HEADERS})
-    hypervisor_target_source(kernel src/x64/serial_write.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/serial_write_c.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/serial_write_hex.S ${HEADERS})
     hypervisor_target_source(kernel src/x64/set_esr.S ${HEADERS})
     hypervisor_target_source(kernel src/x64/vmexit_loop_entry.S ${HEADERS})
 

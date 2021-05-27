@@ -30,6 +30,7 @@
 #include <pml4t_t.h>
 #include <root_page_table_t.h>
 #include <types.h>
+#include <flush_cache.h>
 
 /**
  * <!-- description -->
@@ -39,12 +40,19 @@
  *   @param rpt where to return the resulting root page table
  *   @return 0 on success, LOADER_FAILURE on failure.
  */
+int64_t
 alloc_mk_root_page_table(root_page_table_t **const rpt)
 {
+    uint64_t i;
+
     *rpt = (root_page_table_t *)platform_alloc(sizeof(root_page_table_t));
     if (((void *)0) == *rpt) {
         bferror("platform_alloc failed");
         return LOADER_FAILURE;
+    }
+
+    for (i = 0; i < LOADER_NUM_PML4T_ENTRIES; ++i) {
+        flush_cache(&((*rpt)->entires[i]));
     }
 
     if (map_4k_page_rw(*rpt, ((uint64_t)0), *rpt)) {

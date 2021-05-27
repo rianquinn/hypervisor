@@ -27,30 +27,28 @@
     .code64
     .intel_syntax noprefix
 
-    .globl  serial_in
-    .type   serial_in, @function
-serial_in:
+    .globl  serial_write_c
+    .type   serial_write_c, @function
+serial_write_c:
+    push rax
+    push rdx
 
-    xor rax, rax
-    mov rdx, rdi
-    in al, dx
+wait_for_ffio_empty:
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    add rdx, 5
+    in  al, dx
 
-    ret
-    int 3
+    and al, 0x20
+    cmp al, 0x0
+    jz  wait_for_ffio_empty
 
-    .size serial_in, .-serial_in
-
-
-
-    .globl  serial_out
-    .type   serial_out, @function
-serial_out:
-
-    mov rdx, rdi
-    mov rax, rsi
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, rdi
     out dx, al
 
+    pop rdx
+    pop rax
     ret
     int 3
 
-    .size serial_out, .-serial_out
+    .size serial_write_c, .-serial_write_c

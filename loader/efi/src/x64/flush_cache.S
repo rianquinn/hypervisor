@@ -24,41 +24,12 @@
  * SOFTWARE.
  */
 
-#include <debug.h>
-#include <l0t_t.h>
-#include <map_4k_page_rw.h>
-#include <platform.h>
-#include <root_page_table_t.h>
-#include <types.h>
-#include <flush_cache.h>
+    .code64
+    .intel_syntax noprefix
 
-/**
- * <!-- description -->
- *   @brief This function allocates the root page table
- *
- * <!-- inputs/outputs -->
- *   @param rpt where to return the resulting root page table
- *   @return 0 on success, LOADER_FAILURE on failure.
- */
-int64_t
-alloc_mk_root_page_table(root_page_table_t **const rpt)
-{
-    uint64_t i;
+	.global flush_cache
+flush_cache:
 
-    *rpt = (root_page_table_t *)platform_alloc(sizeof(root_page_table_t));
-    if (((void *)0) == *rpt) {
-        bferror("platform_alloc failed");
-        return LOADER_FAILURE;
-    }
-
-    for (i = 0; i < LOADER_NUM_L0T_ENTRIES; ++i) {
-        flush_cache(&((*rpt)->entires[i]));
-    }
-
-    if (map_4k_page_rw(*rpt, ((uint64_t)0), *rpt)) {
-        bferror("map_4k_page_rw failed");
-        return LOADER_FAILURE;
-    }
-
-    return LOADER_SUCCESS;
-}
+    clflush [rdi]
+    ret
+    int 3

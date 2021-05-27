@@ -46,5 +46,6 @@ wait_for_ffio_empty:
 
     ldp x0, x1, [sp], #0x10
     ret
+    
 
     .size serial_write_c, .-serial_write_c

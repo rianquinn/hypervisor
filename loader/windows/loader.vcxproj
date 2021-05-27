@@ -49,6 +49,7 @@
     <ClInclude Include="..\include\dump_vmm.h" />
     <ClInclude Include="..\include\dump_vmm_on_error_if_needed.h" />
     <ClInclude Include="..\include\elf_segment_t.h" />
+    <ClInclude Include="..\include\flush_cache.h" />
     <ClInclude Include="..\include\free_ext_elf_files.h" />
     <ClInclude Include="..\include\free_mk_args.h" />
     <ClInclude Include="..\include\free_mk_code_aliases.h" />
@@ -249,6 +250,7 @@
     <MASM Include="src\x64\esr_gpf.asm" />
     <MASM Include="src\x64\esr_nmi.asm" />
     <MASM Include="src\x64\esr_pf.asm" />
+    <MASM Include="src\x64\flush_cache.asm" />
     <MASM Include="src\x64\intrinsic_cpuid.asm" />
     <MASM Include="src\x64\intrinsic_inb.asm" />
     <MASM Include="src\x64\intrinsic_lcr4.asm" />

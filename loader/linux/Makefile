@@ -93,6 +93,7 @@ ifneq ($(KERNELRELEASE),)
     $(TARGET_MODULE)-objs += src/x64/esr_gpf.o
     $(TARGET_MODULE)-objs += src/x64/esr_nmi.o
     $(TARGET_MODULE)-objs += src/x64/esr_pf.o
+    $(TARGET_MODULE)-objs += src/x64/flush_cache.o
     $(TARGET_MODULE)-objs += src/x64/intrinsic_cpuid.o
     $(TARGET_MODULE)-objs += src/x64/intrinsic_inb.o
     $(TARGET_MODULE)-objs += src/x64/intrinsic_lcr4.o
@@ -156,11 +157,11 @@ ifneq ($(KERNELRELEASE),)
 	EXTRA_CFLAGS += -I$(CMAKE_BINARY_DIR)/include
 
   	ifneq (,$(findstring AuthenticAMD,$(VENDOR_ID)))
-		$(TARGET_MODULE)-objs += src\x64\amd\disable_interrupts.o
-		$(TARGET_MODULE)-objs += src\x64\amd\enable_interrupts.o
-		$(TARGET_MODULE)-objs += ..\src\x64\amd\check_cpu_configuration.o
-		$(TARGET_MODULE)-objs += ..\src\x64\amd\disable_hve.o
-		$(TARGET_MODULE)-objs += ..\src\x64\amd\enable_hve.o
+		$(TARGET_MODULE)-objs += src/x64/amd/disable_interrupts.o
+		$(TARGET_MODULE)-objs += src/x64/amd/enable_interrupts.o
+		$(TARGET_MODULE)-objs += ../src/x64/amd/check_cpu_configuration.o
+		$(TARGET_MODULE)-objs += ../src/x64/amd/disable_hve.o
+		$(TARGET_MODULE)-objs += ../src/x64/amd/enable_hve.o
 
 		EXTRA_CFLAGS += -I$(src)/include/x64/amd
 		EXTRA_CFLAGS += -I$(src)/../include/x64/amd
@@ -168,13 +169,13 @@ ifneq ($(KERNELRELEASE),)
 	endif
 
 	ifneq (,$(findstring GenuineIntel,$(VENDOR_ID)))
-		$(TARGET_MODULE)-objs += src\x64\intel\disable_interrupts.o
-		$(TARGET_MODULE)-objs += src\x64\intel\enable_interrupts.o
-		$(TARGET_MODULE)-objs += src\x64\intel\intrinsic_vmxoff.o
-		$(TARGET_MODULE)-objs += src\x64\intel\intrinsic_vmxon.o
-		$(TARGET_MODULE)-objs += ..\src\x64\intel\check_cpu_configuration.o
-		$(TARGET_MODULE)-objs += ..\src\x64\intel\disable_hve.o
-		$(TARGET_MODULE)-objs += ..\src\x64\intel\enable_hve.o
+		$(TARGET_MODULE)-objs += src/x64/intel/disable_interrupts.o
+		$(TARGET_MODULE)-objs += src/x64/intel/enable_interrupts.o
+		$(TARGET_MODULE)-objs += src/x64/intel/intrinsic_vmxoff.o
+		$(TARGET_MODULE)-objs += src/x64/intel/intrinsic_vmxon.o
+		$(TARGET_MODULE)-objs += ../src/x64/intel/check_cpu_configuration.o
+		$(TARGET_MODULE)-objs += ../src/x64/intel/disable_hve.o
+		$(TARGET_MODULE)-objs += ../src/x64/intel/enable_hve.o
 
 		EXTRA_CFLAGS += -I$(src)/include/x64/intel
 		EXTRA_CFLAGS += -I$(src)/../include/x64/intel

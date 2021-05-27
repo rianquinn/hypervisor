@@ -66,7 +66,7 @@ alloc_l1t(struct l0t_t *const l0t, uint64_t const virt)
     }
 
     for (i = 0; i < LOADER_NUM_L1T_ENTRIES; ++i) {
-        flush_cache(&l1t[i]);
+        flush_cache(&(l1t->entires[i]));
     }
 
     phys = platform_virt_to_phys(l1t);
