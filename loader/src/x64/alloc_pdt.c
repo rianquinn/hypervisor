@@ -32,6 +32,7 @@
 #include <pdt_t.h>
 #include <platform.h>
 #include <types.h>
+#include <flush_cache.h>
 
 /**
  * <!-- description -->
@@ -47,6 +48,7 @@
 struct pdt_t *
 alloc_pdt(struct pdpt_t *const pdpt, uint64_t const virt)
 {
+    uint64_t i;
     uint64_t phys;
     struct pdt_t *pdt;
     struct pdpte_t *pdpte;
@@ -63,6 +65,10 @@ alloc_pdt(struct pdpt_t *const pdpt, uint64_t const virt)
         goto platform_alloc_pdt_failed;
     }
 
+    for (i = 0; i < LOADER_NUM_PDT_ENTRIES; ++i) {
+        flush_cache(&pdt[i]);
+    }
+
     phys = platform_virt_to_phys(pdt);
     if (((uint64_t)0) == phys) {
         bferror("platform_virt_to_phys_pdt failed");
@@ -74,6 +80,7 @@ alloc_pdt(struct pdpt_t *const pdpt, uint64_t const virt)
     pdpte->p = ((uint64_t)1);
     pdpte->rw = ((uint64_t)1);
 
+    flush_cache(pdpte);
     return pdt;
 
 platform_virt_to_phys_pdt_failed:

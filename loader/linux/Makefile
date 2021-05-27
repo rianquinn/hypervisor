@@ -93,6 +93,7 @@ ifneq ($(KERNELRELEASE),)
     $(TARGET_MODULE)-objs += src/x64/esr_gpf.o
     $(TARGET_MODULE)-objs += src/x64/esr_nmi.o
     $(TARGET_MODULE)-objs += src/x64/esr_pf.o
+    $(TARGET_MODULE)-objs += src/x64/flush_cache.o
     $(TARGET_MODULE)-objs += src/x64/intrinsic_cpuid.o
     $(TARGET_MODULE)-objs += src/x64/intrinsic_inb.o
     $(TARGET_MODULE)-objs += src/x64/intrinsic_lcr4.o

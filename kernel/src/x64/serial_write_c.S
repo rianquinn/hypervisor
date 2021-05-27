@@ -24,40 +24,31 @@
  * SOFTWARE.
  */
 
-#include <debug.h>
-#include <map_4k_page_rw.h>
-#include <platform.h>
-#include <pml4t_t.h>
-#include <root_page_table_t.h>
-#include <types.h>
-#include <flush_cache.h>
+    .code64
+    .intel_syntax noprefix
 
-/**
- * <!-- description -->
- *   @brief This function allocates the root page table
- *
- * <!-- inputs/outputs -->
- *   @param rpt where to return the resulting root page table
- *   @return 0 on success, LOADER_FAILURE on failure.
- */
-alloc_mk_root_page_table(root_page_table_t **const rpt)
-{
-    uint64_t i;
+    .globl  serial_write_c
+    .type   serial_write_c, @function
+serial_write_c:
+    push rax
+    push rdx
 
-    *rpt = (root_page_table_t *)platform_alloc(sizeof(root_page_table_t));
-    if (((void *)0) == *rpt) {
-        bferror("platform_alloc failed");
-        return LOADER_FAILURE;
-    }
+wait_for_ffio_empty:
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    add rdx, 5
+    in  al, dx
 
-    for (i = 0; i < LOADER_NUM_PML4T_ENTRIES; ++i) {
-        flush_cache(&rpt[i]);
-    }
+    and al, 0x20
+    cmp al, 0x0
+    jz  wait_for_ffio_empty
 
-    if (map_4k_page_rw(*rpt, ((uint64_t)0), *rpt)) {
-        bferror("map_4k_page_rw failed");
-        return LOADER_FAILURE;
-    }
+    mov rdx, HYPERVISOR_SERIAL_PORT
+    mov rax, rdi
+    out dx, al
 
-    return LOADER_SUCCESS;
-}
+    pop rdx
+    pop rax
+    ret
+    int 3
+
+    .size serial_write_c, .-serial_write_c

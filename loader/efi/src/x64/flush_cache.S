@@ -24,33 +24,9 @@
  * SOFTWARE.
  */
 
-    .code64
-    .intel_syntax noprefix
+	.global flush_cache
+flush_cache:
 
-    .globl  serial_in
-    .type   serial_in, @function
-serial_in:
-
-    xor rax, rax
-    mov rdx, rdi
-    in al, dx
-
+    clflush [rdi]
     ret
     int 3
-
-    .size serial_in, .-serial_in
-
-
-
-    .globl  serial_out
-    .type   serial_out, @function
-serial_out:
-
-    mov rdx, rdi
-    mov rax, rsi
-    out dx, al
-
-    ret
-    int 3
-
-    .size serial_out, .-serial_out

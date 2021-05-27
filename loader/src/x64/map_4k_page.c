@@ -43,6 +43,7 @@
 #include <pto.h>
 #include <root_page_table_t.h>
 #include <types.h>
+#include <flush_cache.h>
 
 /**
  * <!-- description -->
@@ -125,5 +126,6 @@ map_4k_page(uint64_t const virt, uint64_t phys, uint32_t const flags, root_page_
         pte->nx = ((uint64_t)1);
     }
 
+    flush_cache(pte);
     return LOADER_SUCCESS;
 }
