@@ -156,6 +156,8 @@ ifneq ($(KERNELRELEASE),)
 	EXTRA_CFLAGS += -I$(src)/../include/interface/c/bfelf
 	EXTRA_CFLAGS += -I$(CMAKE_BINARY_DIR)/include
 
+    EXTRA_AFLAGS += -I$(CMAKE_BINARY_DIR)/include
+
   	ifneq (,$(findstring AuthenticAMD,$(VENDOR_ID)))
 		$(TARGET_MODULE)-objs += src/x64/amd/disable_interrupts.o
 		$(TARGET_MODULE)-objs += src/x64/amd/enable_interrupts.o

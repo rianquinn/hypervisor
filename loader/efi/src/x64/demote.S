@@ -196,10 +196,10 @@ demote:
     /* Flags                                                                  */
     /**************************************************************************/
 
-    pushf
+    pushfq
     pop qword ptr[r15 + SS_OFFSET_RFLAGS]
-    push [r14 + SS_OFFSET_RFLAGS]
-    popf
+    push qword ptr[r14 + SS_OFFSET_RFLAGS]
+    popfq
 
     /**************************************************************************/
     /* IDT                                                                    */
@@ -322,8 +322,8 @@ demote:
     /* GDT                                                                    */
     /*************************************************************************/
 
-    sgdt qword ptr [r15 + SS_OFFSET_GDTR]
-    lgdt qword ptr [r14 + SS_OFFSET_GDTR]
+    sgdt [r15 + SS_OFFSET_GDTR]
+    lgdt [r14 + SS_OFFSET_GDTR]
 
     mov dx, es
     mov [r15 + SS_OFFSET_ES_SELECTOR], dx
@@ -421,7 +421,7 @@ gdt_and_cs_loaded:
     /**************************************************************************/
 
     mov rdi, r13
-    push [r14 + SS_OFFSET_RIP]
+    push qword ptr[r14 + SS_OFFSET_RIP]
     ret
     int 3
 

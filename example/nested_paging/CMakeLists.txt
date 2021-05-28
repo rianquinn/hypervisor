@@ -30,30 +30,30 @@ target_include_directories(example_nested_paging PRIVATE
 )
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    target_include_directories(example_default PRIVATE
+    target_include_directories(example_nested_paging PRIVATE
         x64
     )
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
-        target_include_directories(example_default PRIVATE
+        target_include_directories(example_nested_paging PRIVATE
             x64/amd
         )
     endif()
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-        target_include_directories(example_default PRIVATE
+        target_include_directories(example_nested_paging PRIVATE
             x64/intel
         )
     endif()
 endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-    target_include_directories(example_default PRIVATE
+    target_include_directories(example_nested_paging PRIVATE
         arm
     )
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-        target_include_directories(example_default PRIVATE
+        target_include_directories(example_nested_paging PRIVATE
             arm/aarch64
         )
     endif()
@@ -131,7 +131,7 @@ target_sources(example_nested_paging PRIVATE
 set_property(SOURCE main.cpp APPEND PROPERTY OBJECT_DEPENDS ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    target_sources(example_default PRIVATE
+    target_sources(example_nested_paging PRIVATE
         x64/intrinsic_cpuid.S
     )
 

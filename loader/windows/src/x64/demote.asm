@@ -193,8 +193,8 @@
     ; **************************************************************************
 
     pushfq
-    pop [r15 + SS_OFFSET_RFLAGS]
-    push [r14 + SS_OFFSET_RFLAGS]
+    pop qword ptr[r15 + SS_OFFSET_RFLAGS]
+    push qword ptr[r14 + SS_OFFSET_RFLAGS]
     popfq
 
     ; **************************************************************************
@@ -417,7 +417,7 @@ gdt_and_cs_loaded:
     ; **************************************************************************
 
     mov rdi, r13
-    push [r14 + SS_OFFSET_RIP]
+    push qword ptr[r14 + SS_OFFSET_RIP]
     ret
     int 3
 

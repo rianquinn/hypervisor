@@ -34,10 +34,10 @@
 #include <bsl/finally.hpp>
 #include <bsl/is_standard_layout.hpp>
 #include <bsl/is_void.hpp>
-#include <bsl/lock_guard.hpp>
+#include "lock_guard.hpp"
 #include <bsl/safe_integral.hpp>
 #include <bsl/span.hpp>
-#include <bsl/spinlock.hpp>
+#include "spinlock.hpp"
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
 
@@ -77,7 +77,7 @@ namespace example
         /// @brief stores the total number of bytes in the page pool.
         bsl::safe_uintmax m_size{};
         /// @brief safe guards operations on the pool.
-        mutable bsl::spinlock m_pool_lock{};
+        mutable spinlock m_pool_lock{};
 
     public:
         /// <!-- description -->
@@ -178,7 +178,7 @@ namespace example
         [[nodiscard]] constexpr auto
         allocate() &noexcept -> T *
         {
-            bsl::lock_guard lock{m_pool_lock};
+            lock_guard lock{m_pool_lock};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "page_pool_t not initialized\n" << bsl::here();
@@ -222,7 +222,7 @@ namespace example
         constexpr void
         deallocate(void *const ptr) &noexcept
         {
-            bsl::lock_guard lock{m_pool_lock};
+            lock_guard lock{m_pool_lock};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "page_pool_t not initialized\n" << bsl::here();

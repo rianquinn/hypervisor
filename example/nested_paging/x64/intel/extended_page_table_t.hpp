@@ -42,9 +42,9 @@
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
-#include <bsl/lock_guard.hpp>
+#include <lock_guard.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/spinlock.hpp>
+#include <spinlock.hpp>
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
 
@@ -67,7 +67,7 @@ namespace example
         /// @brief stores the physical address of the epml4t
         bsl::safe_uintmax m_epml4t_phys{bsl::safe_uintmax::zero(true)};
         /// @brief safe guards operations on the NPT.
-        mutable bsl::spinlock m_ept_lock{};
+        mutable spinlock m_ept_lock{};
 
         /// <!-- description -->
         ///   @brief Returns the extended page-map level-4 (NPML4T) offset given
@@ -557,7 +557,7 @@ namespace example
             bsl::safe_uintmax const &page_flags,
             bsl::safe_uintmax const &page_type) &noexcept -> bsl::errc_type
         {
-            bsl::lock_guard lock{m_ept_lock};
+            lock_guard lock{m_ept_lock};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "extended_page_table_t not initialized\n" << bsl::here();
@@ -712,7 +712,7 @@ namespace example
             bsl::safe_uintmax const &page_flags,
             bsl::safe_uintmax const &page_type) &noexcept -> bsl::errc_type
         {
-            bsl::lock_guard lock{m_ept_lock};
+            lock_guard lock{m_ept_lock};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "extended_page_table_t not initialized\n" << bsl::here();

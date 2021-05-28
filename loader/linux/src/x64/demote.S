@@ -26,6 +26,8 @@
  * SOFTWARE.
  */
 
+#define ASSEMBLY
+#include <constants.h>
 #include <asm/unwind_hints.h>
 
     /** @brief defines the offset of state_save_t.rax */
@@ -168,25 +170,25 @@ demote:
     /* General Purpose Registers                                              */
     /**************************************************************************/
 
-    mov [rdi + SS_OFFSET_RAX], rax
-    mov [rdi + SS_OFFSET_RBX], rbx
-    mov [rdi + SS_OFFSET_RCX], rcx
-    mov [rdi + SS_OFFSET_RDX], rdx
-    mov [rdi + SS_OFFSET_RBP], rbp
-    mov [rdi + SS_OFFSET_RSI], rsi
-    mov [rdi + SS_OFFSET_RDI], rdi
-    mov [rdi + SS_OFFSET_R8], r8
-    mov [rdi + SS_OFFSET_R9], r9
-    mov [rdi + SS_OFFSET_R10], r10
-    mov [rdi + SS_OFFSET_R11], r11
-    mov [rdi + SS_OFFSET_R12], r12
-    mov [rdi + SS_OFFSET_R13], r13
-    mov [rdi + SS_OFFSET_R14], r14
-    mov [rdi + SS_OFFSET_R15], r15
+    mov [rdx + SS_OFFSET_RAX], rax
+    mov [rdx + SS_OFFSET_RBX], rbx
+    mov [rdx + SS_OFFSET_RCX], rcx
+    mov [rdx + SS_OFFSET_RDX], rdx
+    mov [rdx + SS_OFFSET_RBP], rbp
+    mov [rdx + SS_OFFSET_RSI], rsi
+    mov [rdx + SS_OFFSET_RDI], rdi
+    mov [rdx + SS_OFFSET_R8], r8
+    mov [rdx + SS_OFFSET_R9], r9
+    mov [rdx + SS_OFFSET_R10], r10
+    mov [rdx + SS_OFFSET_R11], r11
+    mov [rdx + SS_OFFSET_R12], r12
+    mov [rdx + SS_OFFSET_R13], r13
+    mov [rdx + SS_OFFSET_R14], r14
+    mov [rdx + SS_OFFSET_R15], r15
 
     lea rax, [rip + demotion_return]
-    mov [rdi + SS_OFFSET_RIP], rax
-    mov [rdi + SS_OFFSET_RSP], rsp
+    mov [rdx + SS_OFFSET_RIP], rax
+    mov [rdx + SS_OFFSET_RSP], rsp
 
     /**************************************************************************/
     /* Setup                                                                  */
@@ -201,7 +203,7 @@ demote:
     /**************************************************************************/
 
     pushf
-    pop qword ptr[r15 + SS_OFFSET_RFLAGS]
+    pop [r15 + SS_OFFSET_RFLAGS]
     push [r14 + SS_OFFSET_RFLAGS]
     popf
 
@@ -326,8 +328,8 @@ demote:
     /* GDT                                                                    */
     /**************************************************************************/
 
-    sgdt qword ptr [r15 + SS_OFFSET_GDTR]
-    lgdt qword ptr [r14 + SS_OFFSET_GDTR]
+    sgdt [r15 + SS_OFFSET_GDTR]
+    lgdt [r14 + SS_OFFSET_GDTR]
 
     mov dx, es
     mov [r15 + SS_OFFSET_ES_SELECTOR], dx

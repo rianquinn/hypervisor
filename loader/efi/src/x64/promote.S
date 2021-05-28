@@ -252,7 +252,7 @@ promote:
     mov dx, [r15 + SS_OFFSET_ES_SELECTOR]
     mov es, dx
 
-    mov ax, [r15 + SS_OFFSET_DS_SELECTOR]
+    mov ax, [r15 + SS_OFFSET_CS_SELECTOR]
     push rax
 
     mov dx, [r15 + SS_OFFSET_SS_SELECTOR]
@@ -371,8 +371,8 @@ nmis_complete:
     /* Flags                                                                  */
     /**************************************************************************/
 
-    push [r15 + SS_OFFSET_RFLAGS]
-    popf
+    push qword ptr[r15 + SS_OFFSET_RFLAGS]
+    popfq
 
     /**************************************************************************/
     /* General Purpose Registers                                              */
