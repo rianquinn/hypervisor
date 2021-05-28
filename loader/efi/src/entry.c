@@ -193,12 +193,12 @@ locate_protocols(void)
     EFI_GUID efi_shell_protocol_guid = EFI_SHELL_PROTOCOL_GUID;
     EFI_GUID efi_simple_file_system_protocol_guid = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
 
-    // status = g_st->BootServices->LocateProtocol(
-    //     &efi_mp_services_protocol_guid, NULL, (VOID **)&g_mp_services_protocol);
-    // if (EFI_ERROR(status)) {
-    //     bferror_x64("LocateProtocol EFI_MP_SERVICES_PROTOCOL failed", status);
-    //     return status;
-    // }
+    status = g_st->BootServices->LocateProtocol(
+        &efi_mp_services_protocol_guid, NULL, (VOID **)&g_mp_services_protocol);
+    if (EFI_ERROR(status)) {
+        bferror_x64("LocateProtocol EFI_MP_SERVICES_PROTOCOL failed", status);
+        return status;
+    }
 
     status = g_st->BootServices->LocateProtocol(
         &efi_shell_protocol_guid, NULL, (VOID **)&g_shell_protocol);

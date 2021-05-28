@@ -22,8 +22,7 @@
 ; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-#define ASSEMBLY
-#include <constants.h>
+include constants_masm.h
 
     esr_pf_text SEGMENT ALIGN(1000h) 'CODE'
     esr_pf PROC

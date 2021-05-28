@@ -83,3 +83,14 @@ if (NOT EXISTS ${CMAKE_BINARY_DIR}/include/constants.h)
     file(APPEND ${HYPERVISOR_CONSTANTS} "#endif\n")
     file(APPEND ${HYPERVISOR_CONSTANTS} "#endif\n")
 endif()
+
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/include/constants_masm.h)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/include)
+    set(HYPERVISOR_CONSTANTS ${CMAKE_BINARY_DIR}/include/constants_masm.h)
+
+    file(WRITE ${HYPERVISOR_CONSTANTS} "; ---- AUTO GENERATED ---- \n")
+    file(APPEND ${HYPERVISOR_CONSTANTS} "\n")
+
+    string(REPLACE "0x" "" HYPERVISOR_SERIAL_PORT_MASM ${HYPERVISOR_SERIAL_PORT})
+    file(APPEND ${HYPERVISOR_CONSTANTS} "HYPERVISOR_SERIAL_PORT EQU ${HYPERVISOR_SERIAL_PORT_MASM}h\n")
+endif()
