@@ -443,7 +443,7 @@ namespace mk
                 bsl::print() << bsl::rst << "Hello from ARMv8 on a Raspberry Pi 4!!!\n";
                 bsl::print() << bsl::endl;
 
-                bsl::error() << "aarch64 support not complete"    // --
+                bsl::error() << "aarch64 support not complete yet. stay tuned."    // --
                              << bsl::endl                                // --
                              << bsl::here();                             // --
 

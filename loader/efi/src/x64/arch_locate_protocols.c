@@ -24,40 +24,35 @@
  * SOFTWARE.
  */
 
-#ifndef PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
-#define PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
+#include <debug.h>
+#include <efi/efi_mp_services_protocol.h>
+#include <efi/efi_status.h>
+#include <efi/efi_system_table.h>
+#include <efi/efi_types.h>
 
-#include <platform.h>
-#include <types.h>
+/** @brief defines the global pointer to the EFI_MP_SERVICES_PROTOCOL */
+EFI_MP_SERVICES_PROTOCOL *g_mp_services_protocol = NULL;
 
 /**
- * @struct work_on_cpu_callback_args
- *
  * <!-- description -->
- *   @brief Defines the args passed to the platform_on_each_cpu_callback
- *     function.
+ *   @brief Locates all of the protocols that are needed by this architecture
+ *
+ * <!-- inputs/outputs -->
+ *   @return returns EFI_SUCCESS on success, and a non-EFI_SUCCESS value on
+ *     failure.
  */
-struct work_on_cpu_callback_args
+EFI_STATUS
+arch_locate_protocols(void)
 {
-    /**
-     * @brief The fucntion to call from platform_on_each_cpu_callback
-     */
-    platform_per_cpu_func func;
+    EFI_STATUS status = EFI_SUCCESS;
+    EFI_GUID efi_mp_services_protocol_guid = EFI_MP_SERVICES_PROTOCOL_GUID;
 
-    /**
-     * @brief The CPU platform_on_each_cpu_callback is called on
-     */
-    uint32_t cpu;
+    status = g_st->BootServices->LocateProtocol(
+        &efi_mp_services_protocol_guid, NULL, (VOID **)&g_mp_services_protocol);
+    if (EFI_ERROR(status)) {
+        bferror_x64("LocateProtocol EFI_MP_SERVICES_PROTOCOL failed", status);
+        return status;
+    }
 
-    /**
-     * @brief reserved
-     */
-    uint32_t reserved;
-
-    /**
-     * @brief The return value of 'func'
-     */
-    int64_t ret;
-};
-
-#endif
+    return EFI_SUCCESS;
+}

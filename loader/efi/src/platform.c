@@ -25,15 +25,16 @@
  */
 
 #include <arch_init.h>
+#include <arch_num_online_cpus.h>
+#include <arch_work_on_cpu.h>
 #include <constants.h>
 #include <debug.h>
-#include <efi/efi_mp_services_protocol.h>
 #include <efi/efi_status.h>
 #include <efi/efi_system_table.h>
 #include <efi/efi_types.h>
 #include <g_mk_debug_ring.h>
 #include <platform.h>
-#include <work_on_cpu_callback_args.h>
+#include <work_on_cpu_callback.h>
 
 /**
  * <!-- description -->
@@ -281,36 +282,7 @@ platform_copy_to_user(void *const dst, void const *const src, uint64_t const num
 uint32_t
 platform_num_online_cpus(void)
 {
-    EFI_STATUS status = EFI_SUCCESS;
-    UINTN NumberOfProcessors;
-    UINTN NumberOfEnabledProcessors;
-
-    status = g_mp_services_protocol->GetNumberOfProcessors(
-        g_mp_services_protocol, &NumberOfProcessors, &NumberOfEnabledProcessors);
-    if (EFI_ERROR(status)) {
-        bferror_x64("GetNumberOfProcessors failed", status);
-        return ((uint32_t)0);
-    }
-
-    return (uint32_t)NumberOfProcessors;
-}
-
-/**
- * <!-- description -->
- *   @brief This function is called when the user calls platform_on_each_cpu.
- *     On each iteration of the CPU, this function calls the user provided
- *     callback with the signature that we perfer.
- *
- * <!-- inputs/outputs -->
- *   @param ProcedureArgument stores the params needed to execute the callback
- */
-static void
-work_on_cpu_callback(void *const ProcedureArgument)
-{
-    struct work_on_cpu_callback_args *args =
-        ((struct work_on_cpu_callback_args *)ProcedureArgument);
-
-    args->ret = args->func(args->cpu);
+    return arch_num_online_cpus();
 }
 
 /**
@@ -325,18 +297,7 @@ work_on_cpu_callback(void *const ProcedureArgument)
 void
 work_on_cpu(uint32_t const cpu, void *const callback, struct work_on_cpu_callback_args *const args)
 {
-    if (cpu == 0U) {
-        args->ret = args->func(args->cpu);
-    }
-    else {
-        EFI_STATUS status = g_mp_services_protocol->StartupThisAP(
-            g_mp_services_protocol, callback, cpu, NULL, 0, args, NULL);
-
-        if (EFI_ERROR(status)) {
-            bferror_x64("StartupThisAP failed", status);
-            args->ret = LOADER_FAILURE;
-        }
-    }
+    arch_work_on_cpu(cpu, callback, args);
 }
 
 /**

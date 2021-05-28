@@ -24,40 +24,34 @@
  * SOFTWARE.
  */
 
-#ifndef PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
-#define PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
-
-#include <platform.h>
+#include <debug.h>
+#include <efi/efi_mp_services_protocol.h>
+#include <efi/efi_status.h>
+#include <efi/efi_types.h>
 #include <types.h>
 
 /**
- * @struct work_on_cpu_callback_args
- *
  * <!-- description -->
- *   @brief Defines the args passed to the platform_on_each_cpu_callback
- *     function.
+ *   @brief Returns the total number of online CPUs on this architecture
+ *     (i.e. PPs)
+ *
+ * <!-- inputs/outputs -->
+ *   @return Returns the total number of online CPUs on this architecture
+ *     (i.e. PPs)
  */
-struct work_on_cpu_callback_args
+uint32_t
+arch_num_online_cpus(void)
 {
-    /**
-     * @brief The fucntion to call from platform_on_each_cpu_callback
-     */
-    platform_per_cpu_func func;
+    EFI_STATUS status = EFI_SUCCESS;
+    UINTN NumberOfProcessors;
+    UINTN NumberOfEnabledProcessors;
 
-    /**
-     * @brief The CPU platform_on_each_cpu_callback is called on
-     */
-    uint32_t cpu;
+    status = g_mp_services_protocol->GetNumberOfProcessors(
+        g_mp_services_protocol, &NumberOfProcessors, &NumberOfEnabledProcessors);
+    if (EFI_ERROR(status)) {
+        bferror_x64("GetNumberOfProcessors failed", status);
+        return ((uint32_t)0);
+    }
 
-    /**
-     * @brief reserved
-     */
-    uint32_t reserved;
-
-    /**
-     * @brief The return value of 'func'
-     */
-    int64_t ret;
-};
-
-#endif
+    return (uint32_t)NumberOfProcessors;
+}

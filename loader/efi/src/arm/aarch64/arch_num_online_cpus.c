@@ -24,40 +24,30 @@
  * SOFTWARE.
  */
 
-#ifndef PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
-#define PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
-
-#include <platform.h>
 #include <types.h>
 
 /**
- * @struct work_on_cpu_callback_args
- *
  * <!-- description -->
- *   @brief Defines the args passed to the platform_on_each_cpu_callback
- *     function.
+ *   @brief Returns the total number of online CPUs on this architecture
+ *     (i.e. PPs)
+ *
+ * <!-- inputs/outputs -->
+ *   @return Returns the total number of online CPUs on this architecture
+ *     (i.e. PPs)
  */
-struct work_on_cpu_callback_args
+uint32_t
+arch_num_online_cpus(void)
 {
     /**
-     * @brief The fucntion to call from platform_on_each_cpu_callback
+     * TODO:
+     * - Implement multicore support on ARM
      */
-    platform_per_cpu_func func;
 
     /**
-     * @brief The CPU platform_on_each_cpu_callback is called on
+     * NOTE:
+     * - See work_on_cpu for more details as to why this is hard coded
+     *   for now.
      */
-    uint32_t cpu;
 
-    /**
-     * @brief reserved
-     */
-    uint32_t reserved;
-
-    /**
-     * @brief The return value of 'func'
-     */
-    int64_t ret;
-};
-
-#endif
+    return 1;
+}

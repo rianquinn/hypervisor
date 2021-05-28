@@ -24,40 +24,19 @@
  * SOFTWARE.
  */
 
-#ifndef PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
-#define PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
+#ifndef ARCH_LOCATE_PROTOCOLS_H
+#define ARCH_LOCATE_PROTOCOLS_H
 
-#include <platform.h>
-#include <types.h>
+#include <efi/efi_status.h>
 
 /**
- * @struct work_on_cpu_callback_args
- *
  * <!-- description -->
- *   @brief Defines the args passed to the platform_on_each_cpu_callback
- *     function.
+ *   @brief Locates all of the protocols that are needed by this architecture
+ *
+ * <!-- inputs/outputs -->
+ *   @return returns EFI_SUCCESS on success, and a non-EFI_SUCCESS value on
+ *     failure.
  */
-struct work_on_cpu_callback_args
-{
-    /**
-     * @brief The fucntion to call from platform_on_each_cpu_callback
-     */
-    platform_per_cpu_func func;
-
-    /**
-     * @brief The CPU platform_on_each_cpu_callback is called on
-     */
-    uint32_t cpu;
-
-    /**
-     * @brief reserved
-     */
-    uint32_t reserved;
-
-    /**
-     * @brief The return value of 'func'
-     */
-    int64_t ret;
-};
+EFI_STATUS arch_locate_protocols(void);
 
 #endif

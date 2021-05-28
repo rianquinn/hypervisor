@@ -24,40 +24,23 @@
  * SOFTWARE.
  */
 
-#ifndef PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
-#define PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
-
-#include <platform.h>
-#include <types.h>
+#include <debug.h>
+#include <work_on_cpu_callback_args.h>
 
 /**
- * @struct work_on_cpu_callback_args
- *
  * <!-- description -->
- *   @brief Defines the args passed to the platform_on_each_cpu_callback
- *     function.
+ *   @brief This function is called when the user calls platform_on_each_cpu.
+ *     On each iteration of the CPU, this function calls the user provided
+ *     callback with the signature that we perfer.
+ *
+ * <!-- inputs/outputs -->
+ *   @param ProcedureArgument stores the params needed to execute the callback
  */
-struct work_on_cpu_callback_args
+void
+work_on_cpu_callback(void *const ProcedureArgument)
 {
-    /**
-     * @brief The fucntion to call from platform_on_each_cpu_callback
-     */
-    platform_per_cpu_func func;
+    struct work_on_cpu_callback_args *args =
+        ((struct work_on_cpu_callback_args *)ProcedureArgument);
 
-    /**
-     * @brief The CPU platform_on_each_cpu_callback is called on
-     */
-    uint32_t cpu;
-
-    /**
-     * @brief reserved
-     */
-    uint32_t reserved;
-
-    /**
-     * @brief The return value of 'func'
-     */
-    int64_t ret;
-};
-
-#endif
+    args->ret = args->func(args->cpu);
+}
