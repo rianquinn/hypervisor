@@ -30,6 +30,7 @@
 #include <bfelf_elf64_phdr_t.h>
 #include <constants.h>
 #include <debug.h>
+#include <flush_cache.h>
 #include <map_4k_page.h>
 #include <pdpt_t.h>
 #include <pdpto.h>
@@ -43,7 +44,6 @@
 #include <pto.h>
 #include <root_page_table_t.h>
 #include <types.h>
-#include <flush_cache.h>
 
 /**
  * <!-- description -->

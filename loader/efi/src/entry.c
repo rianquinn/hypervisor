@@ -232,7 +232,8 @@ load_images_and_start(void)
     EFI_FILE_PROTOCOL *file_protocol = NULL;
     struct start_vmm_args_t start_args = {0};
 
-    status = g_simple_file_system_protocol->OpenVolume(g_simple_file_system_protocol, &file_protocol);
+    status =
+        g_simple_file_system_protocol->OpenVolume(g_simple_file_system_protocol, &file_protocol);
     if (EFI_ERROR(status)) {
         bferror_x64("OpenVolume failed", status);
         return status;
@@ -244,7 +245,8 @@ load_images_and_start(void)
         return status;
     }
 
-    status = read_file(file_protocol, L"fs0:\\bareflank_extension0", &(start_args.ext_elf_files[0]));
+    status =
+        read_file(file_protocol, L"fs0:\\bareflank_extension0", &(start_args.ext_elf_files[0]));
     if (EFI_ERROR(status)) {
         bferror_x64("open_extensions failed", status);
         return status;

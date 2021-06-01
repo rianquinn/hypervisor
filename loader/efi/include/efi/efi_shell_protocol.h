@@ -27,16 +27,16 @@
 #ifndef EFI_SHELL_PROTOCOL_H
 #define EFI_SHELL_PROTOCOL_H
 
-#include "efi_types.h"
-#include "efi_shell_file_info.h"
 #include "efi_device_path_protocol.h"
+#include "efi_shell_file_info.h"
+#include "efi_types.h"
 
 /** @brief defines the GUID for EFI_SHELL_PROTOCOL_GUID */
-#define EFI_SHELL_PROTOCOL_GUID                                                              \
+#define EFI_SHELL_PROTOCOL_GUID                                                                    \
     {                                                                                              \
-         0x6302d008, 0x7f9b, 0x4f30,                                                                \
+        0x6302d008, 0x7f9b, 0x4f30,                                                                \
         {                                                                                          \
-             0x87, 0xac, 0x60, 0xc9, 0xfe, 0xf5, 0xda, 0x4e                                         \
+            0x87, 0xac, 0x60, 0xc9, 0xfe, 0xf5, 0xda, 0x4e                                         \
         }                                                                                          \
     }
 
@@ -53,11 +53,7 @@ typedef struct _EFI_SHELL_PROTOCOL EFI_SHELL_PROTOCOL;
  * <!-- inputs/outputs -->
  *   @return Returns an EFI_STATUS
  */
-typedef
-BOOLEAN
-(EFIAPI *EFI_SHELL_BATCH_IS_ACTIVE) (
- VOID
- );
+typedef BOOLEAN(EFIAPI *EFI_SHELL_BATCH_IS_ACTIVE)(VOID);
 
 /**
  * <!-- description -->
@@ -67,11 +63,7 @@ BOOLEAN
  *   @param FileHandle The file handle to be closed
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_CLOSE_FILE)(
- IN SHELL_FILE_HANDLE FileHandle
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_CLOSE_FILE)(IN SHELL_FILE_HANDLE FileHandle);
 
 /**
  * <!-- description -->
@@ -85,13 +77,8 @@ EFI_STATUS
  *     handle.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_CREATE_FILE)(
- IN CONST CHAR16 *FileName,
- IN UINT64 FileAttribs,
- OUT SHELL_FILE_HANDLE *FileHandle
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_CREATE_FILE)(
+    IN CONST CHAR16 *FileName, IN UINT64 FileAttribs, OUT SHELL_FILE_HANDLE *FileHandle);
 
 /**
  * <!-- description -->
@@ -101,11 +88,7 @@ EFI_STATUS
  *   @param FileHandle The file handle to delete.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_DELETE_FILE)(
- IN SHELL_FILE_HANDLE FileHandle
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_DELETE_FILE)(IN SHELL_FILE_HANDLE FileHandle);
 
 /**
  * <!-- description -->
@@ -115,11 +98,7 @@ EFI_STATUS
  *   @param FileName Points to the null-terminated file name.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_DELETE_FILE_BY_NAME)(
- IN CONST CHAR16 *FileName
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_DELETE_FILE_BY_NAME)(IN CONST CHAR16 *FileName);
 
 /**
  * <!-- description -->
@@ -128,11 +107,7 @@ EFI_STATUS
  * <!-- inputs/outputs -->
  *   @return Returns an EFI_STATUS
  */
-typedef
-VOID
-(EFIAPI *EFI_SHELL_DISABLE_PAGE_BREAK) (
- VOID
- );
+typedef VOID(EFIAPI *EFI_SHELL_DISABLE_PAGE_BREAK)(VOID);
 
 /**
  * <!-- description -->
@@ -141,11 +116,7 @@ VOID
  * <!-- inputs/outputs -->
  *   @return Returns an EFI_STATUS
  */
-typedef
-VOID
-(EFIAPI *EFI_SHELL_ENABLE_PAGE_BREAK) (
- VOID
- );
+typedef VOID(EFIAPI *EFI_SHELL_ENABLE_PAGE_BREAK)(VOID);
 
 /**
  * <!-- description -->
@@ -164,14 +135,11 @@ VOID
  *   @param ErrorCode Points to the status code returned by the command.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_EXECUTE) (
- IN EFI_HANDLE *ParentImageHandle,
- IN CHAR16 *CommandLine OPTIONAL,
- IN CHAR16 **Environment OPTIONAL,
- OUT EFI_STATUS *StatusCode OPTIONAL
-);
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_EXECUTE)(
+    IN EFI_HANDLE *ParentImageHandle,
+    IN CHAR16 *CommandLine OPTIONAL,
+    IN CHAR16 **Environment OPTIONAL,
+    OUT EFI_STATUS *StatusCode OPTIONAL);
 
 /**
  * <!-- description -->
@@ -185,12 +153,8 @@ EFI_STATUS
  *     files were found.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_FIND_FILES)(
- IN CONST CHAR16 *FilePattern,
- OUT EFI_SHELL_FILE_INFO **FileList
-);
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_FIND_FILES)(
+    IN CONST CHAR16 *FilePattern, OUT EFI_SHELL_FILE_INFO **FileList);
 
 /**
  * <!-- description -->
@@ -202,12 +166,8 @@ EFI_STATUS
  *     or NULL if there are no files in the directory.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_FIND_FILES_IN_DIR)(
- IN SHELL_FILE_HANDLE FileDirHandle,
- OUT EFI_SHELL_FILE_INFO **FileList
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_FIND_FILES_IN_DIR)(
+    IN SHELL_FILE_HANDLE FileDirHandle, OUT EFI_SHELL_FILE_INFO **FileList);
 
 /**
  * <!-- description -->
@@ -217,11 +177,7 @@ EFI_STATUS
  *   @param FileHandle The handle of the file to flush.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_FLUSH_FILE)(
- IN SHELL_FILE_HANDLE FileHandle
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_FLUSH_FILE)(IN SHELL_FILE_HANDLE FileHandle);
 
 /**
  * <!-- description -->
@@ -232,11 +188,7 @@ EFI_STATUS
  *     defined in OpenFileList()
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_FREE_FILE_LIST) (
- IN EFI_SHELL_FILE_INFO **FileList
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_FREE_FILE_LIST)(IN EFI_SHELL_FILE_INFO **FileList);
 
 /**
  * <!-- description -->
@@ -255,12 +207,8 @@ EFI_STATUS
  *     output parameter must be ignored.
  *   @return Returns an EFI_STATUS
  */
-typedef
-CONST CHAR16 *
-(EFIAPI *EFI_SHELL_GET_ALIAS)(
-IN CONST CHAR16 *Alias,
- OUT BOOLEAN *Volatile OPTIONAL
-);
+typedef CONST
+    CHAR16 *(EFIAPI *EFI_SHELL_GET_ALIAS)(IN CONST CHAR16 *Alias, OUT BOOLEAN *Volatile OPTIONAL);
 
 /**
  * <!-- description -->
@@ -271,11 +219,7 @@ IN CONST CHAR16 *Alias,
  *     then the current working directory is returned.
  *   @return Returns an EFI_STATUS
  */
-typedef
-CONST CHAR16 *
-(EFIAPI *EFI_SHELL_GET_CUR_DIR) (
- IN CONST CHAR16 *FileSystemMapping OPTIONAL
- );
+typedef CONST CHAR16 *(EFIAPI *EFI_SHELL_GET_CUR_DIR)(IN CONST CHAR16 *FileSystemMapping OPTIONAL);
 
 /** @brief n/a */
 typedef UINT32 EFI_DEVICE_NAME_FLAGS;
@@ -299,14 +243,11 @@ typedef UINT32 EFI_DEVICE_NAME_FLAGS;
  *     points to NULL. The name must be freed by the caller.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(*EFI_SHELL_GET_DEVICE_NAME) (
- IN EFI_HANDLE DeviceHandle,
- IN EFI_DEVICE_NAME_FLAGS Flags,
- IN CHAR8 *Language,
- OUT CHAR16 **BestDeviceName
- );
+typedef EFI_STATUS (*EFI_SHELL_GET_DEVICE_NAME)(
+    IN EFI_HANDLE DeviceHandle,
+    IN EFI_DEVICE_NAME_FLAGS Flags,
+    IN CHAR8 *Language,
+    OUT CHAR16 **BestDeviceName);
 
 /**
  * <!-- description -->
@@ -316,11 +257,8 @@ EFI_STATUS
  *   @param Mapping A pointer to the mapping.
  *   @return Returns an EFI_STATUS
  */
-typedef
-CONST EFI_DEVICE_PATH_PROTOCOL *
-(EFIAPI *EFI_SHELL_GET_DEVICE_PATH_FROM_MAP) (
- IN CONST CHAR16 *Mapping
- );
+typedef CONST EFI_DEVICE_PATH_PROTOCOL *(EFIAPI *EFI_SHELL_GET_DEVICE_PATH_FROM_MAP)(
+    IN CONST CHAR16 *Mapping);
 
 /**
  * <!-- description -->
@@ -330,11 +268,8 @@ CONST EFI_DEVICE_PATH_PROTOCOL *
  *   @param Path The pointer to the path.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_DEVICE_PATH_PROTOCOL *
-(EFIAPI *EFI_SHELL_GET_DEVICE_PATH_FROM_FILE_PATH) (
- IN CONST CHAR16 *Path
- );
+typedef EFI_DEVICE_PATH_PROTOCOL *(EFIAPI *EFI_SHELL_GET_DEVICE_PATH_FROM_FILE_PATH)(
+    IN CONST CHAR16 *Path);
 
 /**
  * <!-- description -->
@@ -348,11 +283,7 @@ EFI_DEVICE_PATH_PROTOCOL *
  *     be terminated by a double NULL.
  *   @return Returns an EFI_STATUS
  */
-typedef
-CONST CHAR16 *
-(EFIAPI *EFI_SHELL_GET_ENV) (
- IN CONST CHAR16 *Name
- );
+typedef CONST CHAR16 *(EFIAPI *EFI_SHELL_GET_ENV)(IN CONST CHAR16 *Name);
 
 /**
  * <!-- description -->
@@ -371,12 +302,8 @@ CONST CHAR16 *
  *     undefined.
  *   @return Returns an EFI_STATUS
  */
-typedef
-CONST CHAR16 *
-(EFIAPI *EFI_SHELL_GET_ENV_EX) (
-IN CONST CHAR16 *Name,
-OUT UINT32 *Attributes OPTIONAL
-);
+typedef CONST
+    CHAR16 *(EFIAPI *EFI_SHELL_GET_ENV_EX)(IN CONST CHAR16 *Name, OUT UINT32 *Attributes OPTIONAL);
 
 /**
  * <!-- description -->
@@ -386,11 +313,7 @@ OUT UINT32 *Attributes OPTIONAL
  *   @param FileHandle A file handle
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_FILE_INFO *
-(EFIAPI *EFI_SHELL_GET_FILE_INFO)(
- IN SHELL_FILE_HANDLE FileHandle
- );
+typedef EFI_FILE_INFO *(EFIAPI *EFI_SHELL_GET_FILE_INFO)(IN SHELL_FILE_HANDLE FileHandle);
 
 /**
  * <!-- description -->
@@ -400,11 +323,8 @@ EFI_FILE_INFO *
  *   @param Path The pointer to the device path.
  *   @return Returns an EFI_STATUS
  */
-typedef
-CHAR16 *
-(EFIAPI *EFI_SHELL_GET_FILE_PATH_FROM_DEVICE_PATH) (
- IN CONST EFI_DEVICE_PATH_PROTOCOL *Path
- );
+typedef CHAR16 *(EFIAPI *EFI_SHELL_GET_FILE_PATH_FROM_DEVICE_PATH)(
+    IN CONST EFI_DEVICE_PATH_PROTOCOL *Path);
 
 /**
  * <!-- description -->
@@ -415,12 +335,8 @@ CHAR16 *
  *   @param Position Byte position from the start of the file
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_GET_FILE_POSITION)(
- IN SHELL_FILE_HANDLE FileHandle,
- OUT UINT64 *Position
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_GET_FILE_POSITION)(
+    IN SHELL_FILE_HANDLE FileHandle, OUT UINT64 *Position);
 
 /**
  * <!-- description -->
@@ -431,12 +347,8 @@ EFI_STATUS
  *   @param Size The size of this file.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_GET_FILE_SIZE)(
- IN SHELL_FILE_HANDLE FileHandle,
- OUT UINT64 *Size
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_GET_FILE_SIZE)(
+    IN SHELL_FILE_HANDLE FileHandle, OUT UINT64 *Size);
 
 /**
  * <!-- description -->
@@ -447,12 +359,8 @@ EFI_STATUS
  *   @param Guid A pointer to the GUID structure to be filled in.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_GET_GUID_FROM_NAME)(
- IN CONST CHAR16 *GuidName,
- OUT EFI_GUID *Guid
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_GET_GUID_FROM_NAME)(
+    IN CONST CHAR16 *GuidName, OUT EFI_GUID *Guid);
 
 /**
  * <!-- description -->
@@ -464,12 +372,8 @@ EFI_STATUS
  *     being requested.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_GET_GUID_NAME)(
- IN CONST EFI_GUID *Guid,
- OUT CONST CHAR16 **GuidName
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_GET_GUID_NAME)(
+    IN CONST EFI_GUID *Guid, OUT CONST CHAR16 **GuidName);
 
 /**
  * <!-- description -->
@@ -483,13 +387,8 @@ EFI_STATUS
  *     all specified help text.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_GET_HELP_TEXT) (
- IN CONST CHAR16 *Command,
- IN CONST CHAR16 *Sections,
- OUT CHAR16 **HelpText
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_GET_HELP_TEXT)(
+    IN CONST CHAR16 *Command, IN CONST CHAR16 *Sections, OUT CHAR16 **HelpText);
 
 /**
  * <!-- description -->
@@ -502,11 +401,8 @@ EFI_STATUS
  *     the mapping.
  *   @return Returns an EFI_STATUS
  */
-typedef
-CONST CHAR16 *
-(EFIAPI *EFI_SHELL_GET_MAP_FROM_DEVICE_PATH) (
- IN OUT EFI_DEVICE_PATH_PROTOCOL **DevicePath
- );
+typedef CONST CHAR16 *(EFIAPI *EFI_SHELL_GET_MAP_FROM_DEVICE_PATH)(
+    IN OUT EFI_DEVICE_PATH_PROTOCOL **DevicePath);
 
 /**
  * <!-- description -->
@@ -515,11 +411,7 @@ CONST CHAR16 *
  * <!-- inputs/outputs -->
  *   @return Returns an EFI_STATUS
  */
-typedef
-BOOLEAN
-(EFIAPI *EFI_SHELL_GET_PAGE_BREAK) (
- VOID
- );
+typedef BOOLEAN(EFIAPI *EFI_SHELL_GET_PAGE_BREAK)(VOID);
 
 /**
  * <!-- description -->
@@ -528,11 +420,7 @@ BOOLEAN
  * <!-- inputs/outputs -->
  *   @return Returns an EFI_STATUS
  */
-typedef
-BOOLEAN
-(EFIAPI *EFI_SHELL_IS_ROOT_SHELL) (
- VOID
- );
+typedef BOOLEAN(EFIAPI *EFI_SHELL_IS_ROOT_SHELL)(VOID);
 
 /**
  * <!-- description -->
@@ -545,13 +433,8 @@ BOOLEAN
  *     EFI_FILE_MODE_WRITE from section 12.4 of the UEFI Specification.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_OPEN_FILE_BY_NAME) (
- IN CONST CHAR16 *FileName,
- OUT SHELL_FILE_HANDLE *FileHandle,
- IN UINT64 OpenMode
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_OPEN_FILE_BY_NAME)(
+    IN CONST CHAR16 *FileName, OUT SHELL_FILE_HANDLE *FileHandle, IN UINT64 OpenMode);
 
 /**
  * <!-- description -->
@@ -564,13 +447,8 @@ EFI_STATUS
  *   @param FileList Points to the start of a list of files opened.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_OPEN_FILE_LIST) (
- IN CHAR16 *Path,
- IN UINT64 OpenMode,
- OUT EFI_SHELL_FILE_INFO **FileList
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_OPEN_FILE_LIST)(
+    IN CHAR16 *Path, IN UINT64 OpenMode, OUT EFI_SHELL_FILE_INFO **FileList);
 
 /**
  * <!-- description -->
@@ -583,12 +461,8 @@ EFI_STATUS
  *     root directory on the device.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_OPEN_ROOT)(
- IN EFI_DEVICE_PATH_PROTOCOL *DevicePath,
- OUT SHELL_FILE_HANDLE *FileHandle
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_OPEN_ROOT)(
+    IN EFI_DEVICE_PATH_PROTOCOL *DevicePath, OUT SHELL_FILE_HANDLE *FileHandle);
 
 /**
  * <!-- description -->
@@ -600,12 +474,8 @@ EFI_STATUS
  *     root directory on the device.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_OPEN_ROOT_BY_HANDLE)(
- IN EFI_HANDLE DeviceHandle,
- OUT SHELL_FILE_HANDLE *FileHandle
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_OPEN_ROOT_BY_HANDLE)(
+    IN EFI_HANDLE DeviceHandle, OUT SHELL_FILE_HANDLE *FileHandle);
 
 /**
  * <!-- description -->
@@ -618,13 +488,8 @@ EFI_STATUS
  *   @param Buffer The buffer in which data is read.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_READ_FILE) (
- IN SHELL_FILE_HANDLE FileHandle,
- IN OUT UINTN *ReadSize,
- OUT VOID *Buffer
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_READ_FILE)(
+    IN SHELL_FILE_HANDLE FileHandle, IN OUT UINTN *ReadSize, OUT VOID *Buffer);
 
 /**
  * <!-- description -->
@@ -636,12 +501,8 @@ EFI_STATUS
  *     registered.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_REGISTER_GUID_NAME)(
- IN CONST EFI_GUID *Guid,
- IN CONST CHAR16 *GuidName
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_REGISTER_GUID_NAME)(
+    IN CONST EFI_GUID *Guid, IN CONST CHAR16 *GuidName);
 
 /**
  * <!-- description -->
@@ -651,11 +512,7 @@ EFI_STATUS
  *   @param FileList A pointer to the first entry in the file list.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_REMOVE_DUP_IN_FILE_LIST) (
- IN EFI_SHELL_FILE_INFO **FileList
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_REMOVE_DUP_IN_FILE_LIST)(IN EFI_SHELL_FILE_INFO **FileList);
 
 /**
  * <!-- description -->
@@ -674,14 +531,8 @@ EFI_STATUS
  *     fashion. If FALSE, the Alias will be stored in a nonvolatile fashion.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_SET_ALIAS)(
- IN CONST CHAR16 *Command,
- IN CONST CHAR16 *Alias,
- IN BOOLEAN Replace,
- IN BOOLEAN Volatile
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_SET_ALIAS)(
+    IN CONST CHAR16 *Command, IN CONST CHAR16 *Alias, IN BOOLEAN Replace, IN BOOLEAN Volatile);
 
 /**
  * <!-- description -->
@@ -694,12 +545,8 @@ EFI_STATUS
  *     specified by FileSystem.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_SET_CUR_DIR) (
- IN CONST CHAR16 *FileSystem OPTIONAL,
- IN CONST CHAR16 *Dir
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_SET_CUR_DIR)(
+    IN CONST CHAR16 *FileSystem OPTIONAL, IN CONST CHAR16 *Dir);
 
 /**
  * <!-- description -->
@@ -713,13 +560,8 @@ EFI_STATUS
  *     or volatile (TRUE).
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_SET_ENV) (
- IN CONST CHAR16 *Name,
- IN CONST CHAR16 *Value,
- IN BOOLEAN Volatile
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_SET_ENV)(
+    IN CONST CHAR16 *Name, IN CONST CHAR16 *Value, IN BOOLEAN Volatile);
 
 /**
  * <!-- description -->
@@ -730,12 +572,8 @@ EFI_STATUS
  *   @param FileInfo A file handle
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_SET_FILE_INFO)(
- IN SHELL_FILE_HANDLE FileHandle,
- IN CONST EFI_FILE_INFO *FileInfo
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_SET_FILE_INFO)(
+    IN SHELL_FILE_HANDLE FileHandle, IN CONST EFI_FILE_INFO *FileInfo);
 
 /**
  * <!-- description -->
@@ -746,12 +584,8 @@ EFI_STATUS
  *   @param Position The file handle on which requested position will be set.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_SET_FILE_POSITION)(
- IN SHELL_FILE_HANDLE FileHandle,
- IN UINT64 Position
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_SET_FILE_POSITION)(
+    IN SHELL_FILE_HANDLE FileHandle, IN UINT64 Position);
 
 /**
  * <!-- description -->
@@ -762,12 +596,8 @@ EFI_STATUS
  *   @param Mapping Points to the null-terminated mapping for the device path.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_SET_MAP)(
- IN CONST EFI_DEVICE_PATH_PROTOCOL *DevicePath,
- IN CONST CHAR16 *Mapping
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_SET_MAP)(
+    IN CONST EFI_DEVICE_PATH_PROTOCOL *DevicePath, IN CONST CHAR16 *Mapping);
 
 /**
  * <!-- description -->
@@ -779,13 +609,8 @@ EFI_STATUS
  *   @param Buffer The buffer in which data to write.
  *   @return Returns an EFI_STATUS
  */
-typedef
-EFI_STATUS
-(EFIAPI *EFI_SHELL_WRITE_FILE)(
- IN SHELL_FILE_HANDLE FileHandle,
- IN OUT UINTN *BufferSize,
- OUT VOID *Buffer
- );
+typedef EFI_STATUS(EFIAPI *EFI_SHELL_WRITE_FILE)(
+    IN SHELL_FILE_HANDLE FileHandle, IN OUT UINTN *BufferSize, OUT VOID *Buffer);
 
 /**
  * @struct EFI_SHELL_PROTOCOL

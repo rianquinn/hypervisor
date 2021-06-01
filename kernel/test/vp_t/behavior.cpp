@@ -35,7 +35,7 @@
 namespace mk
 {
     /// @brief defines the max number of VMs used in testing
-    constexpr bsl::safe_uintmax INTEGRATION_MAX_PPS{bsl::to_umax(2)};
+    constexpr bsl::safe_uint16 INTEGRATION_MAX_PPS{bsl::to_u16(2)};
 
     /// @brief defines VMID0
     constexpr bsl::safe_uint16 VMID0{bsl::to_u16(0)};

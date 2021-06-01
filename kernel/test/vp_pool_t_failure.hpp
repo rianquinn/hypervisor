@@ -49,8 +49,8 @@ namespace mk
         ///     the vp_t is returned. Otherwise, this function will return
         ///     bsl::safe_uint16::zero(true)
         ///
-        [[nodiscard]] constexpr auto
-        is_assigned_to_vm(bsl::safe_uint16 const &vmid) const &noexcept -> bsl::safe_uint16
+        [[nodiscard]] static constexpr auto
+        is_assigned_to_vm(bsl::safe_uint16 const &vmid) noexcept -> bsl::safe_uint16
         {
             bsl::discard(vmid);
             return syscall::BF_ROOT_VMID;

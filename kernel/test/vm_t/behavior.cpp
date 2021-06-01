@@ -36,7 +36,7 @@
 namespace mk
 {
     /// @brief defines the max number of PPs used in testing
-    constexpr bsl::safe_uintmax INTEGRATION_MAX_PPS{bsl::to_umax(3)};
+    constexpr bsl::safe_uint16 INTEGRATION_MAX_PPS{bsl::to_u16(3)};
 
     /// @brief defines VMID0
     constexpr bsl::safe_uint16 VMID0{bsl::to_u16(0)};
@@ -57,7 +57,7 @@ namespace mk
     {
         bsl::ut_scenario{"initialize invalid id version #1"} = []() {
             bsl::ut_given{} = []() {
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_then{} = [&vm]() {
                     bsl::ut_check(!vm.initialize(bsl::safe_uint16::zero(true)));
                 };
@@ -66,7 +66,7 @@ namespace mk
 
         bsl::ut_scenario{"initialize invalid id version #2"} = []() {
             bsl::ut_given{} = []() {
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_then{} = [&vm]() {
                     bsl::ut_check(!vm.initialize(syscall::BF_INVALID_ID));
                 };
@@ -75,7 +75,7 @@ namespace mk
 
         bsl::ut_scenario{"initialize success"} = []() {
             bsl::ut_given{} = []() {
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_then{} = [&vm]() {
                     bsl::ut_check(vm.initialize(VMID0));
                 };
@@ -84,7 +84,7 @@ namespace mk
 
         bsl::ut_scenario{"initialize more than once failure"} = []() {
             bsl::ut_given{} = []() {
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&vm]() {
                     bsl::ut_required_step(vm.initialize(VMID0));
                     bsl::ut_then{} = [&vm]() {
@@ -99,7 +99,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID0));
                     bsl::ut_then{} = [&tls, &ext_pool, &vp_pool, &vm]() {
@@ -115,7 +115,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_then{} = [&tls, &ext_pool, &vp_pool, &vm]() {
@@ -131,7 +131,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_required_step(vm.allocate(tls, ext_pool));
@@ -149,7 +149,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     vm.zombify();
@@ -167,7 +167,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_failure vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_then{} = [&tls, &ext_pool, &vp_pool, &vm]() {
@@ -184,7 +184,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -205,7 +205,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_signal_vm_destroyed_failure ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_then{} = [&tls, &ext_pool, &vp_pool, &vm]() {
@@ -221,7 +221,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_then{} = [&tls, &ext_pool, &vm]() {
                     bsl::ut_check(!vm.allocate(tls, ext_pool));
                 };
@@ -232,7 +232,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     vm.zombify();
@@ -247,7 +247,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_signal_vm_created_failure ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_then{} = [&tls, &ext_pool, &vm]() {
@@ -263,7 +263,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_then{} = [&tls, &ext_pool, &vm]() {
@@ -279,7 +279,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID0));
                     bsl::ut_required_step(vm.allocate(tls, ext_pool));
@@ -295,7 +295,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_then{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_check(!vm.deallocate(tls, ext_pool, vp_pool));
                 };
@@ -307,7 +307,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID0));
                     bsl::ut_required_step(vm.allocate(tls, ext_pool));
@@ -323,7 +323,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_required_step(vm.allocate(tls, ext_pool));
@@ -340,7 +340,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_required_step(vm.allocate(tls, ext_pool));
@@ -357,7 +357,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_failure vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_required_step(vm.allocate(tls, ext_pool));
@@ -375,7 +375,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -396,7 +396,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_signal_vm_destroyed_failure ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_required_step(vm.allocate(tls, ext_pool));
@@ -414,7 +414,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_required_step(vm.allocate(tls, ext_pool));
@@ -428,7 +428,7 @@ namespace mk
 
         bsl::ut_scenario{"zombify without initialize success"} = []() {
             bsl::ut_given{} = []() {
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&vm]() {
                     vm.zombify();
                     bsl::ut_then{} = [&vm]() {
@@ -440,7 +440,7 @@ namespace mk
 
         bsl::ut_scenario{"zombify success"} = []() {
             bsl::ut_given{} = []() {
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     vm.zombify();
@@ -453,7 +453,7 @@ namespace mk
 
         bsl::ut_scenario{"zombify root vm is ignored"} = []() {
             bsl::ut_given{} = []() {
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&vm]() {
                     bsl::ut_required_step(vm.initialize(VMID0));
                     vm.zombify();
@@ -466,7 +466,7 @@ namespace mk
 
         bsl::ut_scenario{"zombify more than once is ignored"} = []() {
             bsl::ut_given{} = []() {
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     vm.zombify();
@@ -480,7 +480,7 @@ namespace mk
 
         bsl::ut_scenario{"status without initialize"} = []() {
             bsl::ut_given{} = []() {
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_then{} = [&vm]() {
                     bsl::ut_check(vm.is_deallocated());
                     bsl::ut_check(!vm.is_allocated());
@@ -491,7 +491,7 @@ namespace mk
 
         bsl::ut_scenario{"status after initialize"} = []() {
             bsl::ut_given{} = []() {
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_then{} = [&vm]() {
@@ -507,7 +507,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_required_step(vm.allocate(tls, ext_pool));
@@ -525,7 +525,7 @@ namespace mk
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
                 vp_pool_t_success vp_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vp_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_required_step(vm.allocate(tls, ext_pool));
@@ -541,7 +541,7 @@ namespace mk
 
         bsl::ut_scenario{"status after zombify"} = []() {
             bsl::ut_given{} = []() {
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     vm.zombify();
@@ -557,7 +557,7 @@ namespace mk
         bsl::ut_scenario{"set_active without initialize failure"} = []() {
             bsl::ut_given{} = []() {
                 tls_t tls{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_then{} = [&tls, &vm]() {
                     bsl::ut_check(!vm.set_active(tls));
                 };
@@ -567,7 +567,7 @@ namespace mk
         bsl::ut_scenario{"set_active without allocate failure"} = []() {
             bsl::ut_given{} = []() {
                 tls_t tls{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -583,7 +583,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -601,7 +601,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -619,7 +619,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -638,7 +638,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = VMID0.get();
@@ -655,7 +655,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -673,7 +673,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -689,7 +689,7 @@ namespace mk
         bsl::ut_scenario{"set_inactive without initialize failure"} = []() {
             bsl::ut_given{} = []() {
                 tls_t tls{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_then{} = [&tls, &vm]() {
                     bsl::ut_check(!vm.set_inactive(tls));
                 };
@@ -699,7 +699,7 @@ namespace mk
         bsl::ut_scenario{"set_inactive without activate failure"} = []() {
             bsl::ut_given{} = []() {
                 tls_t tls{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -715,7 +715,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -734,7 +734,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -753,7 +753,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -772,7 +772,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -791,7 +791,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -810,7 +810,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -830,7 +830,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -848,7 +848,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -866,7 +866,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -883,7 +883,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = syscall::BF_INVALID_ID.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -900,7 +900,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -918,7 +918,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -935,7 +935,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = syscall::BF_INVALID_ID.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();
@@ -951,7 +951,7 @@ namespace mk
         bsl::ut_scenario{"dump without initialize"} = []() {
             bsl::ut_given{} = []() {
                 tls_t tls{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_then{} = [&tls, &vm]() {
                     vm.dump(tls);
                 };
@@ -961,7 +961,7 @@ namespace mk
         bsl::ut_scenario{"dump with initialize"} = []() {
             bsl::ut_given{} = []() {
                 tls_t tls{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_then{} = [&tls, &vm]() {
@@ -975,7 +975,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     bsl::ut_required_step(vm.initialize(VMID1));
                     bsl::ut_required_step(vm.allocate(tls, ext_pool));
@@ -990,7 +990,7 @@ namespace mk
             bsl::ut_given{} = []() {
                 tls_t tls{};
                 ext_pool_t_success ext_pool{};
-                vm_t<INTEGRATION_MAX_PPS.get()> vm{};
+                vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 bsl::ut_when{} = [&tls, &ext_pool, &vm]() {
                     tls.online_pps = INTEGRATION_MAX_PPS.get();
                     tls.active_vmid = syscall::BF_INVALID_ID.get();

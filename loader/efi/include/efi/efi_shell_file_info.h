@@ -27,8 +27,8 @@
 #ifndef EFI_SHELL_FILE_INFO_H
 #define EFI_SHELL_FILE_INFO_H
 
-#include "efi_list_entry.h"
 #include "efi_file_info.h"
+#include "efi_list_entry.h"
 #include "efi_types.h"
 
 /** @brief n/a */

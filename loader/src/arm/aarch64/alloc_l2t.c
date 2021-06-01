@@ -26,12 +26,12 @@
 
 #include <constants.h>
 #include <debug.h>
+#include <flush_cache.h>
 #include <l1t_t.h>
 #include <l1to.h>
 #include <l2t_t.h>
 #include <platform.h>
 #include <types.h>
-#include <flush_cache.h>
 
 /**
  * <!-- description -->

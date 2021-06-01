@@ -206,6 +206,9 @@ namespace mk
                     bsl::print() << bsl::ylw << "----------------------------------+";
                     bsl::print() << bsl::rst << bsl::endl;
                 }
+                else {
+                    bsl::touch();
+                }
 
                 ++pp_log->crsr;
                 if (pp_log->crsr < pp_log->log.size()) {

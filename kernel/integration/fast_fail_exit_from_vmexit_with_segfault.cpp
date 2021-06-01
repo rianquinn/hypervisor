@@ -52,8 +52,10 @@ namespace integration
         bsl::discard(exit_reason);
 
         bsl::error() << "extension purposely dereferencing nullptr. fault expected\n";
-        int *i{};
-        *i = 42;
+        bool *i{};
+        // This is intentional as it is what we are testing.
+        // NOLINTNEXTLINE(clang-analyzer-core.NullDereference)
+        *i = true;
     }
 
     /// <!-- description -->

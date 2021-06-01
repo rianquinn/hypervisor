@@ -25,6 +25,8 @@
 #ifndef SERIAL_WRITE_C_HPP
 #define SERIAL_WRITE_C_HPP
 
+#include <bsl/char_type.hpp>
+
 namespace mk
 {
     /// <!-- description -->
@@ -33,7 +35,7 @@ namespace mk
     /// <!-- inputs/outputs -->
     ///   @param c the character to write
     ///
-    extern "C" void serial_write_c(char const c) noexcept;
+    extern "C" void serial_write_c(bsl::char_type const c) noexcept;
 }
 
 #endif

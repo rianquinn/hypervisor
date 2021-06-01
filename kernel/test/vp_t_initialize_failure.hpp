@@ -50,8 +50,8 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        [[nodiscard]] static constexpr auto
+        initialize(bsl::safe_uint16 const &i) noexcept -> bsl::errc_type
         {
             if (i.is_zero()) {
                 return bsl::errc_success;

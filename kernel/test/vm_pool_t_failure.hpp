@@ -49,14 +49,10 @@ namespace mk
         ///     if the provided VMID is invalid, or if the vm_t is not
         ///     deallocated.
         ///
-        [[nodiscard]] constexpr auto
-        is_deallocated(bsl::safe_uint16 const &vmid) const &noexcept -> bool
+        [[nodiscard]] static constexpr auto
+        is_deallocated(bsl::safe_uint16 const &vmid) noexcept -> bool
         {
-            if (bsl::ONE_U16 == vmid) {
-                return false;
-            }
-
-            return true;
+            return bsl::ONE_U16 != vmid;
         }
 
         /// <!-- description -->
@@ -70,8 +66,8 @@ namespace mk
         ///     if the provided VMID is invalid, or if the vm_t is not
         ///     allocated.
         ///
-        [[nodiscard]] constexpr auto
-        is_allocated(bsl::safe_uint16 const &vmid) const &noexcept -> bool
+        [[nodiscard]] static constexpr auto
+        is_allocated(bsl::safe_uint16 const &vmid) noexcept -> bool
         {
             bsl::discard(vmid);
             return false;
@@ -88,14 +84,10 @@ namespace mk
         ///     if the provided VMID is invalid, or if the vm_t is not
         ///     a zombie.
         ///
-        [[nodiscard]] constexpr auto
-        is_zombie(bsl::safe_uint16 const &vmid) const &noexcept -> bool
+        [[nodiscard]] static constexpr auto
+        is_zombie(bsl::safe_uint16 const &vmid) noexcept -> bool
         {
-            if (bsl::ONE_U16 == vmid) {
-                return true;
-            }
-
-            return false;
+            return bsl::ONE_U16 == vmid;
         }
     };
 }

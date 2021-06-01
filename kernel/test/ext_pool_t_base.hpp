@@ -51,8 +51,8 @@ namespace mk
         ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
-        [[nodiscard]] constexpr auto
-        signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
+        [[nodiscard]] static constexpr auto
+        signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) noexcept
             -> bsl::errc_type
         {
             bsl::discard(tls);
@@ -73,8 +73,8 @@ namespace mk
         ///     and friends otherwise
         ///
         template<typename TLS_CONCEPT>
-        [[nodiscard]] constexpr auto
-        signal_vm_destroyed(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
+        [[nodiscard]] static constexpr auto
+        signal_vm_destroyed(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) noexcept
             -> bsl::errc_type
         {
             bsl::discard(tls);

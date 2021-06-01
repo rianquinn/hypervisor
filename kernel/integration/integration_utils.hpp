@@ -38,6 +38,8 @@ namespace integration
     ///
     /// <!-- inputs/outputs -->
     ///   @param test the results to query
+    ///   @param sloc used to identify the location in the integration test
+    ///     where a check failed.
     ///
     constexpr void
     verify(bool const test, bsl::source_location const &sloc = bsl::here()) noexcept
@@ -58,6 +60,8 @@ namespace integration
     ///
     /// <!-- inputs/outputs -->
     ///   @param test the results to query
+    ///   @param sloc used to identify the location in the integration test
+    ///     where a check failed.
     ///
     constexpr void
     require(bool const test, bsl::source_location const &sloc = bsl::here()) noexcept
@@ -79,6 +83,8 @@ namespace integration
     ///
     /// <!-- inputs/outputs -->
     ///   @param ec the results to query
+    ///   @param sloc used to identify the location in the integration test
+    ///     where a check failed.
     ///
     constexpr void
     require_success(

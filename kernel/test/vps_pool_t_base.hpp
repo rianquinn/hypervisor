@@ -50,8 +50,8 @@ namespace mk
         ///     the vps_t is returned. Otherwise, this function will return
         ///     bsl::safe_uint16::zero(true)
         ///
-        [[nodiscard]] constexpr auto
-        is_assigned_to_vp(bsl::safe_uint16 const &vpid) const &noexcept -> bsl::safe_uint16
+        [[nodiscard]] static constexpr auto
+        is_assigned_to_vp(bsl::safe_uint16 const &vpid) noexcept -> bsl::safe_uint16
         {
             bsl::discard(vpid);
             return bsl::safe_uint16::zero(true);

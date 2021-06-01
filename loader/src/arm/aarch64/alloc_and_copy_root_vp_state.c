@@ -26,7 +26,9 @@
 
 #include <constants.h>
 #include <debug.h>
+#include <exception_vectors.h>
 #include <platform.h>
+#include <promote.h>
 #include <read_daif.h>
 #include <read_hcr_el2.h>
 #include <read_mair_el2.h>
@@ -37,8 +39,6 @@
 #include <read_vbar_el2.h>
 #include <state_save_t.h>
 #include <types.h>
-#include <promote.h>
-#include <exception_vectors.h>
 
 /**
  * <!-- description -->

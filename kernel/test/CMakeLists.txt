@@ -162,3 +162,31 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
     add_subdirectory(arm/aarch64/root_page_table_t)
     add_subdirectory(arm/aarch64/vps_t)
 endif()
+
+
+
+
+
+
+
+
+
+
+
+
+    file(GLOB SUBDIRS RELATIVE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/*)
+    foreach(DIR ${SUBDIRS})
+        file(GLOB_RECURSE FILES RELATIVE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/${DIR}/*.profraw)
+        if(NOT FILES STREQUAL "")
+            set(LLVM_PROFDATA_FILES "${LLVM_PROFDATA_FILES} ${FILES}")
+        endif()
+    endforeach()
+
+    string(REPLACE ";" " " LLVM_PROFDATA_FILES "${LLVM_PROFDATA_FILES}")
+    string(REPLACE " \\ " "" LLVM_PROFDATA_FILES "${LLVM_PROFDATA_FILES}")
+
+    
+
+    add_custom_target(yourmom
+        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} llvm-profdata merge -sparse ${LLVM_PROFDATA_FILES} -o info.profdata
+    )

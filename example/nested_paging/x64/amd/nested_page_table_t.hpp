@@ -34,17 +34,17 @@
 #include "npt_t.hpp"
 #include "npte_t.hpp"
 
+#include <lock_guard.hpp>
 #include <map_page_flags.hpp>
 #include <memory_type.hpp>
 #include <page_pool_t.hpp>
+#include <spinlock.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
-#include <lock_guard.hpp>
 #include <bsl/safe_integral.hpp>
-#include <spinlock.hpp>
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
 
@@ -720,6 +720,9 @@ namespace example
                 npte->pwt = bsl::ONE_UMAX.get();
                 npte->pcd = bsl::ONE_UMAX.get();
             }
+            else {
+                bsl::touch();
+            }
 
             return bsl::errc_success;
         }
@@ -893,6 +896,9 @@ namespace example
             if (page_type == MEMORY_TYPE_UC) {
                 npdte->pwt = bsl::ONE_UMAX.get();
                 npdte->pcd = bsl::ONE_UMAX.get();
+            }
+            else {
+                bsl::touch();
             }
 
             return bsl::errc_success;

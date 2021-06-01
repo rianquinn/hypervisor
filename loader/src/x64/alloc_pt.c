@@ -26,13 +26,13 @@
 
 #include <constants.h>
 #include <debug.h>
+#include <flush_cache.h>
 #include <pdt_t.h>
 #include <pdte_t.h>
 #include <pdto.h>
 #include <platform.h>
 #include <pt_t.h>
 #include <types.h>
-#include <flush_cache.h>
 
 /**
  * <!-- description -->

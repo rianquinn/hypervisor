@@ -25,12 +25,12 @@
  */
 
 #include <debug.h>
+#include <flush_cache.h>
 #include <l0t_t.h>
 #include <map_4k_page_rw.h>
 #include <platform.h>
 #include <root_page_table_t.h>
 #include <types.h>
-#include <flush_cache.h>
 
 /**
  * <!-- description -->

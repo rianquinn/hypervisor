@@ -46,7 +46,7 @@ namespace mk
     ///   @return Returns bsl::exit_success on success, bsl::exit_failure
     ///     otherwise
     ///
-    extern "C" auto
+    [[nodiscard]] extern "C" auto
     dispatch_syscall_trampoline(tls_t *const tls) noexcept -> bsl::exit_code
     {
         auto *const ext{static_cast<mk_ext_type *>(tls->ext)};

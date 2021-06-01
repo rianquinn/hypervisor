@@ -45,8 +45,12 @@ namespace example
         /// <!-- description -->
         ///   @brief Default constructor.
         ///
+        // We cannot member initialize atomics so this is not possible
+        // NOLINTNEXTLINE(bsl-class-member-init)
         constexpr spinlock() noexcept
         {
+            // This is the only way to initialize this
+            // NOLINTNEXTLINE(bsl-implicit-conversions-forbidden)
             m_flag = false;
         }
 

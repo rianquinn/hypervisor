@@ -53,7 +53,8 @@ namespace integration
             return syscall::bf_control_op_exit();
         }
 
-        ret = syscall::bf_handle_op_open_handle(0x42U, handle);
+        constexpr bsl::safe_uint32 invalid_spec_id{bsl::to_u32(0x42)};
+        ret = syscall::bf_handle_op_open_handle(invalid_spec_id, handle);
         integration::verify(bsl::errc_failure == ret);
 
         ret = syscall::bf_handle_op_open_handle(syscall::BF_SPEC_ID1_VAL, handle);

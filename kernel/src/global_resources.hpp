@@ -51,6 +51,8 @@
 extern "C"
 {
     /// @brief stores the TLS blocks used by the microkernel.
+    // These are buggy as this is an extern
+    // NOLINTNEXTLINE(bsl-non-pod-static, bsl-var-braced-init)
     extern bsl::array<mk::tls_t, bsl::to_umax(HYPERVISOR_MAX_PPS).get()> g_tls_blocks;
 }
 

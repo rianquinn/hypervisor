@@ -49,7 +49,7 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param lck the spinlock/mutex to guard
         ///
-        constexpr lock_guard(T &lck) noexcept    // --
+        explicit constexpr lock_guard(T &lck) noexcept    // --
             : m_lock{lck}
         {
             m_lock.lock();

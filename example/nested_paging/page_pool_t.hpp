@@ -25,6 +25,9 @@
 #ifndef PAGE_POOL_T_HPP
 #define PAGE_POOL_T_HPP
 
+#include "lock_guard.hpp"
+#include "spinlock.hpp"
+
 #include <bsl/construct_at.hpp>
 #include <bsl/convert.hpp>
 #include <bsl/cstring.hpp>
@@ -34,10 +37,8 @@
 #include <bsl/finally.hpp>
 #include <bsl/is_standard_layout.hpp>
 #include <bsl/is_void.hpp>
-#include "lock_guard.hpp"
 #include <bsl/safe_integral.hpp>
 #include <bsl/span.hpp>
-#include "spinlock.hpp"
 #include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
 

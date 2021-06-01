@@ -61,9 +61,13 @@ namespace mk
         /// <!-- description -->
         ///   @brief Default constructor.
         ///
+        // We cannot member initialize atomics so this is not possible
+        // NOLINTNEXTLINE(bsl-class-member-init)
         constexpr spinlock() noexcept    // --
             : m_std_ppid{syscall::BF_INVALID_ID}, m_esr_ppid{syscall::BF_INVALID_ID}
         {
+            // This is the only way to initialize this
+            // NOLINTNEXTLINE(bsl-implicit-conversions-forbidden)
             m_flag = false;
         }
 

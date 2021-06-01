@@ -26,13 +26,13 @@
 
 #include <constants.h>
 #include <debug.h>
+#include <flush_cache.h>
 #include <pdpt_t.h>
 #include <platform.h>
 #include <pml4t_t.h>
 #include <pml4te_t.h>
 #include <pml4to.h>
 #include <types.h>
-#include <flush_cache.h>
 
 /**
  * <!-- description -->

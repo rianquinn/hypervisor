@@ -60,6 +60,8 @@ namespace mk
     ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
     ///   @tparam PAGE_SIZE defines the size of a page
     ///   @tparam MAX_PPS the max number of PPs supported
+    ///   @tparam MK_CODE_SIZE the max size of the microkernel's code
+    ///   @tparam EXT_CODE_SIZE the max size of the extension's code
     ///   @tparam EXT_STACK_ADDR the address of the extension's stack
     ///   @tparam EXT_STACK_SIZE the size of the extension's stack
     ///   @tparam EXT_TLS_ADDR the address of the extension's TLS block
@@ -104,9 +106,9 @@ namespace mk
         /// @brief stores the root VMID
         bsl::safe_uint16 m_root_vmid;
         /// @brief stores the registered VMExit handler
-        void *m_ext_vmexit{};
+        void *m_ext_vmexit;
         /// @brief stores the registered fast fail handler
-        void *m_ext_fail{};
+        void *m_ext_fail;
 
         /// <!-- description -->
         ///   @brief Verifies that the args and the resulting TLS block
@@ -157,7 +159,7 @@ namespace mk
                 bsl::touch();
             }
 
-            if (bsl::unlikely_assert(tls.ppid != args->ppid)) {
+            if (bsl::unlikely_assert(bsl::to_u16(tls.ppid) != args->ppid)) {
                 bsl::error() << "tls.ppid ["                          // --
                              << bsl::hex(tls.ppid)                    // --
                              << "] doesn't match the args->ppid ["    // --
@@ -181,7 +183,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(tls.online_pps != args->online_pps)) {
+            if (bsl::unlikely_assert(bsl::to_u16(tls.online_pps) != args->online_pps)) {
                 bsl::error() << "tls.online_pps ["                          // --
                              << bsl::hex(tls.online_pps)                    // --
                              << "] doesn't match the args->online_pps ["    // --
@@ -193,7 +195,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(tls.online_pps > MAX_PPS)) {
+            if (bsl::unlikely_assert(tls.online_pps > bsl::to_u16(MAX_PPS))) {
                 bsl::error() << "tls.online_pps ["                            // --
                              << bsl::hex(tls.online_pps)                      // --
                              << "] is not less or equal to than the max ["    // --
@@ -205,7 +207,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(!(args->ppid < args->online_pps))) {
+            if (bsl::unlikely_assert(!(bsl::to_u16(args->ppid) < args->online_pps))) {
                 bsl::error() << "the args->ppid ["                         // --
                              << bsl::hex(args->ppid)                       // --
                              << "] is not less than args->online_pps ["    // --
@@ -414,10 +416,10 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            bsl::print() << bsl::mag << " ___                __ _           _        " << bsl::endl;
-            bsl::print() << bsl::mag << "| _ ) __ _ _ _ ___ / _| |__ _ _ _ | |__     " << bsl::endl;
-            bsl::print() << bsl::mag << "| _ \\/ _` | '_/ -_)  _| / _` | ' \\| / /   " << bsl::endl;
-            bsl::print() << bsl::mag << "|___/\\__,_|_| \\___|_| |_\\__,_|_||_|_\\_\\" << bsl::endl;
+            bsl::print() << bsl::mag << R"( ___                __ _           _        )" << bsl::endl;
+            bsl::print() << bsl::mag << R"(| _ ) __ _ _ _ ___ / _| |__ _ _ _ | |__     )" << bsl::endl;
+            bsl::print() << bsl::mag << R"(| _ \/ _` | '_/ -_)  _| / _` | ' \| / /     )" << bsl::endl;
+            bsl::print() << bsl::mag << R"(|___/\__,_|_| \___|_| |_\__,_|_||_|_\_\     )" << bsl::endl;
             bsl::print() << bsl::rst << bsl::endl;
             bsl::print() << bsl::grn << "Please give us a star on: ";
             bsl::print() << bsl::rst << "https://github.com/Bareflank/hypervisor";
@@ -444,8 +446,8 @@ namespace mk
                 bsl::print() << bsl::endl;
 
                 bsl::error() << "aarch64 support not complete"    // --
-                             << bsl::endl                                // --
-                             << bsl::here();                             // --
+                             << bsl::endl                         // --
+                             << bsl::here();                      // --
 
                 return bsl::errc_failure;
             }
