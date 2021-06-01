@@ -26,7 +26,6 @@
 
 #include <debug.h>
 #include <dump_vmm_on_error_if_needed.h>
-#include <efi/efi_mp_services_protocol.h>
 #include <efi/efi_shell_protocol.h>
 #include <efi/efi_simple_file_system_protocol.h>
 #include <efi/efi_status.h>
@@ -38,6 +37,7 @@
 #include <span_t.h>
 #include <start_vmm.h>
 #include <start_vmm_args_t.h>
+#include <arch_locate_protocols.h>
 
 /**
  * NOTE:
@@ -47,9 +47,6 @@
 
 /** @brief defines the global pointer to the EFI_SYSTEM_TABLE */
 EFI_SYSTEM_TABLE *g_st = NULL;
-
-/** @brief defines the global pointer to the EFI_MP_SERVICES_PROTOCOL */
-EFI_MP_SERVICES_PROTOCOL *g_mp_services_protocol = NULL;
 
 /** @brief defines the global pointer to the EFI_SHELL_PROTOCOL */
 EFI_SHELL_PROTOCOL *g_shell_protocol = NULL;
@@ -189,16 +186,14 @@ EFI_STATUS
 locate_protocols(void)
 {
     EFI_STATUS status = EFI_SUCCESS;
-    EFI_GUID efi_mp_services_protocol_guid = EFI_MP_SERVICES_PROTOCOL_GUID;
     EFI_GUID efi_shell_protocol_guid = EFI_SHELL_PROTOCOL_GUID;
     EFI_GUID efi_simple_file_system_protocol_guid = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
 
-    // status = g_st->BootServices->LocateProtocol(
-    //     &efi_mp_services_protocol_guid, NULL, (VOID **)&g_mp_services_protocol);
-    // if (EFI_ERROR(status)) {
-    //     bferror_x64("LocateProtocol EFI_MP_SERVICES_PROTOCOL failed", status);
-    //     return status;
-    // }
+    status = arch_locate_protocols();
+    if (EFI_ERROR(status)) {
+        bferror_x64("arch_locate_protocols failed", status);
+        return status;
+    }
 
     status = g_st->BootServices->LocateProtocol(
         &efi_shell_protocol_guid, NULL, (VOID **)&g_shell_protocol);
@@ -295,14 +290,14 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     serial_init();
 
-    if (loader_init()) {
-        bferror("loader_init failed");
-        return EFI_SUCCESS;
-    }
-
     status = locate_protocols();
     if (EFI_ERROR(status)) {
         bferror_x64("locate_protocols failed", status);
+        return EFI_SUCCESS;
+    }
+
+    if (loader_init()) {
+        bferror("loader_init failed");
         return EFI_SUCCESS;
     }
 

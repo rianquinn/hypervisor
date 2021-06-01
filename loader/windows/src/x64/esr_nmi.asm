@@ -23,7 +23,7 @@
 ; SOFTWARE.
 
     ; @brief defines the offset of state_save_t.ia32_debugctl
-    #define SS_OFFSET_NMI 318h
+    SS_OFFSET_NMI EQU 318h
 
     esr_nmi_text SEGMENT ALIGN(1000h) 'CODE'
     esr_nmi PROC

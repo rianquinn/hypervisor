@@ -24,40 +24,21 @@
  * SOFTWARE.
  */
 
-#ifndef PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
-#define PLATFORM_WORK_ON_CPU_CALLBACK_ARGS_H
+#ifndef ARCH_WORK_ON_CPU_H
+#define ARCH_WORK_ON_CPU_H
 
-#include <platform.h>
+#include <work_on_cpu_callback_args.h>
 #include <types.h>
 
 /**
- * @struct work_on_cpu_callback_args
- *
  * <!-- description -->
- *   @brief Defines the args passed to the platform_on_each_cpu_callback
- *     function.
+ *   @brief Executes a callback on a specific core on this architecture.
+ *
+ * <!-- inputs/outputs -->
+ *   @param cpu the core to execute the callback on
+ *   @param callback the callback to call
+ *   @param args the arguments for work_on_cpu_callback
  */
-struct work_on_cpu_callback_args
-{
-    /**
-     * @brief The fucntion to call from platform_on_each_cpu_callback
-     */
-    platform_per_cpu_func func;
-
-    /**
-     * @brief The CPU platform_on_each_cpu_callback is called on
-     */
-    uint32_t cpu;
-
-    /**
-     * @brief reserved
-     */
-    uint32_t reserved;
-
-    /**
-     * @brief The return value of 'func'
-     */
-    int64_t ret;
-};
+void arch_work_on_cpu(uint32_t const cpu, void *const callback, struct work_on_cpu_callback_args *const args);
 
 #endif

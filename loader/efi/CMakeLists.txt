@@ -75,9 +75,13 @@ endif()
 
 list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/include/arch_init.h
+	${CMAKE_CURRENT_LIST_DIR}/include/arch_locate_protocols.h
+	${CMAKE_CURRENT_LIST_DIR}/include/arch_num_online_cpus.h
+	${CMAKE_CURRENT_LIST_DIR}/include/arch_work_on_cpu.h
 	${CMAKE_CURRENT_LIST_DIR}/include/debug.h
 	${CMAKE_CURRENT_LIST_DIR}/include/types.h
 	${CMAKE_CURRENT_LIST_DIR}/include/work_on_cpu_callback_args.h
+	${CMAKE_CURRENT_LIST_DIR}/include/work_on_cpu_callback.h
 	${CMAKE_CURRENT_LIST_DIR}/include/efi/efi_allocate_type.h
 	${CMAKE_CURRENT_LIST_DIR}/include/efi/efi_boot_services.h
 	${CMAKE_CURRENT_LIST_DIR}/include/efi/efi_configuration_table.h
@@ -323,6 +327,7 @@ endif()
 
 hypervisor_target_source(bareflank_efi_loader src/entry.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader src/platform.c ${HEADERS})
+hypervisor_target_source(bareflank_efi_loader src/work_on_cpu_callback.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/alloc_and_copy_ext_elf_files_from_user.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/alloc_and_copy_mk_elf_file_from_user.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/alloc_and_copy_mk_elf_segments.c ${HEADERS})
@@ -385,6 +390,9 @@ hypervisor_target_source(bareflank_efi_loader ../src/stop_vmm_per_cpu.c ${HEADER
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
 	hypervisor_target_source(bareflank_efi_loader src/x64/arch_init.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/x64/arch_locate_protocols.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/x64/arch_num_online_cpus.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/x64/arch_work_on_cpu.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/x64/demote.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/x64/esr_default.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/x64/esr_df.S ${HEADERS})
@@ -473,6 +481,9 @@ endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/arch_init.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/arch_locate_protocols.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/arch_num_online_cpus.c ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/arch_work_on_cpu.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/demote.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/esr.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/arm/aarch64/exception_vectors.S ${HEADERS})
