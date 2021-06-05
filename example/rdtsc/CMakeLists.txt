@@ -19,37 +19,37 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-add_executable(example_default)
+add_executable(example_rdtsc)
 
 # ------------------------------------------------------------------------------
 # Includes
 # ------------------------------------------------------------------------------
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    target_include_directories(example_default PRIVATE
+    target_include_directories(example_rdtsc PRIVATE
         x64
     )
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
-        target_include_directories(example_default PRIVATE
+        target_include_directories(example_rdtsc PRIVATE
             x64/amd
         )
     endif()
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-        target_include_directories(example_default PRIVATE
+        target_include_directories(example_rdtsc PRIVATE
             x64/intel
         )
     endif()
 endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-    target_include_directories(example_default PRIVATE
+    target_include_directories(example_rdtsc PRIVATE
         arm
     )
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-        target_include_directories(example_default PRIVATE
+        target_include_directories(example_rdtsc PRIVATE
             arm/aarch64
         )
     endif()
@@ -93,14 +93,14 @@ endif()
 # Sources
 # ------------------------------------------------------------------------------
 
-target_sources(example_default PRIVATE
+target_sources(example_rdtsc PRIVATE
     main.cpp
 )
 
 set_property(SOURCE main.cpp APPEND PROPERTY OBJECT_DEPENDS ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    target_sources(example_default PRIVATE
+    target_sources(example_rdtsc PRIVATE
         x64/intrinsic_cpuid.S
         x64/intrinsic_rdtsc.S
         x64/intrinsic_rdtscp.S
@@ -116,7 +116,7 @@ endif()
 # Libraries
 # ------------------------------------------------------------------------------
 
-target_link_libraries(example_default PRIVATE
+target_link_libraries(example_rdtsc PRIVATE
     runtime
     bsl
     loader
@@ -128,7 +128,7 @@ target_link_libraries(example_default PRIVATE
 # ------------------------------------------------------------------------------
 
 if(CMAKE_BUILD_TYPE STREQUAL RELEASE OR CMAKE_BUILD_TYPE STREQUAL MINSIZEREL)
-    add_custom_command(TARGET example_default POST_BUILD COMMAND ${CMAKE_STRIP} example_default)
+    add_custom_command(TARGET example_rdtsc POST_BUILD COMMAND ${CMAKE_STRIP} example_rdtsc)
 endif()
 
-install(TARGETS example_default DESTINATION bin)
+install(TARGETS example_rdtsc DESTINATION bin)
