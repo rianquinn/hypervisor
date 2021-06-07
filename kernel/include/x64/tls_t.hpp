@@ -30,6 +30,7 @@
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>
 #include <bsl/details/carray.hpp>
+#include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
 
 #pragma pack(push, 1)
@@ -40,10 +41,10 @@ namespace mk
     constexpr bsl::safe_uintmax TLS_T_RESERVED1_SIZE{bsl::to_umax(0x030)};
     /// @brief defines the size of the reserved2 field in the tls_t
     constexpr bsl::safe_uintmax TLS_T_RESERVED2_SIZE{bsl::to_umax(0x008)};
-    /// @brief defines the size of the reserved2 field in the tls_t
+    /// @brief defines the size of the reserved3 field in the tls_t
     constexpr bsl::safe_uintmax TLS_T_RESERVED3_SIZE{bsl::to_umax(0x007)};
-    /// @brief defines the size of the reserved2 field in the tls_t
-    constexpr bsl::safe_uintmax TLS_T_RESERVED4_SIZE{bsl::to_umax(0x048)};
+    /// @brief defines the size of the reserved4 field in the tls_t
+    constexpr bsl::safe_uintmax TLS_T_RESERVED4_SIZE{bsl::to_umax(0x040)};
 
     /// IMPORTANT:
     /// - If the size of the TLS is changed, the mk_main_entry will need to
@@ -166,7 +167,7 @@ namespace mk
         /// @brief stores the value of cr0 for the ESR (0x148)
         bsl::uintmax esr_cr0;
         /// @brief stores the value of cr2 for the ESR (0x150)
-        bsl::uintmax esr_cr2;
+        bsl::uintmax esr_pf_addr;
         /// @brief stores the value of cr3 for the ESR (0x158)
         bsl::uintmax esr_cr3;
         /// @brief stores the value of cr4 for the ESR (0x160)
@@ -184,29 +185,29 @@ namespace mk
         /// Fast Fail Information
         /// --------------------------------------------------------------------
 
-        /// @brief stores the current fast fail address (0x180).
+        /// @brief stores the current fast fail address (0x180)
         bsl::uintmax current_fast_fail_ip;
-        /// @brief stores the current fast fail stack (0x188).
+        /// @brief stores the current fast fail stack (0x188)
         bsl::uintmax current_fast_fail_sp;
 
-        /// @brief stores the mk_main fast fail address (0x190).
+        /// @brief stores the mk_main fast fail address (0x190)
         bsl::uintmax mk_main_fast_fail_ip;
-        /// @brief stores the mk_main fast fail stack (0x198).
+        /// @brief stores the mk_main fast fail stack (0x198)
         bsl::uintmax mk_main_fast_fail_sp;
 
-        /// @brief stores the call_ext fast fail address (0x1A0).
+        /// @brief stores the call_ext fast fail address (0x1A0)
         bsl::uintmax call_ext_fast_fail_ip;
-        /// @brief stores the call_ext fast fail stack (0x1A8).
+        /// @brief stores the call_ext fast fail stack (0x1A8)
         bsl::uintmax call_ext_fast_fail_sp;
 
-        /// @brief stores the dispatch_syscall fast fail address (0x1B0).
+        /// @brief stores the dispatch_syscall fast fail address (0x1B0)
         bsl::uintmax dispatch_syscall_fast_fail_ip;
-        /// @brief stores the dispatch_syscall fast fail stack (0x1B8).
+        /// @brief stores the dispatch_syscall fast fail stack (0x1B8)
         bsl::uintmax dispatch_syscall_fast_fail_sp;
 
-        /// @brief stores the vmexit loop address (0x1C0).
+        /// @brief stores the vmexit loop address (0x1C0)
         bsl::uintmax vmexit_loop_ip;
-        /// @brief stores the vmexit loop stack (0x1C8).
+        /// @brief stores the vmexit loop stack (0x1C8)
         bsl::uintmax vmexit_loop_sp;
 
         /// @brief reserve the rest of the TLS block for later use.
@@ -216,7 +217,7 @@ namespace mk
         /// Context Information
         /// --------------------------------------------------------------------
 
-        /// @brief stores the virtual address of this TLS block (0x200).
+        /// @brief stores the virtual address of this TLS block (0x200)
         tls_t *self;
 
         /// @brief stores the currently active VMID (0x208)
@@ -226,7 +227,7 @@ namespace mk
         /// @brief stores the VPSID whose VMCS is loaded on Intel (0x20C)
         bsl::uint16 loaded_vpsid;
         /// @brief reserved (0x20E)
-        bsl::uint16 reserved_padding;
+        bsl::uint16 reserved_padding0;
 
         /// @brief stores the currently active extension (0x210)
         void *ext;
@@ -249,20 +250,20 @@ namespace mk
         /// @brief stores the currently active VPSID (0x23E)
         bsl::uint16 active_vpsid;
 
-        /// @brief stores the sp used by extensions for callbacks (0x240).
+        /// @brief stores the sp used by extensions for callbacks (0x240)
         bsl::uintmax sp;
-        /// @brief stores the tps used by extensions for callbacks (0x248).
+        /// @brief stores the tps used by extensions for callbacks (0x248)
         bsl::uintmax tp;
 
-        /// @brief used to store a return address for unsafe ops (0x250).
+        /// @brief used to store a return address for unsafe ops (0x250)
         bsl::uintmax unsafe_rip;
 
-        /// @brief used to signal NMIs are not safe (0x258).
+        /// @brief used to signal NMIs are not safe (0x258)
         bsl::uintmax nmi_lock;
-        /// @brief used to singal an NMI has fired (0x260).
+        /// @brief used to singal an NMI has fired (0x260)
         bsl::uintmax nmi_pending;
 
-        /// @brief stores whether or not the first launch succeeded (0x268).
+        /// @brief stores whether or not the first launch succeeded (0x268)
         bsl::uintmax first_launch_succeeded;
 
         /// @brief stores the currently active root page table (0x270)
@@ -304,6 +305,15 @@ namespace mk
 
         /// @brief reserve the rest of the TLS block for later use.
         bsl::details::carray<bsl::uint8, TLS_T_RESERVED4_SIZE.get()> reserved4;
+
+        /// --------------------------------------------------------------------
+        /// Unit Test Specific
+        /// --------------------------------------------------------------------
+
+        /// @brief reserved for unit testing
+        bsl::errc_type test_ret;
+        /// @brief reserved
+        bsl::uint32 reserved_padding1;
     };
 
     /// @brief make sure the tls_t is the size of a page

@@ -56,7 +56,8 @@ hypervisor_target_source(runtime src/msg_stack_chk_fail.cpp ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     hypervisor_target_source(runtime src/x64/_start.S ${HEADERS})
-    hypervisor_target_source(runtime src/x64/memops.S ${HEADERS})
+    hypervisor_target_source(runtime src/x64/memcpy.S ${HEADERS})
+    hypervisor_target_source(runtime src/x64/memset.S ${HEADERS})
 endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")

@@ -23,22 +23,16 @@
 /// SOFTWARE.
 
 #include "../../src/vm_pool_t.hpp"
-#include "../vm_t_allocate_failure.hpp"
-#include "../vm_t_deallocate_failure.hpp"
-#include "../vm_t_initialize_and_release_failure.hpp"
-#include "../vm_t_initialize_failure.hpp"
-#include "../vm_t_release_failure.hpp"
-#include "../vm_t_set_active_failure.hpp"
-#include "../vm_t_set_inactive_failure.hpp"
-#include "../vm_t_success.hpp"
 
+#include <dummy_errc_types.hpp>
+#include <dummy_vm_t.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/ut.hpp>
 
 namespace mk
 {
-    /// @brief defines the max number of VMs used in testing
+    /// @brief defines the 3 max VMs used in testing
     constexpr bsl::safe_uintmax INTEGRATION_MAX_VMS{bsl::to_umax(3)};
 
     /// @brief defines VMID0
@@ -47,6 +41,13 @@ namespace mk
     constexpr bsl::safe_uint16 VMID1{bsl::to_u16(1)};
     /// @brief defines VMID2
     constexpr bsl::safe_uint16 VMID2{bsl::to_u16(2)};
+
+    /// <!-- description -->
+    ///   @brief Implements a yield for the spinlock
+    ///
+    extern "C" void
+    yield() noexcept
+    {}
 
     /// <!-- description -->
     ///   @brief Used to execute the actual checks. We put the checks in this
@@ -62,48 +63,58 @@ namespace mk
     {
         bsl::ut_scenario{"initialize vm_t reports success"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_then{} = [&pool]() {
-                    bsl::ut_check(pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_then{} = [&pool, &tls]() {
+                    bsl::ut_check(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
                 };
             };
         };
 
         bsl::ut_scenario{"initialize vm_t reports failure"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_initialize_failure, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_then{} = [&pool]() {
-                    bsl::ut_check(!pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_when{} = [&pool, &tls]() {
+                    tls.test_ret = errc_fail_initialize;
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(!pool.initialize(tls, bsl::dontcare, bsl::dontcare));
+                    };
                 };
             };
         };
 
         bsl::ut_scenario{"initialize vm_t and release report failure"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_initialize_and_release_failure, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_then{} = [&pool]() {
-                    bsl::ut_check(!pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_when{} = [&pool, &tls]() {
+                    tls.test_ret = errc_fail_initialize_and_release;
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(!pool.initialize(tls, bsl::dontcare, bsl::dontcare));
+                    };
                 };
             };
         };
 
         bsl::ut_scenario{"release without initialize"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_then{} = [&pool]() {
-                    bsl::ut_check(pool.release(bsl::dontcare, bsl::dontcare, bsl::dontcare));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_then{} = [&pool, &tls]() {
+                    bsl::ut_check(pool.release(tls, bsl::dontcare, bsl::dontcare));
                 };
             };
         };
 
         bsl::ut_scenario{"release with initialize"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(pool.release(bsl::dontcare, bsl::dontcare, bsl::dontcare));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(pool.release(tls, bsl::dontcare, bsl::dontcare));
                     };
                 };
             };
@@ -111,12 +122,13 @@ namespace mk
 
         bsl::ut_scenario{"release with initialize and vm_t reports failure"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_release_failure, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.release(bsl::dontcare, bsl::dontcare, bsl::dontcare));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
+                    tls.test_ret = errc_fail_release;
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(!pool.release(tls, bsl::dontcare, bsl::dontcare));
                     };
                 };
             };
@@ -124,12 +136,11 @@ namespace mk
 
         bsl::ut_scenario{"allocate all vms"} = []() {
             bsl::ut_given{} = []() {
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
                 tls_t tls{};
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&tls, &pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
-                    bsl::ut_then{} = [&tls, &pool]() {
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
+                    bsl::ut_then{} = [&pool, &tls]() {
                         bsl::ut_check(pool.allocate(tls, bsl::dontcare) == VMID0);
                         bsl::ut_check(pool.allocate(tls, bsl::dontcare) == VMID1);
                         bsl::ut_check(pool.allocate(tls, bsl::dontcare) == VMID2);
@@ -141,12 +152,12 @@ namespace mk
 
         bsl::ut_scenario{"allocate vm_t reports failure"} = []() {
             bsl::ut_given{} = []() {
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
                 tls_t tls{};
-                vm_pool_t<vm_t_allocate_failure, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&tls, &pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
-                    bsl::ut_then{} = [&tls, &pool]() {
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
+                    tls.test_ret = bsl::errc_failure;
+                    bsl::ut_then{} = [&pool, &tls]() {
                         bsl::ut_check(!pool.allocate(tls, bsl::dontcare));
                     };
                 };
@@ -155,12 +166,11 @@ namespace mk
 
         bsl::ut_scenario{"deallocate invalid id"} = []() {
             bsl::ut_given{} = []() {
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
                 tls_t tls{};
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&tls, &pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
-                    bsl::ut_then{} = [&tls, &pool]() {
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
+                    bsl::ut_then{} = [&pool, &tls]() {
                         bsl::ut_check(!pool.deallocate(
                             tls, bsl::dontcare, bsl::dontcare, syscall::BF_INVALID_ID));
                     };
@@ -170,13 +180,13 @@ namespace mk
 
         bsl::ut_scenario{"deallocate vm_t reports failure"} = []() {
             bsl::ut_given{} = []() {
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
                 tls_t tls{};
-                vm_pool_t<vm_t_deallocate_failure, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&tls, &pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
                     auto const vmid{pool.allocate(tls, bsl::dontcare)};
-                    bsl::ut_then{} = [&tls, &pool, &vmid]() {
+                    tls.test_ret = bsl::errc_failure;
+                    bsl::ut_then{} = [&pool, &tls, &vmid]() {
                         bsl::ut_check(!pool.deallocate(tls, bsl::dontcare, bsl::dontcare, vmid));
                     };
                 };
@@ -185,13 +195,12 @@ namespace mk
 
         bsl::ut_scenario{"deallocate success"} = []() {
             bsl::ut_given{} = []() {
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
                 tls_t tls{};
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&tls, &pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
                     auto const vmid{pool.allocate(tls, bsl::dontcare)};
-                    bsl::ut_then{} = [&tls, &pool, &vmid]() {
+                    bsl::ut_then{} = [&pool, &tls, &vmid]() {
                         bsl::ut_check(pool.deallocate(tls, bsl::dontcare, bsl::dontcare, vmid));
                     };
                 };
@@ -200,7 +209,7 @@ namespace mk
 
         bsl::ut_scenario{"zombify invalid id"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
                 bsl::ut_then{} = [&pool]() {
                     bsl::ut_check(!pool.zombify(syscall::BF_INVALID_ID));
                 };
@@ -209,7 +218,7 @@ namespace mk
 
         bsl::ut_scenario{"zombify success"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
                 bsl::ut_then{} = [&pool]() {
                     bsl::ut_check(pool.zombify(VMID1));
                 };
@@ -218,14 +227,14 @@ namespace mk
 
         bsl::ut_scenario{"status invalid id"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.is_allocated(syscall::BF_INVALID_ID));
-                        bsl::ut_check(!pool.is_deallocated(syscall::BF_INVALID_ID));
-                        bsl::ut_check(!pool.is_zombie(syscall::BF_INVALID_ID));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(!pool.is_allocated(tls, syscall::BF_INVALID_ID));
+                        bsl::ut_check(!pool.is_deallocated(tls, syscall::BF_INVALID_ID));
+                        bsl::ut_check(!pool.is_zombie(tls, syscall::BF_INVALID_ID));
                     };
                 };
             };
@@ -233,14 +242,14 @@ namespace mk
 
         bsl::ut_scenario{"status after initialize"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.is_allocated(VMID0));
-                        bsl::ut_check(pool.is_deallocated(VMID0));
-                        bsl::ut_check(!pool.is_zombie(VMID0));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(!pool.is_allocated(tls, VMID0));
+                        bsl::ut_check(pool.is_deallocated(tls, VMID0));
+                        bsl::ut_check(!pool.is_zombie(tls, VMID0));
                     };
                 };
             };
@@ -248,16 +257,15 @@ namespace mk
 
         bsl::ut_scenario{"status after allocate"} = []() {
             bsl::ut_given{} = []() {
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
                 tls_t tls{};
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&tls, &pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
                     auto const vmid{pool.allocate(tls, bsl::dontcare)};
-                    bsl::ut_then{} = [&pool, &vmid]() {
-                        bsl::ut_check(pool.is_allocated(vmid));
-                        bsl::ut_check(!pool.is_deallocated(vmid));
-                        bsl::ut_check(!pool.is_zombie(vmid));
+                    bsl::ut_then{} = [&pool, &tls, &vmid]() {
+                        bsl::ut_check(pool.is_allocated(tls, vmid));
+                        bsl::ut_check(!pool.is_deallocated(tls, vmid));
+                        bsl::ut_check(!pool.is_zombie(tls, vmid));
                     };
                 };
             };
@@ -265,18 +273,16 @@ namespace mk
 
         bsl::ut_scenario{"status after deallocate"} = []() {
             bsl::ut_given{} = []() {
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
                 tls_t tls{};
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&tls, &pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
                     auto const vmid{pool.allocate(tls, bsl::dontcare)};
-                    bsl::ut_required_step(
-                        pool.deallocate(bsl::dontcare, bsl::dontcare, bsl::dontcare, vmid));
-                    bsl::ut_then{} = [&pool, &vmid]() {
-                        bsl::ut_check(!pool.is_allocated(vmid));
-                        bsl::ut_check(pool.is_deallocated(vmid));
-                        bsl::ut_check(!pool.is_zombie(vmid));
+                    bsl::ut_required_step(pool.deallocate(tls, bsl::dontcare, bsl::dontcare, vmid));
+                    bsl::ut_then{} = [&pool, &tls, &vmid]() {
+                        bsl::ut_check(!pool.is_allocated(tls, vmid));
+                        bsl::ut_check(pool.is_deallocated(tls, vmid));
+                        bsl::ut_check(!pool.is_zombie(tls, vmid));
                     };
                 };
             };
@@ -284,15 +290,15 @@ namespace mk
 
         bsl::ut_scenario{"status after zombify"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_required_step(
-                        pool.initialize(bsl::dontcare, bsl::dontcare, bsl::dontcare));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_required_step(pool.initialize(tls, bsl::dontcare, bsl::dontcare));
                     bsl::ut_required_step(pool.zombify(VMID1));
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.is_allocated(VMID1));
-                        bsl::ut_check(!pool.is_deallocated(VMID1));
-                        bsl::ut_check(pool.is_zombie(VMID1));
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(!pool.is_allocated(tls, VMID1));
+                        bsl::ut_check(!pool.is_deallocated(tls, VMID1));
+                        bsl::ut_check(pool.is_zombie(tls, VMID1));
                     };
                 };
             };
@@ -300,21 +306,22 @@ namespace mk
 
         bsl::ut_scenario{"set_active invalid id"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.set_active(bsl::dontcare, syscall::BF_INVALID_ID));
-                    };
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_then{} = [&pool, &tls]() {
+                    bsl::ut_check(!pool.set_active(tls, syscall::BF_INVALID_ID));
                 };
             };
         };
 
         bsl::ut_scenario{"set_active vm_t reports failure"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_set_active_failure, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.set_active(bsl::dontcare, VMID0));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_when{} = [&pool, &tls]() {
+                    tls.test_ret = bsl::errc_failure;
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(!pool.set_active(tls, VMID0));
                     };
                 };
             };
@@ -322,32 +329,32 @@ namespace mk
 
         bsl::ut_scenario{"set_active success"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(pool.set_active(bsl::dontcare, VMID0));
-                    };
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_then{} = [&pool, &tls]() {
+                    bsl::ut_check(pool.set_active(tls, VMID0));
                 };
             };
         };
 
         bsl::ut_scenario{"set_inactive invalid id"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.set_inactive(bsl::dontcare, syscall::BF_INVALID_ID));
-                    };
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_then{} = [&pool, &tls]() {
+                    bsl::ut_check(!pool.set_inactive(tls, syscall::BF_INVALID_ID));
                 };
             };
         };
 
         bsl::ut_scenario{"set_inactive vm_t reports failure"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_set_inactive_failure, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.set_inactive(bsl::dontcare, VMID0));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_when{} = [&pool, &tls]() {
+                    tls.test_ret = bsl::errc_failure;
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(!pool.set_inactive(tls, VMID0));
                     };
                 };
             };
@@ -355,36 +362,43 @@ namespace mk
 
         bsl::ut_scenario{"set_inactive success"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(pool.set_inactive(bsl::dontcare, VMID0));
-                    };
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_then{} = [&pool, &tls]() {
+                    bsl::ut_check(pool.set_inactive(tls, VMID0));
                 };
             };
         };
 
         bsl::ut_scenario{"is_active invalid id"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.is_active(bsl::dontcare, syscall::BF_INVALID_ID));
-                    };
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_check(!pool.is_active(tls, syscall::BF_INVALID_ID));
                 };
             };
         };
 
         bsl::ut_scenario{"is_active success"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.is_active(bsl::dontcare, VMID0));
-                        bsl::ut_check(pool.set_active(bsl::dontcare, VMID0));
-                        bsl::ut_check(pool.is_active(bsl::dontcare, VMID0));
-                        bsl::ut_check(pool.set_inactive(bsl::dontcare, VMID0));
-                        bsl::ut_check(!pool.is_active(bsl::dontcare, VMID0));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_then{} = [&pool, &tls]() {
+                    bsl::ut_check(!pool.is_active(tls, VMID0));
+                };
+
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_check(pool.set_active(tls, VMID0));
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(pool.is_active(tls, VMID0));
+                    };
+                };
+
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_check(pool.set_inactive(tls, VMID0));
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(!pool.is_active(tls, VMID0));
                     };
                 };
             };
@@ -392,26 +406,33 @@ namespace mk
 
         bsl::ut_scenario{"is_active_on_current_pp invalid id"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(
-                            !pool.is_active_on_current_pp(bsl::dontcare, syscall::BF_INVALID_ID));
-                    };
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_then{} = [&pool, &tls]() {
+                    bsl::ut_check(!pool.is_active_on_current_pp(tls, syscall::BF_INVALID_ID));
                 };
             };
         };
 
         bsl::ut_scenario{"is_active_on_current_pp success"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        bsl::ut_check(!pool.is_active_on_current_pp(bsl::dontcare, VMID0));
-                        bsl::ut_check(pool.set_active(bsl::dontcare, VMID0));
-                        bsl::ut_check(pool.is_active_on_current_pp(bsl::dontcare, VMID0));
-                        bsl::ut_check(pool.set_inactive(bsl::dontcare, VMID0));
-                        bsl::ut_check(!pool.is_active_on_current_pp(bsl::dontcare, VMID0));
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_then{} = [&pool, &tls]() {
+                    bsl::ut_check(!pool.is_active_on_current_pp(tls, VMID0));
+                };
+
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_check(pool.set_active(tls, VMID0));
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(pool.is_active_on_current_pp(tls, VMID0));
+                    };
+                };
+
+                bsl::ut_when{} = [&pool, &tls]() {
+                    bsl::ut_check(pool.set_inactive(tls, VMID0));
+                    bsl::ut_then{} = [&pool, &tls]() {
+                        bsl::ut_check(!pool.is_active_on_current_pp(tls, VMID0));
                     };
                 };
             };
@@ -419,22 +440,20 @@ namespace mk
 
         bsl::ut_scenario{"dump invalid id"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        pool.dump(bsl::dontcare, syscall::BF_INVALID_ID);
-                    };
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_then{} = [&pool, &tls]() {
+                    pool.dump(tls, syscall::BF_INVALID_ID);
                 };
             };
         };
 
         bsl::ut_scenario{"dump success"} = []() {
             bsl::ut_given{} = []() {
-                vm_pool_t<vm_t_success, INTEGRATION_MAX_VMS.get()> pool{};
-                bsl::ut_when{} = [&pool]() {
-                    bsl::ut_then{} = [&pool]() {
-                        pool.dump(bsl::dontcare, VMID0);
-                    };
+                vm_pool_t<dummy_vm_t, INTEGRATION_MAX_VMS.get()> pool{};
+                tls_t tls{};
+                bsl::ut_then{} = [&pool, &tls]() {
+                    pool.dump(tls, VMID0);
                 };
             };
         };
@@ -455,6 +474,7 @@ namespace mk
 main() noexcept -> bsl::exit_code
 {
     bsl::enable_color();
+    mk::yield();
 
     static_assert(mk::tests() == bsl::ut_success());
     return mk::tests();

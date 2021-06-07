@@ -26,7 +26,7 @@
 
 #include <bsl/ut.hpp>
 
-namespace
+namespace mk
 {
     /// <!-- description -->
     ///   @brief Used to execute the actual checks. We put the checks in this
@@ -57,6 +57,6 @@ main() noexcept -> bsl::exit_code
 {
     bsl::enable_color();
 
-    static_assert(tests() == bsl::ut_success());
-    return tests();
+    static_assert(mk::tests() == bsl::ut_success());
+    return mk::tests();
 }

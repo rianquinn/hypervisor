@@ -61,6 +61,10 @@ struct code_aliases_t
     void *esr_nmi;
     /** @brief stores an alias page to the esr_pf code */
     void *esr_pf;
+    /** @brief stores an alias page to the serial_write_c code */
+    void *serial_write_c;
+    /** @brief stores an alias page to the serial_write_hex code */
+    void *serial_write_hex;
 };
 
 #pragma pack(pop)

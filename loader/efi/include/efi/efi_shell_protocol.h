@@ -27,9 +27,9 @@
 #ifndef EFI_SHELL_PROTOCOL_H
 #define EFI_SHELL_PROTOCOL_H
 
-#include "efi_device_path_protocol.h"
-#include "efi_shell_file_info.h"
-#include "efi_types.h"
+#include <efi/efi_device_path_protocol.h>
+#include <efi/efi_shell_file_info.h>
+#include <efi/efi_types.h>
 
 /** @brief defines the GUID for EFI_SHELL_PROTOCOL_GUID */
 #define EFI_SHELL_PROTOCOL_GUID                                                                    \

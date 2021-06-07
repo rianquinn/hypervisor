@@ -25,8 +25,10 @@
 #ifndef HUGE_POOL_T_HPP
 #define HUGE_POOL_T_HPP
 
-#include <lock_guard.hpp>
-#include <spinlock.hpp>
+#include "lock_guard_t.hpp"
+#include "spinlock_t.hpp"
+
+#include <tls_t.hpp>
 
 #include <bsl/byte.hpp>
 #include <bsl/construct_at.hpp>
@@ -69,7 +71,7 @@ namespace mk
         /// @brief stores the huge pool's cursor
         bsl::safe_uintmax m_crsr{};
         /// @brief safe guards operations on the pool.
-        mutable spinlock m_lock{};
+        mutable spinlock_t m_lock{};
 
     public:
         /// <!-- description -->
@@ -170,16 +172,15 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam T the type of pointer to return
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param size the total number of bytes to allocate.
         ///   @return Returns a pointer to the newly allocated memory
         ///
-        template<typename T, typename TLS_CONCEPT>
+        template<typename T>
         [[nodiscard]] constexpr auto
-        allocate(TLS_CONCEPT &tls, bsl::safe_uintmax const &size) &noexcept -> T *
+        allocate(tls_t &tls, bsl::safe_uintmax const &size) &noexcept -> T *
         {
-            lock_guard lock{tls, m_lock};
+            lock_guard_t lock{tls, m_lock};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::error() << "huge_pool_t not initialized\n" << bsl::here();
@@ -229,15 +230,13 @@ namespace mk
         ///   @brief Not supported
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param ptr the pointer to the memory to deallocate
         ///
-        template<typename TLS_CONCEPT>
         constexpr void
-        deallocate(TLS_CONCEPT &tls, void *const ptr) &noexcept
+        deallocate(tls_t &tls, void *const ptr) &noexcept
         {
-            lock_guard lock{tls, m_lock};
+            lock_guard_t lock{tls, m_lock};
             bsl::discard(ptr);
 
             /// NOTE:

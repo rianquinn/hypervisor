@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include <bfelf_elf64_ehdr_t.h>
+#include <bfelf/bfelf_elf64_ehdr_t.h>
 #include <constants.h>
 #include <debug.h>
 #include <exception_vectors.h>

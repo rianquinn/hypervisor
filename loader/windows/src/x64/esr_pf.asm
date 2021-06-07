@@ -22,38 +22,29 @@
 ; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-include constants_masm.h
-
     esr_pf_text SEGMENT ALIGN(1000h) 'CODE'
     esr_pf PROC
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'e'
-    out dx, al
+    mov rcx, 'e'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 's'
-    out dx, al
+    mov rcx, 's'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'r'
-    out dx, al
+    mov rcx, 'r'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, '_'
-    out dx, al
+    mov rcx, '_'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'p'
-    out dx, al
+    mov rcx, 'p'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'f'
-    out dx, al
+    mov rcx, 'f'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, '\n'
-    out dx, al
+    mov rcx, '\n'
+    call serial_write_c
 
     cli
     hlt

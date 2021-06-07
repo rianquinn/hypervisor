@@ -26,6 +26,7 @@
 #define DISPATCH_SYSCALL_VM_OP_HPP
 
 #include <mk_interface.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -39,7 +40,7 @@ namespace mk
     ///   @brief Implements the bf_vm_op_create_vm syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @param tls the current TLS block
@@ -48,11 +49,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT>
+    template<typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vm_op_create_vm(
-        TLS_CONCEPT &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool) noexcept
-        -> bsl::errc_type
+        tls_t &tls, EXT_POOL_CONCEPT &ext_pool, VM_POOL_CONCEPT &vm_pool) noexcept -> bsl::errc_type
     {
         auto const vmid{vm_pool.allocate(tls, ext_pool)};
         if (bsl::unlikely(!vmid)) {
@@ -71,7 +71,7 @@ namespace mk
     ///   @brief Implements the bf_vm_op_destroy_vm syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
@@ -82,14 +82,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<
-        typename TLS_CONCEPT,
-        typename EXT_POOL_CONCEPT,
-        typename VM_POOL_CONCEPT,
-        typename VP_POOL_CONCEPT>
+    template<typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT, typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vm_op_destroy_vm(
-        TLS_CONCEPT &tls,
+        tls_t &tls,
         EXT_POOL_CONCEPT &ext_pool,
         VM_POOL_CONCEPT &vm_pool,
         VP_POOL_CONCEPT &vp_pool) noexcept -> bsl::errc_type
@@ -109,7 +105,7 @@ namespace mk
     ///   @brief Dispatches the bf_vm_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
@@ -123,14 +119,13 @@ namespace mk
     ///     otherwise
     ///
     template<
-        typename TLS_CONCEPT,
         typename EXT_POOL_CONCEPT,
         typename EXT_CONCEPT,
         typename VM_POOL_CONCEPT,
         typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_vm_op(
-        TLS_CONCEPT &tls,
+        tls_t &tls,
         EXT_POOL_CONCEPT &ext_pool,
         EXT_CONCEPT const &ext,
         VM_POOL_CONCEPT &vm_pool,

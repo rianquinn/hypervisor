@@ -24,6 +24,7 @@
  * SOFTWARE.
  */
 
+#include <arch_locate_protocols.h>
 #include <debug.h>
 #include <dump_vmm_on_error_if_needed.h>
 #include <efi/efi_shell_protocol.h>
@@ -37,7 +38,6 @@
 #include <span_t.h>
 #include <start_vmm.h>
 #include <start_vmm_args_t.h>
-#include <arch_locate_protocols.h>
 
 /**
  * NOTE:

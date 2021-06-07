@@ -95,35 +95,33 @@
     <ClInclude Include="..\include\map_mk_stack.h" />
     <ClInclude Include="..\include\map_mk_state.h" />
     <ClInclude Include="..\include\map_root_vp_state.h" />
+    <ClInclude Include="..\include\mutable_span_t.h" />
     <ClInclude Include="..\include\platform.h" />
     <ClInclude Include="..\include\promote.h" />
     <ClInclude Include="..\include\send_command_report_off.h" />
     <ClInclude Include="..\include\send_command_report_on.h" />
     <ClInclude Include="..\include\send_command_stop.h" />
     <ClInclude Include="..\include\serial_init.h" />
+    <ClInclude Include="..\include\serial_write_c.h" />
+    <ClInclude Include="..\include\serial_write_hex.h" />
     <ClInclude Include="..\include\serial_write.h" />
+    <ClInclude Include="..\include\span_t.h" />
     <ClInclude Include="..\include\start_vmm.h" />
     <ClInclude Include="..\include\start_vmm_per_cpu.h" />
     <ClInclude Include="..\include\stop_and_free_the_vmm.h" />
     <ClInclude Include="..\include\stop_vmm.h" />
     <ClInclude Include="..\include\stop_vmm_per_cpu.h" />
+    <ClInclude Include="..\include\bfelf\bfelf_elf64_ehdr_t.h "/>
+    <ClInclude Include="..\include\bfelf\bfelf_elf64_phdr_t.h "/>
+    <ClInclude Include="..\include\bfelf\bfelf_types.h "/>
     <ClInclude Include="..\include\interface\c\debug_ring_t.h" />
     <ClInclude Include="..\include\interface\c\dump_vmm_args_t.h" />
-    <ClInclude Include="..\include\interface\c\mutable_span_t.h" />
-    <ClInclude Include="..\include\interface\c\span_t.h" />
+    <ClInclude Include="..\include\interface\c\mk_args_t.h" />
     <ClInclude Include="..\include\interface\c\start_vmm_args_t.h" />
     <ClInclude Include="..\include\interface\c\stop_vmm_args_t.h" />
-    <ClInclude Include="..\include\interface\c\bfelf\bfelf_elf64_ehdr_t.h "/>
-    <ClInclude Include="..\include\interface\c\bfelf\bfelf_elf64_phdr_t.h "/>
-    <ClInclude Include="..\include\interface\c\bfelf\bfelf_types.h "/>
     <ClInclude Include="..\include\interface\c\x64\cpuid_commands.h" />
     <ClInclude Include="..\include\interface\c\x64\global_descriptor_table_register_t.h" />
     <ClInclude Include="..\include\interface\c\x64\interrupt_descriptor_table_register_t.h" />
-    <ClInclude Include="..\include\interface\c\x64\mk_args_t.h" />
-    <ClInclude Include="..\include\interface\c\x64\pdpte_t.h" />
-    <ClInclude Include="..\include\interface\c\x64\pdte_t.h" />
-    <ClInclude Include="..\include\interface\c\x64\pml4te_t.h" />
-    <ClInclude Include="..\include\interface\c\x64\pte_t.h" />
     <ClInclude Include="..\include\interface\c\x64\state_save_t.h" />
     <ClInclude Include="..\include\interface\c\x64\tss_t.h" />
     <ClInclude Include="..\include\x64\alloc_pdpt.h" />
@@ -165,12 +163,16 @@
     <ClInclude Include="..\include\x64\intrinsic_str.h" />
     <ClInclude Include="..\include\x64\intrinsic_wrmsr.h" />
     <ClInclude Include="..\include\x64\pdpt_t.h" />
+    <ClInclude Include="..\include\x64\pdpte_t.h" />
     <ClInclude Include="..\include\x64\pdpto.h" />
     <ClInclude Include="..\include\x64\pdt_t.h" />
+    <ClInclude Include="..\include\x64\pdte_t.h" />
     <ClInclude Include="..\include\x64\pdto.h" />
     <ClInclude Include="..\include\x64\pml4t_t.h" />
+    <ClInclude Include="..\include\x64\pml4te_t.h" />
     <ClInclude Include="..\include\x64\pml4to.h" />
     <ClInclude Include="..\include\x64\pt_t.h" />
+    <ClInclude Include="..\include\x64\pte_t.h" />
     <ClInclude Include="..\include\x64\pto.h" />
     <ClInclude Include="..\include\x64\root_page_table_t.h" />
     <ClInclude Include="..\include\x64\set_gdt_descriptor.h" />
@@ -239,6 +241,7 @@
     <ClCompile Include="..\src\map_mk_huge_pool.c" />
     <ClCompile Include="..\src\map_mk_page_pool.c" />
     <ClCompile Include="..\src\map_mk_stack.c" />
+    <ClCompile Include="..\src\serial_write.c" />
     <ClCompile Include="..\src\start_vmm.c" />
     <ClCompile Include="..\src\start_vmm_per_cpu.c" />
     <ClCompile Include="..\src\stop_and_free_the_vmm.c" />
@@ -270,6 +273,8 @@
     <MASM Include="src\x64\intrinsic_str.asm" />
     <MASM Include="src\x64\intrinsic_wrmsr.asm" />
     <MASM Include="src\x64\promote.asm" />
+    <MASM Include="src\x64\serial_write_c.asm" />
+    <MASM Include="src\x64\serial_write_hex.asm" />
     <ClCompile Include="..\src\x64\alloc_and_copy_mk_code_aliases.c" />
     <ClCompile Include="..\src\x64\alloc_and_copy_mk_state.c" />
     <ClCompile Include="..\src\x64\alloc_and_copy_root_vp_state.c" />
@@ -298,7 +303,6 @@
     <ClCompile Include="..\src\x64\send_command_report_on.c" />
     <ClCompile Include="..\src\x64\send_command_stop.c" />
     <ClCompile Include="..\src\x64\serial_init.c" />
-    <ClCompile Include="..\src\x64\serial_write.c" />
     <ClCompile Include="..\src\x64\set_gdt_descriptor.c" />
     <ClCompile Include="..\src\x64\set_idt_descriptor.c" />
   </ItemGroup>
@@ -362,10 +366,10 @@
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Arch)'=='AuthenticAMD'">
-    <IncludePath>$(IncludePath);$(CMAKE_BINARY_DIR)\include;include;include\std;include\platform_interface\c;..\include;..\include\interface\c;..\include\interface\c\bfelf;include\x64;include\x64\amd;..\include\x64;..\include\x64\amd;..\include\interface\c\x64;..\include\interface\c\x64\amd</IncludePath>
+    <IncludePath>$(IncludePath);$(CMAKE_BINARY_DIR)\include;include;include\std;include\platform_interface\c;..\include;..\include\interface\c;include\x64;include\x64\amd;..\include\x64;..\include\x64\amd;..\include\interface\c\x64;..\include\interface\c\x64\amd</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Arch)'=='GenuineIntel'">
-    <IncludePath>$(IncludePath);$(CMAKE_BINARY_DIR)\include;include;include\std;include\platform_interface\c;..\include;..\include\interface\c;..\include\interface\c\bfelf;include\x64;include\x64\intel;..\include\x64;..\include\x64\intel;..\include\interface\c\x64;..\include\interface\c\x64\intel</IncludePath>
+    <IncludePath>$(IncludePath);$(CMAKE_BINARY_DIR)\include;include;include\std;include\platform_interface\c;..\include;..\include\interface\c;include\x64;include\x64\intel;..\include\x64;..\include\x64\intel;..\include\interface\c\x64;..\include\interface\c\x64\intel</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

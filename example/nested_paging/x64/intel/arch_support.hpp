@@ -512,7 +512,7 @@ namespace example
         ///   address conversions for memory that was allocated on the heap.
         ///
 
-        if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
+        if (syscall::bf_tls_ppid(handle) == bsl::ZERO_U16) {
             ret = g_page_pool.initialize(handle);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -548,7 +548,7 @@ namespace example
 
         constexpr bsl::safe_uint64 max_physical_mem{bsl::to_umax(0x8000000000U)};
 
-        if (syscall::bf_tls_ppid() == bsl::ZERO_U16) {
+        if (syscall::bf_tls_ppid(handle) == bsl::ZERO_U16) {
             ret = g_ept.initialize(&g_page_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();

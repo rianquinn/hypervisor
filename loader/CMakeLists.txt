@@ -27,7 +27,6 @@ add_library(loader INTERFACE)
 
 target_include_directories(loader SYSTEM INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/include/interface/cpp
-    ${CMAKE_CURRENT_LIST_DIR}/include/interface/cpp/bfelf
 
     $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_LIST_DIR}/linux/include>
     $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_LIST_DIR}/linux/include/platform_interface/cpp>

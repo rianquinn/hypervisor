@@ -82,6 +82,7 @@ ifneq ($(KERNELRELEASE),)
     $(TARGET_MODULE)-objs += ../src/map_mk_huge_pool.o
     $(TARGET_MODULE)-objs += ../src/map_mk_page_pool.o
     $(TARGET_MODULE)-objs += ../src/map_mk_stack.o
+    $(TARGET_MODULE)-objs += ../src/serial_write.o
     $(TARGET_MODULE)-objs += ../src/start_vmm.o
     $(TARGET_MODULE)-objs += ../src/start_vmm_per_cpu.o
     $(TARGET_MODULE)-objs += ../src/stop_and_free_the_vmm.o
@@ -113,6 +114,8 @@ ifneq ($(KERNELRELEASE),)
     $(TARGET_MODULE)-objs += src/x64/intrinsic_str.o
     $(TARGET_MODULE)-objs += src/x64/intrinsic_wrmsr.o
     $(TARGET_MODULE)-objs += src/x64/promote.o
+    $(TARGET_MODULE)-objs += src/x64/serial_write_c.o
+    $(TARGET_MODULE)-objs += src/x64/serial_write_hex.o
     $(TARGET_MODULE)-objs += ../src/x64/alloc_and_copy_mk_code_aliases.o
     $(TARGET_MODULE)-objs += ../src/x64/alloc_and_copy_mk_state.o
     $(TARGET_MODULE)-objs += ../src/x64/alloc_and_copy_root_vp_state.o
@@ -141,7 +144,6 @@ ifneq ($(KERNELRELEASE),)
     $(TARGET_MODULE)-objs += ../src/x64/send_command_report_on.o
     $(TARGET_MODULE)-objs += ../src/x64/send_command_stop.o
     $(TARGET_MODULE)-objs += ../src/x64/serial_init.o
-    $(TARGET_MODULE)-objs += ../src/x64/serial_write.o
     $(TARGET_MODULE)-objs += ../src/x64/set_gdt_descriptor.o
     $(TARGET_MODULE)-objs += ../src/x64/set_idt_descriptor.o
 
@@ -153,7 +155,6 @@ ifneq ($(KERNELRELEASE),)
 	EXTRA_CFLAGS += -I$(src)/../include/x64/
 	EXTRA_CFLAGS += -I$(src)/../include/interface/c
 	EXTRA_CFLAGS += -I$(src)/../include/interface/c/x64
-	EXTRA_CFLAGS += -I$(src)/../include/interface/c/bfelf
 	EXTRA_CFLAGS += -I$(CMAKE_BINARY_DIR)/include
 
     EXTRA_AFLAGS += -I$(CMAKE_BINARY_DIR)/include

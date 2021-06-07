@@ -58,11 +58,11 @@ namespace integration
         // ---------------------------------------------------------------------
 
         // destroy assigned VP (turns VP into zombie)
-        ret = syscall::bf_vp_op_destroy_vp(g_handle, syscall::bf_tls_vpid());
+        ret = syscall::bf_vp_op_destroy_vp(g_handle, syscall::bf_tls_vpid(g_handle));
         integration::verify(bsl::errc_failure == ret);
 
         // destroy zombie
-        ret = syscall::bf_vp_op_destroy_vp(g_handle, syscall::bf_tls_vpid());
+        ret = syscall::bf_vp_op_destroy_vp(g_handle, syscall::bf_tls_vpid(g_handle));
         integration::verify(bsl::errc_failure == ret);
 
         // ---------------------------------------------------------------------

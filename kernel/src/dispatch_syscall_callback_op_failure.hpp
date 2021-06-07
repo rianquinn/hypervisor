@@ -26,6 +26,7 @@
 #define DISPATCH_SYSCALL_CALLBACK_OP_FAILURE_HPP
 
 #include <mk_interface.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -40,14 +41,13 @@ namespace mk
     ///   @brief Implements the bf_callback_op_register_bootstrap syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     constexpr void
-    syscall_callback_op_register_bootstrap_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
+    syscall_callback_op_register_bootstrap_failure(tls_t &tls, EXT_CONCEPT &ext) noexcept
     {
         if (!tls.state_reversal_required) {
             return;
@@ -60,14 +60,13 @@ namespace mk
     ///   @brief Implements the bf_callback_op_register_vmexit syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     constexpr void
-    syscall_callback_op_register_vmexit_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
+    syscall_callback_op_register_vmexit_failure(tls_t &tls, EXT_CONCEPT &ext) noexcept
     {
         if (!tls.state_reversal_required) {
             return;
@@ -81,14 +80,13 @@ namespace mk
     ///   @brief Implements the bf_callback_op_register_fail syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     constexpr void
-    syscall_callback_op_register_fail_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
+    syscall_callback_op_register_fail_failure(tls_t &tls, EXT_CONCEPT &ext) noexcept
     {
         if (!tls.state_reversal_required) {
             return;
@@ -102,14 +100,13 @@ namespace mk
     ///   @brief Dispatches the bf_callback_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     constexpr void
-    dispatch_syscall_callback_op_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
+    dispatch_syscall_callback_op_failure(tls_t &tls, EXT_CONCEPT &ext) noexcept
     {
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_CALLBACK_OP_REGISTER_BOOTSTRAP_IDX_VAL.get(): {

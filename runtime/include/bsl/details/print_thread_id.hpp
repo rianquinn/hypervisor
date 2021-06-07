@@ -44,23 +44,31 @@ namespace bsl::details
     constexpr void
     print_thread_id(out<T> const o) noexcept
     {
+        syscall::bf_handle_t hndl{};
+
         if (is_constant_evaluated()) {
             return;
         }
 
-        o << bsl::rst << " ["                                        // --
-          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_extid()}    // --
-          << bsl::rst << ":"                                         // --
-          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vmid()}     // --
-          << bsl::rst << ":"                                         // --
-          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vpid()}     // --
-          << bsl::rst << ":"                                         // --
-          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vpsid()}    // --
-          << bsl::rst << ":"                                         // --
-          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_ppid()}     // --
-          << bsl::rst << ":"                                         // --
-          << bsl::blu << "US"                                        // --
-          << bsl::rst << ']';                                        // --
+        /// NOTE:
+        /// - The handle defined above is not actually used for TLS
+        ///   functions, and instead is reserved for unit testing. At
+        ///   runtime, we can safely use a zero-initialized handle.
+        ///
+
+        o << bsl::rst << " ["                                            // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_extid(hndl)}    // --
+          << bsl::rst << ":"                                             // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vmid(hndl)}     // --
+          << bsl::rst << ":"                                             // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vpid(hndl)}     // --
+          << bsl::rst << ":"                                             // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vpsid(hndl)}    // --
+          << bsl::rst << ":"                                             // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_ppid(hndl)}     // --
+          << bsl::rst << ":"                                             // --
+          << bsl::blu << "US"                                            // --
+          << bsl::rst << ']';                                            // --
     }
 }
 

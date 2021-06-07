@@ -25,9 +25,9 @@
 #ifndef STATE_SAVE_T_HPP
 #define STATE_SAVE_T_HPP
 
-#include "global_descriptor_table_register_t.hpp"
-#include "interrupt_descriptor_table_register_t.hpp"
-#include "tss_t.hpp"
+#include <global_descriptor_table_register_t.hpp>
+#include <interrupt_descriptor_table_register_t.hpp>
+#include <tss_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>

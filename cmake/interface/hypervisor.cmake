@@ -70,33 +70,3 @@ target_compile_definitions(hypervisor INTERFACE
     HYPERVISOR_EXT_HEAP_POOL_ADDR=${HYPERVISOR_EXT_HEAP_POOL_ADDR}
     HYPERVISOR_EXT_HEAP_POOL_SIZE=${HYPERVISOR_EXT_HEAP_POOL_SIZE}
 )
-
-if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
-    target_compile_definitions(hypervisor INTERFACE
-        HYPERVISOR_X64=true
-        HYPERVISOR_AMD=true
-        HYPERVISOR_INTEL=false
-        HYPERVISOR_ARM=false
-        HYPERVISOR_AARCH64=false
-    )
-endif()
-
-if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    target_compile_definitions(hypervisor INTERFACE
-        HYPERVISOR_X64=true
-        HYPERVISOR_AMD=false
-        HYPERVISOR_INTEL=true
-        HYPERVISOR_ARM=false
-        HYPERVISOR_AARCH64=false
-    )
-endif()
-
-if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-    target_compile_definitions(hypervisor INTERFACE
-        HYPERVISOR_X64=false
-        HYPERVISOR_AMD=false
-        HYPERVISOR_INTEL=false
-        HYPERVISOR_ARM=true
-        HYPERVISOR_AARCH64=true
-    )
-endif()

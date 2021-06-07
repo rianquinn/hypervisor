@@ -25,8 +25,8 @@
  */
 
 #include <debug.h>
-#include <work_on_cpu_callback_args.h>
 #include <types.h>
+#include <work_on_cpu_callback_args.h>
 
 /**
  * <!-- description -->
@@ -56,7 +56,8 @@ work_on_cpu_callback(void *const ProcedureArgument)
  *   @param args the arguments for work_on_cpu_callback
  */
 void
-arch_work_on_cpu(uint32_t const cpu, void *const callback, struct work_on_cpu_callback_args *const args)
+arch_work_on_cpu(
+    uint32_t const cpu, void *const callback, struct work_on_cpu_callback_args *const args)
 {
     /**
      * NOTE:

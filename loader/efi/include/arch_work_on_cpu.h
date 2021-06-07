@@ -27,8 +27,8 @@
 #ifndef ARCH_WORK_ON_CPU_H
 #define ARCH_WORK_ON_CPU_H
 
-#include <work_on_cpu_callback_args.h>
 #include <types.h>
+#include <work_on_cpu_callback_args.h>
 
 /**
  * <!-- description -->
@@ -39,6 +39,7 @@
  *   @param callback the callback to call
  *   @param args the arguments for work_on_cpu_callback
  */
-void arch_work_on_cpu(uint32_t const cpu, void *const callback, struct work_on_cpu_callback_args *const args);
+void arch_work_on_cpu(
+    uint32_t const cpu, void *const callback, struct work_on_cpu_callback_args *const args);
 
 #endif

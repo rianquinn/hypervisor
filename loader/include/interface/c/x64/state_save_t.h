@@ -27,10 +27,9 @@
 #ifndef STATE_SAVE_T_H
 #define STATE_SAVE_T_H
 
-#include "global_descriptor_table_register_t.h"
-#include "interrupt_descriptor_table_register_t.h"
-#include "tss_t.h"
-
+#include <global_descriptor_table_register_t.h>
+#include <interrupt_descriptor_table_register_t.h>
+#include <tss_t.h>
 #include <types.h>
 
 #pragma pack(push, 1)

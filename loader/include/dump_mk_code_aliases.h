@@ -36,7 +36,6 @@
  *
  * <!-- inputs/outputs -->
  *   @param a the code_aliases_t to output
- *   @return 0 on success, LOADER_FAILURE on failure.
  */
 void dump_mk_code_aliases(struct code_aliases_t *const a);
 

@@ -27,8 +27,8 @@
 #include <debug.h>
 #include <efi/efi_mp_services_protocol.h>
 #include <efi/efi_status.h>
-#include <work_on_cpu_callback_args.h>
 #include <types.h>
+#include <work_on_cpu_callback_args.h>
 
 /**
  * <!-- description -->
@@ -40,7 +40,8 @@
  *   @param args the arguments for work_on_cpu_callback
  */
 void
-arch_work_on_cpu(uint32_t const cpu, void *const callback, struct work_on_cpu_callback_args *const args)
+arch_work_on_cpu(
+    uint32_t const cpu, void *const callback, struct work_on_cpu_callback_args *const args)
 {
     if (cpu == 0U) {
         args->ret = args->func(args->cpu);

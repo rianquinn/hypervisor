@@ -36,6 +36,8 @@
 #include <platform.h>
 #include <promote.h>
 #include <root_page_table_t.h>
+#include <serial_write_c.h>
+#include <serial_write_hex.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4152)
@@ -140,6 +142,28 @@ map_mk_code_aliases(struct code_aliases_t const *const a, root_page_table_t *con
     }
 
     if (map_4k_page_rx(esr_pf, phys, rpt)) {
+        bferror("map_4k_page_rx failed");
+        return LOADER_FAILURE;
+    }
+
+    phys = platform_virt_to_phys(a->serial_write_c);
+    if (((uint64_t)0) == phys) {
+        bferror("platform_virt_to_phys failed");
+        return LOADER_FAILURE;
+    }
+
+    if (map_4k_page_rx(serial_write_c, phys, rpt)) {
+        bferror("map_4k_page_rx failed");
+        return LOADER_FAILURE;
+    }
+
+    phys = platform_virt_to_phys(a->serial_write_hex);
+    if (((uint64_t)0) == phys) {
+        bferror("platform_virt_to_phys failed");
+        return LOADER_FAILURE;
+    }
+
+    if (map_4k_page_rx(serial_write_hex, phys, rpt)) {
         bferror("map_4k_page_rx failed");
         return LOADER_FAILURE;
     }

@@ -25,6 +25,8 @@
 #ifndef EXT_POOL_T_HPP
 #define EXT_POOL_T_HPP
 
+#include <tls_t.hpp>
+
 #include <bsl/array.hpp>
 #include <bsl/as_const.hpp>
 #include <bsl/debug.hpp>
@@ -106,7 +108,6 @@ namespace mk
         ///   @brief Initializes this ext_pool_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @tparam EXT_ELF_FILES_CONCEPT the type of array containing the
         ///     ext_elf_files provided by the loader
         ///   @param tls the current TLS block
@@ -114,9 +115,9 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT, typename EXT_ELF_FILES_CONCEPT>
+        template<typename EXT_ELF_FILES_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize(TLS_CONCEPT &tls, EXT_ELF_FILES_CONCEPT const &ext_elf_files) &noexcept
+        initialize(tls_t &tls, EXT_ELF_FILES_CONCEPT const &ext_elf_files) &noexcept
             -> bsl::errc_type
         {
             bsl::errc_type ret{};
@@ -160,12 +161,10 @@ namespace mk
         ///   @brief Release the ext_pool_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///
-        template<typename TLS_CONCEPT>
         constexpr void
-        release(TLS_CONCEPT &tls) &noexcept
+        release(tls_t &tls) &noexcept
         {
             for (auto const ext : m_pool) {
                 ext.data->release(tls);
@@ -218,16 +217,13 @@ namespace mk
         ///     can initialize it's VM specific resources.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was created.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
-            -> bsl::errc_type
+        signal_vm_created(tls_t &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->signal_vm_created(tls, vmid))) {
@@ -246,16 +242,13 @@ namespace mk
         ///     can release it's VM specific resources.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was destroyed.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        signal_vm_destroyed(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
-            -> bsl::errc_type
+        signal_vm_destroyed(tls_t &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->signal_vm_destroyed(tls, vmid))) {
@@ -274,14 +267,12 @@ namespace mk
         ///     extension's _start entry points.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        start(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
+        start(tls_t &tls) &noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->start(tls))) {
@@ -300,14 +291,12 @@ namespace mk
         ///     registered bootstrap callbacks for each extension.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        bootstrap(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
+        bootstrap(tls_t &tls) &noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->bootstrap(tls))) {
@@ -325,13 +314,11 @@ namespace mk
         ///   @brief Dumps the requested extension
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param extid the ID of the extension to dump
         ///
-        template<typename TLS_CONCEPT>
         constexpr void
-        dump(TLS_CONCEPT &tls, bsl::safe_uint16 const &extid) &noexcept
+        dump(tls_t &tls, bsl::safe_uint16 const &extid) &noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;

@@ -27,6 +27,7 @@
 
 #include <dispatch_esr_nmi.hpp>
 #include <dispatch_esr_page_fault.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
@@ -230,7 +231,7 @@ namespace mk
     ///     function will dispatch exceptions as needed.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
@@ -239,14 +240,14 @@ namespace mk
     ///   @return Returns bsl::exit_success if the exception was handled,
     ///     bsl::exit_failure otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT, typename INTRINSIC_CONCEPT>
+    template<typename EXT_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_esr(TLS_CONCEPT &tls, EXT_CONCEPT *const ext, INTRINSIC_CONCEPT &intrinsic) noexcept
+    dispatch_esr(tls_t &tls, EXT_CONCEPT *const ext, INTRINSIC_CONCEPT &intrinsic) noexcept
         -> bsl::exit_code
     {
         bsl::finally reset_on_exit{[&tls]() noexcept -> void {
             /// NOTE:
-            /// - This tells our spinlocks that we are no longer in an ESR,
+            /// - This tells our spinlock_ts that we are no longer in an ESR,
             ///   which is needed to ensure deadlock detection is handled
             ///   properly.
             ///
@@ -346,7 +347,7 @@ namespace mk
         bsl::print() << bsl::rst << bsl::endl;
 
         dispatch_esr_dump("cr0", tls.esr_cr0);
-        dispatch_esr_dump("cr2", tls.esr_cr2);
+        dispatch_esr_dump("cr2", tls.esr_pf_addr);
         dispatch_esr_dump("cr3", tls.esr_cr3);
         dispatch_esr_dump("cr4", tls.esr_cr4);
 

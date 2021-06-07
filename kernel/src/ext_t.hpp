@@ -25,15 +25,15 @@
 #ifndef EXT_T_HPP
 #define EXT_T_HPP
 
-#include "huge_t.hpp"
-#include "page_t.hpp"
-
 #include <allocate_tags.hpp>
+#include <bfelf/elf64_ehdr_t.hpp>
+#include <bfelf/elf64_phdr_t.hpp>
 #include <call_ext.hpp>
-#include <elf64_ehdr_t.hpp>
-#include <elf64_phdr_t.hpp>
+#include <huge_t.hpp>
 #include <map_page_flags.hpp>
 #include <mk_interface.hpp>
+#include <page_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/array.hpp>
 #include <bsl/discard.hpp>
@@ -396,17 +396,15 @@ namespace mk
         ///     the provided root page table.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param rpt the root page table to add too
         ///   @param elf_file the ELF file that contains the segment info
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         add_segments(
-            TLS_CONCEPT &tls,
+            tls_t &tls,
             ROOT_PAGE_TABLE_CONCEPT &rpt,
             bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
         {
@@ -508,17 +506,14 @@ namespace mk
         ///     provided root page table at the provided address.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param rpt the root page table to add too
         ///   @param addr the address of where to put the stack
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_stack(
-            TLS_CONCEPT &tls, ROOT_PAGE_TABLE_CONCEPT &rpt, bsl::safe_uintmax const &addr) &noexcept
+        add_stack(tls_t &tls, ROOT_PAGE_TABLE_CONCEPT &rpt, bsl::safe_uintmax const &addr) &noexcept
             -> bsl::errc_type
         {
             for (bsl::safe_uintmax bytes{}; bytes < EXT_STACK_SIZE; bytes += PAGE_SIZE) {
@@ -539,15 +534,13 @@ namespace mk
         ///     root page table.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param rpt the root page table to add too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        add_stacks(TLS_CONCEPT &tls, ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept -> bsl::errc_type
+        add_stacks(tls_t &tls, ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept -> bsl::errc_type
         {
             for (bsl::safe_uintmax pp{}; pp < bsl::to_umax(tls.online_pps); ++pp) {
                 auto const offs{(EXT_STACK_SIZE + PAGE_SIZE) * pp};
@@ -569,7 +562,6 @@ namespace mk
         ///     provided root page table at the provided address.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param rpt the root page table to add too
         ///   @param addr_usr the address the user's portion of the TLS block
@@ -578,10 +570,9 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         add_tls_block(
-            TLS_CONCEPT &tls,
+            tls_t &tls,
             ROOT_PAGE_TABLE_CONCEPT &rpt,
             bsl::safe_uintmax const &addr_usr,
             bsl::safe_uintmax const &addr_abi,
@@ -629,17 +620,15 @@ namespace mk
         ///     root page table.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param rpt the root page table to add too
         ///   @param elf_file the ELF file that contains the TLS info
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         add_tls_blocks(
-            TLS_CONCEPT &tls,
+            tls_t &tls,
             ROOT_PAGE_TABLE_CONCEPT &rpt,
             bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
         {
@@ -666,7 +655,6 @@ namespace mk
         ///     of this extension.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param rpt the root page table to initialize
         ///   @param system_rpt the system root page table to initialize with
@@ -675,10 +663,9 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         initialize_rpt(
-            TLS_CONCEPT &tls,
+            tls_t &tls,
             ROOT_PAGE_TABLE_CONCEPT &rpt,
             ROOT_PAGE_TABLE_CONCEPT const &system_rpt,
             bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
@@ -722,15 +709,13 @@ namespace mk
         ///     map).
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param rpt the root page table to initialize
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize_direct_map_rpt(TLS_CONCEPT &tls, ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept
+        initialize_direct_map_rpt(tls_t &tls, ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept
             -> bsl::errc_type
         {
             if (bsl::unlikely(!rpt.initialize(tls, m_intrinsic, m_page_pool, m_huge_pool))) {
@@ -813,14 +798,12 @@ namespace mk
         ///     the TLS blocks, etc... You cannot mix and match.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        update_direct_map_rpts(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
+        update_direct_map_rpts(tls_t &tls) &noexcept -> bsl::errc_type
         {
             for (auto const rpt : m_direct_map_rpts) {
                 if (!rpt.data->is_initialized()) {
@@ -845,7 +828,6 @@ namespace mk
         ///     layout to execute the extension with.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param ip the instruction pointer defining where in the
         ///     extension to start execution at.
@@ -854,10 +836,9 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         execute(
-            TLS_CONCEPT &tls,
+            tls_t &tls,
             bsl::safe_uintmax const &ip,
             bsl::safe_uintmax const &arg0 = {},
             bsl::safe_uintmax const &arg1 = {}) &noexcept -> bsl::errc_type
@@ -930,7 +911,6 @@ namespace mk
         ///   @brief Initializes this ext_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param page_pool the page pool to use
@@ -941,10 +921,9 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
         initialize(
-            TLS_CONCEPT &tls,
+            tls_t &tls,
             INTRINSIC_CONCEPT *const intrinsic,
             PAGE_POOL_CONCEPT *const page_pool,
             HUGE_POOL_CONCEPT *const huge_pool,
@@ -1018,12 +997,10 @@ namespace mk
         ///   @brief Release the ext_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///
-        template<typename TLS_CONCEPT>
         constexpr void
-        release(TLS_CONCEPT &tls) &noexcept
+        release(tls_t &tls) &noexcept
         {
             m_heap_crsr = {};
             m_handle = bsl::safe_uintmax::zero(true);
@@ -1248,15 +1225,13 @@ namespace mk
         ///     address space.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns a page_t containing the virtual address and
         ///     physical address of the page. If an error occurs, this
         ///     function will return an invalid virtual and physical address.
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        alloc_page(TLS_CONCEPT &tls) &noexcept -> page_t
+        alloc_page(tls_t &tls) &noexcept -> page_t
         {
             bsl::errc_type ret{};
 
@@ -1335,16 +1310,14 @@ namespace mk
         ///     it into the extension's address space.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param size the total number of bytes to allocate
         ///   @return Returns a huge_t containing the virtual address and
         ///     physical address of the memory block. If an error occurs, this
         ///     function will return an invalid virtual and physical address.
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        alloc_huge(TLS_CONCEPT &tls, bsl::safe_uintmax const &size) &noexcept -> huge_t
+        alloc_huge(tls_t &tls, bsl::safe_uintmax const &size) &noexcept -> huge_t
         {
             bsl::errc_type ret{};
 
@@ -1435,7 +1408,6 @@ namespace mk
         ///     address space.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param size the total number of bytes to allocate and add
         ///     to the heap.
@@ -1443,9 +1415,8 @@ namespace mk
         ///     virtual address of the heap. If an error occurs, this
         ///     function returns bsl::safe_uintmax::zero(true).
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        alloc_heap(TLS_CONCEPT &tls, bsl::safe_uintmax const &size) &noexcept -> bsl::safe_uintmax
+        alloc_heap(tls_t &tls, bsl::safe_uintmax const &size) &noexcept -> bsl::safe_uintmax
         {
             bsl::errc_type ret{};
 
@@ -1537,16 +1508,13 @@ namespace mk
         ///     direct map root page table that is active.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param page_virt the virtual address to map the physical address too
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        map_page_direct(TLS_CONCEPT &tls, bsl::safe_uintmax const &page_virt) &noexcept
-            -> bsl::errc_type
+        map_page_direct(tls_t &tls, bsl::safe_uintmax const &page_virt) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -1598,16 +1566,13 @@ namespace mk
         ///     can initialize it's VM specific resources.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was created.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        signal_vm_created(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
-            -> bsl::errc_type
+        signal_vm_created(tls_t &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
@@ -1639,16 +1604,13 @@ namespace mk
         ///     can release it's VM specific resources.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param vmid the VMID of the VM that was destroyed.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        signal_vm_destroyed(TLS_CONCEPT &tls, bsl::safe_uint16 const &vmid) &noexcept
-            -> bsl::errc_type
+        signal_vm_destroyed(tls_t &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
@@ -1677,14 +1639,12 @@ namespace mk
         ///     return bsl::errc_success.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        start(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
+        start(tls_t &tls) &noexcept -> bsl::errc_type
         {
             auto const arg{bsl::to_umax(syscall::BF_ALL_SPECS_SUPPORTED_VAL)};
             auto const ret{this->execute(tls, m_entry_ip, arg)};
@@ -1703,14 +1663,12 @@ namespace mk
         ///     will return bsl::errc_success.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        bootstrap(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
+        bootstrap(tls_t &tls) &noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(!m_bootstrap_ip)) {
                 bsl::error() << "a bootstrap handler was never registered\n" << bsl::here();
@@ -1733,15 +1691,13 @@ namespace mk
         ///     will return bsl::errc_success.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @param exit_reason the reason for the VMExit
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        vmexit(TLS_CONCEPT &tls, bsl::safe_uintmax const &exit_reason) &noexcept -> bsl::errc_type
+        vmexit(tls_t &tls, bsl::safe_uintmax const &exit_reason) &noexcept -> bsl::errc_type
         {
             bsl::safe_uintmax arg0{bsl::to_umax(tls.active_vpsid)};
             bsl::safe_uintmax arg1{exit_reason};
@@ -1761,14 +1717,12 @@ namespace mk
         ///     will return bsl::errc_success.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename TLS_CONCEPT>
         [[nodiscard]] constexpr auto
-        fail(TLS_CONCEPT &tls) &noexcept -> bsl::errc_type
+        fail(tls_t &tls) &noexcept -> bsl::errc_type
         {
             bsl::safe_uintmax arg0{syscall::BF_STATUS_FAILURE_UNKNOWN};
 
@@ -1785,12 +1739,10 @@ namespace mk
         ///   @brief Dumps the vm_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///
-        template<typename TLS_CONCEPT>
         constexpr void
-        dump(TLS_CONCEPT &tls) const &noexcept
+        dump(tls_t &tls) const &noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;

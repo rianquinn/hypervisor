@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include <bfelf_elf64_phdr_t.h>
+#include <bfelf/bfelf_elf64_phdr_t.h>
 #include <constants.h>
 #include <debug.h>
 #include <l3te_t.h>

@@ -103,7 +103,7 @@ namespace example
                                  << bsl::grn << " now "                           // --
                                  << bsl::rst << "in a vm (default example)\n";    // --
 
-                    if (vpsid + bsl::ONE_U16 == syscall::bf_tls_online_pps()) {
+                    if (vpsid + bsl::ONE_U16 == syscall::bf_tls_online_pps(handle)) {
                         bsl::print() << bsl::endl;
                         syscall::bf_debug_op_dump_page_pool();
                         bsl::print() << bsl::endl;

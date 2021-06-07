@@ -111,7 +111,8 @@ namespace integration
         integration::verify(bsl::errc_failure == ret);
 
         // create with ppid that is create than the total number of online pps
-        ret = syscall::bf_vps_op_create_vps(g_handle, vpid, syscall::bf_tls_online_pps(), vpsid);
+        ret = syscall::bf_vps_op_create_vps(
+            g_handle, vpid, syscall::bf_tls_online_pps(g_handle), vpsid);
         integration::verify(bsl::errc_failure == ret);
 
         // create all and prove that creating one more will fail

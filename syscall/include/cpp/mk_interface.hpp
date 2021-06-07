@@ -22,8 +22,10 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef MK_INTERFACE_H
-#define MK_INTERFACE_H
+#ifndef MK_INTERFACE_HPP
+#define MK_INTERFACE_HPP
+
+#include <bf_reg_t.hpp>
 
 #include <bsl/char_type.hpp>
 #include <bsl/conditional.hpp>
@@ -33,6 +35,7 @@
 #include <bsl/discard.hpp>
 #include <bsl/disjunction.hpp>
 #include <bsl/errc_type.hpp>
+#include <bsl/is_constant_evaluated_debug.hpp>
 #include <bsl/is_standard_layout.hpp>
 #include <bsl/is_void.hpp>
 #include <bsl/likely.hpp>
@@ -78,184 +81,47 @@ namespace syscall
     // IWYU is more important here, and this rule would make this interface
     // needlessly overcomplicated.
     // NOLINTNEXTLINE(bsl-user-defined-type-names-match-header-name)
-    struct bf_handle_t final
+    struct bf_handle_t_impl final
     {
-        /// @brief The handle returned by bf_handle_op_open_handle
+        /// @brief the handle returned by bf_handle_op_open_handle
         bf_uint64_t hndl;
     };
 
-    // -------------------------------------------------------------------------
-    // Register Type
-    // -------------------------------------------------------------------------
-
-    /// @brief Defines which register is being requested by certain syscalls
+    /// @class syscall::bf_handle_t
+    ///
+    /// <!-- description -->
+    ///   @brief The bf_handle_t structure is an opaque structure containing
+    ///     the handle that is used by most of the syscalls in this
+    ///     specification. The opaque structure is used internally by the C
+    ///     wrapper interface for storing state as needed and should not be
+    ///     accessed directly. The C wrapper is allowed to redefine the
+    ///     internal layout of this structure at any time (e.g., the C wrapper
+    ///     might provide an alternative layout for unit testing).
+    ///
     // IWYU is more important here, and this rule would make this interface
     // needlessly overcomplicated.
     // NOLINTNEXTLINE(bsl-user-defined-type-names-match-header-name)
-    enum class bf_reg_t_x64 : bsl::uint64
+    struct bf_handle_t_impl_debug final
     {
-        /// @brief defines the rax register
-        bf_reg_t_rax = static_cast<bsl::uint64>(0),
-        /// @brief defines the rbx register
-        bf_reg_t_rbx = static_cast<bsl::uint64>(1),
-        /// @brief defines the rcx register
-        bf_reg_t_rcx = static_cast<bsl::uint64>(2),
-        /// @brief defines the rdx register
-        bf_reg_t_rdx = static_cast<bsl::uint64>(3),
-        /// @brief defines the rbp register
-        bf_reg_t_rbp = static_cast<bsl::uint64>(4),
-        /// @brief defines the rsi register
-        bf_reg_t_rsi = static_cast<bsl::uint64>(5),
-        /// @brief defines the rdi register
-        bf_reg_t_rdi = static_cast<bsl::uint64>(6),
-        /// @brief defines the r8 register
-        bf_reg_t_r8 = static_cast<bsl::uint64>(7),
-        /// @brief defines the r9 register
-        bf_reg_t_r9 = static_cast<bsl::uint64>(8),
-        /// @brief defines the r10 register
-        bf_reg_t_r10 = static_cast<bsl::uint64>(9),
-        /// @brief defines the r11 register
-        bf_reg_t_r11 = static_cast<bsl::uint64>(10),
-        /// @brief defines the r12 register
-        bf_reg_t_r12 = static_cast<bsl::uint64>(11),
-        /// @brief defines the r13 register
-        bf_reg_t_r13 = static_cast<bsl::uint64>(12),
-        /// @brief defines the r14 register
-        bf_reg_t_r14 = static_cast<bsl::uint64>(13),
-        /// @brief defines the r15 register
-        bf_reg_t_r15 = static_cast<bsl::uint64>(14),
-        /// @brief defines the rip register
-        bf_reg_t_rip = static_cast<bsl::uint64>(15),
-        /// @brief defines the rsp register
-        bf_reg_t_rsp = static_cast<bsl::uint64>(16),
-        /// @brief defines the rflags register
-        bf_reg_t_rflags = static_cast<bsl::uint64>(17),
-        /// @brief defines the gdtr_base_addr register
-        bf_reg_t_gdtr_base_addr = static_cast<bsl::uint64>(18),
-        /// @brief defines the gdtr_limit register
-        bf_reg_t_gdtr_limit = static_cast<bsl::uint64>(19),
-        /// @brief defines the idtr_base_addr register
-        bf_reg_t_idtr_base_addr = static_cast<bsl::uint64>(20),
-        /// @brief defines the idtr_limit register
-        bf_reg_t_idtr_limit = static_cast<bsl::uint64>(21),
-        /// @brief defines the es register
-        bf_reg_t_es = static_cast<bsl::uint64>(22),
-        /// @brief defines the es_base_addr register
-        bf_reg_t_es_base_addr = static_cast<bsl::uint64>(23),
-        /// @brief defines the es_limit register
-        bf_reg_t_es_limit = static_cast<bsl::uint64>(24),
-        /// @brief defines the es_attributes register
-        bf_reg_t_es_attributes = static_cast<bsl::uint64>(25),
-        /// @brief defines the cs register
-        bf_reg_t_cs = static_cast<bsl::uint64>(26),
-        /// @brief defines the cs_base_addr register
-        bf_reg_t_cs_base_addr = static_cast<bsl::uint64>(27),
-        /// @brief defines the cs_limit register
-        bf_reg_t_cs_limit = static_cast<bsl::uint64>(28),
-        /// @brief defines the cs_attributes register
-        bf_reg_t_cs_attributes = static_cast<bsl::uint64>(29),
-        /// @brief defines the ss register
-        bf_reg_t_ss = static_cast<bsl::uint64>(30),
-        /// @brief defines the ss_base_addr register
-        bf_reg_t_ss_base_addr = static_cast<bsl::uint64>(31),
-        /// @brief defines the ss_limit register
-        bf_reg_t_ss_limit = static_cast<bsl::uint64>(32),
-        /// @brief defines the ss_attributes register
-        bf_reg_t_ss_attributes = static_cast<bsl::uint64>(33),
-        /// @brief defines the ds register
-        bf_reg_t_ds = static_cast<bsl::uint64>(34),
-        /// @brief defines the ds_base_addr register
-        bf_reg_t_ds_base_addr = static_cast<bsl::uint64>(35),
-        /// @brief defines the ds_limit register
-        bf_reg_t_ds_limit = static_cast<bsl::uint64>(36),
-        /// @brief defines the ds_attributes register
-        bf_reg_t_ds_attributes = static_cast<bsl::uint64>(37),
-        /// @brief defines the fs register
-        bf_reg_t_fs = static_cast<bsl::uint64>(38),
-        /// @brief defines the fs_base_addr register
-        bf_reg_t_fs_base_addr = static_cast<bsl::uint64>(39),
-        /// @brief defines the fs_limit register
-        bf_reg_t_fs_limit = static_cast<bsl::uint64>(40),
-        /// @brief defines the fs_attributes register
-        bf_reg_t_fs_attributes = static_cast<bsl::uint64>(41),
-        /// @brief defines the gs register
-        bf_reg_t_gs = static_cast<bsl::uint64>(42),
-        /// @brief defines the gs_base_addr register
-        bf_reg_t_gs_base_addr = static_cast<bsl::uint64>(43),
-        /// @brief defines the gs_limit register
-        bf_reg_t_gs_limit = static_cast<bsl::uint64>(44),
-        /// @brief defines the gs_attributes register
-        bf_reg_t_gs_attributes = static_cast<bsl::uint64>(45),
-        /// @brief defines the ldtr register
-        bf_reg_t_ldtr = static_cast<bsl::uint64>(46),
-        /// @brief defines the ldtr_base_addr register
-        // We don't have a choice in the naming here
-        // NOLINTNEXTLINE(bsl-identifier-typographically-unambiguous)
-        bf_reg_t_ldtr_base_addr = static_cast<bsl::uint64>(47),
-        /// @brief defines the ldtr_limit register
-        // We don't have a choice in the naming here
-        // NOLINTNEXTLINE(bsl-identifier-typographically-unambiguous)
-        bf_reg_t_ldtr_limit = static_cast<bsl::uint64>(48),
-        /// @brief defines the ldtr_attributes register
-        bf_reg_t_ldtr_attributes = static_cast<bsl::uint64>(49),
-        /// @brief defines the tr register
-        bf_reg_t_tr = static_cast<bsl::uint64>(50),
-        /// @brief defines the tr_base_addr register
-        bf_reg_t_tr_base_addr = static_cast<bsl::uint64>(51),
-        /// @brief defines the tr_limit register
-        bf_reg_t_tr_limit = static_cast<bsl::uint64>(52),
-        /// @brief defines the tr_attributes register
-        bf_reg_t_tr_attributes = static_cast<bsl::uint64>(53),
-        /// @brief defines the cr0 register
-        bf_reg_t_cr0 = static_cast<bsl::uint64>(54),
-        /// @brief defines the cr2 register
-        bf_reg_t_cr2 = static_cast<bsl::uint64>(55),
-        /// @brief defines the cr3 register
-        bf_reg_t_cr3 = static_cast<bsl::uint64>(56),
-        /// @brief defines the cr4 register
-        bf_reg_t_cr4 = static_cast<bsl::uint64>(57),
-        /// @brief defines the dr6 register
-        bf_reg_t_dr6 = static_cast<bsl::uint64>(58),
-        /// @brief defines the dr7 register
-        bf_reg_t_dr7 = static_cast<bsl::uint64>(59),
-        /// @brief defines the ia32_efer register
-        bf_reg_t_ia32_efer = static_cast<bsl::uint64>(60),
-        /// @brief defines the ia32_star register
-        bf_reg_t_ia32_star = static_cast<bsl::uint64>(61),
-        /// @brief defines the ia32_lstar register
-        bf_reg_t_ia32_lstar = static_cast<bsl::uint64>(62),
-        /// @brief defines the ia32_cstar register
-        bf_reg_t_ia32_cstar = static_cast<bsl::uint64>(63),
-        /// @brief defines the ia32_fmask register
-        bf_reg_t_ia32_fmask = static_cast<bsl::uint64>(64),
-        /// @brief defines the ia32_fs_base register
-        bf_reg_t_ia32_fs_base = static_cast<bsl::uint64>(65),
-        /// @brief defines the ia32_gs_base register
-        bf_reg_t_ia32_gs_base = static_cast<bsl::uint64>(66),
-        /// @brief defines the ia32_kernel_gs_base register
-        bf_reg_t_ia32_kernel_gs_base = static_cast<bsl::uint64>(67),
-        /// @brief defines the ia32_sysenter_cs register
-        bf_reg_t_ia32_sysenter_cs = static_cast<bsl::uint64>(68),
-        /// @brief defines the ia32_sysenter_esp register
-        bf_reg_t_ia32_sysenter_esp = static_cast<bsl::uint64>(69),
-        /// @brief defines the ia32_sysenter_eip register
-        bf_reg_t_ia32_sysenter_eip = static_cast<bsl::uint64>(70),
-        /// @brief defines the ia32_pat register
-        bf_reg_t_ia32_pat = static_cast<bsl::uint64>(71),
-        /// @brief defines the ia32_debugctl register
-        bf_reg_t_ia32_debugctl = static_cast<bsl::uint64>(72),
+        /// @brief the handle returned by bf_handle_op_open_handle
+        bf_uint64_t hndl;
+
+        /// @brief reserved for unit testing
+        bsl::errc_type test_ret;
+        /// @brief reserved for unit testing
+        bsl::safe_uint8 test_ret_u8;
+        /// @brief reserved for unit testing
+        bsl::safe_uint16 test_ret_u16;
+        /// @brief reserved for unit testing
+        bsl::safe_uint32 test_ret_u32;
+        /// @brief reserved for unit testing
+        bsl::safe_uint64 test_ret_u64;
+        /// @brief reserved for unit testing
+        void *test_ret_ptr;
     };
 
-    /// @brief Defines which register is being requested by certain syscalls
-    // IWYU is more important here, and this rule would make this interface
-    // needlessly overcomplicated.
-    // NOLINTNEXTLINE(bsl-user-defined-type-names-match-header-name)
-    enum class bf_reg_t_aarch64 : bsl::uint64
-    {
-    };
-
-    /// @brief Defines bf_reg_t based on which archiecture is used
-    using bf_reg_t = bsl::conditional_t<HYPERVISOR_X64, bf_reg_t_x64, bf_reg_t_aarch64>;
+    /// @brief removes the debugging code from release builds
+    using bf_handle_t = bsl::conditional_t<BSL_RELEASE_MODE, bf_handle_t_impl, bf_handle_t_impl_debug>;
 
     // -------------------------------------------------------------------------
     // Exit Type
@@ -316,52 +182,6 @@ namespace syscall
     // -------------------------------------------------------------------------
     // Syscall Status Codes
     // -------------------------------------------------------------------------
-
-    /// @brief Defines a mask for BF_STATUS_SIG
-    constexpr bsl::safe_uint64 BF_STATUS_SIG_MASK{bsl::to_u64(0xFFFF000000000000U)};
-    /// @brief Defines a mask for BF_STATUS_FLAGS
-    constexpr bsl::safe_uint64 BF_STATUS_FLAGS_MASK{bsl::to_u64(0x0000FFFFFFFF0000U)};
-    /// @brief Defines a mask for BF_STATUS_VALUE
-    constexpr bsl::safe_uint64 BF_STATUS_VALUE_MASK{bsl::to_u64(0x000000000000FFFFU)};
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param status n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] inline auto
-    bf_status_sig(bsl::safe_uint64 const &status) noexcept -> bsl::safe_uint64
-    {
-        return status & BF_STATUS_SIG_MASK;
-    }
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param status n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] inline auto
-    bf_status_flags(bsl::safe_uint64 const &status) noexcept -> bsl::safe_uint64
-    {
-        return status & BF_STATUS_FLAGS_MASK;
-    }
-
-    /// <!-- description -->
-    ///   @brief n/a
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param status n/a
-    ///   @return n/a
-    ///
-    [[nodiscard]] inline auto
-    bf_status_value(bsl::safe_uint64 const &status) noexcept -> bsl::safe_uint64
-    {
-        return status & BF_STATUS_VALUE_MASK;
-    }
 
     /// @brief Used to indicated that the syscall returned successfully
     constexpr bsl::safe_uint64 BF_STATUS_SUCCESS{bsl::to_u64(0x0000000000000000U)};
@@ -923,11 +743,17 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rax
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_rax(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_rax_impl()};
+        if constexpr (!BSL_RELEASE_MODE) {
+            if (bsl::is_constant_evaluated_debug()) {
+                return handle.test_ret_u64;
+            }
+        }
+        else {
+            return bf_tls_rax_impl();
+        }
     }
 
     /// <!-- description -->
@@ -937,10 +763,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rax to
     ///
-    inline void
-    bf_tls_set_rax(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_rax(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_rax_impl(val.get());
     }
 
@@ -951,11 +781,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rbx
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_rbx(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_rbx_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_rbx_impl();
     }
 
     /// <!-- description -->
@@ -965,10 +798,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rbx to
     ///
-    inline void
-    bf_tls_set_rbx(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_rbx(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_rbx_impl(val.get());
     }
 
@@ -979,11 +816,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rcx
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_rcx(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_rcx_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_rcx_impl();
     }
 
     /// <!-- description -->
@@ -993,10 +833,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rcx to
     ///
-    inline void
-    bf_tls_set_rcx(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_rcx(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_rcx_impl(val.get());
     }
 
@@ -1007,11 +851,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rdx
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_rdx(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_rdx_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_rdx_impl();
     }
 
     /// <!-- description -->
@@ -1021,10 +868,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rdx to
     ///
-    inline void
-    bf_tls_set_rdx(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_rdx(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_rdx_impl(val.get());
     }
 
@@ -1035,11 +886,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rbp
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_rbp(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_rbp_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_rbp_impl();
     }
 
     /// <!-- description -->
@@ -1049,10 +903,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rbp to
     ///
-    inline void
-    bf_tls_set_rbp(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_rbp(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_rbp_impl(val.get());
     }
 
@@ -1063,11 +921,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rsi
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_rsi(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_rsi_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_rsi_impl();
     }
 
     /// <!-- description -->
@@ -1077,10 +938,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rsi to
     ///
-    inline void
-    bf_tls_set_rsi(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_rsi(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_rsi_impl(val.get());
     }
 
@@ -1091,11 +956,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.rdi
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_rdi(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_rdi_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_rdi_impl();
     }
 
     /// <!-- description -->
@@ -1105,10 +973,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.rdi to
     ///
-    inline void
-    bf_tls_set_rdi(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_rdi(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_rdi_impl(val.get());
     }
 
@@ -1119,11 +991,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r8
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_r8(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_r8_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_r8_impl();
     }
 
     /// <!-- description -->
@@ -1133,10 +1008,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r8 to
     ///
-    inline void
-    bf_tls_set_r8(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_r8(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_r8_impl(val.get());
     }
 
@@ -1147,11 +1026,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r9
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_r9(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_r9_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_r9_impl();
     }
 
     /// <!-- description -->
@@ -1161,10 +1043,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r9 to
     ///
-    inline void
-    bf_tls_set_r9(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_r9(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_r9_impl(val.get());
     }
 
@@ -1175,11 +1061,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r10
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_r10(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_r10_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_r10_impl();
     }
 
     /// <!-- description -->
@@ -1189,10 +1078,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r10 to
     ///
-    inline void
-    bf_tls_set_r10(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_r10(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_r10_impl(val.get());
     }
 
@@ -1203,11 +1096,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r11
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_r11(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_r11_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_r11_impl();
     }
 
     /// <!-- description -->
@@ -1217,10 +1113,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r11 to
     ///
-    inline void
-    bf_tls_set_r11(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_r11(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_r11_impl(val.get());
     }
 
@@ -1231,11 +1131,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r12
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_r12(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_r12_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_r12_impl();
     }
 
     /// <!-- description -->
@@ -1245,10 +1148,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r12 to
     ///
-    inline void
-    bf_tls_set_r12(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_r12(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_r12_impl(val.get());
     }
 
@@ -1259,11 +1166,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r13
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_r13(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_r13_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_r13_impl();
     }
 
     /// <!-- description -->
@@ -1273,10 +1183,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r13 to
     ///
-    inline void
-    bf_tls_set_r13(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_r13(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_r13_impl(val.get());
     }
 
@@ -1287,11 +1201,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r14
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_r14(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_r14_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_r14_impl();
     }
 
     /// <!-- description -->
@@ -1301,10 +1218,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r14 to
     ///
-    inline void
-    bf_tls_set_r14(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_r14(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_r14_impl(val.get());
     }
 
@@ -1315,11 +1236,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.r15
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_tls_r15(bf_handle_t const &handle) noexcept -> bsl::safe_uintmax
     {
-        bsl::discard(handle);
-        return {bf_tls_r15_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
+        return bf_tls_r15_impl();
     }
 
     /// <!-- description -->
@@ -1329,10 +1253,14 @@ namespace syscall
     ///   @param handle reserved for unit testing
     ///   @param val The value to set tls.r15 to
     ///
-    inline void
-    bf_tls_set_r15(bf_handle_t const &handle, bsl::safe_uintmax const &val) noexcept
+    constexpr void
+    bf_tls_set_r15(bf_handle_t &handle, bsl::safe_uintmax const &val) noexcept
     {
-        bsl::discard(handle);
+        if (bsl::is_constant_evaluated_debug()) {
+            handle.test_ret_u64 = val;
+            return;
+        }
+
         bf_tls_set_r15_impl(val.get());
     }
 
@@ -1340,72 +1268,102 @@ namespace syscall
     ///   @brief Returns the value of tls.extid
     ///
     /// <!-- inputs/outputs -->
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.extid
     ///
-    [[nodiscard]] inline auto
-    bf_tls_extid() noexcept -> bsl::safe_uint16
+    [[nodiscard]] constexpr auto
+    bf_tls_extid(bf_handle_t const &handle) noexcept -> bsl::safe_uint16
     {
-        return {bf_tls_extid_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u16;
+        }
+
+        return bf_tls_extid_impl();
     }
 
     /// <!-- description -->
     ///   @brief Returns the value of tls.vmid
     ///
     /// <!-- inputs/outputs -->
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.vmid
     ///
-    [[nodiscard]] inline auto
-    bf_tls_vmid() noexcept -> bsl::safe_uint16
+    [[nodiscard]] constexpr auto
+    bf_tls_vmid(bf_handle_t const &handle) noexcept -> bsl::safe_uint16
     {
-        return {bf_tls_vmid_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u16;
+        }
+
+        return bf_tls_vmid_impl();
     }
 
     /// <!-- description -->
     ///   @brief Returns the value of tls.vpid
     ///
     /// <!-- inputs/outputs -->
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.vpid
     ///
-    [[nodiscard]] inline auto
-    bf_tls_vpid() noexcept -> bsl::safe_uint16
+    [[nodiscard]] constexpr auto
+    bf_tls_vpid(bf_handle_t const &handle) noexcept -> bsl::safe_uint16
     {
-        return {bf_tls_vpid_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u16;
+        }
+
+        return bf_tls_vpid_impl();
     }
 
     /// <!-- description -->
     ///   @brief Returns the value of tls.vpsid
     ///
     /// <!-- inputs/outputs -->
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.vpsid
     ///
-    [[nodiscard]] inline auto
-    bf_tls_vpsid() noexcept -> bsl::safe_uint16
+    [[nodiscard]] constexpr auto
+    bf_tls_vpsid(bf_handle_t const &handle) noexcept -> bsl::safe_uint16
     {
-        return {bf_tls_vpsid_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u16;
+        }
+
+        return bf_tls_vpsid_impl();
     }
 
     /// <!-- description -->
     ///   @brief Returns the value of tls.ppid
     ///
     /// <!-- inputs/outputs -->
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.ppid
     ///
-    [[nodiscard]] inline auto
-    bf_tls_ppid() noexcept -> bsl::safe_uint16
+    [[nodiscard]] constexpr auto
+    bf_tls_ppid(bf_handle_t const &handle) noexcept -> bsl::safe_uint16
     {
-        return {bf_tls_ppid_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u16;
+        }
+
+        return bf_tls_ppid_impl();
     }
 
     /// <!-- description -->
     ///   @brief Returns the value of tls.online_pps
     ///
     /// <!-- inputs/outputs -->
+    ///   @param handle reserved for unit testing
     ///   @return Returns the value of tls.online_pps
     ///
-    [[nodiscard]] inline auto
-    bf_tls_online_pps() noexcept -> bsl::safe_uint16
+    [[nodiscard]] constexpr auto
+    bf_tls_online_pps(bf_handle_t const &handle) noexcept -> bsl::safe_uint16
     {
-        return {bf_tls_online_pps_impl()};
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u16;
+        }
+
+        return bf_tls_online_pps_impl();
     }
 
     // -------------------------------------------------------------------------
@@ -1424,9 +1382,13 @@ namespace syscall
     ///   @brief This syscall tells the microkernel to exit the execution
     ///     of an extension, providing a means to fast fail.
     ///
-    inline void
+    constexpr void
     bf_control_op_exit() noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_control_op_exit_impl();
     }
 
@@ -1448,9 +1410,13 @@ namespace syscall
     ///     returns and should be used to return from the successful execution
     ///     of the _start function.
     ///
-    inline void
+    constexpr void
     bf_control_op_wait() noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_control_op_wait_impl();
     }
 
@@ -1489,11 +1455,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_handle_op_open_handle(               // --
         bsl::safe_uint32 const &version,    // --
         bf_handle_t &handle) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_handle_op_open_handle_impl(version.get(), &handle.hndl)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -1527,10 +1497,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_handle_op_close_handle(    // --
         bf_handle_t &handle) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            handle = {};
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_handle_op_close_handle_impl(handle.hndl)};
         handle = {};
 
@@ -1568,11 +1543,15 @@ namespace syscall
     ///   @param val1 The first value to output to the microkernel's console
     ///   @param val2 The second value to output to the microkernel's console
     ///
-    inline void
+    constexpr void
     bf_debug_op_out(                     // --
         bsl::safe_uint64 const &val1,    // --
         bsl::safe_uint64 const &val2) noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_debug_op_out_impl(val1.get(), val2.get());
     }
 
@@ -1600,10 +1579,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param vmid The VMID of the VM whose state is to be outputted
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_vm(    // --
         bsl::safe_uint16 const &vmid) noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_debug_op_dump_vm_impl(vmid.get());
     }
 
@@ -1631,10 +1614,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param vpid The VPID of the VP whose state is to be outputted
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_vp(    // --
         bsl::safe_uint16 const &vpid) noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_debug_op_dump_vp_impl(vpid.get());
     }
 
@@ -1662,10 +1649,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param vpsid The VPSID of the VPS whose state is to be outputted
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_vps(    // --
         bsl::safe_uint16 const &vpsid) noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_debug_op_dump_vps_impl(vpsid.get());
     }
 
@@ -1694,10 +1685,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param ppid The PPID of the PP to dump the log from
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_vmexit_log(    // --
         bsl::safe_uint16 const &ppid) noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_debug_op_dump_vmexit_log_impl(ppid.get());
     }
 
@@ -1724,10 +1719,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param c The character to output
     ///
-    inline void
+    constexpr void
     bf_debug_op_write_c(    // --
         bsl::char_type const c) noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_debug_op_write_c_impl(c);
     }
 
@@ -1754,10 +1753,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param str The virtual address of a null terminated string to output
     ///
-    inline void
+    constexpr void
     bf_debug_op_write_str(    // --
         bsl::cstr_type const str) noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_debug_op_write_str_impl(str);
     }
 
@@ -1785,10 +1788,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param extid The EXTID of the extensions's state to output
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_ext(    // --
         bsl::safe_uint16 const &extid) noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_debug_op_dump_ext_impl(extid.get());
     }
 
@@ -1809,9 +1816,13 @@ namespace syscall
     ///     stats to the console device the microkernel is currently using
     ///     for debugging.
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_page_pool() noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_debug_op_dump_page_pool_impl();
     }
 
@@ -1832,9 +1843,13 @@ namespace syscall
     ///     stats to the console device the microkernel is currently using
     ///     for debugging.
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_huge_pool() noexcept
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return;
+        }
+
         bf_debug_op_dump_huge_pool_impl();
     }
 
@@ -1868,11 +1883,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_callback_op_register_bootstrap(    // --
         bf_handle_t const &handle,        // --
         bf_callback_handler_bootstrap_t const handler) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_callback_op_register_bootstrap_impl(handle.hndl, handler)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -1911,11 +1930,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_callback_op_register_vmexit(    // --
         bf_handle_t const &handle,     // --
         bf_callback_handler_vmexit_t const handler) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_callback_op_register_vmexit_impl(handle.hndl, handler)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -1956,11 +1979,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_callback_op_register_fail(     // --
         bf_handle_t const &handle,    // --
         bf_callback_handler_fail_t const handler) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_callback_op_register_fail_impl(handle.hndl, handler)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -1998,11 +2025,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vm_op_create_vm(               // --
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 &vmid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_vm_op_create_vm_impl(handle.hndl, vmid.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2040,11 +2071,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vm_op_destroy_vm(              // --
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_vm_op_destroy_vm_impl(handle.hndl, vmid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2089,13 +2124,17 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vp_op_create_vp(                  // --
         bf_handle_t const &handle,       // --
         bsl::safe_uint16 const &vmid,    // --
         bsl::safe_uint16 const &ppid,    // --
         bsl::safe_uint16 &vpid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{
             bf_vp_op_create_vp_impl(handle.hndl, vmid.get(), ppid.get(), vpid.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
@@ -2134,11 +2173,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vp_op_destroy_vp(              // --
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_vp_op_destroy_vp_impl(handle.hndl, vpid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2212,12 +2255,16 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vp_op_migrate(                    // --
         bf_handle_t const &handle,       // --
         bsl::safe_uint16 const &vpid,    // --
         bsl::safe_uint16 const &ppid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_vp_op_migrate_impl(handle.hndl, vpid.get(), ppid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2261,13 +2308,17 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_create_vps(                // --
         bf_handle_t const &handle,       // --
         bsl::safe_uint16 const &vpid,    // --
         bsl::safe_uint16 const &ppid,    // --
         bsl::safe_uint16 &vpsid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{
             bf_vps_op_create_vps_impl(handle.hndl, vpid.get(), ppid.get(), vpsid.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
@@ -2306,11 +2357,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_destroy_vps(            // --
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_vps_op_destroy_vps_impl(handle.hndl, vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2348,11 +2403,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_init_as_root(           // --
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_vps_op_init_as_root_impl(handle.hndl, vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -2394,24 +2453,28 @@ namespace syscall
     ///   @param handle Set to the result of bf_handle_op_open_handle
     ///   @param vpsid The VPSID of the VPS to read from
     ///   @param index The HVE specific index defining which field to read
-    ///   @param value The resulting value
-    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-    ///     otherwise
+    ///   @return Returns the value read, or bsl::safe_uint8::zero(true)
+    ///     on failure.
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_read8(                      // --
         bf_handle_t const &handle,        // --
         bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint8 &value) noexcept -> bsl::errc_type
+        bsl::safe_uint64 const &index) noexcept -> bsl::safe_uint8
     {
+        bsl::safe_uint8 value{};
+
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u8;
+        }
+
         bf_status_t const status{
             bf_vps_op_read8_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
-            return bsl::errc_failure;
+            return bsl::safe_uint8::zero(true);
         }
 
-        return bsl::errc_success;
+        return value;
     }
 
     // -------------------------------------------------------------------------
@@ -2447,24 +2510,28 @@ namespace syscall
     ///   @param handle Set to the result of bf_handle_op_open_handle
     ///   @param vpsid The VPSID of the VPS to read from
     ///   @param index The HVE specific index defining which field to read
-    ///   @param value The resulting value
-    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-    ///     otherwise
+    ///   @return Returns the value read, or bsl::safe_uint16::zero(true)
+    ///     on failure.
     ///
-    [[nodiscard]] inline auto
-    bf_vps_op_read16(                     // --
+    [[nodiscard]] constexpr auto
+    bf_vps_op_read16(                      // --
         bf_handle_t const &handle,        // --
         bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint16 &value) noexcept -> bsl::errc_type
+        bsl::safe_uint64 const &index) noexcept -> bsl::safe_uint16
     {
+        bsl::safe_uint16 value{};
+
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u16;
+        }
+
         bf_status_t const status{
             bf_vps_op_read16_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
-            return bsl::errc_failure;
+            return bsl::safe_uint16::zero(true);
         }
 
-        return bsl::errc_success;
+        return value;
     }
 
     // -------------------------------------------------------------------------
@@ -2500,24 +2567,28 @@ namespace syscall
     ///   @param handle Set to the result of bf_handle_op_open_handle
     ///   @param vpsid The VPSID of the VPS to read from
     ///   @param index The HVE specific index defining which field to read
-    ///   @param value The resulting value
-    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-    ///     otherwise
+    ///   @return Returns the value read, or bsl::safe_uint32::zero(true)
+    ///     on failure.
     ///
-    [[nodiscard]] inline auto
-    bf_vps_op_read32(                     // --
+    [[nodiscard]] constexpr auto
+    bf_vps_op_read32(                      // --
         bf_handle_t const &handle,        // --
         bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint32 &value) noexcept -> bsl::errc_type
+        bsl::safe_uint64 const &index) noexcept -> bsl::safe_uint32
     {
+        bsl::safe_uint32 value{};
+
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u32;
+        }
+
         bf_status_t const status{
             bf_vps_op_read32_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
-            return bsl::errc_failure;
+            return bsl::safe_uint32::zero(true);
         }
 
-        return bsl::errc_success;
+        return value;
     }
 
     // -------------------------------------------------------------------------
@@ -2553,24 +2624,28 @@ namespace syscall
     ///   @param handle Set to the result of bf_handle_op_open_handle
     ///   @param vpsid The VPSID of the VPS to read from
     ///   @param index The HVE specific index defining which field to read
-    ///   @param value The resulting value
-    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-    ///     otherwise
+    ///   @return Returns the value read, or bsl::safe_uint64::zero(true)
+    ///     on failure.
     ///
-    [[nodiscard]] inline auto
-    bf_vps_op_read64(                     // --
+    [[nodiscard]] constexpr auto
+    bf_vps_op_read64(                      // --
         bf_handle_t const &handle,        // --
         bsl::safe_uint16 const &vpsid,    // --
-        bsl::safe_uint64 const &index,    // --
-        bsl::safe_uint64 &value) noexcept -> bsl::errc_type
+        bsl::safe_uint64 const &index) noexcept -> bsl::safe_uint64
     {
+        bsl::safe_uint64 value{};
+
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
         bf_status_t const status{
             bf_vps_op_read64_impl(handle.hndl, vpsid.get(), index.get(), value.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
-            return bsl::errc_failure;
+            return bsl::safe_uint64::zero(true);
         }
 
-        return bsl::errc_success;
+        return value;
     }
 
     // -------------------------------------------------------------------------
@@ -2610,13 +2685,17 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_write8(                     // --
         bf_handle_t const &handle,        // --
         bsl::safe_uint16 const &vpsid,    // --
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint8 const &value) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{
             bf_vps_op_write8_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
@@ -2663,13 +2742,17 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_write16(                    // --
         bf_handle_t const &handle,        // --
         bsl::safe_uint16 const &vpsid,    // --
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint16 const &value) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{
             bf_vps_op_write16_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
@@ -2716,13 +2799,17 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_write32(                    // --
         bf_handle_t const &handle,        // --
         bsl::safe_uint16 const &vpsid,    // --
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint32 const &value) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{
             bf_vps_op_write32_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
@@ -2769,13 +2856,17 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_write64(                    // --
         bf_handle_t const &handle,        // --
         bsl::safe_uint16 const &vpsid,    // --
         bsl::safe_uint64 const &index,    // --
         bsl::safe_uint64 const &value) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{
             bf_vps_op_write64_impl(handle.hndl, vpsid.get(), index.get(), value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
@@ -2816,24 +2907,28 @@ namespace syscall
     ///   @param handle Set to the result of bf_handle_op_open_handle
     ///   @param vpsid The VPSID of the VPS to read from
     ///   @param reg A bf_reg_t defining which register to read
-    ///   @param value The resulting value
-    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-    ///     otherwise
+    ///   @return Returns the value read, or bsl::safe_uint64::zero(true)
+    ///     on failure.
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_read_reg(                   // --
         bf_handle_t const &handle,        // --
         bsl::safe_uint16 const &vpsid,    // --
-        bf_reg_t const reg,               // --
-        bsl::safe_uint64 &value) noexcept -> bsl::errc_type
+        bf_reg_t const reg) noexcept -> bsl::safe_uint64
     {
+        bsl::safe_uint64 value{};
+
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
+        }
+
         bf_status_t const status{
             bf_vps_op_read_reg_impl(handle.hndl, vpsid.get(), reg, value.data())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
-            return bsl::errc_failure;
+            return bsl::safe_uint64::zero(true);
         }
 
-        return bsl::errc_success;
+        return value;
     }
 
     // -------------------------------------------------------------------------
@@ -2871,13 +2966,17 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_write_reg(                  // --
         bf_handle_t const &handle,        // --
         bsl::safe_uint16 const &vpsid,    // --
         bf_reg_t const reg,               // --
         bsl::safe_uint64 const &value) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{
             bf_vps_op_write_reg_impl(handle.hndl, vpsid.get(), reg, value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
@@ -2957,13 +3056,17 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_run(                       // --
         bf_handle_t const &handle,       // --
         bsl::safe_uint16 const &vmid,    // --
         bsl::safe_uint16 const &vpid,    // --
         bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{
             bf_vps_op_run_impl(handle.hndl, vmid.get(), vpid.get(), vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
@@ -2999,10 +3102,14 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_run_current(    // --
         bf_handle_t const &handle) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_vps_op_run_current_impl(handle.hndl)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -3040,11 +3147,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_advance_ip(             // --
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_vps_op_advance_ip_impl(handle.hndl, vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -3082,10 +3193,14 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_advance_ip_and_run_current(    // --
         bf_handle_t const &handle) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_vps_op_advance_ip_and_run_current_impl(handle.hndl)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -3126,11 +3241,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_promote(                // --
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_vps_op_promote_impl(handle.hndl, vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -3173,11 +3292,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_vps_op_clear_vps(              // --
         bf_handle_t const &handle,    // --
         bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_vps_op_clear_vps_impl(handle.hndl, vpsid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -3217,22 +3340,26 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param handle Set to the result of bf_handle_op_open_handle
     ///   @param msr The address of the MSR to read
-    ///   @param value The resulting value
-    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-    ///     otherwise
+    ///   @return Returns the value read, or bsl::safe_uint64::zero(true)
+    ///     on failure.
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_intrinsic_op_rdmsr(              // --
         bf_handle_t const &handle,      // --
-        bsl::safe_uint32 const &msr,    // --
-        bsl::safe_uint64 &value) noexcept -> bsl::errc_type
+        bsl::safe_uint32 const &msr) noexcept -> bsl::safe_uint64
     {
-        bf_status_t const status{bf_intrinsic_op_rdmsr_impl(handle.hndl, msr.get(), value.data())};
-        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
-            return bsl::errc_failure;
+        bsl::safe_uint64 value{};
+
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_u64;
         }
 
-        return bsl::errc_success;
+        bf_status_t const status{bf_intrinsic_op_rdmsr_impl(handle.hndl, msr.get(), value.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return bsl::safe_uint64::zero(true);
+        }
+
+        return value;
     }
 
     // -------------------------------------------------------------------------
@@ -3271,12 +3398,16 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_intrinsic_op_wrmsr(              // --
         bf_handle_t const &handle,      // --
         bsl::safe_uint32 const &msr,    // --
         bsl::safe_uint64 const &value) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_intrinsic_op_wrmsr_impl(handle.hndl, msr.get(), value.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -3317,12 +3448,16 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_intrinsic_op_invlpga(             // --
         bf_handle_t const &handle,       // --
         bsl::safe_uint64 const &addr,    // --
         bsl::safe_uint64 const &asid) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_intrinsic_op_invlpga_impl(handle.hndl, addr.get(), asid.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -3364,12 +3499,16 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_intrinsic_op_invept(              // --
         bf_handle_t const &handle,       // --
         bsl::safe_uint64 const &eptp,    // --
         bsl::safe_uint64 const &type) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_intrinsic_op_invept_impl(handle.hndl, eptp.get(), type.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -3414,13 +3553,17 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_intrinsic_op_invvpid(             // --
         bf_handle_t const &handle,       // --
         bsl::safe_uint64 const &addr,    // --
         bsl::safe_uint16 const &vpid,    // --
         bsl::safe_uint64 const &type) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{
             bf_intrinsic_op_invvpid_impl(handle.hndl, addr.get(), vpid.get(), type.get())};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
@@ -3458,27 +3601,47 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @tparam T the type of memory to allocate
     ///   @param handle Set to the result of bf_handle_op_open_handle
-    ///   @param virt The virtual address of the resulting page
     ///   @param phys The physical address of the resulting page
-    ///   @return Returns bsl::errc_success on success, bsl::errc_failure
-    ///     otherwise
+    ///   @return Returns a pointer to the newly allocated page on success,
+    ///     or a nullptr on failure.
     ///
-    template<typename T>
-    [[nodiscard]] inline auto
+    template<typename T = void>
+    [[nodiscard]] constexpr auto
     bf_mem_op_alloc_page(             // --
         bf_handle_t const &handle,    // --
-        T *&virt,                     // --
-        bsl::safe_uint64 &phys) noexcept -> bsl::errc_type
+        bsl::safe_uint64 &phys) noexcept -> T *
     {
         T *ptr{};
 
-        bf_status_t const status{bf_mem_op_alloc_page_impl(handle.hndl, &ptr, phys.data())};
-        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
-            return bsl::errc_failure;
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret_ptr;
         }
 
-        virt = ptr;
-        return bsl::errc_success;
+        bf_status_t const status{bf_mem_op_alloc_page_impl(handle.hndl, &ptr, phys.data())};
+        if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
+            return nullptr;
+        }
+
+        return ptr;
+    }
+
+    /// <!-- description -->
+    ///   @brief bf_mem_op_alloc_page allocates a page, and maps this page
+    ///     into the direct map of the VM.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @tparam T the type of memory to allocate
+    ///   @param handle Set to the result of bf_handle_op_open_handle
+    ///   @return Returns a pointer to the newly allocated page on success,
+    ///     or a nullptr on failure.
+    ///
+    template<typename T = void>
+    [[nodiscard]] constexpr auto
+    bf_mem_op_alloc_page(             // --
+        bf_handle_t const &handle) noexcept -> T *
+    {
+        bsl::safe_uint64 ignored{};
+        return bf_mem_op_alloc_page<T>(handle, ignored);
     }
 
     // -------------------------------------------------------------------------
@@ -3511,11 +3674,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_mem_op_free_page(              // --
         bf_handle_t const &handle,    // --
         bf_ptr_t virt) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_mem_op_free_page_impl(handle.hndl, virt)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -3573,7 +3740,7 @@ namespace syscall
     ///     otherwise
     ///
     template<typename T>
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_mem_op_alloc_huge(                // --
         bf_handle_t const &handle,       // --
         bsl::safe_uint64 const &size,    // --
@@ -3581,6 +3748,10 @@ namespace syscall
         bsl::safe_uint64 &phys) noexcept -> bsl::errc_type
     {
         T *ptr{};
+
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
 
         bf_status_t const status{
             bf_mem_op_alloc_huge_impl(handle.hndl, size.get(), &ptr, phys.data())};
@@ -3622,11 +3793,15 @@ namespace syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_mem_op_free_huge(              // --
         bf_handle_t const &handle,    // --
         bf_ptr_t virt) noexcept -> bsl::errc_type
     {
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
+
         bf_status_t const status{bf_mem_op_free_huge_impl(handle.hndl, virt)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
             return bsl::errc_failure;
@@ -3681,13 +3856,17 @@ namespace syscall
     ///     otherwise
     ///
     template<typename T>
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_mem_op_alloc_heap(                // --
         bf_handle_t const &handle,       // --
         bsl::safe_uint64 const &size,    // --
         T *&virt) noexcept -> bsl::errc_type
     {
         T *ptr{};
+
+        if (bsl::is_constant_evaluated_debug()) {
+            return handle.test_ret;
+        }
 
         bf_status_t const status{bf_mem_op_alloc_heap_impl(handle.hndl, size.get(), &ptr)};
         if (bsl::unlikely(status != BF_STATUS_SUCCESS)) {
@@ -3717,7 +3896,7 @@ namespace syscall
     ///     on failure.
     ///
     template<bsl::uintmax EXT_DIRECT_MAP_ADDR, typename T = bsl::uintmax>
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_read_phys(bf_handle_t const &handle, bsl::safe_uintmax const &phys) noexcept
         -> bsl::safe_integral<T>
     {
@@ -3744,7 +3923,7 @@ namespace syscall
     ///     otherwise
     ///
     template<bsl::uintmax EXT_DIRECT_MAP_ADDR, typename T>
-    [[nodiscard]] inline auto
+    [[nodiscard]] constexpr auto
     bf_write_phys(
         bf_handle_t const &handle,
         bsl::safe_uintmax const &phys,

@@ -28,8 +28,20 @@ add_library(syscall)
 # ------------------------------------------------------------------------------
 
 target_include_directories(syscall PUBLIC
-    include/cpp/
+    include/cpp
 )
+
+if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+    target_include_directories(syscall PUBLIC
+        include/cpp/x64
+    )
+endif()
+
+if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
+    target_include_directories(syscall PUBLIC
+        include/cpp/arm/aarch64
+    )
+endif()
 
 # ------------------------------------------------------------------------------
 # Headers
@@ -38,6 +50,18 @@ target_include_directories(syscall PUBLIC
 list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/include/cpp/mk_interface.hpp
 )
+
+if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+    list(APPEND HEADERS
+        ${CMAKE_CURRENT_LIST_DIR}/include/cpp/x64/bf_reg_t.hpp
+    )
+endif()
+
+if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
+    list(APPEND HEADERS
+        ${CMAKE_CURRENT_LIST_DIR}/include/cpp/arm/aarch64/bf_reg_t.hpp
+    )
+endif()
 
 # ------------------------------------------------------------------------------
 # Sources

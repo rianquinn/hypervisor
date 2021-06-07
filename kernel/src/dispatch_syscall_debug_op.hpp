@@ -26,6 +26,7 @@
 #define DISPATCH_SYSCALL_DEBUG_OP_HPP
 
 #include <mk_interface.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/char_type.hpp>
 #include <bsl/cstr_type.hpp>
@@ -38,7 +39,7 @@ namespace mk
     ///   @brief Dispatches the bf_debug_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
@@ -60,7 +61,6 @@ namespace mk
     ///     otherwise
     ///
     template<
-        typename TLS_CONCEPT,
         typename EXT_POOL_CONCEPT,
         typename INTRINSIC_CONCEPT,
         typename PAGE_POOL_CONCEPT,
@@ -71,7 +71,7 @@ namespace mk
         typename VMEXIT_LOG_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_debug_op(
-        TLS_CONCEPT &tls,
+        tls_t &tls,
         EXT_POOL_CONCEPT &ext_pool,
         INTRINSIC_CONCEPT &intrinsic,
         PAGE_POOL_CONCEPT &page_pool,

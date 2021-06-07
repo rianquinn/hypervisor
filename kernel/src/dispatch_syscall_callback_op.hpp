@@ -26,6 +26,7 @@
 #define DISPATCH_SYSCALL_CALLBACK_OP_HPP
 
 #include <mk_interface.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -40,17 +41,16 @@ namespace mk
     ///   @brief Implements the bf_callback_op_register_bootstrap syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_callback_op_register_bootstrap(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
-        -> bsl::errc_type
+    syscall_callback_op_register_bootstrap(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
@@ -81,17 +81,16 @@ namespace mk
     ///   @brief Implements the bf_callback_op_register_vmexit syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_callback_op_register_vmexit(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
-        -> bsl::errc_type
+    syscall_callback_op_register_vmexit(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
@@ -132,16 +131,16 @@ namespace mk
     ///   @brief Implements the bf_callback_op_register_fail syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_callback_op_register_fail(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_callback_op_register_fail(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
@@ -182,16 +181,16 @@ namespace mk
     ///   @brief Dispatches the bf_callback_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_callback_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    dispatch_syscall_callback_op(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

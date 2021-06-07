@@ -25,9 +25,9 @@
 #ifndef DISPATCH_SYSCALL_CONTROL_OP_HPP
 #define DISPATCH_SYSCALL_CONTROL_OP_HPP
 
-#include "return_to_mk.hpp"
-
 #include <mk_interface.hpp>
+#include <return_to_mk.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/debug.hpp>
 
@@ -37,16 +37,16 @@ namespace mk
     ///   @brief Dispatches the bf_callback_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_control_op(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    dispatch_syscall_control_op(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_CONTROL_OP_EXIT_IDX_VAL.get(): {

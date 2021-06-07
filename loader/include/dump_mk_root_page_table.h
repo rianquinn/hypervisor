@@ -36,7 +36,6 @@
  *
  * <!-- inputs/outputs -->
  *   @param rpt the mk root page table to output
- *   @return 0 on success, LOADER_FAILURE on failure.
  */
 void dump_mk_root_page_table(root_page_table_t *const rpt);
 

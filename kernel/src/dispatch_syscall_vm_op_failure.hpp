@@ -26,6 +26,7 @@
 #define DISPATCH_SYSCALL_VM_OP_FAILURE_HPP
 
 #include <mk_interface.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -39,7 +40,7 @@ namespace mk
     ///   @brief Implements the bf_vm_op_create_vm syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
@@ -50,14 +51,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<
-        typename TLS_CONCEPT,
-        typename EXT_POOL_CONCEPT,
-        typename VM_POOL_CONCEPT,
-        typename VP_POOL_CONCEPT>
+    template<typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT, typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vm_op_create_vm_failure(
-        TLS_CONCEPT &tls,
+        tls_t &tls,
         EXT_POOL_CONCEPT &ext_pool,
         VM_POOL_CONCEPT &vm_pool,
         VP_POOL_CONCEPT &vp_pool) noexcept -> bsl::errc_type
@@ -87,16 +84,16 @@ namespace mk
     ///   @brief Implements the bf_vm_op_destroy_vm syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @param tls the current TLS block
     ///   @param vm_pool the VM pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename VM_POOL_CONCEPT>
+    template<typename VM_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vm_op_destroy_vm_failure(TLS_CONCEPT &tls, VM_POOL_CONCEPT &vm_pool) noexcept
+    syscall_vm_op_destroy_vm_failure(tls_t &tls, VM_POOL_CONCEPT &vm_pool) noexcept
         -> bsl::errc_type
     {
         bsl::errc_type ret{};
@@ -118,7 +115,7 @@ namespace mk
     ///   @brief Dispatches the bf_vm_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
@@ -129,14 +126,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<
-        typename TLS_CONCEPT,
-        typename EXT_POOL_CONCEPT,
-        typename VM_POOL_CONCEPT,
-        typename VP_POOL_CONCEPT>
+    template<typename EXT_POOL_CONCEPT, typename VM_POOL_CONCEPT, typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_vm_op_failure(
-        TLS_CONCEPT &tls,
+        tls_t &tls,
         EXT_POOL_CONCEPT &ext_pool,
         VM_POOL_CONCEPT &vm_pool,
         VP_POOL_CONCEPT &vp_pool) noexcept -> bsl::errc_type

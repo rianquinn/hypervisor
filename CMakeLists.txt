@@ -20,7 +20,7 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(hypervisor CXX)
+project(hypervisor C CXX)
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/init_build.cmake)
 
@@ -47,5 +47,9 @@ endif()
 if(NOT CMAKE_BUILD_TYPE STREQUAL RELEASE AND NOT CMAKE_BUILD_TYPE STREQUAL MINSIZEREL)
     if(BUILD_TESTS AND NOT HYPERVISOR_BUILD_TESTS_OVERRIDE)
         add_subdirectory(kernel/test)
+        add_subdirectory(loader/test)
+        add_subdirectory(runtime/test)
+        add_subdirectory(syscall/test)
+        add_subdirectory(vmmctl/test)
     endif()
 endif()

@@ -25,6 +25,8 @@
 #ifndef VMEXIT_LOOP_HPP
 #define VMEXIT_LOOP_HPP
 
+#include <tls_t.hpp>
+
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
 #include <bsl/unlikely.hpp>
@@ -36,7 +38,7 @@ namespace mk
     ///     after a successful launch of the hypervisor.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
@@ -50,14 +52,13 @@ namespace mk
     ///     otherwise
     ///
     template<
-        typename TLS_CONCEPT,
         typename EXT_CONCEPT,
         typename INTRINSIC_CONCEPT,
         typename VPS_POOL_CONCEPT,
         typename VMEXIT_LOG_CONCEPT>
     [[nodiscard]] constexpr auto
     vmexit_loop(
-        TLS_CONCEPT &tls,
+        tls_t &tls,
         EXT_CONCEPT &ext,
         INTRINSIC_CONCEPT &intrinsic,
         VPS_POOL_CONCEPT &vps_pool,

@@ -31,6 +31,7 @@
 #include <bsl/exit_code.hpp>
 #include <bsl/is_constant_evaluated.hpp>
 #include <bsl/safe_integral.hpp>
+#include <bsl/touch.hpp>
 
 namespace mk
 {
@@ -81,6 +82,8 @@ namespace mk
 
                 return;
             }
+
+            bsl::touch();
         }
     };
 }

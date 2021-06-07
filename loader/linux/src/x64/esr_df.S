@@ -26,8 +26,6 @@
  * SOFTWARE.
  */
 
-#define ASSEMBLY
-#include <constants.h>
 #include <asm/unwind_hints.h>
 
     .code64
@@ -38,33 +36,26 @@
 esr_df:
     UNWIND_HINT_EMPTY
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'e'
-    out dx, al
+    mov rdi, 'e'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 's'
-    out dx, al
+    mov rdi, 's'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'r'
-    out dx, al
+    mov rdi, 'r'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, '_'
-    out dx, al
+    mov rdi, '_'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'd'
-    out dx, al
+    mov rdi, 'd'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'f'
-    out dx, al
+    mov rdi, 'f'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, '\n'
-    out dx, al
+    mov rdi, '\n'
+    call serial_write_c
 
     cli
     hlt

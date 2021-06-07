@@ -35,6 +35,7 @@
 #include <dispatch_syscall_vp_op.hpp>
 #include <dispatch_syscall_vps_op.hpp>
 #include <mk_interface.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
@@ -47,7 +48,7 @@ namespace mk
     ///     will dispatch syscalls as needed.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
     ///   @tparam EXT_CONCEPT defines the type of extension to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
@@ -71,7 +72,6 @@ namespace mk
     ///     otherwise
     ///
     template<
-        typename TLS_CONCEPT,
         typename EXT_POOL_CONCEPT,
         typename EXT_CONCEPT,
         typename INTRINSIC_CONCEPT,
@@ -83,7 +83,7 @@ namespace mk
         typename VMEXIT_LOG_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall(
-        TLS_CONCEPT &tls,
+        tls_t &tls,
         EXT_POOL_CONCEPT &ext_pool,
         EXT_CONCEPT &ext,
         INTRINSIC_CONCEPT &intrinsic,

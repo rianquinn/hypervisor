@@ -27,6 +27,7 @@
 
 #include <vmexit_log_record_t.hpp>
 
+#include <bsl/array.hpp>
 #include <bsl/safe_integral.hpp>
 
 namespace mk

@@ -26,6 +26,7 @@
 #define DISPATCH_ESR_HPP
 
 #include <dispatch_esr_page_fault.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
@@ -41,7 +42,7 @@ namespace mk
     ///     function will dispatch exceptions as needed.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
@@ -50,9 +51,9 @@ namespace mk
     ///   @return Returns bsl::exit_success if the exception was handled,
     ///     bsl::exit_failure otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT, typename INTRINSIC_CONCEPT>
+    template<typename EXT_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_esr(TLS_CONCEPT &tls, EXT_CONCEPT *const ext, INTRINSIC_CONCEPT &intrinsic) noexcept
+    dispatch_esr(tls_t &tls, EXT_CONCEPT *const ext, INTRINSIC_CONCEPT &intrinsic) noexcept
         -> bsl::exit_code
     {
         bsl::discard(tls);

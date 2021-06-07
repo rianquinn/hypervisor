@@ -24,7 +24,6 @@
  * SOFTWARE.
  */
 
-#include <bfelf_elf64_phdr_t.h>
 #include <constants.h>
 #include <debug.h>
 #include <elf_segment_t.h>

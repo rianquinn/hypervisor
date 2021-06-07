@@ -28,6 +28,7 @@
 #include <mk_interface.hpp>
 #include <promote.hpp>
 #include <return_to_mk.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -41,7 +42,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_create_vps syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
@@ -55,14 +56,13 @@ namespace mk
     ///     otherwise
     ///
     template<
-        typename TLS_CONCEPT,
         typename INTRINSIC_CONCEPT,
         typename PAGE_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,
         typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_create_vps(
-        TLS_CONCEPT &tls,
+        tls_t &tls,
         INTRINSIC_CONCEPT &intrinsic,
         PAGE_POOL_CONCEPT &page_pool,
         VP_POOL_CONCEPT &vp_pool,
@@ -92,7 +92,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_destroy_vps syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -101,10 +101,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename PAGE_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename PAGE_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_destroy_vps(
-        TLS_CONCEPT &tls, PAGE_POOL_CONCEPT &page_pool, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, PAGE_POOL_CONCEPT &page_pool, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.deallocate(tls, page_pool, bsl::to_u16_unsafe(tls.ext_reg1))};
@@ -121,7 +121,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_init_as_root syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -130,10 +130,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_init_as_root(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.state_save_to_vps(
@@ -152,7 +152,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_read8 syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -161,10 +161,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_read8(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const val{vps_pool.template read<bsl::uint8>(
@@ -186,7 +186,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_read16 syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -195,10 +195,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_read16(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const val{vps_pool.template read<bsl::uint16>(
@@ -220,7 +220,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_read32 syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -229,10 +229,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_read32(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const val{vps_pool.template read<bsl::uint32>(
@@ -254,7 +254,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_read64 syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -263,10 +263,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_read64(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const val{vps_pool.template read<bsl::uint64>(
@@ -287,7 +287,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_write8 syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -296,10 +296,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_write8(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.template write<bsl::uint8>(
@@ -322,7 +322,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_write16 syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -331,10 +331,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_write16(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.template write<bsl::uint16>(
@@ -357,7 +357,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_write32 syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -366,10 +366,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_write32(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.template write<bsl::uint32>(
@@ -392,7 +392,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_write64 syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -401,10 +401,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_write64(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.template write<bsl::uint64>(
@@ -423,7 +423,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_read_reg syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -432,10 +432,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_read_reg(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const val{vps_pool.read_reg(
@@ -459,7 +459,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_write_reg syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -468,10 +468,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_write_reg(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.write_reg(
@@ -494,7 +494,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_run syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
@@ -508,14 +508,13 @@ namespace mk
     ///     otherwise
     ///
     template<
-        typename TLS_CONCEPT,
         typename INTRINSIC_CONCEPT,
         typename VM_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,
         typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_run(
-        TLS_CONCEPT &tls,
+        tls_t &tls,
         INTRINSIC_CONCEPT &intrinsic,
         VM_POOL_CONCEPT &vm_pool,
         VP_POOL_CONCEPT &vp_pool,
@@ -681,14 +680,12 @@ namespace mk
     ///   @brief Implements the bf_vps_op_run_current syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @param tls the current TLS block
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT>
     [[nodiscard]] inline auto
-    syscall_vps_op_run_current(TLS_CONCEPT &tls) noexcept -> bsl::errc_type
+    syscall_vps_op_run_current(tls_t &tls) noexcept -> bsl::errc_type
     {
         return_to_mk(bsl::exit_success);
 
@@ -700,7 +697,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_advance_ip syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -709,10 +706,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_advance_ip(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.advance_ip(tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1))};
@@ -729,7 +726,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_advance_ip_and_run_current syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -738,10 +735,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_advance_ip_and_run_current(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.advance_ip(tls, intrinsic, tls.active_vpsid)};
@@ -760,7 +757,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_promote syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -769,10 +766,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_promote(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.vps_to_state_save(
@@ -793,7 +790,7 @@ namespace mk
     ///   @brief Implements the bf_vps_op_clear_vps syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -802,10 +799,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename INTRINSIC_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vps_op_clear_vps(
-        TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
+        tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VPS_POOL_CONCEPT &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.clear(tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1))};
@@ -822,7 +819,7 @@ namespace mk
     ///   @brief Dispatches the bf_vps_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
@@ -840,7 +837,6 @@ namespace mk
     ///     otherwise
     ///
     template<
-        typename TLS_CONCEPT,
         typename EXT_CONCEPT,
         typename INTRINSIC_CONCEPT,
         typename PAGE_POOL_CONCEPT,
@@ -849,7 +845,7 @@ namespace mk
         typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_vps_op(
-        TLS_CONCEPT &tls,
+        tls_t &tls,
         EXT_CONCEPT &ext,
         INTRINSIC_CONCEPT &intrinsic,
         PAGE_POOL_CONCEPT &page_pool,

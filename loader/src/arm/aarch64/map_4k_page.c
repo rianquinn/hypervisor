@@ -27,7 +27,7 @@
 #include <alloc_l1t.h>
 #include <alloc_l2t.h>
 #include <alloc_l3t.h>
-#include <bfelf_elf64_phdr_t.h>
+#include <bfelf/bfelf_elf64_phdr_t.h>
 #include <constants.h>
 #include <debug.h>
 #include <flush_cache.h>

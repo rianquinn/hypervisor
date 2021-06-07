@@ -25,8 +25,8 @@
 #ifndef INTRINSIC_HPP
 #define INTRINSIC_HPP
 
-#include "invept_descriptor_t.hpp"
-#include "invvpid_descriptor_t.hpp"
+#include <invept_descriptor_t.hpp>
+#include <invvpid_descriptor_t.hpp>
 
 #include <bsl/array.hpp>
 #include <bsl/cstdint.hpp>

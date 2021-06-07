@@ -37,7 +37,6 @@
  * <!-- inputs/outputs -->
  *   @param state the root vp state to output
  *   @param cpu the CPU that this root vp state belongs to
- *   @return 0 on success, LOADER_FAILURE on failure.
  */
 void dump_root_vp_state(struct state_save_t *const state, uint32_t const cpu);
 

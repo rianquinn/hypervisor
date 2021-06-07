@@ -24,9 +24,6 @@
  * SOFTWARE.
  */
 
-#define ASSEMBLY
-#include <constants.h>
-
     .code64
     .intel_syntax noprefix
 
@@ -34,53 +31,41 @@
     .align  0x1000
 esr_default:
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'e'
-    out dx, al
+    mov rcx, 'e'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 's'
-    out dx, al
+    mov rcx, 's'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'r'
-    out dx, al
+    mov rcx, 'r'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, '_'
-    out dx, al
+    mov rcx, '_'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'd'
-    out dx, al
+    mov rcx, 'd'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'e'
-    out dx, al
+    mov rcx, 'e'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'f'
-    out dx, al
+    mov rcx, 'f'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'a'
-    out dx, al
+    mov rcx, 'a'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'u'
-    out dx, al
+    mov rcx, 'u'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 'l'
-    out dx, al
+    mov rcx, 'l'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, 't'
-    out dx, al
+    mov rcx, 't'
+    call serial_write_c
 
-    mov rdx, HYPERVISOR_SERIAL_PORT
-    mov rax, '\n'
-    out dx, al
+    mov rcx, '\n'
+    call serial_write_c
 
     cli
     hlt

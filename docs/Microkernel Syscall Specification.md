@@ -343,21 +343,6 @@ Every syscall returns a bf_status_t to indicate the success or failure of a sysc
 
 BF_STATUS_VALUE defines success or which type of error occurred. BF_STATUS_FLAGS provides additional information about why the error occurred. BF_STATUS_FLAGS is optional and used solely for diagnostics. As such, the microkernel may or may not provide it.
 
-**const, bf_uint64_t: BF_STATUS_SIG_MASK**
-| Value | Description |
-| :---- | :---------- |
-| 0xFFFF000000000000 | Defines a mask for BF_STATUS_SIG |
-
-**const, bf_uint32_t: BF_STATUS_FLAGS_MASK**
-| Value | Description |
-| :---- | :---------- |
-| 0x0000FFFFFFFF0000 | Defines a mask for BF_STATUS_FLAGS |
-
-**const, bf_uint32_t: BF_STATUS_VALUE_MASK**
-| Value | Description |
-| :---- | :---------- |
-| 0x000000000000FFFF | Defines a mask for BF_STATUS_VALUE |
-
 ### 2.2.1. BF_STATUS_SUCCESS, VALUE=0
 
 **const, bf_status_t: BF_STATUS_SUCCESS**

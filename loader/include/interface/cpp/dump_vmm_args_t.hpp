@@ -25,7 +25,7 @@
 #ifndef DUMP_VMM_ARGS_T_HPP
 #define DUMP_VMM_ARGS_T_HPP
 
-#include "debug_ring_t.hpp"
+#include <debug_ring_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>

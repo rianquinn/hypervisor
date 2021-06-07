@@ -26,6 +26,7 @@
 #define DISPATCH_SYSCALL_INTRINSIC_OP_HPP
 
 #include <mk_interface.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -38,16 +39,16 @@ namespace mk
     ///   @brief Implements the bf_intrinsic_op_rdmsr syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param intrinsic the intrinsics to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
+    template<typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_intrinsic_op_rdmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
+    syscall_intrinsic_op_rdmsr(tls_t &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         /// TODO:
         /// - Move this logic to the dispatch_syscall_entry.S and implement
@@ -74,16 +75,16 @@ namespace mk
     ///   @brief Implements the bf_intrinsic_op_wrmsr syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param intrinsic the intrinsics to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
+    template<typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_intrinsic_op_wrmsr(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
+    syscall_intrinsic_op_wrmsr(tls_t &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         /// TODO:
         /// - Move this logic to the dispatch_syscall_entry.S and implement
@@ -108,16 +109,16 @@ namespace mk
     ///   @brief Implements the bf_intrinsic_op_invept syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param intrinsic the intrinsics to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
+    template<typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_intrinsic_op_invept(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
+    syscall_intrinsic_op_invept(tls_t &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         auto const ret{intrinsic.invept(tls.ext_reg1, tls.ext_reg2)};
         if (bsl::unlikely(!ret)) {
@@ -133,16 +134,16 @@ namespace mk
     ///   @brief Implements the bf_intrinsic_op_invvpid syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param intrinsic the intrinsics to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename TLS_CONCEPT, typename INTRINSIC_CONCEPT>
+    template<typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_intrinsic_op_invvpid(TLS_CONCEPT &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
+    syscall_intrinsic_op_invvpid(tls_t &tls, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
     {
         auto const ret{
             intrinsic.invvpid(tls.ext_reg1, bsl::to_u16_unsafe(tls.ext_reg2), tls.ext_reg3)};
@@ -159,7 +160,7 @@ namespace mk
     ///   @brief Dispatches the bf_intrinsic_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
@@ -168,10 +169,10 @@ namespace mk
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT, typename INTRINSIC_CONCEPT>
+    template<typename EXT_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_intrinsic_op(
-        TLS_CONCEPT &tls, EXT_CONCEPT const &ext, INTRINSIC_CONCEPT &intrinsic) -> bsl::errc_type
+    dispatch_syscall_intrinsic_op(tls_t &tls, EXT_CONCEPT const &ext, INTRINSIC_CONCEPT &intrinsic)
+        -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

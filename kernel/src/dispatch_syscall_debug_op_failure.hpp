@@ -26,6 +26,7 @@
 #define DISPATCH_SYSCALL_DEBUG_OP_FAILURE_HPP
 
 #include <mk_interface.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/char_type.hpp>
 #include <bsl/cstr_type.hpp>
@@ -38,12 +39,10 @@ namespace mk
     ///   @brief Dispatches the bf_debug_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
     ///   @param tls the current TLS block
     ///
-    template<typename TLS_CONCEPT>
     constexpr void
-    dispatch_syscall_debug_op_failure(TLS_CONCEPT &tls) noexcept
+    dispatch_syscall_debug_op_failure(tls_t &tls) noexcept
     {
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_DEBUG_OP_OUT_IDX_VAL.get(): {

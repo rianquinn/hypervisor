@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include <bfelf_elf64_phdr_t.h>
+#include <bfelf/bfelf_elf64_phdr_t.h>
 #include <debug.h>
 #include <map_4k_page.h>
 #include <platform.h>

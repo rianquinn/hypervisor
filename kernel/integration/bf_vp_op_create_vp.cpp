@@ -99,7 +99,7 @@ namespace integration
 
         // create with ppid that is create than the total number of online pps
         ret = syscall::bf_vp_op_create_vp(
-            g_handle, syscall::BF_ROOT_VMID, syscall::bf_tls_online_pps(), vpid);
+            g_handle, syscall::BF_ROOT_VMID, syscall::bf_tls_online_pps(g_handle), vpid);
         integration::verify(bsl::errc_failure == ret);
 
         // create all and prove that creating one more will fail

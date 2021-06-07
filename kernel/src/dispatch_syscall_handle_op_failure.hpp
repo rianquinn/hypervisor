@@ -26,6 +26,7 @@
 #define DISPATCH_SYSCALL_HANDLE_OP_FAILURE_HPP
 
 #include <mk_interface.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/unlikely.hpp>
@@ -36,14 +37,14 @@ namespace mk
     ///   @brief Implements the bf_handle_op_open_handle syscall failure logic
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     constexpr void
-    syscall_handle_op_open_handle_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
+    syscall_handle_op_open_handle_failure(tls_t &tls, EXT_CONCEPT &ext) noexcept
     {
         if (!tls.state_reversal_required) {
             return;
@@ -63,17 +64,16 @@ namespace mk
     ///   @brief Implements the bf_handle_op_close_handle syscall failure logic
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_handle_op_close_handle_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
-        -> bsl::errc_type
+    syscall_handle_op_close_handle_failure(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         if (!tls.state_reversal_required) {
             return bsl::errc_success;
@@ -99,17 +99,16 @@ namespace mk
     ///   @brief Dispatches the bf_handle_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename EXT_CONCEPT>
+    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_handle_op_failure(TLS_CONCEPT &tls, EXT_CONCEPT &ext) noexcept
-        -> bsl::errc_type
+    dispatch_syscall_handle_op_failure(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

@@ -33,7 +33,6 @@ target_include_directories(bareflank_efi_loader PUBLIC
 	include/platform_interface/c
 	../include
 	../include/interface/c
-	../include/interface/c/bfelf
     ${CMAKE_BINARY_DIR}/include
 )
 
@@ -186,6 +185,7 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/map_mk_stack.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/map_mk_state.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/map_root_vp_state.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/mutable_span_t.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/platform.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/promote.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/send_command_report_off.h
@@ -195,21 +195,20 @@ list(APPEND HEADERS
 	${CMAKE_CURRENT_LIST_DIR}/../include/serial_write_c.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/serial_write_hex.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/serial_write.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/span_t.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/start_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/start_vmm_per_cpu.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_and_free_the_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_vmm.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/stop_vmm_per_cpu.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/bfelf/bfelf_elf64_ehdr_t.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/bfelf/bfelf_elf64_phdr_t.h
+	${CMAKE_CURRENT_LIST_DIR}/../include/bfelf/bfelf_types.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/debug_ring_t.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/dump_vmm_args_t.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/mk_args_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/mutable_span_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/span_t.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/start_vmm_args_t.h
 	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/stop_vmm_args_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/bfelf/bfelf_elf64_ehdr_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/bfelf/bfelf_elf64_phdr_t.h
-	${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/bfelf/bfelf_types.h
 )
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
@@ -220,10 +219,6 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/cpuid_commands.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/global_descriptor_table_register_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/interrupt_descriptor_table_register_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/pdpte_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/pdte_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/pml4te_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/pte_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/state_save_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/x64/tss_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/alloc_pdpt.h
@@ -266,12 +261,16 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/intrinsic_wrmsr.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pdpto.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pdpt_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pdpte_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pdto.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pdt_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pdte_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pml4to.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pml4t_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pml4te_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pto.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pt_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/x64/pte_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/root_page_table_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/set_gdt_descriptor.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/x64/set_idt_descriptor.h
@@ -288,10 +287,6 @@ endif()
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
 	list(APPEND HEADERS
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/cpuid_commands.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/l0te_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/l1te_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/l2te_t.h
-		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/l3te_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/interface/c/arm/aarch64/state_save_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/alloc_l1t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/alloc_l2t.h
@@ -302,12 +297,16 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/free_l2t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l0to.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l0t_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l0te_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l1to.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l1t_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l1te_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l2to.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l2t_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l2te_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l3to.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l3t_t.h
+		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/l3te_t.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_currentel.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_daif.h
 		${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64/read_hcr_el2.h
@@ -382,6 +381,7 @@ hypervisor_target_source(bareflank_efi_loader ../src/map_mk_elf_segments.c ${HEA
 hypervisor_target_source(bareflank_efi_loader ../src/map_mk_huge_pool.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/map_mk_page_pool.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/map_mk_stack.c ${HEADERS})
+hypervisor_target_source(bareflank_efi_loader ../src/serial_write.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/start_vmm.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/start_vmm_per_cpu.c ${HEADERS})
 hypervisor_target_source(bareflank_efi_loader ../src/stop_and_free_the_vmm.c ${HEADERS})
@@ -423,6 +423,8 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 	hypervisor_target_source(bareflank_efi_loader src/x64/intrinsic_wrmsr.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/x64/memops.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/x64/promote.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/x64/serial_write_c.S ${HEADERS})
+	hypervisor_target_source(bareflank_efi_loader src/x64/serial_write_hex.S ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader src/x64/setup_tss.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/x64/alloc_and_copy_mk_code_aliases.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/x64/alloc_and_copy_mk_state.c ${HEADERS})
@@ -452,7 +454,6 @@ if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STRE
 	hypervisor_target_source(bareflank_efi_loader ../src/x64/send_command_report_on.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/x64/send_command_stop.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/x64/serial_init.c ${HEADERS})
-	hypervisor_target_source(bareflank_efi_loader ../src/x64/serial_write.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/x64/set_gdt_descriptor.c ${HEADERS})
 	hypervisor_target_source(bareflank_efi_loader ../src/x64/set_idt_descriptor.c ${HEADERS})
 

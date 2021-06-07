@@ -26,6 +26,7 @@
 #define MK_MAIN_HPP
 
 #include <mk_interface.hpp>
+#include <tls_t.hpp>
 #include <vmexit_loop_entry.hpp>
 
 #include <bsl/debug.hpp>
@@ -118,15 +119,14 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam MK_ARGS_CONCEPT the type of mk_args to use
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param args the loader provided arguments to the microkernel.
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename MK_ARGS_CONCEPT, typename TLS_CONCEPT>
+        template<typename MK_ARGS_CONCEPT>
         [[nodiscard]] constexpr auto
-        verify_args(MK_ARGS_CONCEPT *const args, TLS_CONCEPT const &tls) noexcept -> bsl::errc_type
+        verify_args(MK_ARGS_CONCEPT *const args, tls_t &tls) noexcept -> bsl::errc_type
         {
             if (args->ppid == syscall::BF_BS_PPID) {
                 if (bsl::unlikely_assert(syscall::BF_INVALID_ID != tls.active_vmid)) {
@@ -363,12 +363,10 @@ namespace mk
         ///     based on what PP we are currently executing on.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///
-        template<typename TLS_CONCEPT>
         constexpr void
-        set_extension_sp(TLS_CONCEPT &tls) noexcept
+        set_extension_sp(tls_t &tls) noexcept
         {
             constexpr bsl::safe_uintmax stack_addr{EXT_STACK_ADDR};
             constexpr bsl::safe_uintmax stack_size{EXT_STACK_SIZE};
@@ -382,12 +380,10 @@ namespace mk
         ///     based on what PP we are currently executing on.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param tls the current TLS block
         ///
-        template<typename TLS_CONCEPT>
         constexpr void
-        set_extension_tp(TLS_CONCEPT &tls) noexcept
+        set_extension_tp(tls_t &tls) noexcept
         {
             constexpr bsl::safe_uintmax tls_addr{EXT_TLS_ADDR};
             constexpr bsl::safe_uintmax tls_size{EXT_TLS_SIZE};
@@ -404,22 +400,25 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam MK_ARGS_CONCEPT the type of mk_args to use
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param args the loader provided arguments to the microkernel.
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename MK_ARGS_CONCEPT, typename TLS_CONCEPT>
+        template<typename MK_ARGS_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize(MK_ARGS_CONCEPT *const args, TLS_CONCEPT &tls) noexcept -> bsl::errc_type
+        initialize(MK_ARGS_CONCEPT *const args, tls_t &tls) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
-            bsl::print() << bsl::mag << R"( ___                __ _           _        )" << bsl::endl;
-            bsl::print() << bsl::mag << R"(| _ ) __ _ _ _ ___ / _| |__ _ _ _ | |__     )" << bsl::endl;
-            bsl::print() << bsl::mag << R"(| _ \/ _` | '_/ -_)  _| / _` | ' \| / /     )" << bsl::endl;
-            bsl::print() << bsl::mag << R"(|___/\__,_|_| \___|_| |_\__,_|_||_|_\_\     )" << bsl::endl;
+            bsl::print() << bsl::mag << R"( ___                __ _           _        )"
+                         << bsl::endl;
+            bsl::print() << bsl::mag << R"(| _ ) __ _ _ _ ___ / _| |__ _ _ _ | |__     )"
+                         << bsl::endl;
+            bsl::print() << bsl::mag << R"(| _ \/ _` | '_/ -_)  _| / _` | ' \| / /     )"
+                         << bsl::endl;
+            bsl::print() << bsl::mag << R"(|___/\__,_|_| \___|_| |_\__,_|_||_|_\_\     )"
+                         << bsl::endl;
             bsl::print() << bsl::rst << bsl::endl;
             bsl::print() << bsl::grn << "Please give us a star on: ";
             bsl::print() << bsl::rst << "https://github.com/Bareflank/hypervisor";
@@ -438,17 +437,6 @@ namespace mk
             ret = m_huge_pool.initialize(args->huge_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
-            }
-
-            if constexpr (HYPERVISOR_AARCH64) {
-                bsl::print() << bsl::rst << "Hello from ARMv8 on a Raspberry Pi 4!!!\n";
-                bsl::print() << bsl::endl;
-
-                bsl::error() << "aarch64 support not complete"    // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
-
                 return bsl::errc_failure;
             }
 
@@ -571,16 +559,15 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam MK_ARGS_CONCEPT the type of mk_args to use
-        ///   @tparam TLS_CONCEPT defines the type of TLS block to use
         ///   @param args the loader provided arguments to the microkernel.
         ///   @param tls the current TLS block
         ///   @return If the user provided command succeeds, this function
         ///     will return bsl::exit_success, otherwise this function
         ///     will return bsl::exit_failure.
         ///
-        template<typename MK_ARGS_CONCEPT, typename TLS_CONCEPT>
+        template<typename MK_ARGS_CONCEPT>
         [[nodiscard]] constexpr auto
-        process(MK_ARGS_CONCEPT *const args, TLS_CONCEPT &tls) &noexcept -> bsl::exit_code
+        process(MK_ARGS_CONCEPT *const args, tls_t &tls) &noexcept -> bsl::exit_code
         {
             bsl::errc_type ret{};
 

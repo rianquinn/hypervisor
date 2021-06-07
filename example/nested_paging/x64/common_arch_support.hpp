@@ -99,11 +99,11 @@ namespace example
                 }
 
                 case loader::CPUID_COMMAND_ECX_REPORT_ON.get(): {
-                    bsl::debug() << bsl::rst << "host os is"                      // --
-                                 << bsl::grn << " now "                           // --
+                    bsl::debug() << bsl::rst << "host os is"                            // --
+                                 << bsl::grn << " now "                                 // --
                                  << bsl::rst << "in a vm (nested_paging example)\n";    // --
 
-                    if (vpsid + bsl::ONE_U16 == syscall::bf_tls_online_pps()) {
+                    if (vpsid + bsl::ONE_U16 == syscall::bf_tls_online_pps(handle)) {
                         bsl::print() << bsl::endl;
                         syscall::bf_debug_op_dump_page_pool();
                         bsl::print() << bsl::endl;

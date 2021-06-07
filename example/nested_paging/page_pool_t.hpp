@@ -187,9 +187,8 @@ namespace example
             }
 
             if (bsl::unlikely(nullptr == m_head)) {
-                bsl::safe_uintmax phys{};
-                auto const ret{syscall::bf_mem_op_alloc_page(m_handle, m_head, phys)};
-                if (bsl::unlikely(!ret)) {
+                m_head = syscall::bf_mem_op_alloc_page(m_handle);
+                if (bsl::unlikely(nullptr == m_head)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return nullptr;
                 }

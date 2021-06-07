@@ -26,6 +26,7 @@
 #define DISPATCH_SYSCALL_VP_OP_HPP
 
 #include <mk_interface.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -38,7 +39,7 @@ namespace mk
     ///   @brief Implements the bf_vp_op_create_vp syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @param tls the current TLS block
@@ -47,10 +48,9 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename VM_POOL_CONCEPT, typename VP_POOL_CONCEPT>
+    template<typename VM_POOL_CONCEPT, typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vp_op_create_vp(
-        TLS_CONCEPT &tls, VM_POOL_CONCEPT &vm_pool, VP_POOL_CONCEPT &vp_pool) noexcept
+    syscall_vp_op_create_vp(tls_t &tls, VM_POOL_CONCEPT &vm_pool, VP_POOL_CONCEPT &vp_pool) noexcept
         -> bsl::errc_type
     {
         auto const vpid{vp_pool.allocate(
@@ -72,7 +72,7 @@ namespace mk
     ///   @brief Implements the bf_vp_op_destroy_vp syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -81,11 +81,10 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
+    template<typename VP_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vp_op_destroy_vp(
-        TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool, VPS_POOL_CONCEPT &vps_pool) noexcept
-        -> bsl::errc_type
+        tls_t &tls, VP_POOL_CONCEPT &vp_pool, VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
     {
         auto const ret{vp_pool.deallocate(tls, vps_pool, bsl::to_u16_unsafe(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
@@ -101,16 +100,16 @@ namespace mk
     ///   @brief Implements the bf_vp_op_migrate syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @param tls the current TLS block
     ///   @param vp_pool the VP pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename TLS_CONCEPT, typename VP_POOL_CONCEPT>
+    template<typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vp_op_migrate(TLS_CONCEPT &tls, VP_POOL_CONCEPT &vp_pool) noexcept -> bsl::errc_type
+    syscall_vp_op_migrate(tls_t &tls, VP_POOL_CONCEPT &vp_pool) noexcept -> bsl::errc_type
     {
         auto const ret{vp_pool.migrate(
             tls, bsl::to_u16_unsafe(tls.ext_reg1), bsl::to_u16_unsafe(tls.ext_reg2))};
@@ -128,7 +127,7 @@ namespace mk
     ///   @brief Dispatches the bf_vp_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam TLS_CONCEPT defines the type of TLS block to use
+
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
@@ -142,14 +141,13 @@ namespace mk
     ///     otherwise
     ///
     template<
-        typename TLS_CONCEPT,
         typename EXT_CONCEPT,
         typename VM_POOL_CONCEPT,
         typename VP_POOL_CONCEPT,
         typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_vp_op(
-        TLS_CONCEPT &tls,
+        tls_t &tls,
         EXT_CONCEPT const &ext,
         VM_POOL_CONCEPT &vm_pool,
         VP_POOL_CONCEPT &vp_pool,
