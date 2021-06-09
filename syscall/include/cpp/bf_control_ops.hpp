@@ -22,28 +22,34 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef INTRINSIC_CPUID_HPP
-#define INTRINSIC_CPUID_HPP
+#ifndef BF_CONTROL_OPS_HPP
+#define BF_CONTROL_OPS_HPP
 
-#include <bsl/cstdint.hpp>
+#include <bf_impl_prototypes.hpp>
 
-namespace example
+namespace syscall
 {
     /// <!-- description -->
-    ///   @brief Executes the CPUID instruction given the provided EAX and ECX
-    ///     and returns the results
+    ///   @brief This syscall tells the microkernel to exit the execution
+    ///     of an extension, providing a means to fast fail.
     ///
-    /// <!-- inputs/outputs -->
-    ///   @param rax the index used by CPUID, returns resulting rax
-    ///   @param rbx returns resulting rbx
-    ///   @param rcx the subindex used by CPUID, returns the resulting rcx
-    ///   @param rdx returns resulting rdx
+    inline void
+    bf_control_op_exit() noexcept
+    {
+        bf_control_op_exit_impl();
+    }
+
+    /// <!-- description -->
+    ///   @brief This syscall tells the microkernel that the extension would
+    ///     like to wait for a callback. This is a blocking syscall that never
+    ///     returns and should be used to return from the successful execution
+    ///     of the _start function.
     ///
-    extern "C" void intrinsic_cpuid(
-        bsl::uint64 *const rax,
-        bsl::uint64 *const rbx,
-        bsl::uint64 *const rcx,
-        bsl::uint64 *const rdx) noexcept;
+    inline void
+    bf_control_op_wait() noexcept
+    {
+        bf_control_op_wait_impl();
+    }
 }
 
 #endif

@@ -22,20 +22,33 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include <arch_support.hpp>
-#include <mk_interface.hpp>
+#include <bootstrap.hpp>
+// #include <fast_fail.hpp>
+#include <bf_control_ops.hpp>
+#include <bf_syscall_t.hpp>
+#include <intrinsic_t.hpp>
+#include <vmexit_t.hpp>
+#include <vp_pool_t.hpp>
+#include <vp_t.hpp>
+#include <vps_pool_t.hpp>
+#include <vps_t.hpp>
 
+#include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
-#include <bsl/discard.hpp>
-#include <bsl/exit_code.hpp>
-#include <bsl/safe_integral.hpp>
-#include <bsl/unlikely.hpp>
 #include <bsl/unlikely_assert.hpp>
 
 namespace example
 {
-    /// @brief stores the handle the extension will use
-    constinit inline syscall::bf_handle_t g_handle{};
+    /// @brief stores the bf_syscall_t that this code will use
+    constinit syscall::bf_syscall_t<bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR).get()> g_sys{};
+    /// @brief stores the vmexit_t that this code will use
+    constinit vmexit_t g_vmexit{};
+    /// @brief stores the intrinsic_t that this code will use
+    constinit intrinsic_t g_intrinsic{};
+    /// @brief stores the pool of VPs that we will use
+    constinit vp_pool_t<vp_t, bsl::to_umax(HYPERVISOR_MAX_VPS).get()> g_vp_pool{};
+    /// @brief stores the pool of VPSs that we will use
+    constinit vps_pool_t<vps_t, bsl::to_umax(HYPERVISOR_MAX_VPSS).get()> g_vps_pool{};
 
     /// <!-- description -->
     ///   @brief Implements the VMExit entry function. This is registered
@@ -47,17 +60,32 @@ namespace example
     ///
     void
     // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
-    vmexit_entry(bsl::uint16 const vpsid, bsl::uint64 const exit_reason) noexcept
+    vmexit_entry(
+        syscall::bf_uint16_t::value_type const vpsid,
+        syscall::bf_uint64_t::value_type const exit_reason) noexcept
     {
-        vmexit(g_handle, vpsid, exit_reason);
+        bsl::errc_type ret{};
 
         /// NOTE:
-        /// - This code is only reached if an error occurs. Executing this
-        ///   syscall will tell the microkernel that the VMExit was not
-        ///   handled, in which case it will enter a fast fail state.
+        /// - Call into the vmexit handler. This entry point serves as a
+        ///   trampoline between C and C++. Specifically, the microkernel
+        ///   cannot call a template function directly, and can only call
+        ///   a C style function.
         ///
 
-        bsl::print<bsl::V>() << bsl::here();
+        ret = g_vmexit.dispatch(g_sys, g_intrinsic, vpsid, exit_reason);
+        if (bsl::unlikely_assert(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::bf_control_op_exit();
+        }
+
+        /// NOTE:
+        /// - This code should never be reached. The VMExit handler should
+        ///   always call one of the "run" ABIs to return back to the
+        ///   microkernel when a VMExit is finished. If this is called, it
+        ///   is because the VMExit handler returned with an error.
+        ///
+
         return syscall::bf_control_op_exit();
     }
 
@@ -70,122 +98,69 @@ namespace example
     ///
     void
     // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
-    fail_entry(syscall::bf_status_t::value_type const fail_reason) noexcept
+    fail_entry(
+        syscall::bf_uint16_t::value_type const vpsid,
+        syscall::bf_status_t::value_type const fail_reason) noexcept
     {
-        bsl::discard(fail_reason);
+        // bsl::errc_type ret{};
 
         /// NOTE:
-        /// - Tells the microkernel that we didn't handle the fast fail.
-        ///   When this occurs, the microkernel will halt this PP. In most
-        ///   cases, there are only two options here:
-        ///   - Do the following, and report an error and halt.
-        ///   - Return to a parent VPS and continue execution from there,
-        ///     which is typically only possible if you are implementing
-        ///     more than one VPS/VP per PP (e.g., when implementing guest
-        ///     support or VSM support).
+        /// - Call into the fast fail handler. This entry point serves as a
+        ///   trampoline between C and C++. Specifically, the microkernel
+        ///   cannot call a template function directly, and can only call
+        ///   a C style function.
         ///
-        /// - Another use case is integration testing. We can also use this
-        ///   to generate faults that we can recover from to ensure the
-        ///   fault system works properly during testing.
-        ///
+
+        // ret = fast_fail(g_sys, vpsid, fail_reason);
+        // if (bsl::unlikely_assert(!ret)) {
+        //     bsl::print<bsl::V>() << bsl::here();
+        //     return syscall::bf_control_op_exit();
+        // }
 
         /// NOTE:
-        /// - To report success, i.e., you can continue, nothing to see here,
-        ///   you need to execute a run API. If you are doing integration
-        ///   testing, this would be bf_vps_op_advance_ip_and_run_current.
-        ///   If you are cleaning up from a VM failure, you would typically
-        ///   run bf_vps_op_run as you should know exactly what parameters
-        ///   to give it. If you need to know what VM, VP and VPS are
-        ///   currently running, you can use the TLS functions.
+        /// - This code should never be reached. The fast fail handler should
+        ///   always call one of the "run" ABIs to return back to the
+        ///   microkernel when a fast fail is finished. If this is called, it
+        ///   is because the fast fail handler returned with an error.
         ///
 
-        bsl::print<bsl::V>() << bsl::here();
         return syscall::bf_control_op_exit();
     }
 
     /// <!-- description -->
-    ///   @brief Implements the bootstrap entry function. The main function is
-    ///     called on PP #0, and is only used to register the bootstrap entry
-    ///     function and open a handle. From there, the rest of the bootstrap
-    ///     process should occur from the bootstrap function, as this function
-    ///     is executed once on each PP, giving you a chance to bootstrap each
-    ///     PP as needed.
+    ///   @brief Implements the bootstrap entry function. This function is
+    ///     called on each PP while the hypervisor is being bootstrapped.
     ///
     /// <!-- inputs/outputs -->
     ///   @param ppid the physical process to bootstrap
     ///
     void
     // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
-    bootstrap_entry(bsl::uint16 const ppid) noexcept
+    bootstrap_entry(syscall::bf_uint16_t::value_type const ppid) noexcept
     {
         bsl::errc_type ret{};
 
-        bsl::safe_uint16 vpid{};
-        bsl::safe_uint16 vpsid{};
-
         /// NOTE:
-        /// - Create the root VP and root VPS that we will start.
-        ///   Since we are not implementing nested virtualization or VSM
-        ///   support, the VPID and VPSID are always identical.
-        /// - There is no need to create the root VM as this is created
-        ///   for you. You only need to create VMs if you plan to add guest
-        ///   VM support to your extension.
+        /// - Call into the bootstrap handler. This entry point serves as a
+        ///   trampoline between C and C++. Specifically, the microkernel
+        ///   cannot call a template function directly, and can only call
+        ///   a C style function.
         ///
 
-        ret = syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, ppid, vpid);
-        if (bsl::unlikely_assert(!ret)) {
-            bsl::print<bsl::V>() << bsl::here();
-            return syscall::bf_control_op_exit();
-        }
-
-        ret = syscall::bf_vps_op_create_vps(g_handle, vpid, ppid, vpsid);
+        ret = bootstrap(g_sys, g_vp_pool, g_vps_pool, ppid);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
         }
 
         /// NOTE:
-        /// - Initialize the VPS as a root VPS. When the microkernel was
-        ///   started, the loader saved the state of the root VP. This
-        ///   syscall tells the microkernel to load the VPS with this saved
-        ///   state so that when we run the VP, it will contain the state
-        ///   just before the microkernel was started.
+        /// - This code should never be reached. The bootstrap handler should
+        ///   always call one of the "run" ABIs to return back to the
+        ///   microkernel when a bootstrap is finished. If this is called, it
+        ///   is because the bootstrap handler returned with an error.
         ///
 
-        ret = syscall::bf_vps_op_init_as_root(g_handle, vpsid);
-        if (bsl::unlikely_assert(!ret)) {
-            bsl::print<bsl::V>() << bsl::here();
-            return syscall::bf_control_op_exit();
-        }
-
-        /// NOTE:
-        /// - Initialize architecture specific logic in the VPS.
-        ///
-
-        if (bsl::unlikely_assert(!init_vps(g_handle, vpsid))) {
-            bsl::print<bsl::V>() << bsl::here();
-            return syscall::bf_control_op_exit();
-        }
-
-        /// NOTE:
-        /// - Run the newly created VP on behalf of the root VM using the
-        ///   newly created and initialized VPS.
-        /// - It should be noted that if bf_vps_op_run succeeds, it will
-        ///   not return. Like the rest of the code in this example, we
-        ///   return success for unit testing purposes. If this function
-        ///   returns, it is actually an error.
-        ///
-
-        bsl::discard(syscall::bf_vps_op_run(g_handle, syscall::BF_ROOT_VMID, vpid, vpsid));
-
-        /// NOTE:
-        /// - The following is only called if an error occurs. Failure to
-        ///   call this function leads to undefined behaviour (likely a
-        ///   page fault).
-        ///
-
-        bsl::print<bsl::V>() << bsl::here();
-        syscall::bf_control_op_exit();
+        return syscall::bf_control_op_exit();
     }
 
     /// <!-- description -->
@@ -202,57 +177,36 @@ namespace example
         bsl::errc_type ret{};
 
         /// NOTE:
-        /// - Check to see if the microkernel speaks the same version as we
-        ///   do. Note that this is important. Years from now, the microkernel
-        ///   might implement a completely different syscall interface. This
-        ///   check ensures that if that happens, this code will not continue
-        ///   as it might result in undefined behaviour.
+        /// - Initialize the bf_syscall_t. This will validate the ABI version,
+        ///   open a handle to the microkernel and register the required
+        ///   callbacks. If this fails, we call bf_control_op_exit, which is
+        ///   similar to exit() from POSIX, except that the return value is
+        ///   always the same.
         ///
 
-        if (bsl::unlikely(!syscall::bf_is_spec1_supported(version))) {
-            bsl::error() << "unsupported microkernel\n" << bsl::here();
-            return syscall::bf_control_op_exit();
-        }
-
-        /// NOTE:
-        /// - Open a handle with the microkernel which will be used for the
-        ///   remaining syscalls.
-        ///
-
-        ret = syscall::bf_handle_op_open_handle(syscall::BF_SPEC_ID1_VAL, g_handle);
+        ret = g_sys.initialize(version, &bootstrap_entry, &vmexit_entry, &fail_entry);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
         }
 
         /// NOTE:
-        /// - Register the bootstrap entry function so that we can bootstrap
-        ///   each PP
+        /// - Initialize the vp_pool_t. This will give all of our vp_t's
+        ///   their IDs so that they can be allocated.
         ///
 
-        ret = syscall::bf_callback_op_register_bootstrap(g_handle, &bootstrap_entry);
+        ret = g_vp_pool.initialize();
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
         }
 
         /// NOTE:
-        /// - Register the vmexit entry function so that we can handle
-        ///   VMExits
+        /// - Initialize the vps_pool_t. This will give all of our vps_t's
+        ///   their IDs so that they can be allocated.
         ///
 
-        ret = syscall::bf_callback_op_register_vmexit(g_handle, &vmexit_entry);
-        if (bsl::unlikely_assert(!ret)) {
-            bsl::print<bsl::V>() << bsl::here();
-            return syscall::bf_control_op_exit();
-        }
-
-        /// NOTE:
-        /// - Register the vmexit entry function so that we can handle
-        ///   fast fail events
-        ///
-
-        ret = syscall::bf_callback_op_register_fail(g_handle, &fail_entry);
+        ret = g_vps_pool.initialize();
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
@@ -264,6 +218,10 @@ namespace example
         ///   bootstrap callback that was just previously registered, which
         ///   will be called on each PP that is online. Failure to call this
         ///   function leads to undefined behaviour (likely a page fault).
+        /// - This is similar to the wait() function from POSIX after having
+        ///   just started some processes, with the difference being that
+        ///   this will never return, so there is no need to pass in status
+        ///   as there is nothing to process after this call.
         ///
 
         syscall::bf_control_op_wait();

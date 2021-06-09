@@ -22,19 +22,28 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include <bsl/ut.hpp>
+#ifndef INTRINSIC_IMPL_PROTOTYPES_HPP
+#define INTRINSIC_IMPL_PROTOTYPES_HPP
 
-/// <!-- description -->
-///   @brief Main function for this unit test. If a call to bsl::ut_check() fails
-///     the application will fast fail. If all calls to bsl::ut_check() pass, this
-///     function will successfully return with bsl::exit_success.
-///
-/// <!-- inputs/outputs -->
-///   @return Always returns bsl::exit_success.
-///
-[[nodiscard]] auto
-main() noexcept -> bsl::exit_code
+#include <bsl/cstdint.hpp>
+
+namespace example
 {
-    bsl::enable_color();
-    return bsl::ut_success();
+    /// <!-- description -->
+    ///   @brief Executes the CPUID instruction given the provided EAX and ECX
+    ///     and returns the results
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param rax the index used by CPUID, returns resulting rax
+    ///   @param rbx returns resulting rbx
+    ///   @param rcx the subindex used by CPUID, returns the resulting rcx
+    ///   @param rdx returns resulting rdx
+    ///
+    extern "C" void intrinsic_cpuid_impl(
+        bsl::uint64 *const rax,
+        bsl::uint64 *const rbx,
+        bsl::uint64 *const rcx,
+        bsl::uint64 *const rdx) noexcept;
 }
+
+#endif

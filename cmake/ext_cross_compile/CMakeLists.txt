@@ -33,17 +33,17 @@ if(DEFINED HYPERVISOR_EXTENSIONS_DIR)
     add_subdirectory(${HYPERVISOR_EXTENSIONS_DIR} extension)
 endif()
 
-get_filename_component(HYPERVISOR_EXTENSIONS_REALPATH
-    "${HYPERVISOR_EXTENSIONS_DIR}" REALPATH BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-get_filename_component(HYPERVISOR_DEFAULT_REALPATH
-    "../../example/default" REALPATH BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-get_filename_component(HYPERVISOR_NESTED_PAGING_REALPATH
-    "../../example/nested_paging" REALPATH BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+# get_filename_component(HYPERVISOR_EXTENSIONS_REALPATH
+#     "${HYPERVISOR_EXTENSIONS_DIR}" REALPATH BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+# get_filename_component(HYPERVISOR_DEFAULT_REALPATH
+#     "../../example/default" REALPATH BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+# get_filename_component(HYPERVISOR_NESTED_PAGING_REALPATH
+#     "../../example/nested_paging" REALPATH BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
-if(NOT HYPERVISOR_DEFAULT_REALPATH STREQUAL "${HYPERVISOR_EXTENSIONS_REALPATH}")
-    add_subdirectory(../../example/default example_default)
-endif()
+# if(NOT HYPERVISOR_DEFAULT_REALPATH STREQUAL "${HYPERVISOR_EXTENSIONS_REALPATH}")
+#     add_subdirectory(../../example/default example_default)
+# endif()
 
-if(NOT HYPERVISOR_NESTED_PAGING_REALPATH STREQUAL "${HYPERVISOR_EXTENSIONS_REALPATH}")
-    add_subdirectory(../../example/nested_paging example_nested_paging)
-endif()
+# if(NOT HYPERVISOR_NESTED_PAGING_REALPATH STREQUAL "${HYPERVISOR_EXTENSIONS_REALPATH}")
+#     add_subdirectory(../../example/nested_paging example_nested_paging)
+# endif()

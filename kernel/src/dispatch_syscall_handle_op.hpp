@@ -25,7 +25,7 @@
 #ifndef DISPATCH_SYSCALL_HANDLE_OP_HPP
 #define DISPATCH_SYSCALL_HANDLE_OP_HPP
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/debug.hpp>
@@ -49,10 +49,10 @@ namespace mk
     syscall_handle_op_open_handle(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         if (bsl::unlikely(bsl::to_u32(tls.ext_reg0) != syscall::BF_SPEC_ID1_VAL)) {
-            bsl::error() << "unsupported syscall interface: "    //--
-                         << bsl::hex(tls.ext_reg0)               //--
-                         << bsl::endl                            //--
-                         << bsl::here();                         //--
+            bsl::error() << "unsupported syscall ABI "    //--
+                         << bsl::hex(tls.ext_reg0)        //--
+                         << bsl::endl                     //--
+                         << bsl::here();                  //--
 
             tls.syscall_ret_status = syscall::BF_STATUS_FAILURE_UNSUPPORTED.get();
             return bsl::errc_failure;
@@ -88,7 +88,7 @@ namespace mk
     syscall_handle_op_close_handle(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
     {
         if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
-            bsl::error() << "invalid handle: "        // --
+            bsl::error() << "invalid handle "         // --
                          << bsl::hex(tls.ext_reg0)    // --
                          << bsl::endl                 // --
                          << bsl::here();              // --
@@ -153,7 +153,7 @@ namespace mk
             }
         }
 
-        bsl::error() << "unknown syscall index: "    //--
+        bsl::error() << "unknown syscall index "     //--
                      << bsl::hex(tls.ext_syscall)    //--
                      << bsl::endl                    //--
                      << bsl::here();                 //--

@@ -29,7 +29,11 @@
 
 namespace syscall
 {
-    /// @brief Defines which register is being requested by certain syscalls
+    /// @enum syscall::bf_reg_t
+    ///
+    /// <!-- description -->
+    ///   @brief Defines which register is being requested by certain syscalls
+    ///
     enum class bf_reg_t : bsl::uint64
     {
         /// @brief defines the rax register

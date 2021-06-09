@@ -22,5 +22,5 @@
 if(CMAKE_PROJECT_NAME STREQUAL "hypervisor_microkernel")
     include(mk_lib.cmake)
 else()
-    include(ext_lib.cmake)
+    include(ext_lib_cpp.cmake)
 endif()

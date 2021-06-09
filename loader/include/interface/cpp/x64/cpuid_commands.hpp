@@ -38,6 +38,11 @@ namespace loader
     constexpr bsl::safe_uint32 CPUID_COMMAND_ECX_REPORT_ON{bsl::to_u32(0xBF000001U)};
     /// @brief defines the value of ECX for the CPUID report off command
     constexpr bsl::safe_uint32 CPUID_COMMAND_ECX_REPORT_OFF{bsl::to_u32(0xBF000002U)};
+
+    /// @brief defines the value of RAX on success
+    constexpr bsl::safe_uint64 CPUID_COMMAND_RAX_SUCCESS{bsl::to_u64(0x0U)};
+    /// @brief defines the value of RAX on failure
+    constexpr bsl::safe_uint64 CPUID_COMMAND_RAX_FAILURE{bsl::to_u64(0x1U)};
 }
 
 #endif

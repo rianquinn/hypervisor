@@ -25,7 +25,7 @@
 #ifndef RUNTIME_BSL_DETAILS_PRINT_THREAD_ID_HPP
 #define RUNTIME_BSL_DETAILS_PRINT_THREAD_ID_HPP
 
-#include <mk_interface.hpp>
+#include <bf_impl_prototypes.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/is_constant_evaluated.hpp>
@@ -44,31 +44,23 @@ namespace bsl::details
     constexpr void
     print_thread_id(out<T> const o) noexcept
     {
-        syscall::bf_handle_t hndl{};
-
         if (is_constant_evaluated()) {
             return;
         }
 
-        /// NOTE:
-        /// - The handle defined above is not actually used for TLS
-        ///   functions, and instead is reserved for unit testing. At
-        ///   runtime, we can safely use a zero-initialized handle.
-        ///
-
-        o << bsl::rst << " ["                                            // --
-          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_extid(hndl)}    // --
-          << bsl::rst << ":"                                             // --
-          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vmid(hndl)}     // --
-          << bsl::rst << ":"                                             // --
-          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vpid(hndl)}     // --
-          << bsl::rst << ":"                                             // --
-          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vpsid(hndl)}    // --
-          << bsl::rst << ":"                                             // --
-          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_ppid(hndl)}     // --
-          << bsl::rst << ":"                                             // --
-          << bsl::blu << "US"                                            // --
-          << bsl::rst << ']';                                            // --
+        o << bsl::rst << " ["                                             // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_extid_impl()}    // --
+          << bsl::rst << ":"                                              // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vmid_impl()}     // --
+          << bsl::rst << ":"                                              // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vpid_impl()}     // --
+          << bsl::rst << ":"                                              // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_vpsid_impl()}    // --
+          << bsl::rst << ":"                                              // --
+          << bsl::cyn << bsl::fmt{"04x", syscall::bf_tls_ppid_impl()}     // --
+          << bsl::rst << ":"                                              // --
+          << bsl::blu << "US"                                             // --
+          << bsl::rst << ']';                                             // --
     }
 }
 

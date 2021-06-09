@@ -326,10 +326,10 @@ namespace mk
 
             auto *const ext{m_pool.at_if(bsl::to_umax(extid))};
             if (bsl::unlikely(nullptr == ext)) {
-                bsl::error() << "invalid extid: "    // --
-                             << bsl::hex(extid)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
+                bsl::error() << "invalid extid "    // --
+                             << bsl::hex(extid)     // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
 
                 return;
             }

@@ -25,7 +25,7 @@
 #ifndef TEST_DISPATCH_SYSCALL_VP_OP_HPP
 #define TEST_DISPATCH_SYSCALL_VP_OP_HPP
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/discard.hpp>

@@ -927,10 +927,10 @@ namespace mk
 
             auto const page_phys{m_page_pool->virt_to_phys(page)};
             if (bsl::unlikely_assert(!page_phys)) {
-                bsl::error() << "physical address is invalid: "    // --
-                             << bsl::hex(page_phys)                // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                bsl::error() << "physical address is invalid "    // --
+                             << bsl::hex(page_phys)               // --
+                             << bsl::endl                         // --
+                             << bsl::here();                      // --
 
                 return nullptr;
             }
@@ -1198,43 +1198,43 @@ namespace mk
             }
 
             if (bsl::unlikely_assert(page_virt.is_zero())) {
-                bsl::error() << "virtual address is invalid: "    // --
-                             << bsl::hex(page_virt)               // --
+                bsl::error() << "virtual address is invalid "    // --
+                             << bsl::hex(page_virt)              // --
+                             << bsl::endl                        // --
+                             << bsl::here();                     // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely_assert(!this->is_page_aligned(page_virt))) {
+                bsl::error() << "virtual address is not page aligned "    // --
+                             << bsl::hex(page_virt)                       // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
+
+                return bsl::errc_failure;
+            }
+
+            if (bsl::unlikely_assert(page_phys.is_zero())) {
+                bsl::error() << "physical address is invalid "    // --
+                             << bsl::hex(page_phys)               // --
                              << bsl::endl                         // --
                              << bsl::here();                      // --
 
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(!this->is_page_aligned(page_virt))) {
-                bsl::error() << "virtual address is not page aligned: "    // --
-                             << bsl::hex(page_virt)                        // --
+            if (bsl::unlikely_assert(!this->is_page_aligned(page_phys))) {
+                bsl::error() << "physical address is not page aligned "    // --
+                             << bsl::hex(page_phys)                        // --
                              << bsl::endl                                  // --
                              << bsl::here();                               // --
 
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(page_phys.is_zero())) {
-                bsl::error() << "physical address is invalid: "    // --
-                             << bsl::hex(page_phys)                // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
-
-                return bsl::errc_failure;
-            }
-
-            if (bsl::unlikely_assert(!this->is_page_aligned(page_phys))) {
-                bsl::error() << "physical address is not page aligned: "    // --
-                             << bsl::hex(page_phys)                         // --
-                             << bsl::endl                                   // --
-                             << bsl::here();                                // --
-
-                return bsl::errc_failure;
-            }
-
             if (bsl::unlikely_assert(!page_flags)) {
-                bsl::error() << "invalid flags: "       // --
+                bsl::error() << "invalid flags "        // --
                              << bsl::hex(page_flags)    // --
                              << bsl::endl               // --
                              << bsl::here();            // --
@@ -1243,20 +1243,20 @@ namespace mk
             }
 
             if (bsl::unlikely_assert(!auto_release)) {
-                bsl::error() << "invalid auto release: "    // --
-                             << auto_release                // --
-                             << bsl::endl                   // --
-                             << bsl::here();                // --
+                bsl::error() << "invalid auto release "    // --
+                             << auto_release               // --
+                             << bsl::endl                  // --
+                             << bsl::here();               // --
 
                 return bsl::errc_failure;
             }
 
             if ((page_flags & MAP_PAGE_WRITE).is_pos()) {
                 if ((page_flags & MAP_PAGE_EXECUTE).is_pos()) {
-                    bsl::error() << "invalid page_flags: "    // --
-                                 << bsl::hex(page_flags)      // --
-                                 << bsl::endl                 // --
-                                 << bsl::here();              // --
+                    bsl::error() << "invalid page_flags "    // --
+                                 << bsl::hex(page_flags)     // --
+                                 << bsl::endl                // --
+                                 << bsl::here();             // --
 
                     return bsl::errc_failure;
                 }
@@ -1427,28 +1427,28 @@ namespace mk
             }
 
             if (bsl::unlikely_assert(page_virt.is_zero())) {
-                bsl::error() << "virtual address is invalid: "    // --
-                             << bsl::hex(page_virt)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
+                bsl::error() << "virtual address is invalid "    // --
+                             << bsl::hex(page_virt)              // --
+                             << bsl::endl                        // --
+                             << bsl::here();                     // --
 
                 return nullptr;
             }
 
             if (bsl::unlikely_assert(!this->is_page_aligned(page_virt))) {
-                bsl::error() << "virtual address is not page aligned: "    // --
-                             << bsl::hex(page_virt)                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
+                bsl::error() << "virtual address is not page aligned "    // --
+                             << bsl::hex(page_virt)                       // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
 
                 return nullptr;
             }
 
             if (bsl::unlikely_assert(!auto_release)) {
-                bsl::error() << "invalid auto release: "    // --
-                             << auto_release                // --
-                             << bsl::endl                   // --
-                             << bsl::here();                // --
+                bsl::error() << "invalid auto release "    // --
+                             << auto_release               // --
+                             << bsl::endl                  // --
+                             << bsl::here();               // --
 
                 return nullptr;
             }
@@ -1486,28 +1486,28 @@ namespace mk
             }
 
             if (bsl::unlikely_assert(page_virt.is_zero())) {
-                bsl::error() << "virtual address is invalid: "    // --
-                             << bsl::hex(page_virt)               // --
-                             << bsl::endl                         // --
-                             << bsl::here();                      // --
+                bsl::error() << "virtual address is invalid "    // --
+                             << bsl::hex(page_virt)              // --
+                             << bsl::endl                        // --
+                             << bsl::here();                     // --
 
                 return nullptr;
             }
 
             if (bsl::unlikely_assert(!this->is_page_aligned(page_virt))) {
-                bsl::error() << "virtual address is not page aligned: "    // --
-                             << bsl::hex(page_virt)                        // --
-                             << bsl::endl                                  // --
-                             << bsl::here();                               // --
+                bsl::error() << "virtual address is not page aligned "    // --
+                             << bsl::hex(page_virt)                       // --
+                             << bsl::endl                                 // --
+                             << bsl::here();                              // --
 
                 return nullptr;
             }
 
             if (bsl::unlikely_assert(!auto_release)) {
-                bsl::error() << "invalid auto release: "    // --
-                             << auto_release                // --
-                             << bsl::endl                   // --
-                             << bsl::here();                // --
+                bsl::error() << "invalid auto release "    // --
+                             << auto_release               // --
+                             << bsl::endl                  // --
+                             << bsl::here();               // --
 
                 return nullptr;
             }

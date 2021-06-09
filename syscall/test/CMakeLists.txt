@@ -40,5 +40,4 @@ list(APPEND DEFINES
 # Tests
 # ------------------------------------------------------------------------------
 
-add_subdirectory(c/mk_interface)
 add_subdirectory(cpp/mk_interface)

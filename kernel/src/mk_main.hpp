@@ -25,7 +25,7 @@
 #ifndef MK_MAIN_HPP
 #define MK_MAIN_HPP
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
 #include <tls_t.hpp>
 #include <vmexit_loop_entry.hpp>
 

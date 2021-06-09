@@ -25,7 +25,7 @@
 #ifndef DISPATCH_SYSCALL_VM_OP_HPP
 #define DISPATCH_SYSCALL_VM_OP_HPP
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
@@ -134,7 +134,7 @@ namespace mk
         bsl::errc_type ret{};
 
         if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
-            bsl::error() << "invalid handle: "        // --
+            bsl::error() << "invalid handle "         // --
                          << bsl::hex(tls.ext_reg0)    // --
                          << bsl::endl                 // --
                          << bsl::here();              // --
@@ -180,7 +180,7 @@ namespace mk
             }
         }
 
-        bsl::error() << "unknown syscall index: "    //--
+        bsl::error() << "unknown syscall index "     //--
                      << bsl::hex(tls.ext_syscall)    //--
                      << bsl::endl                    //--
                      << bsl::here();                 //--

@@ -31,37 +31,19 @@ target_include_directories(syscall PUBLIC
     include/cpp
 )
 
-if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    target_include_directories(syscall PUBLIC
-        include/cpp/x64
-    )
-endif()
-
-if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-    target_include_directories(syscall PUBLIC
-        include/cpp/arm/aarch64
-    )
-endif()
-
 # ------------------------------------------------------------------------------
 # Headers
 # ------------------------------------------------------------------------------
 
 list(APPEND HEADERS
-    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/mk_interface.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_constants.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_control_ops.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_debug_ops.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_impl_prototypes.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_reg_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_syscall_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_types.hpp
 )
-
-if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    list(APPEND HEADERS
-        ${CMAKE_CURRENT_LIST_DIR}/include/cpp/x64/bf_reg_t.hpp
-    )
-endif()
-
-if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-    list(APPEND HEADERS
-        ${CMAKE_CURRENT_LIST_DIR}/include/cpp/arm/aarch64/bf_reg_t.hpp
-    )
-endif()
 
 # ------------------------------------------------------------------------------
 # Sources

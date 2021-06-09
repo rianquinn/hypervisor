@@ -22,39 +22,45 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include <bsl/ut.hpp>
+#ifndef INTRINSIC_HPP
+#define INTRINSIC_HPP
 
-namespace mk
+#include <intrinsic_impl_prototypes.hpp>
+
+#include <bsl/safe_integral.hpp>
+
+namespace example
 {
+    /// @class example::intrinsic_t
+    ///
     /// <!-- description -->
-    ///   @brief Used to execute the actual checks. We put the checks in this
-    ///     function so that we can validate the tests both at compile-time
-    ///     and at run-time. If a bsl::ut_check fails, the tests will either
-    ///     fail fast at run-time, or will produce a compile-time error.
+    ///   @brief Provides raw access to intrinsics. Instead of using global
+    ///     functions, the intrinsics class provides a means for the rest of
+    ///     the extension to mock the intrinsics when needed during testing.
     ///
-    /// <!-- inputs/outputs -->
-    ///   @return Always returns bsl::exit_success.
-    ///
-    [[nodiscard]] constexpr auto
-    tests() noexcept -> bsl::exit_code
+    class intrinsic_t final
     {
-        return bsl::ut_success();
-    }
+    public:
+        /// <!-- description -->
+        ///   @brief Executes the CPUID instruction given the provided
+        ///     EAX and ECX and returns the results.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param rax the index used by CPUID, returns resulting rax
+        ///   @param rbx returns resulting rbx
+        ///   @param rcx the subindex used by CPUID, returns the resulting rcx
+        ///   @param rdx returns resulting rdx
+        ///
+        constexpr void
+        cpuid(
+            bsl::safe_uint64 &rax,
+            bsl::safe_uint64 &rbx,
+            bsl::safe_uint64 &rcx,
+            bsl::safe_uint64 &rdx) noexcept
+        {
+            intrinsic_cpuid_impl(rax.data(), rbx.data(), rcx.data(), rdx.data());
+        }
+    };
 }
 
-/// <!-- description -->
-///   @brief Main function for this unit test. If a call to bsl::ut_check() fails
-///     the application will fast fail. If all calls to bsl::ut_check() pass, this
-///     function will successfully return with bsl::exit_success.
-///
-/// <!-- inputs/outputs -->
-///   @return Always returns bsl::exit_success.
-///
-[[nodiscard]] auto
-main() noexcept -> bsl::exit_code
-{
-    bsl::enable_color();
-
-    static_assert(mk::tests() == bsl::ut_success());
-    return mk::tests();
-}
+#endif

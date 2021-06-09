@@ -26,12 +26,12 @@
 #define EXT_T_HPP
 
 #include <allocate_tags.hpp>
+#include <bf_constants.hpp>
 #include <bfelf/elf64_ehdr_t.hpp>
 #include <bfelf/elf64_phdr_t.hpp>
 #include <call_ext.hpp>
 #include <huge_t.hpp>
 #include <map_page_flags.hpp>
-#include <mk_interface.hpp>
 #include <page_t.hpp>
 #include <tls_t.hpp>
 
@@ -855,7 +855,7 @@ namespace mk
 
             auto *const rpt{m_direct_map_rpts.at_if(bsl::to_umax(tls.active_vmid))};
             if (bsl::unlikely_assert(nullptr == rpt)) {
-                bsl::error() << "invalid active_vmid: "      // --
+                bsl::error() << "invalid active_vmid "       // --
                              << bsl::hex(tls.active_vmid)    // --
                              << bsl::endl                    // --
                              << bsl::here();                 // --
@@ -1327,10 +1327,10 @@ namespace mk
             }
 
             if (bsl::unlikely((size % PAGE_SIZE) != bsl::ZERO_UMAX)) {
-                bsl::error() << "invalid size: "    // --
-                             << bsl::hex(size)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "invalid size "    // --
+                             << bsl::hex(size)     // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
 
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
@@ -1429,10 +1429,10 @@ namespace mk
             }
 
             if (bsl::unlikely(!size)) {
-                bsl::error() << "invalid size: "    // --
-                             << bsl::hex(size)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "invalid size "    // --
+                             << bsl::hex(size)     // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
 
                 return bsl::safe_uintmax::zero(true);
             }
@@ -1534,7 +1534,7 @@ namespace mk
 
             auto *const direct_map_rpt{m_direct_map_rpts.at_if(bsl::to_umax(tls.active_vmid))};
             if (bsl::unlikely(nullptr == direct_map_rpt)) {
-                bsl::error() << "invalid active_vmid: "      // --
+                bsl::error() << "invalid active_vmid "       // --
                              << bsl::hex(tls.active_vmid)    // --
                              << bsl::endl                    // --
                              << bsl::here();                 // --
@@ -1897,7 +1897,7 @@ namespace mk
 
             auto *const direct_map_rpt{m_direct_map_rpts.at_if(bsl::to_umax(tls.active_vmid))};
             if (bsl::unlikely(nullptr == direct_map_rpt)) {
-                bsl::error() << "invalid active_vmid: "      // --
+                bsl::error() << "invalid active_vmid "       // --
                              << bsl::hex(tls.active_vmid)    // --
                              << bsl::endl                    // --
                              << bsl::here();                 // --

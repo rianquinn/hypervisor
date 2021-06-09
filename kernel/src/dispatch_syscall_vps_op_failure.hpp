@@ -25,7 +25,8 @@
 #ifndef DISPATCH_SYSCALL_VPS_FAILURE_OP_HPP
 #define DISPATCH_SYSCALL_VPS_FAILURE_OP_HPP
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
+#include <bf_reg_t.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/convert.hpp>

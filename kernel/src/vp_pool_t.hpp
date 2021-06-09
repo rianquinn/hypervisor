@@ -28,7 +28,7 @@
 #include "lock_guard_t.hpp"
 #include "spinlock_t.hpp"
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/array.hpp>
@@ -52,7 +52,7 @@ namespace mk
     template<typename VP_CONCEPT, bsl::uintmax MAX_VPS>
     class vp_pool_t final
     {
-        /// @brief stores the VP_CONCEPTs in the VP_CONCEPT linked list
+        /// @brief stores the pool of VP_CONCEPTs
         bsl::array<VP_CONCEPT, MAX_VPS> m_pool{};
         /// @brief safe guards operations on the pool.
         mutable spinlock_t m_lock{};

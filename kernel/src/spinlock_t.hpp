@@ -25,7 +25,7 @@
 #ifndef SPINLOCK_T_HPP
 #define SPINLOCK_T_HPP
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
 #include <tls_t.hpp>
 #include <yield.hpp>
 

@@ -335,10 +335,10 @@ namespace mk
             }
 
             if (bsl::unlikely(!val)) {
-                bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << bsl::hex(val)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return;
             }
@@ -504,10 +504,10 @@ namespace mk
             }
 
             if (bsl::unlikely(!val)) {
-                bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << bsl::hex(val)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return;
             }
@@ -561,10 +561,10 @@ namespace mk
             }
 
             if (bsl::unlikely(!val)) {
-                bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << bsl::hex(val)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return;
             }
@@ -587,10 +587,10 @@ namespace mk
             }
 
             if (bsl::unlikely(!reg)) {
-                bsl::error() << "invalid reg: "    // --
-                             << bsl::hex(reg)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid reg "    // --
+                             << bsl::hex(reg)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return {};
             }
@@ -613,19 +613,19 @@ namespace mk
             }
 
             if (bsl::unlikely(!reg)) {
-                bsl::error() << "invalid reg: "    // --
-                             << bsl::hex(reg)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid reg "    // --
+                             << bsl::hex(reg)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return;
             }
 
             if (bsl::unlikely(!val)) {
-                bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << bsl::hex(val)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return;
             }
@@ -664,10 +664,10 @@ namespace mk
             }
 
             if (bsl::unlikely(!msr)) {
-                bsl::error() << "invalid msr: "    // --
-                             << bsl::hex(msr)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid msr "    // --
+                             << bsl::hex(msr)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return bsl::safe_uint64::zero(true);
             }
@@ -704,19 +704,19 @@ namespace mk
             }
 
             if (bsl::unlikely(!msr)) {
-                bsl::error() << "invalid msr: "    // --
-                             << bsl::hex(msr)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid msr "    // --
+                             << bsl::hex(msr)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!val)) {
-                bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << bsl::hex(val)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return bsl::errc_failure;
             }
@@ -756,19 +756,19 @@ namespace mk
             }
 
             if (bsl::unlikely(!eptp)) {
-                bsl::error() << "invalid eptp: "    // --
-                             << bsl::hex(eptp)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "invalid eptp "    // --
+                             << bsl::hex(eptp)     // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!type)) {
-                bsl::error() << "invalid type: "    // --
-                             << bsl::hex(type)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "invalid type "    // --
+                             << bsl::hex(type)     // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
 
                 return bsl::errc_failure;
             }
@@ -801,28 +801,28 @@ namespace mk
             }
 
             if (bsl::unlikely(!addr)) {
-                bsl::error() << "invalid addr: "    // --
-                             << bsl::hex(addr)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "invalid addr "    // --
+                             << bsl::hex(addr)     // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!vpid)) {
-                bsl::error() << "invalid vpid: "    // --
-                             << bsl::hex(vpid)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "invalid vpid "    // --
+                             << bsl::hex(vpid)     // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!type)) {
-                bsl::error() << "invalid type: "    // --
-                             << bsl::hex(type)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "invalid type "    // --
+                             << bsl::hex(type)     // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
 
                 return bsl::errc_failure;
             }
@@ -856,10 +856,10 @@ namespace mk
             }
 
             if (bsl::unlikely(nullptr == phys)) {
-                bsl::error() << "invalid phys: "    // --
-                             << phys                // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "invalid phys "    // --
+                             << phys               // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
 
                 return bsl::errc_failure;
             }
@@ -897,10 +897,10 @@ namespace mk
             }
 
             if (bsl::unlikely(nullptr == phys)) {
-                bsl::error() << "invalid phys: "    // --
-                             << phys                // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "invalid phys "    // --
+                             << phys               // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
 
                 return bsl::errc_failure;
             }
@@ -937,19 +937,19 @@ namespace mk
             }
 
             if (bsl::unlikely(!field)) {
-                bsl::error() << "invalid field: "    // --
-                             << bsl::hex(field)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
+                bsl::error() << "invalid field "    // --
+                             << bsl::hex(field)     // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(nullptr == val)) {
-                bsl::error() << "invalid val: "    // --
-                             << val                // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << val               // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return bsl::errc_failure;
             }
@@ -986,19 +986,19 @@ namespace mk
             }
 
             if (bsl::unlikely(!field)) {
-                bsl::error() << "invalid field: "    // --
-                             << bsl::hex(field)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
+                bsl::error() << "invalid field "    // --
+                             << bsl::hex(field)     // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(nullptr == val)) {
-                bsl::error() << "invalid val: "    // --
-                             << val                // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << val               // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return bsl::errc_failure;
             }
@@ -1035,19 +1035,19 @@ namespace mk
             }
 
             if (bsl::unlikely(!field)) {
-                bsl::error() << "invalid field: "    // --
-                             << bsl::hex(field)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
+                bsl::error() << "invalid field "    // --
+                             << bsl::hex(field)     // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(nullptr == val)) {
-                bsl::error() << "invalid val: "    // --
-                             << val                // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << val               // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return bsl::errc_failure;
             }
@@ -1175,19 +1175,19 @@ namespace mk
             }
 
             if (bsl::unlikely(!field)) {
-                bsl::error() << "invalid field: "    // --
-                             << bsl::hex(field)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
+                bsl::error() << "invalid field "    // --
+                             << bsl::hex(field)     // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!val)) {
-                bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << bsl::hex(val)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return bsl::errc_failure;
             }
@@ -1227,19 +1227,19 @@ namespace mk
             }
 
             if (bsl::unlikely(!field)) {
-                bsl::error() << "invalid field: "    // --
-                             << bsl::hex(field)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
+                bsl::error() << "invalid field "    // --
+                             << bsl::hex(field)     // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!val)) {
-                bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << bsl::hex(val)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return bsl::errc_failure;
             }
@@ -1279,19 +1279,19 @@ namespace mk
             }
 
             if (bsl::unlikely(!field)) {
-                bsl::error() << "invalid field: "    // --
-                             << bsl::hex(field)      // --
-                             << bsl::endl            // --
-                             << bsl::here();         // --
+                bsl::error() << "invalid field "    // --
+                             << bsl::hex(field)     // --
+                             << bsl::endl           // --
+                             << bsl::here();        // --
 
                 return bsl::errc_failure;
             }
 
             if (bsl::unlikely(!val)) {
-                bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << bsl::hex(val)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return bsl::errc_failure;
             }

@@ -27,8 +27,9 @@
 
 #include <allocate_tags.hpp>
 #include <allocated_status_t.hpp>
+#include <bf_constants.hpp>
+#include <bf_reg_t.hpp>
 #include <general_purpose_regs_t.hpp>
-#include <mk_interface.hpp>
 #include <tls_t.hpp>
 #include <vmcb_t.hpp>
 

@@ -25,7 +25,7 @@
 #ifndef DISPATCH_SYSCALL_DEBUG_OP_HPP
 #define DISPATCH_SYSCALL_DEBUG_OP_HPP
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/char_type.hpp>
@@ -171,7 +171,7 @@ namespace mk
             }
         }
 
-        bsl::error() << "unknown syscall index: "    //--
+        bsl::error() << "unknown syscall index "     //--
                      << bsl::hex(tls.ext_syscall)    //--
                      << bsl::endl                    //--
                      << bsl::here();                 //--

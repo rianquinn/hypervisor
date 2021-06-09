@@ -26,7 +26,7 @@
 #define VP_T_HPP
 
 #include <allocated_status_t.hpp>
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/debug.hpp>

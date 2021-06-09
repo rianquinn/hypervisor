@@ -334,10 +334,10 @@ namespace mk
             }
 
             if (nullptr == record) {
-                bsl::error() << "invalid tag: "    // --
-                             << tag                // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid tag "    // --
+                             << tag               // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return;
             }

@@ -24,7 +24,7 @@
 
 #include "integration_utils.hpp"
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>

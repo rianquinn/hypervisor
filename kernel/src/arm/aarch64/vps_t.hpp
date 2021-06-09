@@ -25,8 +25,9 @@
 #ifndef VPS_T_HPP
 #define VPS_T_HPP
 
+#include <bf_constants.hpp>
+#include <bf_reg_t.hpp>
 #include <general_purpose_regs_t.hpp>
-#include <mk_interface.hpp>
 #include <tls_t.hpp>
 #include <vmcb_t.hpp>
 

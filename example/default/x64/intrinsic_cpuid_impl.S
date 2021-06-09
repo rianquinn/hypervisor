@@ -24,15 +24,29 @@
  * SOFTWARE.
  */
 
-#ifndef MK_INTERFACE_H
-#define MK_INTERFACE_H
+    .code64
+    .intel_syntax noprefix
 
-/**
- * TODO:
- * - Port the C++ ABI to C
- * - Create an example, based on the default example, that is written in C
- *   so that people can use C instead of C++ if they want. This can also be
- *   used to create bindings for other languages like Rust, Python and Lua.
- */
+    .globl  intrinsic_cpuid_impl
+    .type   intrinsic_cpuid_impl, @function
+intrinsic_cpuid_impl:
+    push rbx
 
-#endif
+    mov r10, rdx
+    mov r11, rcx
+
+    mov rax, [rdi]
+    mov rbx, [rsi]
+    mov rcx, [r10]
+    mov rdx, [r11]
+    cpuid
+    mov [rdi], rax
+    mov [rsi], rbx
+    mov [r10], rcx
+    mov [r11], rdx
+
+    pop rbx
+    ret
+    int 3
+
+    .size intrinsic_cpuid_impl, .-intrinsic_cpuid_impl

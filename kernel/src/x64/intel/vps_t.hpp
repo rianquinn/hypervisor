@@ -27,8 +27,9 @@
 
 #include <allocate_tags.hpp>
 #include <allocated_status_t.hpp>
+#include <bf_constants.hpp>
+#include <bf_reg_t.hpp>
 #include <general_purpose_regs_t.hpp>
-#include <mk_interface.hpp>
 #include <tls_t.hpp>
 #include <vmcs_missing_registers_t.hpp>
 #include <vmcs_t.hpp>
@@ -2967,28 +2968,28 @@ namespace mk
             else {
                 switch (index.get()) {
                     case vmcs_pinbased_ctls_idx.get(): {
-                        bsl::error() << "invalid integer type for field: "    // --
-                                     << bsl::hex(index)                       // --
-                                     << bsl::endl                             // --
-                                     << bsl::here();                          // --
+                        bsl::error() << "invalid integer type for field "    // --
+                                     << bsl::hex(index)                      // --
+                                     << bsl::endl                            // --
+                                     << bsl::here();                         // --
 
                         return bsl::errc_failure;
                     }
 
                     case vmcs_exit_ctls_idx.get(): {
-                        bsl::error() << "invalid integer type for field: "    // --
-                                     << bsl::hex(index)                       // --
-                                     << bsl::endl                             // --
-                                     << bsl::here();                          // --
+                        bsl::error() << "invalid integer type for field "    // --
+                                     << bsl::hex(index)                      // --
+                                     << bsl::endl                            // --
+                                     << bsl::here();                         // --
 
                         return bsl::errc_failure;
                     }
 
                     case vmcs_entry_ctls_idx.get(): {
-                        bsl::error() << "invalid integer type for field: "    // --
-                                     << bsl::hex(index)                       // --
-                                     << bsl::endl                             // --
-                                     << bsl::here();                          // --
+                        bsl::error() << "invalid integer type for field "    // --
+                                     << bsl::hex(index)                      // --
+                                     << bsl::endl                            // --
+                                     << bsl::here();                         // --
 
                         return bsl::errc_failure;
                     }

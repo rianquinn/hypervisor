@@ -25,7 +25,7 @@
 #ifndef ARCH_SUPPORT_HPP
 #define ARCH_SUPPORT_HPP
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>

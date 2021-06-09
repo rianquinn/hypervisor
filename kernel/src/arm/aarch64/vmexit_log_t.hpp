@@ -118,10 +118,10 @@ namespace mk
 
             auto *const pp_log{m_vmexit_logs.at_if(bsl::to_umax(ppid))};
             if (bsl::unlikely(nullptr == pp_log)) {
-                bsl::error() << "invalid ppid: "    // --
-                             << bsl::hex(ppid)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "invalid ppid "    // --
+                             << bsl::hex(ppid)     // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
 
                 return;
             }

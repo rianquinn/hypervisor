@@ -188,10 +188,10 @@ namespace mk
             }
 
             if (bsl::unlikely(!size)) {
-                bsl::error() << "invalid size: "    // --
-                             << bsl::hex(size)      // --
-                             << bsl::endl           // --
-                             << bsl::here();        // --
+                bsl::error() << "invalid size "    // --
+                             << bsl::hex(size)     // --
+                             << bsl::endl          // --
+                             << bsl::here();       // --
 
                 return nullptr;
             }
@@ -205,11 +205,7 @@ namespace mk
             }
 
             if (bsl::unlikely(m_pool.at_if(m_crsr + (pages * PAGE_SIZE)) == nullptr)) {
-                bsl::error() << "huge pool out of memory: "    // --
-                             << bsl::hex(size)                 // --
-                             << bsl::endl                      // --
-                             << bsl::here();                   // --
-
+                bsl::error() << "huge pool out of memory\n" << bsl::here();
                 return nullptr;
             }
 

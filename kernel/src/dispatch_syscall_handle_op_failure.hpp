@@ -25,7 +25,7 @@
 #ifndef DISPATCH_SYSCALL_HANDLE_OP_FAILURE_HPP
 #define DISPATCH_SYSCALL_HANDLE_OP_FAILURE_HPP
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/debug.hpp>

@@ -25,6 +25,7 @@
 #ifndef DISPATCH_SYSCALL_HPP
 #define DISPATCH_SYSCALL_HPP
 
+#include <bf_constants.hpp>
 #include <dispatch_syscall_callback_op.hpp>
 #include <dispatch_syscall_control_op.hpp>
 #include <dispatch_syscall_debug_op.hpp>
@@ -34,7 +35,6 @@
 #include <dispatch_syscall_vm_op.hpp>
 #include <dispatch_syscall_vp_op.hpp>
 #include <dispatch_syscall_vps_op.hpp>
-#include <mk_interface.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/debug.hpp>
@@ -203,10 +203,10 @@ namespace mk
             }
         }
 
-        bsl::error() << "unknown syscall signature/opcode: "    //--
-                     << bsl::hex(tls.ext_syscall)               //--
-                     << bsl::endl                               //--
-                     << bsl::here();                            //--
+        bsl::error() << "unknown syscall signature/opcode "    //--
+                     << bsl::hex(tls.ext_syscall)              //--
+                     << bsl::endl                              //--
+                     << bsl::here();                           //--
 
         tls.syscall_ret_status = syscall::BF_STATUS_FAILURE_UNSUPPORTED.get();
         return bsl::exit_failure;

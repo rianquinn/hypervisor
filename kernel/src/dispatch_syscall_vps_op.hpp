@@ -25,7 +25,8 @@
 #ifndef DISPATCH_SYSCALL_VPS_OP_HPP
 #define DISPATCH_SYSCALL_VPS_OP_HPP
 
-#include <mk_interface.hpp>
+#include <bf_constants.hpp>
+#include <bf_reg_t.hpp>
 #include <promote.hpp>
 #include <return_to_mk.hpp>
 #include <tls_t.hpp>
@@ -856,7 +857,7 @@ namespace mk
         bsl::errc_type ret{};
 
         if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
-            bsl::error() << "invalid handle: "        // --
+            bsl::error() << "invalid handle "         // --
                          << bsl::hex(tls.ext_reg0)    // --
                          << bsl::endl                 // --
                          << bsl::here();              // --
@@ -1072,7 +1073,7 @@ namespace mk
             }
         }
 
-        bsl::error() << "unknown syscall index: "    //--
+        bsl::error() << "unknown syscall index "     //--
                      << bsl::hex(tls.ext_syscall)    //--
                      << bsl::endl                    //--
                      << bsl::here();                 //--

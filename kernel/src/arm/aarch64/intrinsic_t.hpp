@@ -75,10 +75,10 @@ namespace mk
             }
 
             if (bsl::unlikely(!val)) {
-                bsl::error() << "invalid val: "    // --
-                             << bsl::hex(val)      // --
-                             << bsl::endl          // --
-                             << bsl::here();       // --
+                bsl::error() << "invalid val "    // --
+                             << bsl::hex(val)     // --
+                             << bsl::endl         // --
+                             << bsl::here();      // --
 
                 return;
             }
