@@ -1,32 +1,30 @@
 ![Bareflank](https://github.com/Bareflank/hypervisor/raw/master/.github/images/hypervisor_logo.png)
 
 ## Description
-The Bareflank Hypervisor is an open source hypervisor Software Development Toolkit (SDK), led by Assured Information Security, Inc. (AIS), that provides the tools needed to rapidly prototype and create your own hypervisor on 64bit versions of Intel, AMD and ARMv8 CPUs (RISC-V and PowerPC also planned).
+The Bareflank Hypervisor is an open source hypervisor Software Development Toolkit (SDK), led by Assured Information Security, Inc. (AIS), that provides the tools needed to rapidly prototype and create your own hypervisor on 64bit versions of Intel, AMD and ARMv8 CPUs (RISC-V and PowerPC also planned). The Bareflank SDK is intended for instructional/research purposes as it only provides enough virtualization support to start/stop a hypervisor. Bareflank can also be used as the foundation to create your own, fully functional hypervisor as it uses the MIT license, includes 100% unit test coverage and compliance for AUTOSAR and ASIL/D. If you are looking for a complete hypervisor (and not an SDK), please see [MicroV](https://github.com/Bareflank/microv). If you are looking for a minimal SDK for education or to perform research, this is the project for you. If you are simply looking for a reference hypervisor, please see [SimpleVisor](https://github.com/ionescu007/SimpleVisor).
 
 Bareflank uses a layered, modular approach, that lets you pick just how much complexity you need in your project when creating your own custom hypervisor:
 - [BSL](https://github.com/Bareflank/bsl): provides a header-only, AUTOSAR
   compliant implementation of a subset of the C++ Standard Library, used to
   implement Bareflank's C++ components ensuring Bareflank and projects built
-  using Bareflank can support critical systems applications like Automotive.
+  using Bareflank can support critical systems applications.
 - [LLVM](https://github.com/Bareflank/llvm-project): provides our custom
   implementation of the LLVM Clang-Tidy static analysis tool to ensure
   compliance with AUTOSAR.
 - [PAL](https://github.com/Bareflank/pal): provides auto-generated intrinsics
-  APIs for Intel, AMD and ARM on any combination of OS (e.g., Windows and
-  Linux, ABI (e.g., SysV and MS64) and programming language (e.g., C, C++ and
-  Python).
+  APIs for Intel, AMD and ARM on any combination of OS.
 - [hypervisor](https://github.com/Bareflank/hypervisor): provides the base SDK
   including the loader, the Bareflank microkernel and support applications.
   Although this repo is labeled "hypervisor", this repo only provides the base
-  scaffolding for creating your own hypervisor. If you are performing research
-  and do not want to deal with the complexity of a fully functional hypervisor,
-  this repo would be your starting point. By itself, the code in this repo only
-  implements enough virtualization to start/stop a hypervisor that only traps
-  on CPUID instructions.
-- [MicroV](https://github.com/Bareflank/microv): provides a fully functional
-  hypervisor using the Bareflank SDK.
-
-To support Bareflank's ecosystem, the hypervisor SDK is licensed under MIT, specifically enabling users of the project to both contribute back to the project, but also create proprietary, closed source products that use the Bareflank SDK as their foundation. Feel free to use Bareflank to create your commercial products. All we ask is that if you find a bug or add a feature to the SDK that you consider contributing your changes back to the project.
+  scaffolding for creating your own hypervisor. If you are in education or
+  performing research and do not want to deal with the complexity of a fully
+  functional hypervisor, this repo would be your starting point. By itself, the
+  code in this repo only implements enough virtualization to start/stop a
+  hypervisor.
+- [MicroV](https://github.com/Bareflank/microv): This is the project led by
+  Assured Information Security, Inc. (AIS) the provides a fully functional
+  hypervisor that uses the Bareflank SDK as it's foundation. If you are looking
+  for an actual hypervisor, this is the project you are looking for.
 
 ## **Quick start**
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/bareflank/hypervisor?color=brightgreen)
@@ -299,9 +297,8 @@ whatever changes are needed to support your research.
 [![Join the chat](https://img.shields.io/badge/chat-on%20Slack-brightgreen.svg)](https://bareflank.herokuapp.com/)
 
 The Bareflank hypervisor provides a ton of useful resources to learn how to use the library including:
--   **Documentation**: <https://bareflank.github.io/hypervisor/>
+-   **Documentation**: <https://github.com/Bareflank/hypervisor/tree/master/docs>
 -   **Examples**: <https://github.com/Bareflank/hypervisor/tree/master/example>
--   **Unit Tests**: <https://github.com/Bareflank/hypervisor/tree/master/test>
 
 If you have any questions, bugs, or feature requests, please feel free to ask on any of the following:
 -   **Slack**: <https://bareflank.herokuapp.com/>

@@ -70,30 +70,35 @@ endmacro(example_target_source)
 #
 
 target_include_directories(example_default PRIVATE
-    .
+    include
+    src
 )
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     target_include_directories(example_default PRIVATE
-        x64
+        include/x64
+        src/x64
     )
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
         target_include_directories(example_default PRIVATE
-            x64/amd
+            include/x64/amd
+            src/x64/amd
         )
     endif()
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
         target_include_directories(example_default PRIVATE
-            x64/intel
+            include/x64/intel
+            src/x64/intel
         )
     endif()
 endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
     target_include_directories(example_default PRIVATE
-        arm/aarch64
+        include/arm/aarch64
+        src/arm/aarch64
     )
 endif()
 
@@ -107,37 +112,50 @@ endif()
 #
 
 list(APPEND HEADERS
-    ${CMAKE_CURRENT_LIST_DIR}/bootstrap.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/vp_pool_t.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/vp_t.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/vps_pool_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/dummy_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/bootstrap_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/fail_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vp_pool_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vp_t.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vps_pool_t.hpp
 )
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     list(APPEND HEADERS
-        ${CMAKE_CURRENT_LIST_DIR}/x64/intrinsic_impl_prototypes.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/x64/intrinsic_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/x64/intrinsic_cpuid_impl.hpp
     )
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
         list(APPEND HEADERS
-            ${CMAKE_CURRENT_LIST_DIR}/x64/amd/vmexit_t.hpp
-            ${CMAKE_CURRENT_LIST_DIR}/x64/amd/vps_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/include/x64/amd/arch_dummy_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/src/x64/amd/gs_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/src/x64/amd/tls_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/src/x64/amd/intrinsic_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/src/x64/amd/vmexit_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/src/x64/amd/vps_t.hpp
         )
     endif()
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
         list(APPEND HEADERS
-            ${CMAKE_CURRENT_LIST_DIR}/x64/intel/vmexit_t.hpp
-            ${CMAKE_CURRENT_LIST_DIR}/x64/intel/vps_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/include/x64/intel/arch_dummy_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/gs_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/tls_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/intrinsic_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/vmexit_t.hpp
+            ${CMAKE_CURRENT_LIST_DIR}/src/x64/intel/vps_t.hpp
         )
     endif()
 endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
     list(APPEND HEADERS
-        ${CMAKE_CURRENT_LIST_DIR}/arm/aarch64/vmexit_t.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/arm/aarch64/vps_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/include/arm/aarch64/arch_dummy_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/arm/aarch64/gs_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/arm/aarch64/tls_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/arm/aarch64/intrinsic_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/arm/aarch64/vmexit_t.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/arm/aarch64/vps_t.hpp
     )
 endif()
 
@@ -150,10 +168,10 @@ endif()
 #   use the macro for doing this.
 #
 
-example_target_source(example_default main.cpp ${HEADERS})
+example_target_source(example_default src/main.cpp ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    example_target_source(example_default x64/intrinsic_cpuid_impl.S ${HEADERS})
+    example_target_source(example_default src/x64/intrinsic_cpuid_impl.S ${HEADERS})
 endif()
 
 # ------------------------------------------------------------------------------

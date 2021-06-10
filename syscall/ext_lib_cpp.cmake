@@ -29,6 +29,7 @@ add_library(syscall)
 
 target_include_directories(syscall PUBLIC
     include/cpp
+    src/cpp
 )
 
 # ------------------------------------------------------------------------------
@@ -37,12 +38,12 @@ target_include_directories(syscall PUBLIC
 
 list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_constants.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_control_ops.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_debug_ops.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_impl_prototypes.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_reg_t.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_syscall_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/cpp/bf_types.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/cpp/bf_control_ops.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/cpp/bf_debug_ops.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/cpp/bf_impl_prototypes.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/cpp/bf_syscall_t.hpp
 )
 
 # ------------------------------------------------------------------------------

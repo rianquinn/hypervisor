@@ -34,10 +34,13 @@ list(APPEND INCLUDES
 # ------------------------------------------------------------------------------
 
 list(APPEND DEFINES
+    HYPERVISOR_EXT_DIRECT_MAP_ADDR=0x0000600000000000
 )
 
 # ------------------------------------------------------------------------------
 # Tests
 # ------------------------------------------------------------------------------
 
-add_subdirectory(cpp/mk_interface)
+add_subdirectory(cpp/bf_control_ops)
+add_subdirectory(cpp/bf_debug_ops)
+add_subdirectory(cpp/bf_syscall_t)
