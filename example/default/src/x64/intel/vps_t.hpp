@@ -28,16 +28,12 @@
 #include <bf_constants.hpp>
 #include <bf_syscall_t.hpp>
 
+#include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
 
 namespace example
 {
-    /// @brief stores the MSR bitmap used by this extension
-    inline void *g_msr_bitmaps{};
-    /// @brief stores the physical address of the MSR bitmap
-    inline bsl::safe_uintmax g_msr_bitmaps_phys{};
-
     /// @class example::vps_t
     ///
     /// <!-- description -->
@@ -132,7 +128,10 @@ namespace example
         ///   @brief Allocates a vps_t and returns it's ID
         ///
         /// <!-- inputs/outputs -->
-        ///   @param sys the bf_syscall_t to use.
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///   @param vpid the ID of the VP to assign the vps_t to
         ///   @param ppid the ID of the PP to assign the vps_t to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
@@ -140,10 +139,17 @@ namespace example
         ///
         [[nodiscard]] constexpr auto
         allocate(
+            gs_t &gs,
+            tls_t &tls,
             syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic,
             bsl::safe_uint16 const &vpid,
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+            bsl::discard(intrinsic);
+
             bsl::errc_type ret{};
 
             /// NOTE:

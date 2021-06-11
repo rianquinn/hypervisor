@@ -1419,6 +1419,35 @@ namespace syscall
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
+        bsl::ut_scenario{"quiet bootstrap_entry"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_uint16_t arg0{};
+                bsl::ut_then{} = [&arg0]() {
+                    bootstrap_entry(arg0.get());
+                };
+            };
+        };
+
+        bsl::ut_scenario{"quiet vmexit_entry"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_uint16_t arg0{};
+                bf_uint16_t arg1{};
+                bsl::ut_then{} = [&arg0, &arg1]() {
+                    vmexit_entry(arg0.get(), arg1.get());
+                };
+            };
+        };
+
+        bsl::ut_scenario{"quiet fail_entry"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_uint16_t arg0{};
+                bf_uint16_t arg1{};
+                bsl::ut_then{} = [&arg0, &arg1]() {
+                    fail_entry(arg0.get(), arg1.get());
+                };
+            };
+        };
+
         bsl::ut_scenario{"initialize invalid version #1"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
@@ -3816,6 +3845,103 @@ namespace syscall
                     bsl::ut_then{} = [&sys, &arg0]() {
                         bsl::ut_check(&g_data == sys.bf_mem_op_alloc_heap<bf_uint64_t>(arg0));
                     };
+                };
+            };
+        };
+
+        // ---------------------------------------------------------------------
+        // direct map helpers
+        // ---------------------------------------------------------------------
+
+        bsl::ut_scenario{"bf_read_phys invalid phys"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_syscall_t sys{};
+                bf_uint64_t phys{bf_uint64_t::zero(true)};
+                bsl::ut_then{} = [&sys, &phys]() {
+                    bsl::ut_check(!sys.bf_read_phys(phys));
+                };
+            };
+        };
+
+        bsl::ut_scenario{"bf_read_phys address out of range"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_syscall_t sys{};
+                bf_uint64_t phys{bsl::to_umax(0xFFFFFFFFFFFFFFFF)};
+                bsl::ut_then{} = [&sys, &phys]() {
+                    bsl::ut_check(!sys.bf_read_phys(phys));
+                };
+            };
+        };
+
+        bsl::ut_scenario{"bf_read_phys success"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_syscall_t sys{};
+                bf_uint64_t phys{bsl::to_umax(&g_data)};
+                bsl::ut_when{} = [&sys, &phys]() {
+                    g_data = g_answer;
+                    phys -= bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR);
+                    bsl::ut_then{} = [&sys, &phys]() {
+                        bsl::ut_check(g_answer == sys.bf_read_phys(phys));
+                    };
+                };
+            };
+        };
+
+        bsl::ut_scenario{"bf_write_phys invalid phys"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_syscall_t sys{};
+                bf_uint64_t phys{bf_uint64_t::zero(true)};
+                bsl::ut_then{} = [&sys, &phys]() {
+                    bsl::ut_check(!sys.bf_write_phys(phys, g_answer));
+                };
+            };
+        };
+
+        bsl::ut_scenario{"bf_write_phys address out of range"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_syscall_t sys{};
+                bf_uint64_t phys{bsl::to_umax(0xFFFFFFFFFFFFFFFF)};
+                bsl::ut_then{} = [&sys, &phys]() {
+                    bsl::ut_check(!sys.bf_write_phys(phys, g_answer));
+                };
+            };
+        };
+
+        bsl::ut_scenario{"bf_write_phys success"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_syscall_t sys{};
+                bf_uint64_t phys{bsl::to_umax(&g_data)};
+                bsl::ut_when{} = [&sys, &phys]() {
+                    g_data = {};
+                    phys -= bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR);
+                    bsl::ut_then{} = [&sys, &phys]() {
+                        bsl::ut_check(sys.bf_write_phys(phys, g_answer));
+                        bsl::ut_check(g_data == g_answer);
+                    };
+                };
+            };
+        };
+
+
+
+
+
+        bsl::ut_scenario{"bf_virt_to_phys invalid virt"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_syscall_t sys{};
+                bsl::ut_then{} = [&sys]() {
+                    bsl::ut_check(sys.bf_virt_to_phys(bsl::to_ptr<void *>(virt)) == phys);
+                };
+            };
+        };
+
+        bsl::ut_scenario{"bf_virt_to_phys success"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_syscall_t sys{};
+                bf_uint64_t virt{bsl::to_umax(&g_data)};
+                bf_uint64_t phys{virt - bsl::to_u64(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+                bsl::ut_then{} = [&sys, &virt, &phys]() {
+                    bsl::ut_check(sys.bf_virt_to_phys(bsl::to_ptr<void *>(virt)) == phys);
                 };
             };
         };
