@@ -40,7 +40,6 @@ namespace mk
     ///   @brief Implements the bf_vm_op_create_vm syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @param tls the current TLS block
@@ -71,7 +70,6 @@ namespace mk
     ///   @brief Implements the bf_vm_op_destroy_vm syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
@@ -105,7 +103,6 @@ namespace mk
     ///   @brief Dispatches the bf_vm_op syscalls
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use

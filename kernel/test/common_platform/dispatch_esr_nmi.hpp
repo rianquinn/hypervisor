@@ -36,7 +36,6 @@ namespace mk
     ///   @brief Provides the main entry point for NMI exceptions
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param intrinsic the intrinsics to use

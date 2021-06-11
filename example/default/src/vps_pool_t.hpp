@@ -26,6 +26,9 @@
 #define VPS_POOL_T_HPP
 
 #include <bf_syscall_t.hpp>
+#include <gs_t.hpp>
+#include <intrinsic_t.hpp>
+#include <tls_t.hpp>
 #include <vps_t.hpp>
 
 #include <bsl/array.hpp>
@@ -33,6 +36,7 @@
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
+#include <bsl/finally_assert.hpp>
 #include <bsl/unlikely.hpp>
 #include <bsl/unlikely_assert.hpp>
 
@@ -46,18 +50,20 @@ namespace example
     class vps_pool_t final
     {
         /// @brief stores the pool of VPSs
-        bsl::array<vps_t, HYPERVISOR_MAX_VPSS> m_pool{};
+        bsl::array<vps_t, bsl::to_umax(HYPERVISOR_MAX_VPSS).get()> m_pool{};
 
     public:
         /// <!-- description -->
         ///   @brief Initializes this vps_pool_t
         ///
         /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize() &noexcept -> bsl::errc_type
+        initialize(gs_t &gs, tls_t &tls) &noexcept -> bsl::errc_type
         {
             /// NOTE:
             /// - The following is used in the event of an error. Basically,
@@ -66,8 +72,8 @@ namespace example
             ///   ignore() function, which we do at the end when all is good.
             ///
 
-            bsl::finally_assert release_on_error{[this]() noexcept -> void {
-                this->release();
+            bsl::finally_assert release_on_error{[this, &gs, &tls]() noexcept -> void {
+                this->release(gs, tls);
             }};
 
             /// NOTE:
@@ -81,7 +87,7 @@ namespace example
 
             bsl::errc_type ret{};
             for (bsl::safe_uintmax i{}; i < m_pool.size(); ++i) {
-                ret = m_pool.at_if(i)->initialize(bsl::to_u16(i));
+                ret = m_pool.at_if(i)->initialize(gs, tls, bsl::to_u16(i));
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -103,8 +109,12 @@ namespace example
         /// <!-- description -->
         ///   @brief Release the vps_pool_t.
         ///
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///
         constexpr void
-        release() &noexcept
+        release(gs_t &gs, tls_t &tls) &noexcept
         {
             /// NOTE:
             /// - Release functions are usually only needed in the event of
@@ -112,7 +122,7 @@ namespace example
             ///
 
             for (bsl::safe_uintmax i{}; i < m_pool.size(); ++i) {
-                m_pool.at_if(i)->release();
+                m_pool.at_if(i)->release(gs, tls);
             }
         }
 
@@ -143,7 +153,11 @@ namespace example
 
             /// NOTE:
             /// - Ask the microkernel to create a VPS and return the ID of the
-            ///   newly created VPS.
+            ///   newly created VPS. We do not check in this function if the
+            ///   provided vmid or ppid are valid as this is done by the
+            ///   bf_vp_op_create_vp. We only need to check these types of
+            ///   inputs at the point of use, and not when we are just passing
+            ///   them to another function.
             ///
 
             ret = sys.bf_vps_op_create_vps(vpid, ppid, vpsid);

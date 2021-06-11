@@ -25,7 +25,9 @@
 #ifndef INTRINSIC_HPP
 #define INTRINSIC_HPP
 
+#include <gs_t.hpp>
 #include <intrinsic_cpuid_impl.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
@@ -46,12 +48,17 @@ namespace example
         ///   @brief Initializes this intrinsic_t.
         ///
         /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
-        initialize() &noexcept -> bsl::errc_type
+        [[nodiscard]] static constexpr auto
+        initialize(gs_t &gs, tls_t &tls) noexcept -> bsl::errc_type
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+
             /// NOTE:
             /// - Add initialization code here if needed. Otherwise, this
             ///   function can be removed if it is not needed.
@@ -63,9 +70,16 @@ namespace example
         /// <!-- description -->
         ///   @brief Release the intrinsic_t.
         ///
-        constexpr void
-        release() &noexcept
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///
+        static constexpr void
+        release(gs_t &gs, tls_t &tls) noexcept
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+
             /// NOTE:
             /// - Release functions are usually only needed in the event of
             ///   an error, or during unit testing.
@@ -82,7 +96,7 @@ namespace example
         ///   @param rcx the subindex used by CPUID, returns the resulting rcx
         ///   @param rdx returns resulting rdx
         ///
-        constexpr void
+        static constexpr void
         cpuid(
             bsl::safe_uint64 &rax,
             bsl::safe_uint64 &rbx,

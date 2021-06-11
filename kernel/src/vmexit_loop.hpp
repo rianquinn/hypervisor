@@ -38,7 +38,6 @@ namespace mk
     ///     after a successful launch of the hypervisor.
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use

@@ -86,7 +86,6 @@ namespace mk
     ///       do but fast fail again and leave.
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
     ///   @tparam EXT_CONCEPT defines the type of extension to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use

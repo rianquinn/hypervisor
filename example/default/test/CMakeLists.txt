@@ -148,12 +148,21 @@ list(APPEND AARCH64_SYSTEM_INCLUDES
 
 list(APPEND COMMON_DEFINES
     HYPERVISOR_PAGE_SIZE=0x1000
+    HYPERVISOR_MAX_VPS=2
+    HYPERVISOR_MAX_VPSS=2
     HYPERVISOR_EXT_DIRECT_MAP_ADDR=0x0000600000000000
 )
 
 # ------------------------------------------------------------------------------
 # Tests
 # ------------------------------------------------------------------------------
+
+# NOTE:
+# - The following is just a template that you can use as a starting point for
+#   each test. Remove it from your extension as needed.
+#
+
+add_subdirectory(template)
 
 # NOTE:
 # - Add the directories for each unit test here. Note that you should add all
@@ -164,3 +173,4 @@ list(APPEND COMMON_DEFINES
 #
 
 add_subdirectory(vp_pool_t)
+add_subdirectory(vps_pool_t)

@@ -39,7 +39,6 @@ namespace mk
     ///   @brief Implements the bf_mem_op_alloc_page syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
@@ -75,7 +74,6 @@ namespace mk
     ///   @brief Implements the bf_mem_op_free_page syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
@@ -100,7 +98,6 @@ namespace mk
     ///   @brief Implements the bf_mem_op_alloc_huge syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
@@ -128,7 +125,6 @@ namespace mk
     ///   @brief Implements the bf_mem_op_free_huge syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
@@ -153,7 +149,6 @@ namespace mk
     ///   @brief Implements the bf_mem_op_alloc_heap syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
@@ -180,7 +175,6 @@ namespace mk
     ///   @brief Dispatches the bf_mem_op syscalls
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall

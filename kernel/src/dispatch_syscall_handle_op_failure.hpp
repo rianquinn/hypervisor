@@ -37,7 +37,6 @@ namespace mk
     ///   @brief Implements the bf_handle_op_open_handle syscall failure logic
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
@@ -64,7 +63,6 @@ namespace mk
     ///   @brief Implements the bf_handle_op_close_handle syscall failure logic
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
@@ -99,7 +97,6 @@ namespace mk
     ///   @brief Dispatches the bf_handle_op syscalls
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall

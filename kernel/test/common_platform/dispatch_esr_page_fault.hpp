@@ -36,7 +36,6 @@ namespace mk
     ///   @brief Provides the ESR handler for page faults
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall

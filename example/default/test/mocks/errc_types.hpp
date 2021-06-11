@@ -22,36 +22,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef TEST_DISPATCH_SYSCALL_HANDLE_OP_HPP
-#define TEST_DISPATCH_SYSCALL_HANDLE_OP_HPP
+#ifndef MOCKS_ERRC_TYPES_HPP
+#define MOCKS_ERRC_TYPES_HPP
 
-#include <bf_constants.hpp>
-#include <tls_t.hpp>
-
-#include <bsl/discard.hpp>
+#include <bsl/convert.hpp>
 #include <bsl/errc_type.hpp>
 
-namespace mk
+namespace example
 {
-    /// <!-- description -->
-    ///   @brief Dispatches the bf_handle_op syscalls
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-    ///   @param tls the current TLS block
-    ///   @param ext the extension that made the syscall
-    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-    ///     code on failure.
-    ///
-    template<typename EXT_CONCEPT>
-    [[nodiscard]] constexpr auto
-    dispatch_syscall_handle_op(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
-    {
-        bsl::discard(tls);
-        bsl::discard(ext);
-
-        return bsl::errc_success;
-    }
+    /// @brief Defines the "fail initialize" case
+    // We want our implementation to mimic C++ here.
+    // NOLINTNEXTLINE(bsl-name-case)
+    constexpr bsl::errc_type errc_fail_initialize{bsl::to_i32(0x00FF0001)};
 }
 
 #endif

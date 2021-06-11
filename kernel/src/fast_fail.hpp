@@ -41,7 +41,6 @@ namespace mk
     ///     or a halt() will occur.
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext_fail the ext_t to handle the VMExit

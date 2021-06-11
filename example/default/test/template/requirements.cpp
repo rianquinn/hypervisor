@@ -22,41 +22,82 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include "../../src/vp_pool_t.hpp"
+// #include "../../src/<name>.hpp"
 
 #include <bsl/discard.hpp>
 #include <bsl/ut.hpp>
 
 namespace example
 {
-    constinit vp_pool_t const verify_constinit{};
+    /// NOTE:
+    /// - Replace bsl::errc_type with your type. We keep this in place so
+    ///   that it is easy to see how to use each of these patterns.
+    ///
+
+    /// NOTE:
+    /// - The following verifies that our type can be initialized using the
+    ///   C++20 constinit keyword. This ensures that if we need to create a
+    ///   global version of this (or something that uses this code), is
+    ///   initialized at compile-time and not at runtime.
+    ///
+
+    constinit bsl::errc_type const verify_constinit{};
+
+    /// NOTE:
+    /// - The following is used to ensure that each function is marked as
+    ///   const as needed. Everything in the test_member_const function
+    ///   should be marked as const. If it is not, it will not compile.
+    ///   The test_member_nonconst function should have all of the functions
+    ///   to ensure that everything is tested.
+    /// - Also note that in this test we have two of our classes under test.
+    ///   This is to support the == and != operator functions. These functions
+    ///   are not member functions, but we add them to these tests anyways
+    ///   as they have to use member functions, which adds an additional check
+    ///   encase we are missing something, and it allows the non-const tests
+    ///   to be the same as the noexcept tests.
+    /// - The const test does not need to test constructors as that doesn't
+    ///   make much sense, and it is expect that for some classes, not all of
+    ///   the member functions will be in the const test as they will not be
+    ///   marked as const. The non-const test should have every function
+    ///   including the constructors.
+    ///
 
     // NOLINTNEXTLINE(bsl-user-defined-type-names-match-header-name)
     class fixture_t final
     {
-        vp_pool_t vp_pool{};
+        bsl::errc_type errc1{};
+        bsl::errc_type errc2{};
 
     public:
         [[nodiscard]] constexpr auto
         test_member_const() const noexcept -> bool
         {
+            bsl::discard(errc1.get());
+            bsl::discard(!errc1);
+            bsl::discard(errc1.success());
+            bsl::discard(errc1.failure());
+            bsl::discard(errc1.is_checked());
+            bsl::discard(errc1.is_unchecked());
+            bsl::discard(errc1 == errc2);
+            bsl::discard(errc1 != errc2);
+
             return true;
         }
 
         [[nodiscard]] constexpr auto
         test_member_nonconst() noexcept -> bool
         {
-            example::gs_t gs{};
-            example::tls_t tls{};
-            syscall::bf_syscall_t sys{};
-            example::intrinsic_t intrinsic{};
-            bsl::safe_uint16 vmid{};
-            bsl::safe_uint16 ppid{};
-
-            bsl::discard(vp_pool_t{});
-            bsl::discard(vp_pool.initialize(gs, tls));
-            vp_pool.release(gs, tls);
-            bsl::discard(vp_pool.allocate(gs, tls, sys, intrinsic, vmid, ppid));
+            bsl::discard(bsl::errc_type{});
+            bsl::discard(bsl::errc_type{42});
+            bsl::discard(bsl::errc_type{bsl::to_i32(42)});
+            bsl::discard(errc1.get());
+            bsl::discard(!errc1);
+            bsl::discard(errc1.success());
+            bsl::discard(errc1.failure());
+            bsl::discard(errc1.is_checked());
+            bsl::discard(errc1.is_unchecked());
+            bsl::discard(errc1 == errc2);
+            bsl::discard(errc1 != errc2);
 
             return true;
         }
@@ -100,18 +141,20 @@ main() noexcept -> bsl::exit_code
 
     bsl::ut_scenario{"verify noexcept"} = []() {
         bsl::ut_given{} = []() {
-            example::vp_pool_t vp_pool{};
-            example::gs_t gs{};
-            example::tls_t tls{};
-            syscall::bf_syscall_t sys{};
-            example::intrinsic_t intrinsic{};
-            bsl::safe_uint16 vmid{};
-            bsl::safe_uint16 ppid{};
+            bsl::errc_type errc1{};
+            bsl::errc_type errc2{};
             bsl::ut_then{} = []() {
-                static_assert(noexcept(example::vp_pool_t{}));
-                static_assert(noexcept(vp_pool.initialize(gs, tls)));
-                static_assert(noexcept(vp_pool.release(gs, tls)));
-                static_assert(noexcept(vp_pool.allocate(gs, tls, sys, intrinsic, vmid, ppid)));
+                static_assert(noexcept(bsl::errc_type{}));
+                static_assert(noexcept(bsl::errc_type{42}));
+                static_assert(noexcept(bsl::errc_type{bsl::to_i32(42)}));
+                static_assert(noexcept(errc1.get()));
+                static_assert(noexcept(!errc1));
+                static_assert(noexcept(errc1.success()));
+                static_assert(noexcept(errc1.failure()));
+                static_assert(noexcept(errc1.is_checked()));
+                static_assert(noexcept(errc1.is_unchecked()));
+                static_assert(noexcept(errc1 == errc2));
+                static_assert(noexcept(errc1 != errc2));
             };
         };
     };

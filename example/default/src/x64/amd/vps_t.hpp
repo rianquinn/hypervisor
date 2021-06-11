@@ -27,10 +27,13 @@
 
 #include <bf_constants.hpp>
 #include <bf_syscall_t.hpp>
+#include <gs_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
+#include <bsl/touch.hpp>
 
 namespace example
 {
@@ -53,13 +56,18 @@ namespace example
         ///   @brief Initializes this vps_t
         ///
         /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
         ///   @param i the ID for this vps_t
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        initialize(gs_t &gs, tls_t &tls, bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+
             /// NOTE:
             /// - The following is a pedantic check to make sure we have
             ///   not already initialized ourselves. In larger extensions,
@@ -111,9 +119,16 @@ namespace example
         /// <!-- description -->
         ///   @brief Release the vps_t.
         ///
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///
         constexpr void
-        release() &noexcept
+        release(gs_t &gs, tls_t &tls) &noexcept
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+
             /// NOTE:
             /// - Release functions are usually only needed in the event of
             ///   an error, or during unit testing.
@@ -248,6 +263,8 @@ namespace example
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
+
+                bsl::touch();
             }
             else {
 

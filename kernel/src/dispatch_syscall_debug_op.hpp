@@ -39,7 +39,6 @@ namespace mk
     ///   @brief Dispatches the bf_debug_op syscalls
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use

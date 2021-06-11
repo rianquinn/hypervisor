@@ -37,7 +37,6 @@ namespace mk
     ///   @brief Dispatches the bf_intrinsic_op syscalls
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block

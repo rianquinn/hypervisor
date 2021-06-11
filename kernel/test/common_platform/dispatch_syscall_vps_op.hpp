@@ -37,7 +37,6 @@ namespace mk
     ///   @brief Dispatches the bf_vps_op syscalls
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use

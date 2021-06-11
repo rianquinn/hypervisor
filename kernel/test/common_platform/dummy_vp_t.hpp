@@ -67,8 +67,6 @@ namespace mk
         [[nodiscard]] constexpr auto
         initialize(tls_t &tls, bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
-            m_id = i;
-
             if (tls.test_ret == errc_fail_initialize) {
                 return bsl::errc_failure;
             }
@@ -77,6 +75,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
+            m_id = i;
             return bsl::errc_success;
         }
 
@@ -141,13 +140,13 @@ namespace mk
         {
             bsl::discard(vm_pool);
 
-            m_assigned_vmid = vmid;
-            m_assigned_ppid = ppid;
-            m_allocated = allocated_status_t::allocated;
-
             if (!tls.test_ret) {
                 return bsl::safe_uint16::zero(true);
             }
+
+            m_assigned_vmid = vmid;
+            m_assigned_ppid = ppid;
+            m_allocated = allocated_status_t::allocated;
 
             return m_id;
         }

@@ -2773,7 +2773,6 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam FIELD_TYPE the type (i.e., size) of field to read
-
         ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
@@ -2870,7 +2869,6 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam FIELD_TYPE the type (i.e., size) of field to write
-
         ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use

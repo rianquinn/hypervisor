@@ -22,15 +22,16 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef FAIL_T_HPP
-#define FAIL_T_HPP
+#ifndef MOCKS_VPSS_T_HPP
+#define MOCKS_VPSS_T_HPP
 
+#include <bf_constants.hpp>
 #include <bf_syscall_t.hpp>
 #include <gs_t.hpp>
 #include <intrinsic_t.hpp>
 #include <tls_t.hpp>
-#include <vp_pool_t.hpp>
-#include <vps_pool_t.hpp>
+
+#include <errc_types.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
@@ -38,108 +39,96 @@
 
 namespace example
 {
-    /// @class example::fail_t
+    /// @class example::vps_t
     ///
     /// <!-- description -->
-    ///   @brief Defines the extension's fail handler
+    ///   @brief Defines the extension's notion of a VPS
     ///
-    class fail_t final
+    class vps_t final
     {
+        /// @brief stores the ID associated with this vps_t
+        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
+        /// @brief stores the ID of the VM this vps_t is assigned to
+        bsl::safe_uint16 m_assigned_vpsid{syscall::BF_INVALID_ID};
+        /// @brief stores the ID of the PP this vps_t is assigned to
+        bsl::safe_uint16 m_assigned_ppid{syscall::BF_INVALID_ID};
+
     public:
         /// <!-- description -->
-        ///   @brief Initializes this fail_t.
+        ///   @brief Initializes this vps_t
         ///
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
+        ///   @param i the ID for this vps_t
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] static constexpr auto
-        initialize(gs_t &gs, tls_t &tls) noexcept -> bsl::errc_type
+        [[nodiscard]] constexpr auto
+        initialize(gs_t &gs, tls_t &tls, bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
-            bsl::discard(tls);
 
-            /// NOTE:
-            /// - Add initialization code here if needed. Otherwise, this
-            ///   function can be removed if it is not needed.
-            ///
+            if (tls.test_ret == errc_fail_initialize) {
+                return bsl::errc_failure;
+            }
 
+            m_id = i;
             return bsl::errc_success;
         }
 
         /// <!-- description -->
-        ///   @brief Release the fail_t.
+        ///   @brief Release the vps_t.
         ///
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
         ///
-        static constexpr void
-        release(gs_t &gs, tls_t &tls) noexcept
+        constexpr void
+        release(gs_t &gs, tls_t &tls) &noexcept
         {
             bsl::discard(gs);
             bsl::discard(tls);
 
-            /// NOTE:
-            /// - Release functions are usually only needed in the event of
-            ///   an error, or during unit testing.
-            ///
+            m_assigned_ppid = syscall::BF_INVALID_ID;
+            m_assigned_vpsid = syscall::BF_INVALID_ID;
+            m_id = bsl::safe_uint16::zero(true);
         }
 
         /// <!-- description -->
-        ///   @brief Dispatches the fail as needed, or returns an error so
-        ///     that the microkernel can halt the PP.
+        ///   @brief Allocates a vps_t and returns it's ID
         ///
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
         ///   @param sys the bf_syscall_t to use
         ///   @param intrinsic the intrinsic_t to use
-        ///   @param vp_pool the vp_pool_t to use
-        ///   @param vps_pool the vps_pool_t to use
-        ///   @param vpsid the ID of the VPS that generated the fail
-        ///   @param fail_reason the exit reason associated with the fail
+        ///   @param vpsid the ID of the VM to assign the vps_t to
+        ///   @param ppid the ID of the PP to assign the vps_t to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] static constexpr auto
-        dispatch(
+        [[nodiscard]] constexpr auto
+        allocate(
             gs_t &gs,
             tls_t &tls,
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
-            vp_pool_t &vp_pool,
-            vps_pool_t &vps_pool,
             bsl::safe_uint16 const &vpsid,
-            bsl::safe_uint64 const fail_reason) noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
-            bsl::discard(tls);
             bsl::discard(sys);
             bsl::discard(intrinsic);
-            bsl::discard(vp_pool);
-            bsl::discard(vps_pool);
-            bsl::discard(vpsid);
-            bsl::discard(fail_reason);
 
-            /// NOTE:
-            /// - Tells the microkernel that we didn't handle the fast fail.
-            ///   When this occurs, the microkernel will halt this PP. In most
-            ///   cases, there are only two options for how to handle a fail:
-            ///   - Do the following, and report an error and halt.
-            ///   - Return to a parent VPS and continue execution from there,
-            ///     which is typically only possible if you are implementing
-            ///     more than one VP/VPS per PP (e.g., when implementing guest
-            ///     support, VSM support or nested virtualization support).
-            ///
-            /// - Another use case is integration testing. We can also use this
-            ///   to generate faults that we can recover from to ensure the
-            ///   fault system works properly during testing.
-            ///
+            if (!tls.test_ret) {
+                return bsl::errc_failure;
+            }
 
-            return bsl::errc_failure;
+            m_assigned_vpsid = vpsid;
+            m_assigned_ppid = ppid;
+
+            return bsl::errc_success;
         }
     };
 }

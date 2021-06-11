@@ -40,6 +40,7 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
+    ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success if the exception was handled,
     ///     bsl::errc_failure otherwise

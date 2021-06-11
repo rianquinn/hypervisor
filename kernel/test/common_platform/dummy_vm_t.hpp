@@ -63,8 +63,6 @@ namespace mk
         [[nodiscard]] constexpr auto
         initialize(tls_t &tls, bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
-            m_id = i;
-
             if (tls.test_ret == errc_fail_initialize) {
                 return bsl::errc_failure;
             }
@@ -73,6 +71,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
+            m_id = i;
             return bsl::errc_success;
         }
 
@@ -121,12 +120,12 @@ namespace mk
         allocate(tls_t &tls, EXT_POOL_CONCEPT &ext_pool) &noexcept -> bsl::safe_uint16
         {
             bsl::discard(ext_pool);
-            m_allocated = allocated_status_t::allocated;
 
             if (!tls.test_ret) {
                 return bsl::safe_uint16::zero(true);
             }
 
+            m_allocated = allocated_status_t::allocated;
             return m_id;
         }
 

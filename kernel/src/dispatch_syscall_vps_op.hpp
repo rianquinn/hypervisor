@@ -43,7 +43,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_create_vps syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
@@ -93,7 +92,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_destroy_vps syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -122,7 +120,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_init_as_root syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -153,7 +150,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_read8 syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -187,7 +183,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_read16 syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -221,7 +216,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_read32 syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -255,7 +249,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_read64 syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -288,7 +281,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_write8 syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -323,7 +315,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_write16 syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -358,7 +349,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_write32 syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -393,7 +383,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_write64 syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -424,7 +413,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_read_reg syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -460,7 +448,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_write_reg syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -495,7 +482,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_run syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
     ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
@@ -698,7 +684,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_advance_ip syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -727,7 +712,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_advance_ip_and_run_current syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -758,7 +742,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_promote syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -791,7 +774,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_clear_vps syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -820,7 +802,6 @@ namespace mk
     ///   @brief Dispatches the bf_vps_op syscalls
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use

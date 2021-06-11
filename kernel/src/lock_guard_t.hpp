@@ -40,7 +40,6 @@ namespace mk
     ///     the programmer makes a mistake.
     ///
     /// <!-- template parameters -->
-
     ///   @tparam T the type of mutex being locked
     ///
     template<typename T>

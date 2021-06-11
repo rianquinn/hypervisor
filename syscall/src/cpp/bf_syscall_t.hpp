@@ -31,17 +31,16 @@
 #include <bf_types.hpp>
 
 #include <bsl/debug.hpp>
-#include <bsl/disjunction.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally_assert.hpp>
-#include <bsl/is_standard_layout.hpp>
+#include <bsl/is_unsigned.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
 #include <bsl/unlikely_assert.hpp>
 
 namespace syscall
 {
-    /// @class
+    /// @class syscall::bf_syscall_t
     ///
     /// <!-- description -->
     ///   @brief Provides an API wrapper around all of the microkernel ABIs.
@@ -161,8 +160,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.rax
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_rax() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_rax() noexcept -> bf_uint64_t
         {
             return bf_tls_rax_impl();
         }
@@ -173,8 +172,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.rax to
         ///
-        constexpr void
-        bf_tls_set_rax(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_rax(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -190,8 +189,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.rbx
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_rbx() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_rbx() noexcept -> bf_uint64_t
         {
             return bf_tls_rbx_impl();
         }
@@ -202,8 +201,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.rbx to
         ///
-        constexpr void
-        bf_tls_set_rbx(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_rbx(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -219,8 +218,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.rcx
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_rcx() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_rcx() noexcept -> bf_uint64_t
         {
             return bf_tls_rcx_impl();
         }
@@ -231,8 +230,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.rcx to
         ///
-        constexpr void
-        bf_tls_set_rcx(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_rcx(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -248,8 +247,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.rdx
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_rdx() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_rdx() noexcept -> bf_uint64_t
         {
             return bf_tls_rdx_impl();
         }
@@ -260,8 +259,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.rdx to
         ///
-        constexpr void
-        bf_tls_set_rdx(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_rdx(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -277,8 +276,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.rbp
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_rbp() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_rbp() noexcept -> bf_uint64_t
         {
             return bf_tls_rbp_impl();
         }
@@ -289,8 +288,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.rbp to
         ///
-        constexpr void
-        bf_tls_set_rbp(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_rbp(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -306,8 +305,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.rsi
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_rsi() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_rsi() noexcept -> bf_uint64_t
         {
             return bf_tls_rsi_impl();
         }
@@ -318,8 +317,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.rsi to
         ///
-        constexpr void
-        bf_tls_set_rsi(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_rsi(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -335,8 +334,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.rdi
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_rdi() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_rdi() noexcept -> bf_uint64_t
         {
             return bf_tls_rdi_impl();
         }
@@ -347,8 +346,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.rdi to
         ///
-        constexpr void
-        bf_tls_set_rdi(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_rdi(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -364,8 +363,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.r8
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_r8() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_r8() noexcept -> bf_uint64_t
         {
             return bf_tls_r8_impl();
         }
@@ -376,8 +375,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.r8 to
         ///
-        constexpr void
-        bf_tls_set_r8(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_r8(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -393,8 +392,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.r9
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_r9() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_r9() noexcept -> bf_uint64_t
         {
             return bf_tls_r9_impl();
         }
@@ -405,8 +404,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.r9 to
         ///
-        constexpr void
-        bf_tls_set_r9(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_r9(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -422,8 +421,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.r10
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_r10() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_r10() noexcept -> bf_uint64_t
         {
             return bf_tls_r10_impl();
         }
@@ -434,8 +433,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.r10 to
         ///
-        constexpr void
-        bf_tls_set_r10(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_r10(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -451,8 +450,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.r11
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_r11() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_r11() noexcept -> bf_uint64_t
         {
             return bf_tls_r11_impl();
         }
@@ -463,8 +462,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.r11 to
         ///
-        constexpr void
-        bf_tls_set_r11(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_r11(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -480,8 +479,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.r12
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_r12() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_r12() noexcept -> bf_uint64_t
         {
             return bf_tls_r12_impl();
         }
@@ -492,8 +491,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.r12 to
         ///
-        constexpr void
-        bf_tls_set_r12(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_r12(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -509,8 +508,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.r13
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_r13() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_r13() noexcept -> bf_uint64_t
         {
             return bf_tls_r13_impl();
         }
@@ -521,8 +520,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.r13 to
         ///
-        constexpr void
-        bf_tls_set_r13(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_r13(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -538,8 +537,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.r14
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_r14() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_r14() noexcept -> bf_uint64_t
         {
             return bf_tls_r14_impl();
         }
@@ -550,8 +549,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.r14 to
         ///
-        constexpr void
-        bf_tls_set_r14(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_r14(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -567,8 +566,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.r15
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_r15() const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_tls_r15() noexcept -> bf_uint64_t
         {
             return bf_tls_r15_impl();
         }
@@ -579,8 +578,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param val The value to set tls.r15 to
         ///
-        constexpr void
-        bf_tls_set_r15(bf_uint64_t const &val) &noexcept
+        static constexpr void
+        bf_tls_set_r15(bf_uint64_t const &val) noexcept
         {
             if (bsl::unlikely_assert(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
@@ -596,8 +595,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.extid
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_extid() const &noexcept -> bsl::safe_uint16
+        [[nodiscard]] static constexpr auto
+        bf_tls_extid() noexcept -> bsl::safe_uint16
         {
             return bf_tls_extid_impl();
         }
@@ -608,8 +607,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.vmid
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_vmid() const &noexcept -> bsl::safe_uint16
+        [[nodiscard]] static constexpr auto
+        bf_tls_vmid() noexcept -> bsl::safe_uint16
         {
             return bf_tls_vmid_impl();
         }
@@ -620,8 +619,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.vpid
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_vpid() const &noexcept -> bsl::safe_uint16
+        [[nodiscard]] static constexpr auto
+        bf_tls_vpid() noexcept -> bsl::safe_uint16
         {
             return bf_tls_vpid_impl();
         }
@@ -632,8 +631,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.vpsid
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_vpsid() const &noexcept -> bsl::safe_uint16
+        [[nodiscard]] static constexpr auto
+        bf_tls_vpsid() noexcept -> bsl::safe_uint16
         {
             return bf_tls_vpsid_impl();
         }
@@ -644,8 +643,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.ppid
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_ppid() const &noexcept -> bsl::safe_uint16
+        [[nodiscard]] static constexpr auto
+        bf_tls_ppid() noexcept -> bsl::safe_uint16
         {
             return bf_tls_ppid_impl();
         }
@@ -656,8 +655,8 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @return Returns the value of tls.online_pps
         ///
-        [[nodiscard]] constexpr auto
-        bf_tls_online_pps() const &noexcept -> bsl::safe_uint16
+        [[nodiscard]] static constexpr auto
+        bf_tls_online_pps() noexcept -> bsl::safe_uint16
         {
             return bf_tls_online_pps_impl();
         }
@@ -2148,10 +2147,10 @@ namespace syscall
         ///     on failure.
         ///
         template<typename T = bsl::uintmax>
-        [[nodiscard]] constexpr auto
-        bf_read_phys(bf_uint64_t const &phys) const &noexcept -> bsl::safe_integral<T>
+        [[nodiscard]] static constexpr auto
+        bf_read_phys(bf_uint64_t const &phys) noexcept -> bsl::safe_integral<T>
         {
-            static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
+            static_assert(bsl::is_unsigned<T>::value);
             bsl::safe_uintmax virt{};
 
             if (bsl::unlikely_assert(!phys)) {
@@ -2182,11 +2181,11 @@ namespace syscall
         ///     otherwise
         ///
         template<typename T>
-        [[nodiscard]] constexpr auto
-        bf_write_phys(bf_uint64_t const &phys, bsl::safe_integral<T> const &val) &noexcept
+        [[nodiscard]] static constexpr auto
+        bf_write_phys(bf_uint64_t const &phys, bsl::safe_integral<T> const &val) noexcept
             -> bsl::errc_type
         {
-            static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
+            static_assert(bsl::is_unsigned<T>::value);
             bsl::safe_uintmax virt{};
 
             if (bsl::unlikely_assert(!phys)) {
@@ -2219,18 +2218,15 @@ namespace syscall
         ///     huge memory.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of virtual address to convert
         ///   @param virt the virtual address to convert
         ///   @return Returns the resulting physical address
         ///
-        template<typename T>
-        [[nodiscard]] constexpr auto
-        bf_virt_to_phys(T const *const virt) const &noexcept -> bf_uint64_t
+        [[nodiscard]] static constexpr auto
+        bf_virt_to_phys(void *const virt) noexcept -> bf_uint64_t
         {
-            static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
             bsl::safe_uintmax phys{};
 
-            if (bsl::unlikely_assert(!virt)) {
+            if (bsl::unlikely_assert(nullptr == virt)) {
                 bsl::alert() << "invalid virt\n" << bsl::here();
                 return bf_uint64_t::zero(true);
             }
@@ -2255,15 +2251,12 @@ namespace syscall
         ///     huge memory.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of physical address to convert
         ///   @param phys the physical address to convert
         ///   @return Returns the resulting virtual address
         ///
-        template<typename T>
-        [[nodiscard]] constexpr auto
-        bf_phys_to_virt(bf_uint64_t const &phys) const &noexcept -> T *
+        [[nodiscard]] static constexpr auto
+        bf_phys_to_virt(bf_uint64_t const &phys) noexcept -> void *
         {
-            static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
             bsl::safe_uintmax virt{};
 
             if (bsl::unlikely_assert(!phys)) {
@@ -2281,7 +2274,7 @@ namespace syscall
                 return nullptr;
             }
 
-            return bsl::to_ptr<T *>(virt);
+            return bsl::to_ptr<void *>(virt);
         }
     };
 }

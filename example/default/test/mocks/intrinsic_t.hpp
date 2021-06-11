@@ -22,36 +22,57 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef TEST_DISPATCH_SYSCALL_HANDLE_OP_HPP
-#define TEST_DISPATCH_SYSCALL_HANDLE_OP_HPP
+#ifndef MOCKS_INTRINSIC_HPP
+#define MOCKS_INTRINSIC_HPP
 
-#include <bf_constants.hpp>
+#include <gs_t.hpp>
 #include <tls_t.hpp>
+#include <errc_types.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 
-namespace mk
+namespace example
 {
+    /// @class example::intrinsic_t
+    ///
     /// <!-- description -->
-    ///   @brief Dispatches the bf_handle_op syscalls
+    ///   @brief Defines the extension's mocked version of intrinsic_t,
+    ///     used for unit testing.
     ///
-    /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-    ///   @param tls the current TLS block
-    ///   @param ext the extension that made the syscall
-    ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
-    ///     code on failure.
-    ///
-    template<typename EXT_CONCEPT>
-    [[nodiscard]] constexpr auto
-    dispatch_syscall_handle_op(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    class intrinsic_t final
     {
-        bsl::discard(tls);
-        bsl::discard(ext);
+    public:
+        /// <!-- description -->
+        ///   @brief Initializes this intrinsic_t.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     and friends otherwise
+        ///
+        [[nodiscard]] static constexpr auto
+        initialize(gs_t &gs, tls_t &tls) noexcept -> bsl::errc_type
+        {
+            bsl::discard(gs);
+            return tls.test_ret;
+        }
 
-        return bsl::errc_success;
-    }
+        /// <!-- description -->
+        ///   @brief Release the intrinsic_t.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///
+        static constexpr void
+        release(gs_t &gs, tls_t &tls) noexcept
+        {
+            bsl::discard(gs);
+            bsl::discard(tls);
+        }
+    };
 }
 
 #endif

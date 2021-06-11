@@ -37,7 +37,6 @@ namespace mk
     ///     on AMD do not occur as NMIs are blocked).
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param intrinsic the intrinsics to use

@@ -22,19 +22,19 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include "../../src/vp_pool_t.hpp"
+#include "../../src/vps_pool_t.hpp"
 
 #include <bsl/discard.hpp>
 #include <bsl/ut.hpp>
 
 namespace example
 {
-    constinit vp_pool_t const verify_constinit{};
+    constinit vps_pool_t const verify_constinit{};
 
     // NOLINTNEXTLINE(bsl-user-defined-type-names-match-header-name)
     class fixture_t final
     {
-        vp_pool_t vp_pool{};
+        vps_pool_t vps_pool{};
 
     public:
         [[nodiscard]] constexpr auto
@@ -53,10 +53,10 @@ namespace example
             bsl::safe_uint16 vmid{};
             bsl::safe_uint16 ppid{};
 
-            bsl::discard(vp_pool_t{});
-            bsl::discard(vp_pool.initialize(gs, tls));
-            vp_pool.release(gs, tls);
-            bsl::discard(vp_pool.allocate(gs, tls, sys, intrinsic, vmid, ppid));
+            bsl::discard(vps_pool_t{});
+            bsl::discard(vps_pool.initialize(gs, tls));
+            vps_pool.release(gs, tls);
+            bsl::discard(vps_pool.allocate(gs, tls, sys, intrinsic, vmid, ppid));
 
             return true;
         }
@@ -100,7 +100,7 @@ main() noexcept -> bsl::exit_code
 
     bsl::ut_scenario{"verify noexcept"} = []() {
         bsl::ut_given{} = []() {
-            example::vp_pool_t vp_pool{};
+            example::vps_pool_t vps_pool{};
             example::gs_t gs{};
             example::tls_t tls{};
             syscall::bf_syscall_t sys{};
@@ -108,10 +108,10 @@ main() noexcept -> bsl::exit_code
             bsl::safe_uint16 vmid{};
             bsl::safe_uint16 ppid{};
             bsl::ut_then{} = []() {
-                static_assert(noexcept(example::vp_pool_t{}));
-                static_assert(noexcept(vp_pool.initialize(gs, tls)));
-                static_assert(noexcept(vp_pool.release(gs, tls)));
-                static_assert(noexcept(vp_pool.allocate(gs, tls, sys, intrinsic, vmid, ppid)));
+                static_assert(noexcept(example::vps_pool_t{}));
+                static_assert(noexcept(vps_pool.initialize(gs, tls)));
+                static_assert(noexcept(vps_pool.release(gs, tls)));
+                static_assert(noexcept(vps_pool.allocate(gs, tls, sys, intrinsic, vmid, ppid)));
             };
         };
     };

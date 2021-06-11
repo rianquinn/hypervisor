@@ -41,7 +41,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_create_vps syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
@@ -75,7 +74,6 @@ namespace mk
     ///   @brief Implements the bf_vps_op_destroy_vps syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
     ///   @param vps_pool the VPS pool to use
@@ -787,7 +785,6 @@ namespace mk
     ///   @brief Dispatches the bf_vps_op syscalls
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use

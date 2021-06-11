@@ -103,8 +103,7 @@ namespace example
     /// <!-- inputs/outputs -->
     ///   @param ppid the physical process to bootstrap
     ///
-    void
-    // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
+    extern "C" void
     bootstrap_entry(syscall::bf_uint16_t::value_type const ppid) noexcept
     {
         bsl::errc_type ret{};
@@ -148,8 +147,7 @@ namespace example
     ///   @param vpsid the ID of the VPS that generated the VMExit
     ///   @param exit_reason the exit reason associated with the VMExit
     ///
-    void
-    // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
+    extern "C" void
     vmexit_entry(
         syscall::bf_uint16_t::value_type const vpsid,
         syscall::bf_uint64_t::value_type const exit_reason) noexcept
@@ -196,8 +194,7 @@ namespace example
     ///   @param vpsid the ID of the VPS that generated the fail
     ///   @param fail_reason the exit reason associated with the fail
     ///
-    void
-    // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
+    extern "C" void
     fail_entry(
         syscall::bf_uint16_t::value_type const vpsid,
         syscall::bf_status_t::value_type const fail_reason) noexcept
@@ -268,7 +265,7 @@ namespace example
         ///   logic that might be needed, otherwise it can be removed.
         ///
 
-        ret = g_intrinsic.initialize();
+        ret = g_intrinsic.initialize(g_gs, g_tls);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
@@ -279,7 +276,7 @@ namespace example
         ///   their IDs so that they can be allocated.
         ///
 
-        ret = g_vp_pool.initialize();
+        ret = g_vp_pool.initialize(g_gs, g_tls);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
@@ -290,7 +287,7 @@ namespace example
         ///   their IDs so that they can be allocated.
         ///
 
-        ret = g_vps_pool.initialize();
+        ret = g_vps_pool.initialize(g_gs, g_tls);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
@@ -301,7 +298,7 @@ namespace example
         ///   logic that might be needed, otherwise it can be removed.
         ///
 
-        ret = g_bootstrap.initialize();
+        ret = g_bootstrap.initialize(g_gs, g_tls);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
@@ -312,7 +309,7 @@ namespace example
         ///   logic that might be needed, otherwise it can be removed.
         ///
 
-        ret = g_fail.initialize();
+        ret = g_fail.initialize(g_gs, g_tls);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
@@ -323,7 +320,7 @@ namespace example
         ///   logic that might be needed, otherwise it can be removed.
         ///
 
-        ret = g_vmexit.initialize();
+        ret = g_vmexit.initialize(g_gs, g_tls);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();

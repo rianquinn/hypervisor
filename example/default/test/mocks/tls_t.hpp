@@ -22,28 +22,24 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef INTRINSIC_IMPL_PROTOTYPES_HPP
-#define INTRINSIC_IMPL_PROTOTYPES_HPP
+#ifndef MOCKS_TLS_T_HPP
+#define MOCKS_TLS_T_HPP
 
-#include <bsl/cstdint.hpp>
+#include <bsl/errc_type.hpp>
 
 namespace example
 {
+    /// @class example::tls_t
+    ///
     /// <!-- description -->
-    ///   @brief Executes the CPUID instruction given the provided EAX and ECX
-    ///     and returns the results
+    ///   @brief Defines the extension's mocked version of tls_t, used for
+    ///     unit testing.
     ///
-    /// <!-- inputs/outputs -->
-    ///   @param rax the index used by CPUID, returns resulting rax
-    ///   @param rbx returns resulting rbx
-    ///   @param rcx the subindex used by CPUID, returns the resulting rcx
-    ///   @param rdx returns resulting rdx
-    ///
-    extern "C" void intrinsic_cpuid_impl(
-        bsl::uint64 *const rax,
-        bsl::uint64 *const rbx,
-        bsl::uint64 *const rcx,
-        bsl::uint64 *const rdx) noexcept;
+    struct tls_t final
+    {
+        /// @brief stores the return value for a test
+        bsl::errc_type test_ret;
+    };
 }
 
 #endif

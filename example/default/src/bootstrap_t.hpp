@@ -53,12 +53,17 @@ namespace example
         ///   @brief Initializes this bootstrap_t.
         ///
         /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
-        initialize() &noexcept -> bsl::errc_type
+        [[nodiscard]] static constexpr auto
+        initialize(gs_t &gs, tls_t &tls) noexcept -> bsl::errc_type
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+
             /// NOTE:
             /// - Add initialization code here if needed. Otherwise, this
             ///   function can be removed if it is not needed.
@@ -70,9 +75,16 @@ namespace example
         /// <!-- description -->
         ///   @brief Release the bootstrap_t.
         ///
-        constexpr void
-        release() &noexcept
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///
+        static constexpr void
+        release(gs_t &gs, tls_t &tls) noexcept
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+
             /// NOTE:
             /// - Release functions are usually only needed in the event of
             ///   an error, or during unit testing.
@@ -92,8 +104,10 @@ namespace example
         ///   @param vp_pool the vp_pool_t to use
         ///   @param vps_pool the vps_pool_t to use
         ///   @param ppid the ID of the PP to bootstrap
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         dispatch(
             gs_t &gs,
             tls_t &tls,

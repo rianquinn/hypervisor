@@ -39,7 +39,6 @@ namespace mk
     ///   @brief Implements the bf_intrinsic_op_rdmsr syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param intrinsic the intrinsics to use
@@ -75,7 +74,6 @@ namespace mk
     ///   @brief Implements the bf_intrinsic_op_wrmsr syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param intrinsic the intrinsics to use
@@ -109,7 +107,6 @@ namespace mk
     ///   @brief Implements the bf_intrinsic_op_invlpga syscall
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param intrinsic the intrinsics to use
@@ -134,7 +131,6 @@ namespace mk
     ///   @brief Dispatches the bf_intrinsic_op syscalls
     ///
     /// <!-- inputs/outputs -->
-
     ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
