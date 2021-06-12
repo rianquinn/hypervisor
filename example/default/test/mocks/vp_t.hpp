@@ -27,11 +27,10 @@
 
 #include <bf_constants.hpp>
 #include <bf_syscall_t.hpp>
+#include <errc_types.hpp>
 #include <gs_t.hpp>
 #include <intrinsic_t.hpp>
 #include <tls_t.hpp>
-
-#include <errc_types.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>

@@ -22,7 +22,7 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include "../../../src/cpp/bf_debug_ops.hpp"
+#include "../../../../src/cpp/bf_debug_ops.hpp"
 
 #include <bsl/discard.hpp>
 #include <bsl/ut.hpp>

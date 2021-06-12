@@ -22,7 +22,7 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include "../../../src/cpp/bf_syscall_t.hpp"
+#include "../../../../src/cpp/bf_debug_ops.hpp"
 
 #include <bsl/ut.hpp>
 
@@ -38,5 +38,21 @@
 main() noexcept -> bsl::exit_code
 {
     bsl::enable_color();
+
+    bsl::ut_scenario{"verify noexcept"} = []() {
+        bsl::ut_then{} = []() {
+            static_assert(noexcept(syscall::bf_debug_op_out({}, {})));
+            static_assert(noexcept(syscall::bf_debug_op_dump_vm({})));
+            static_assert(noexcept(syscall::bf_debug_op_dump_vp({})));
+            static_assert(noexcept(syscall::bf_debug_op_dump_vps({})));
+            static_assert(noexcept(syscall::bf_debug_op_dump_vmexit_log({})));
+            static_assert(noexcept(syscall::bf_debug_op_write_c({})));
+            static_assert(noexcept(syscall::bf_debug_op_write_str({})));
+            static_assert(noexcept(syscall::bf_debug_op_dump_ext({})));
+            static_assert(noexcept(syscall::bf_debug_op_dump_page_pool()));
+            static_assert(noexcept(syscall::bf_debug_op_dump_huge_pool()));
+        };
+    };
+
     return bsl::ut_success();
 }

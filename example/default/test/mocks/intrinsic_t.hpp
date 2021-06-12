@@ -25,9 +25,9 @@
 #ifndef MOCKS_INTRINSIC_HPP
 #define MOCKS_INTRINSIC_HPP
 
+#include <errc_types.hpp>
 #include <gs_t.hpp>
 #include <tls_t.hpp>
-#include <errc_types.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
