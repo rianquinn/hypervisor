@@ -1511,8 +1511,8 @@ namespace syscall
                     bsl::discard(g_ret.insert(
                         {"bf_callback_op_register_fail_impl", BF_STATUS_SUCCESS.get()}));
                     bsl::ut_then{} = [&sys]() {
-                        bsl::ut_check(
-                            !sys.initialize(g_bad_version, &bootstrap_entry, &vmexit_entry, &fail_entry));
+                        bsl::ut_check(!sys.initialize(
+                            g_bad_version, &bootstrap_entry, &vmexit_entry, &fail_entry));
                     };
                 };
             };
@@ -1535,10 +1535,7 @@ namespace syscall
                         {"bf_callback_op_register_fail_impl", BF_STATUS_SUCCESS.get()}));
                     bsl::ut_then{} = [&sys]() {
                         bsl::ut_check(!sys.initialize(
-                            BF_ALL_SPECS_SUPPORTED_VAL,
-                            {},
-                            &vmexit_entry,
-                            &fail_entry));
+                            BF_ALL_SPECS_SUPPORTED_VAL, {}, &vmexit_entry, &fail_entry));
                     };
                 };
             };
@@ -1561,10 +1558,7 @@ namespace syscall
                         {"bf_callback_op_register_fail_impl", BF_STATUS_SUCCESS.get()}));
                     bsl::ut_then{} = [&sys]() {
                         bsl::ut_check(!sys.initialize(
-                            BF_ALL_SPECS_SUPPORTED_VAL,
-                            &bootstrap_entry,
-                            {},
-                            &fail_entry));
+                            BF_ALL_SPECS_SUPPORTED_VAL, &bootstrap_entry, {}, &fail_entry));
                     };
                 };
             };
@@ -1587,10 +1581,7 @@ namespace syscall
                         {"bf_callback_op_register_fail_impl", BF_STATUS_SUCCESS.get()}));
                     bsl::ut_then{} = [&sys]() {
                         bsl::ut_check(!sys.initialize(
-                            BF_ALL_SPECS_SUPPORTED_VAL,
-                            &bootstrap_entry,
-                            &vmexit_entry,
-                            {}));
+                            BF_ALL_SPECS_SUPPORTED_VAL, &bootstrap_entry, &vmexit_entry, {}));
                     };
                 };
             };

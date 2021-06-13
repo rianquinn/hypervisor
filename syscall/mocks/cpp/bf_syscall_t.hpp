@@ -31,9 +31,10 @@
 #include <tuple>
 
 #include <bsl/errc_type.hpp>
+#include <bsl/is_unsigned.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/unordered_map.hpp>
 #include <bsl/unlikely_assert.hpp>
+#include <bsl/unordered_map.hpp>
 
 namespace syscall
 {
@@ -79,20 +80,22 @@ namespace syscall
         /// @brief stores the results for bf_vps_op_read64
         bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t>, bf_uint64_t> m_bf_vps_op_read64;
         /// @brief stores the results for bf_vps_op_write8
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t>, bsl::errc_type> m_bf_vps_op_write8;
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint8_t>, bsl::errc_type>
+            m_bf_vps_op_write8;
         /// @brief stores the results for bf_vps_op_write16
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t>, bsl::errc_type>
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint16_t>, bsl::errc_type>
             m_bf_vps_op_write16;
         /// @brief stores the results for bf_vps_op_write32
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t>, bsl::errc_type>
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint32_t>, bsl::errc_type>
             m_bf_vps_op_write32;
         /// @brief stores the results for bf_vps_op_write64
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t>, bsl::errc_type>
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint64_t>, bsl::errc_type>
             m_bf_vps_op_write64;
         /// @brief stores the results for bf_vps_op_read_reg
         bsl::unordered_map<std::tuple<bf_uint16_t, bf_reg_t>, bf_uint64_t> m_bf_vps_op_read_reg;
         /// @brief stores the results for bf_vps_op_write_reg
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_reg_t>, bsl::errc_type> m_bf_vps_op_write_reg;
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_reg_t, bf_uint64_t>, bsl::errc_type>
+            m_bf_vps_op_write_reg;
         /// @brief stores the results for bf_vps_op_run
         bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint16_t, bf_uint16_t>, bsl::errc_type>
             m_bf_vps_op_run;
@@ -109,7 +112,8 @@ namespace syscall
         /// @brief stores the results for bf_intrinsic_op_rdmsr
         bsl::unordered_map<bf_uint32_t, bf_uint64_t> m_bf_intrinsic_op_rdmsr;
         /// @brief stores the results for bf_intrinsic_op_wrmsr
-        bsl::unordered_map<bf_uint32_t, bsl::errc_type> m_bf_intrinsic_op_wrmsr;
+        bsl::unordered_map<std::tuple<bf_uint32_t, bf_uint64_t>, bsl::errc_type>
+            m_bf_intrinsic_op_wrmsr;
         /// @brief stores the results for bf_intrinsic_op_invlpga
         bsl::unordered_map<std::tuple<bf_uint64_t, bf_uint64_t>, bsl::errc_type>
             m_bf_intrinsic_op_invlpga;
@@ -130,18 +134,14 @@ namespace syscall
         /// @brief stores the results for bf_read_phys
         bsl::unordered_map<bf_uint64_t, bf_uint64_t> m_bf_read_phys;
         /// @brief stores the results for bf_write_phys
-        bsl::unordered_map<bf_uint64_t, bsl::errc_type> m_bf_write_phys;
-        /// @brief stores the results for bf_virt_to_phys
-        bsl::errc_type m_bf_virt_to_phys;
-        /// @brief stores the results for bf_phys_to_virt
-        bsl::errc_type m_bf_phys_to_virt;
+        bsl::unordered_map<std::tuple<bf_uint64_t, bf_uint64_t>, bsl::errc_type> m_bf_write_phys;
 
         /// @brief stores a map of allocations and their sizes
         bsl::unordered_map<void *, bf_uint64_t> m_alloc_free_map;
         /// @brief stores a map of virt to phys translations
         bsl::unordered_map<void *, bf_uint64_t> m_bf_virt_to_phys_map;
         /// @brief stores a map of phys to virt translations
-        bsl::unordered_map<bf_uint64_t, void *> m_bf_phys_to_virt_map;
+        bsl::unordered_map<bf_uint64_t, bsl::uint8 *> m_bf_phys_to_virt_map;
 
     public:
         /// <!-- description -->
@@ -859,7 +859,7 @@ namespace syscall
         ///     bf_vm_op_destroy_vm
         ///
         constexpr void
-        set_bf_vm_op_destroy_vm(bf_uint16_t &vmid, bsl::errc_type const errc) &noexcept
+        set_bf_vm_op_destroy_vm(bf_uint16_t const &vmid, bsl::errc_type const errc) &noexcept
         {
             m_bf_vm_op_destroy_vm.at(vmid) = errc;
         }
@@ -1172,6 +1172,23 @@ namespace syscall
         }
 
         /// <!-- description -->
+        ///   @brief Sets the return value of bf_vps_op_read8.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid The VPSID of the VPS to read from
+        ///   @param index The HVE specific index defining which field to read
+        ///   @param value the value to return when executing
+        ///     bf_vps_op_read8
+        ///
+        constexpr void
+        set_bf_vps_op_read8(
+            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint8_t const &value) &noexcept
+        {
+            m_bf_vps_op_read8.at({vpsid, index}) = value;
+        }
+
+        /// <!-- description -->
         ///   @brief Reads an 16bit field from the VPS and returns the value. The
         ///     "index" is architecture-specific. For Intel, Appendix B, "Field
         ///     Encoding in VMCS," defines the index (or encoding). For AMD,
@@ -1198,6 +1215,23 @@ namespace syscall
             }
 
             return m_bf_vps_op_read16.at({vpsid, index});
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_vps_op_read16.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid The VPSID of the VPS to read from
+        ///   @param index The HVE specific index defining which field to read
+        ///   @param value the value to return when executing
+        ///     bf_vps_op_read16
+        ///
+        constexpr void
+        set_bf_vps_op_read16(
+            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint16_t const &value) &noexcept
+        {
+            m_bf_vps_op_read16.at({vpsid, index}) = value;
         }
 
         /// <!-- description -->
@@ -1230,6 +1264,23 @@ namespace syscall
         }
 
         /// <!-- description -->
+        ///   @brief Sets the return value of bf_vps_op_read32.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid The VPSID of the VPS to read from
+        ///   @param index The HVE specific index defining which field to read
+        ///   @param value the value to return when executing
+        ///     bf_vps_op_read32
+        ///
+        constexpr void
+        set_bf_vps_op_read32(
+            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint32_t const &value) &noexcept
+        {
+            m_bf_vps_op_read32.at({vpsid, index}) = value;
+        }
+
+        /// <!-- description -->
         ///   @brief Reads an 64bit field from the VPS and returns the value. The
         ///     "index" is architecture-specific. For Intel, Appendix B, "Field
         ///     Encoding in VMCS," defines the index (or encoding). For AMD,
@@ -1256,6 +1307,23 @@ namespace syscall
             }
 
             return m_bf_vps_op_read64.at({vpsid, index});
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_vps_op_read64.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid The VPSID of the VPS to read from
+        ///   @param index The HVE specific index defining which field to read
+        ///   @param value the value to return when executing
+        ///     bf_vps_op_read64
+        ///
+        constexpr void
+        set_bf_vps_op_read64(
+            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint64_t const &value) &noexcept
+        {
+            m_bf_vps_op_read64.at({vpsid, index}) = value;
         }
 
         /// <!-- description -->
@@ -1291,11 +1359,32 @@ namespace syscall
                 return bsl::errc_invalid_argument;
             }
 
-            if (m_bf_vps_op_write8.at({vpsid, index})) {
+            if (m_bf_vps_op_write8.at({vpsid, index, value})) {
                 m_bf_vps_op_read8.at({vpsid, index}) = value;
             }
 
-            return m_bf_vps_op_write8.at({vpsid, index});
+            return m_bf_vps_op_write8.at({vpsid, index, value});
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_vps_op_write8.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid The VPSID of the VPS to write to
+        ///   @param index The HVE specific index defining which field to write to
+        ///   @param value The value to write to the requested field
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     bf_vps_op_write8
+        ///
+        constexpr void
+        set_bf_vps_op_write8(
+            bf_uint16_t const &vpsid,
+            bf_uint64_t const &index,
+            bf_uint8_t const &value,
+            bsl::errc_type const errc) &noexcept
+        {
+            m_bf_vps_op_write8.at({vpsid, index, value}) = errc;
         }
 
         /// <!-- description -->
@@ -1331,11 +1420,32 @@ namespace syscall
                 return bsl::errc_invalid_argument;
             }
 
-            if (m_bf_vps_op_write16.at({vpsid, index})) {
+            if (m_bf_vps_op_write16.at({vpsid, index, value})) {
                 m_bf_vps_op_read16.at({vpsid, index}) = value;
             }
 
-            return m_bf_vps_op_write16.at({vpsid, index});
+            return m_bf_vps_op_write16.at({vpsid, index, value});
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_vps_op_write16.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid The VPSID of the VPS to write to
+        ///   @param index The HVE specific index defining which field to write to
+        ///   @param value The value to write to the requested field
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     bf_vps_op_write16
+        ///
+        constexpr void
+        set_bf_vps_op_write16(
+            bf_uint16_t const &vpsid,
+            bf_uint64_t const &index,
+            bf_uint16_t const &value,
+            bsl::errc_type const errc) &noexcept
+        {
+            m_bf_vps_op_write16.at({vpsid, index, value}) = errc;
         }
 
         /// <!-- description -->
@@ -1371,11 +1481,32 @@ namespace syscall
                 return bsl::errc_invalid_argument;
             }
 
-            if (m_bf_vps_op_write32.at({vpsid, index})) {
+            if (m_bf_vps_op_write32.at({vpsid, index, value})) {
                 m_bf_vps_op_read32.at({vpsid, index}) = value;
             }
 
-            return m_bf_vps_op_write32.at({vpsid, index});
+            return m_bf_vps_op_write32.at({vpsid, index, value});
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_vps_op_write32.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid The VPSID of the VPS to write to
+        ///   @param index The HVE specific index defining which field to write to
+        ///   @param value The value to write to the requested field
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     bf_vps_op_write32
+        ///
+        constexpr void
+        set_bf_vps_op_write32(
+            bf_uint16_t const &vpsid,
+            bf_uint64_t const &index,
+            bf_uint32_t const &value,
+            bsl::errc_type const errc) &noexcept
+        {
+            m_bf_vps_op_write32.at({vpsid, index, value}) = errc;
         }
 
         /// <!-- description -->
@@ -1411,11 +1542,32 @@ namespace syscall
                 return bsl::errc_invalid_argument;
             }
 
-            if (m_bf_vps_op_write64.at({vpsid, index})) {
+            if (m_bf_vps_op_write64.at({vpsid, index, value})) {
                 m_bf_vps_op_read64.at({vpsid, index}) = value;
             }
 
-            return m_bf_vps_op_write64.at({vpsid, index});
+            return m_bf_vps_op_write64.at({vpsid, index, value});
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_vps_op_write64.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid The VPSID of the VPS to write to
+        ///   @param index The HVE specific index defining which field to write to
+        ///   @param value The value to write to the requested field
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     bf_vps_op_write64
+        ///
+        constexpr void
+        set_bf_vps_op_write64(
+            bf_uint16_t const &vpsid,
+            bf_uint64_t const &index,
+            bf_uint64_t const &value,
+            bsl::errc_type const errc) &noexcept
+        {
+            m_bf_vps_op_write64.at({vpsid, index, value}) = errc;
         }
 
         /// <!-- description -->
@@ -1438,6 +1590,23 @@ namespace syscall
             }
 
             return m_bf_vps_op_read_reg.at({vpsid, reg});
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_vps_op_read_reg.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid The VPSID of the VPS to read from
+        ///   @param reg A bf_reg_t defining which register to read
+        ///   @param value the value to return when executing
+        ///     bf_vps_op_read_reg
+        ///
+        constexpr void
+        set_bf_vps_op_read_reg(
+            bf_uint16_t const &vpsid, bf_reg_t const reg, bf_uint64_t const &value) &noexcept
+        {
+            m_bf_vps_op_read_reg.at({vpsid, reg}) = value;
         }
 
         /// <!-- description -->
@@ -1466,11 +1635,32 @@ namespace syscall
                 return bsl::errc_invalid_argument;
             }
 
-            if (m_bf_vps_op_write_reg.at({vpsid, reg})) {
+            if (m_bf_vps_op_write_reg.at({vpsid, reg, value})) {
                 m_bf_vps_op_read_reg.at({vpsid, reg}) = value;
             }
 
-            return m_bf_vps_op_write_reg.at({vpsid, reg});
+            return m_bf_vps_op_write_reg.at({vpsid, reg, value});
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_vps_op_write_reg.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param vpsid The VPSID of the VPS to write to
+        ///   @param reg A bf_reg_t defining which register to write to
+        ///   @param value The value to write to the requested field
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     bf_vps_op_write_reg
+        ///
+        constexpr void
+        set_bf_vps_op_write_reg(
+            bf_uint16_t const &vpsid,
+            bf_reg_t const reg,
+            bf_uint64_t const &value,
+            bsl::errc_type const errc) &noexcept
+        {
+            m_bf_vps_op_write_reg.at({vpsid, reg, value}) = errc;
         }
 
         /// <!-- description -->
@@ -1762,6 +1952,21 @@ namespace syscall
         }
 
         /// <!-- description -->
+        ///   @brief Sets the return value of bf_intrinsic_op_rdmsr.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param msr The address of the MSR to read
+        ///   @param value the value to return when executing
+        ///     bf_intrinsic_op_rdmsr
+        ///
+        constexpr void
+        set_bf_intrinsic_op_rdmsr(bf_uint32_t const &msr, bf_uint64_t const &value) &noexcept
+        {
+            m_bf_intrinsic_op_rdmsr.at(msr) = value;
+        }
+
+        /// <!-- description -->
         ///   @brief Writes to an MSR directly from the CPU given the address of
         ///     the MSR to write as well as the value to write. Note that this is
         ///     specific to Intel/AMD only. Also note that not all MSRs can be
@@ -1789,11 +1994,28 @@ namespace syscall
                 return bsl::errc_invalid_argument;
             }
 
-            if (m_bf_intrinsic_op_wrmsr.at(msr)) {
+            if (m_bf_intrinsic_op_wrmsr.at({msr, value})) {
                 m_bf_intrinsic_op_rdmsr.at(msr) = value;
             }
 
-            return m_bf_intrinsic_op_wrmsr.at(msr);
+            return m_bf_intrinsic_op_wrmsr.at({msr, value});
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_intrinsic_op_wrmsr.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param msr The address of the MSR to write to
+        ///   @param value The value to write to the requested MSR
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     bf_intrinsic_op_wrmsr
+        ///
+        constexpr void
+        set_bf_intrinsic_op_wrmsr(
+            bf_uint32_t const &msr, bf_uint64_t const &value, bsl::errc_type const errc) &noexcept
+        {
+            m_bf_intrinsic_op_wrmsr.at({msr, value}) = errc;
         }
 
         /// <!-- description -->
@@ -1992,20 +2214,34 @@ namespace syscall
         }
 
         /// <!-- description -->
+        ///   @brief Sets the return value of bf_mem_op_alloc_page.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     bf_mem_op_alloc_page
+        ///
+        constexpr void
+        set_bf_mem_op_alloc_page(bsl::errc_type const errc) &noexcept
+        {
+            m_bf_mem_op_alloc_page = errc;
+        }
+
+        /// <!-- description -->
         ///   @brief Frees a page previously allocated by bf_mem_op_alloc_page.
         ///     This operation is optional and not all microkernels may implement
         ///     it.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param virt The virtual address of the page to free
+        ///   @param ptr The ptrual address of the page to free
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_mem_op_free_page(void *const virt) &noexcept -> bsl::errc_type
+        bf_mem_op_free_page(void *const ptr) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(nullptr == virt)) {
-                bsl::error() << "virt is a nullptr\n" << bsl::here();
+            if (bsl::unlikely_assert(nullptr == ptr)) {
+                bsl::error() << "ptr is a nullptr\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
@@ -2013,18 +2249,33 @@ namespace syscall
                 return m_bf_mem_op_free_page;
             }
 
-            if (m_alloc_free_map.at(virt).is_zero()) {
+            if (m_alloc_free_map.at(ptr).is_zero()) {
                 return bsl::errc_failure;
             }
 
-            auto const phys = m_bf_virt_to_phys_map.at(virt);
+            auto const phys{m_bf_virt_to_phys_map.at(ptr)};
+            auto *const virt{m_bf_phys_to_virt_map.at(phys)};
             m_bf_virt_to_phys_map.at(virt) = {};
             m_bf_phys_to_virt_map.at(phys) = {};
 
-            delete [] static_cast<bsl::uint8 *>(virt);
+            delete[] virt;    // GRCOV_EXCLUDE_BR
             m_alloc_free_map.at(virt) = {};
 
             return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_mem_op_free_page.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     bf_mem_op_free_page
+        ///
+        constexpr void
+        set_bf_mem_op_free_page(bsl::errc_type const errc) &noexcept
+        {
+            m_bf_mem_op_free_page = errc;
         }
 
         /// <!-- description -->
@@ -2105,20 +2356,34 @@ namespace syscall
         }
 
         /// <!-- description -->
+        ///   @brief Sets the return value of bf_mem_op_alloc_huge.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     bf_mem_op_alloc_huge
+        ///
+        constexpr void
+        set_bf_mem_op_alloc_huge(bsl::errc_type const errc) &noexcept
+        {
+            m_bf_mem_op_alloc_huge = errc;
+        }
+
+        /// <!-- description -->
         ///   @brief Frees memory previously allocated by bf_mem_op_alloc_huge.
         ///     This operation is optional and not all microkernels may implement
         ///     it.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param virt The virtual address of the memory to free
+        ///   @param ptr The ptrual address of the memory to free
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_mem_op_free_huge(void *const virt) &noexcept -> bsl::errc_type
+        bf_mem_op_free_huge(void *const ptr) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(nullptr == virt)) {
-                bsl::error() << "virt is a nullptr\n" << bsl::here();
+            if (bsl::unlikely_assert(nullptr == ptr)) {
+                bsl::error() << "ptr is a nullptr\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
@@ -2126,18 +2391,33 @@ namespace syscall
                 return m_bf_mem_op_free_huge;
             }
 
-            if (m_alloc_free_map.at(virt).is_zero()) {
+            if (m_alloc_free_map.at(ptr).is_zero()) {
                 return bsl::errc_failure;
             }
 
-            auto const phys = m_bf_virt_to_phys_map.at(virt);
+            auto const phys{m_bf_virt_to_phys_map.at(ptr)};
+            auto *const virt{m_bf_phys_to_virt_map.at(phys)};
             m_bf_virt_to_phys_map.at(virt) = {};
             m_bf_phys_to_virt_map.at(phys) = {};
 
-            delete [] static_cast<bsl::uint8 *>(virt);
+            delete[] virt;    // GRCOV_EXCLUDE_BR
             m_alloc_free_map.at(virt) = {};
 
             return bsl::errc_success;
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_mem_op_free_huge.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     bf_mem_op_free_huge
+        ///
+        constexpr void
+        set_bf_mem_op_free_huge(bsl::errc_type const errc) &noexcept
+        {
+            m_bf_mem_op_free_huge = errc;
         }
 
         /// <!-- description -->
@@ -2157,12 +2437,10 @@ namespace syscall
         ///       - There is no ability to free heap memory
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of memory to allocate
         ///   @param size The number of bytes to increase the heap by
         ///   @return Returns a pointer to the newly allocated memory on success,
         ///     or a nullptr on failure.
         ///
-        template<typename T>
         [[nodiscard]] constexpr auto
         bf_mem_op_alloc_heap(bf_uint64_t const &size) &noexcept -> void *
         {
@@ -2216,7 +2494,37 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_read_phys(bf_uint64_t const &phys) const &noexcept -> bsl::safe_integral<T>
         {
+            static_assert(bsl::is_unsigned<T>::value);
+
+            if (bsl::unlikely_assert(!phys)) {
+                bsl::error() << "invalid phys\n" << bsl::here();
+                return bsl::safe_integral<T>::zero(true);
+            }
+
+            if (bsl::unlikely_assert(phys.is_zero())) {
+                bsl::error() << "phys is a nullptr\n" << bsl::here();
+                return bsl::safe_integral<T>::zero(true);
+            }
+
             return bsl::convert<T>(m_bf_read_phys.at(phys));
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_read_phys.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam T the type of integral to read
+        ///   @param phys the physical address to read
+        ///   @param val the value to return when executing
+        ///     bf_read_phys
+        ///
+        template<typename T = bsl::uintmax>
+        constexpr void
+        set_bf_read_phys(bf_uint64_t const &phys, bsl::safe_integral<T> const &val) &noexcept
+        {
+            static_assert(bsl::is_unsigned<T>::value);
+            m_bf_read_phys.at(phys) = bsl::to_umax(val);
         }
 
         /// <!-- description -->
@@ -2234,11 +2542,49 @@ namespace syscall
         bf_write_phys(bf_uint64_t const &phys, bsl::safe_integral<T> const &val) &noexcept
             -> bsl::errc_type
         {
-            if (m_bf_write_phys.at(phys)) {
-                m_bf_read_phys.at(phys) = val;
+            static_assert(bsl::is_unsigned<T>::value);
+
+            if (bsl::unlikely_assert(!phys)) {
+                bsl::error() << "invalid phys\n" << bsl::here();
+                return bsl::errc_invalid_argument;
             }
 
-            return m_bf_write_phys.at(phys);
+            if (bsl::unlikely_assert(phys.is_zero())) {
+                bsl::error() << "phys is a nullptr\n" << bsl::here();
+                return bsl::errc_invalid_argument;
+            }
+
+            if (bsl::unlikely_assert(!val)) {
+                bsl::error() << "invalid val\n" << bsl::here();
+                return bsl::errc_invalid_argument;
+            }
+
+            if (m_bf_write_phys.at({phys, bsl::to_umax(val)})) {
+                m_bf_read_phys.at(phys) = bsl::to_umax(val);
+            }
+
+            return m_bf_write_phys.at({phys, bsl::to_umax(val)});
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_write_phys.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @tparam T the type of integral to write
+        ///   @param phys the physical address to write
+        ///   @param val the value to write to the provided physical address
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     bf_write_phys
+        ///
+        template<typename T>
+        constexpr void
+        set_bf_write_phys(
+            bf_uint64_t const &phys,
+            bsl::safe_integral<T> const &val,
+            bsl::errc_type const errc) &noexcept
+        {
+            m_bf_write_phys.at({phys, bsl::to_umax(val)}) = errc;
         }
 
         /// <!-- description -->
@@ -2248,23 +2594,33 @@ namespace syscall
         ///     huge memory.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of virtual address to convert
         ///   @param virt the virtual address to convert
         ///   @return Returns the resulting physical address
         ///
-        template<typename T>
         [[nodiscard]] constexpr auto
-        bf_virt_to_phys(T const *const virt) const &noexcept -> bf_uint64_t
+        bf_virt_to_phys(void *const virt) const &noexcept -> bf_uint64_t
         {
-            if (!m_bf_virt_to_phys) {
-                return bf_uint64_t::zero(true);
-            }
-
-            if (m_bf_virt_to_phys_map.at(virt).is_zero()) {
+            if (bsl::unlikely_assert(nullptr == virt)) {
+                bsl::error() << "invalid virt\n" << bsl::here();
                 return bf_uint64_t::zero(true);
             }
 
             return m_bf_virt_to_phys_map.at(virt);
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_virt_to_phys.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param virt the virtual address to convert
+        ///   @param phys the physical address to return when executing
+        ///     bf_virt_to_phys
+        ///
+        constexpr void
+        set_bf_virt_to_phys(void *const virt, bf_uint64_t const &phys) &noexcept
+        {
+            m_bf_virt_to_phys_map.at(virt) = phys;
         }
 
         /// <!-- description -->
@@ -2274,19 +2630,39 @@ namespace syscall
         ///     huge memory.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam T the type of physical address to convert
         ///   @param phys the physical address to convert
         ///   @return Returns the resulting virtual address
         ///
-        template<typename T>
         [[nodiscard]] constexpr auto
-        bf_phys_to_virt(bf_uint64_t const &phys) const &noexcept -> T *
+        bf_phys_to_virt(bf_uint64_t const &phys) const &noexcept -> void *
         {
-            if (!m_bf_phys_to_virt) {
+            if (bsl::unlikely_assert(!phys)) {
+                bsl::error() << "invalid phys\n" << bsl::here();
+                return nullptr;
+            }
+
+            if (bsl::unlikely_assert(phys.is_zero())) {
+                bsl::error() << "phys is a nullptr\n" << bsl::here();
                 return nullptr;
             }
 
             return m_bf_phys_to_virt_map.at(phys);
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of bf_phys_to_virt.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param phys the physical address to convert
+        ///   @param virt the virtual address to return when executing
+        ///     bf_phys_to_virt. Must be a bsl::uint8 * to support constexpr
+        ///     as void * is not supported.
+        ///
+        constexpr void
+        set_bf_phys_to_virt(bf_uint64_t const &phys, bsl::uint8 *const virt) &noexcept
+        {
+            m_bf_phys_to_virt_map.at(phys) = virt;
         }
     };
 }

@@ -1434,7 +1434,8 @@ namespace syscall
             bf_uint64_t foo{};
 
             bsl::discard(bf_syscall_t{});
-            bsl::discard(sys.initialize(BF_ALL_SPECS_SUPPORTED_VAL, bootstrap_entry, vmexit_entry, fail_entry));
+            bsl::discard(sys.initialize(
+                BF_ALL_SPECS_SUPPORTED_VAL, bootstrap_entry, vmexit_entry, fail_entry));
             sys.release();
             bsl::discard(sys.bf_tls_rax());
             sys.bf_tls_set_rax({});
