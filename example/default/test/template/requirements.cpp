@@ -30,6 +30,13 @@
 namespace example
 {
     /// NOTE:
+    /// - The requirements unit test ensures that the code adhere to specific
+    ///   C++ requirements including constinit, constness, constexpr and
+    ///   noexcept. This is a quick double check to make sure that your code
+    ///   meets all of these requirements. Note that not all of the code
+    ///   needs to have all of these, but instead, this unit test ensures that
+    ///   each function has these as intended, and forces you to give your
+    ///   code a once over for these specific attributes.
     /// - Replace bsl::errc_type with your type. We keep this in place so
     ///   that it is easy to see how to use each of these patterns.
     ///
@@ -37,7 +44,7 @@ namespace example
     /// NOTE:
     /// - The following verifies that our type can be initialized using the
     ///   C++20 constinit keyword. This ensures that if we need to create a
-    ///   global version of this (or something that uses this code), is
+    ///   global version of this (or something that uses this code), it is
     ///   initialized at compile-time and not at runtime.
     ///
 
@@ -90,6 +97,7 @@ namespace example
             bsl::discard(bsl::errc_type{});
             bsl::discard(bsl::errc_type{42});
             bsl::discard(bsl::errc_type{bsl::to_i32(42)});
+
             bsl::discard(errc1.get());
             bsl::discard(!errc1);
             bsl::discard(errc1.success());
@@ -147,6 +155,7 @@ main() noexcept -> bsl::exit_code
                 static_assert(noexcept(bsl::errc_type{}));
                 static_assert(noexcept(bsl::errc_type{42}));
                 static_assert(noexcept(bsl::errc_type{bsl::to_i32(42)}));
+
                 static_assert(noexcept(errc1.get()));
                 static_assert(noexcept(!errc1));
                 static_assert(noexcept(errc1.success()));
@@ -172,6 +181,25 @@ main() noexcept -> bsl::exit_code
             example::fixture_t fixture2{};
             bsl::ut_then{} = [&fixture2]() {
                 static_assert(example::fixture1.test_member_const());
+                bsl::ut_check(fixture2.test_member_nonconst());
+            };
+        };
+    };
+
+    /// NOTE:
+    /// - The following a second version of this, designed to support
+    ///   classes that are not constexpr friendly. Ideally, you will never
+    ///   need this, but in some cases, this might be needed. The difference
+    ///   is we use const instead of a global constexpr used in a static
+    ///   assert.
+    ///
+
+    bsl::ut_scenario{"verify constness without using constexpr"} = []() {
+        bsl::ut_given{} = []() {
+            example::fixture_t fixture2{};
+            example::fixture_t const fixture3{};
+            bsl::ut_then{} = [&fixture2, &fixture3]() {
+                bsl::ut_check(fixture3.test_member_const());
                 bsl::ut_check(fixture2.test_member_nonconst());
             };
         };

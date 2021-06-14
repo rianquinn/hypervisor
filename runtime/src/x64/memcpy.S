@@ -27,9 +27,9 @@
     .code64
     .intel_syntax noprefix
 
-    .globl  memcpy
-    .type   memcpy, @function
-memcpy:
+    .globl  HYPERVISOR_MEMCPY_NAME
+    .type   HYPERVISOR_MEMCPY_NAME, @function
+HYPERVISOR_MEMCPY_NAME:
 
     mov     rax, rdi
     mov     rcx, rdx
@@ -38,4 +38,4 @@ memcpy:
     ret
     int 3
 
-    .size memcpy, .-memcpy
+    .size HYPERVISOR_MEMCPY_NAME, .-HYPERVISOR_MEMCPY_NAME

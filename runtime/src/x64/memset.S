@@ -27,9 +27,9 @@
     .code64
     .intel_syntax noprefix
 
-    .globl  memset
-    .type   memset, @function
-memset:
+    .globl  HYPERVISOR_MEMSET_NAME
+    .type   HYPERVISOR_MEMSET_NAME, @function
+HYPERVISOR_MEMSET_NAME:
 
     mov     r10, rdi
     mov     rax, rsi
@@ -40,4 +40,4 @@ memset:
     ret
     int 3
 
-    .size memset, .-memset
+    .size HYPERVISOR_MEMSET_NAME, .-HYPERVISOR_MEMSET_NAME

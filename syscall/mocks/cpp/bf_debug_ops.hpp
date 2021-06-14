@@ -22,14 +22,16 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef BF_DEBUG_OPS_HPP
-#define BF_DEBUG_OPS_HPP
+#ifndef MOCKS_BF_DEBUG_OPS_HPP
+#define MOCKS_BF_DEBUG_OPS_HPP
 
-#include <bf_impl_prototypes.hpp>
 #include <bf_types.hpp>
+#include <iomanip>
+#include <iostream>
 
 #include <bsl/char_type.hpp>
 #include <bsl/cstr_type.hpp>
+#include <bsl/is_constant_evaluated.hpp>
 
 namespace syscall
 {
@@ -42,10 +44,14 @@ namespace syscall
     ///   @param val1 The first value to output to the microkernel's console
     ///   @param val2 The second value to output to the microkernel's console
     ///
-    inline void
+    constexpr void
     bf_debug_op_out(bf_uint64_t const &val1, bf_uint64_t const &val2) noexcept
     {
-        bf_debug_op_out_impl(val1.get(), val2.get());
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
+        std::cout << std::hex << "0x" << val1.get() << " 0x" << val2.get() << '\n';
     }
 
     /// <!-- description -->
@@ -56,10 +62,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param vmid The VMID of the VM whose state is to be outputted
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_vm(bf_uint16_t const &vmid) noexcept
     {
-        bf_debug_op_dump_vm_impl(vmid.get());
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
+        std::cout << std::hex << "vm [0x" << vmid.get() << "] dump: mock empty\n";
     }
 
     /// <!-- description -->
@@ -70,10 +80,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param vpid The VPID of the VP whose state is to be outputted
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_vp(bf_uint16_t const &vpid) noexcept
     {
-        bf_debug_op_dump_vp_impl(vpid.get());
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
+        std::cout << std::hex << "vp [0x" << vpid.get() << "] dump: mock empty\n";
     }
 
     /// <!-- description -->
@@ -84,10 +98,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param vpsid The VPSID of the VPS whose state is to be outputted
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_vps(bf_uint16_t const &vpsid) noexcept
     {
-        bf_debug_op_dump_vps_impl(vpsid.get());
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
+        std::cout << std::hex << "vps [0x" << vpsid.get() << "] dump: mock empty\n";
     }
 
     /// <!-- description -->
@@ -98,10 +116,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param ppid The PPID of the PP to dump the log from
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_vmexit_log(bf_uint16_t const &ppid) noexcept
     {
-        bf_debug_op_dump_vmexit_log_impl(ppid.get());
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
+        std::cout << std::hex << "vmexit log for pp [0x" << ppid.get() << "]: mock empty\n";
     }
 
     /// <!-- description -->
@@ -111,10 +133,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param c The character to output
     ///
-    inline void
+    constexpr void
     bf_debug_op_write_c(bsl::char_type const c) noexcept
     {
-        bf_debug_op_write_c_impl(c);
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
+        std::cout << c;
     }
 
     /// <!-- description -->
@@ -124,10 +150,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param str The virtual address of a null terminated string to output
     ///
-    inline void
+    constexpr void
     bf_debug_op_write_str(bsl::cstr_type const str) noexcept
     {
-        bf_debug_op_write_str_impl(str);
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
+        std::cout << str;
     }
 
     /// <!-- description -->
@@ -138,10 +168,14 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param extid The EXTID of the extensions's state to output
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_ext(bf_uint16_t const &extid) noexcept
     {
-        bf_debug_op_dump_ext_impl(extid.get());
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
+        std::cout << std::hex << "ext [0x" << extid.get() << "] dump: mock empty\n";
     }
 
     /// <!-- description -->
@@ -149,10 +183,14 @@ namespace syscall
     ///     stats to the console device the microkernel is currently using
     ///     for debugging.
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_page_pool() noexcept
     {
-        bf_debug_op_dump_page_pool_impl();
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
+        std::cout << "page pool dump: mock empty\n";
     }
 
     /// <!-- description -->
@@ -160,10 +198,14 @@ namespace syscall
     ///     stats to the console device the microkernel is currently using
     ///     for debugging.
     ///
-    inline void
+    constexpr void
     bf_debug_op_dump_huge_pool() noexcept
     {
-        bf_debug_op_dump_huge_pool_impl();
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
+        std::cout << "huge pool dump: mock empty\n";
     }
 }
 

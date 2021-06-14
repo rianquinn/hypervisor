@@ -20,7 +20,7 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.13)
-project(hypervisor C CXX)
+project(hypervisor C CXX ASM)
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/init_build.cmake)
 
@@ -49,7 +49,7 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL RELEASE AND NOT CMAKE_BUILD_TYPE STREQUAL MINSI
 #         add_subdirectory(example/default/test)
 #         add_subdirectory(kernel/test)
 #         add_subdirectory(loader/test)
-#         add_subdirectory(runtime/test)
+        add_subdirectory(runtime/test)
         add_subdirectory(syscall/test)
 #         add_subdirectory(vmmctl/test)
     endif()

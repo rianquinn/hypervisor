@@ -34,10 +34,9 @@ include(${bsl_SOURCE_DIR}/cmake/function/bf_add_test.cmake)
 # NOTE:
 # - It is really, really important that we do not add any include directories
 #   from the source folder. Anything that is needed by code from the source
-#   folder must be mocked, and is either located in the common_platform folder
-#   or is located in the common_arch folder. The include folder itself is fine
-#   as this should only ever include type definitions. Things that should not
-#   be in the include folder are:
+#   folder must be mocked. The include folder itself is fine as this should
+#   only ever include type definitions. Things that should not be in the
+#   include folder are:
 #   - Any code that can excute. Anything that can execute must be in the src
 #     folder and have a set of tests associated with it.
 #   - C function prototypes. These should also be in the source folder, and
@@ -50,7 +49,6 @@ include(${bsl_SOURCE_DIR}/cmake/function/bf_add_test.cmake)
 #     likely can be unit tested as they can only execute userspace specific
 #     instructions. The microkernel is a different story as it executes system
 #     instructions which likely need an emulator to properly unit test.
-#
 # - In the default example, we include the mock folder for bf_syscall_t and
 #   it's related headers. This is a generic mock of bf_syscall_t which can be
 #   used for most unit testing, but if you need soemthing more specific, you
@@ -63,13 +61,13 @@ include(${bsl_SOURCE_DIR}/cmake/function/bf_add_test.cmake)
 #
 
 list(APPEND INCLUDES
-    ${CMAKE_CURRENT_LIST_DIR}/mocks
     ${CMAKE_CURRENT_LIST_DIR}/../include
+    ${CMAKE_CURRENT_LIST_DIR}/../mocks
 )
 
 list(APPEND SYSTEM_INCLUDES
     ${CMAKE_SOURCE_DIR}/syscall/include/cpp
-    ${CMAKE_SOURCE_DIR}/syscall/test/mocks/cpp
+    ${CMAKE_SOURCE_DIR}/syscall/mocks/cpp
 )
 
 list(APPEND COMMON_INCLUDES
@@ -82,54 +80,54 @@ list(APPEND COMMON_SYSTEM_INCLUDES
 
 list(APPEND X64_INCLUDES
     ${INCLUDES}
-    ${CMAKE_CURRENT_LIST_DIR}/mocks/x64
     ${CMAKE_CURRENT_LIST_DIR}/../include/x64
+    ${CMAKE_CURRENT_LIST_DIR}/../mocks/x64
 )
 
 list(APPEND X64_SYSTEM_INCLUDES
     ${SYSTEM_INCLUDES}
     ${CMAKE_SOURCE_DIR}/syscall/include/cpp/x64
-    ${CMAKE_SOURCE_DIR}/syscall/test/mocks/cpp/x64
+    ${CMAKE_SOURCE_DIR}/syscall/mocks/cpp/x64
 )
 
 list(APPEND AMD_INCLUDES
     ${X64_INCLUDES}
-    ${CMAKE_CURRENT_LIST_DIR}/mocks/x64/amd
     ${CMAKE_CURRENT_LIST_DIR}/../include/x64/amd
+    ${CMAKE_CURRENT_LIST_DIR}/../mocks/x64/amd
 )
 
 list(APPEND AMD_SYSTEM_INCLUDES
     ${X64_SYSTEM_INCLUDES}
     ${CMAKE_SOURCE_DIR}/syscall/include/cpp/x64/amd
-    ${CMAKE_SOURCE_DIR}/syscall/test/mocks/cpp/x64/amd
+    ${CMAKE_SOURCE_DIR}/syscall/mocks/cpp/x64/amd
 )
 
 list(APPEND INTEL_INCLUDES
     ${X64_INCLUDES}
-    ${CMAKE_CURRENT_LIST_DIR}/mocks/x64/intel
     ${CMAKE_CURRENT_LIST_DIR}/../include/x64/intel
+    ${CMAKE_CURRENT_LIST_DIR}/../mocks/x64/intel
 )
 
 list(APPEND INTEL_SYSTEM_INCLUDES
     ${X64_SYSTEM_INCLUDES}
     ${CMAKE_SOURCE_DIR}/syscall/include/cpp/x64/intel
-    ${CMAKE_SOURCE_DIR}/syscall/test/mocks/cpp/x64/intel
+    ${CMAKE_SOURCE_DIR}/syscall/mocks/cpp/x64/intel
 )
 
 list(APPEND AARCH64_INCLUDES
     ${INCLUDES}
-    ${CMAKE_CURRENT_LIST_DIR}/mocks/arm/aarch64
     ${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64
+    ${CMAKE_CURRENT_LIST_DIR}/../mocks/arm/aarch64
 )
 
 list(APPEND AARCH64_SYSTEM_INCLUDES
     ${SYSTEM_INCLUDES}
     ${CMAKE_SOURCE_DIR}/syscall/include/cpp/arm/aarch64
-    ${CMAKE_SOURCE_DIR}/syscall/test/mocks/cpp/arm/aarch64
+    ${CMAKE_SOURCE_DIR}/syscall/mocks/cpp/arm/aarch64
 )
 
 # ------------------------------------------------------------------------------
-# Default Definitions
+# Definitions
 # ------------------------------------------------------------------------------
 
 # NOTE:

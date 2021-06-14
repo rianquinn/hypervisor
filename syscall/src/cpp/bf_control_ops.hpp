@@ -25,7 +25,9 @@
 #ifndef BF_CONTROL_OPS_HPP
 #define BF_CONTROL_OPS_HPP
 
-#include <bf_impl_prototypes.hpp>
+#include <bf_syscall_impl.hpp>
+
+#include <bsl/is_constant_evaluated.hpp>
 
 namespace syscall
 {
@@ -33,9 +35,13 @@ namespace syscall
     ///   @brief This syscall tells the microkernel to exit the execution
     ///     of an extension, providing a means to fast fail.
     ///
-    inline void
+    constexpr void
     bf_control_op_exit() noexcept
     {
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
         bf_control_op_exit_impl();
     }
 
@@ -45,9 +51,13 @@ namespace syscall
     ///     returns and should be used to return from the successful execution
     ///     of the _start function.
     ///
-    inline void
+    constexpr void
     bf_control_op_wait() noexcept
     {
+        if (bsl::is_constant_evaluated()) {
+            return;
+        }
+
         bf_control_op_wait_impl();
     }
 }

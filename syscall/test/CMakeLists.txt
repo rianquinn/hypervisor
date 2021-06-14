@@ -27,11 +27,11 @@ include(${bsl_SOURCE_DIR}/cmake/function/bf_add_test.cmake)
 
 list(APPEND INCLUDES
     ${CMAKE_CURRENT_LIST_DIR}/../include/cpp
-    ${CMAKE_CURRENT_LIST_DIR}/../src/cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../mocks/cpp
 )
 
 # ------------------------------------------------------------------------------
-# Default Definitions
+# Definitions
 # ------------------------------------------------------------------------------
 
 list(APPEND DEFINES
@@ -43,7 +43,12 @@ list(APPEND DEFINES
 # Tests
 # ------------------------------------------------------------------------------
 
+add_subdirectory(mocks/cpp/bf_control_ops)
+add_subdirectory(mocks/cpp/bf_debug_ops)
+add_subdirectory(mocks/cpp/bf_syscall_impl)
 add_subdirectory(mocks/cpp/bf_syscall_t)
+
 add_subdirectory(src/cpp/bf_control_ops)
 add_subdirectory(src/cpp/bf_debug_ops)
+add_subdirectory(src/cpp/bf_syscall_impl)
 add_subdirectory(src/cpp/bf_syscall_t)

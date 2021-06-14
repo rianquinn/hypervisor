@@ -26,8 +26,8 @@
 #define BF_SYSCALL_T_HPP
 
 #include <bf_constants.hpp>
-#include <bf_impl_prototypes.hpp>
 #include <bf_reg_t.hpp>
+#include <bf_syscall_impl.hpp>
 #include <bf_types.hpp>
 
 #include <bsl/debug.hpp>
