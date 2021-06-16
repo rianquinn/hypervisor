@@ -46,7 +46,7 @@ endif()
 
 if(NOT CMAKE_BUILD_TYPE STREQUAL RELEASE AND NOT CMAKE_BUILD_TYPE STREQUAL MINSIZEREL)
     if(BUILD_TESTS AND NOT HYPERVISOR_BUILD_TESTS_OVERRIDE)
-#         add_subdirectory(example/default/test)
+        add_subdirectory(example/default/test)
 #         add_subdirectory(kernel/test)
 #         add_subdirectory(loader/test)
         add_subdirectory(runtime/test)

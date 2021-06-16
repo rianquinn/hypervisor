@@ -41,6 +41,9 @@ main() noexcept -> bsl::exit_code
 
     bsl::ut_scenario{"verify noexcept"} = []() {
         bsl::ut_then{} = []() {
+            static_assert(noexcept(syscall::dummy_bootstrap_entry({})));
+            static_assert(noexcept(syscall::dummy_vmexit_entry({}, {})));
+            static_assert(noexcept(syscall::dummy_fail_entry({}, {})));
             static_assert(noexcept(syscall::bf_tls_set_rax_impl({})));
             static_assert(noexcept(syscall::bf_tls_rax_impl()));
             static_assert(noexcept(syscall::bf_tls_set_rbx_impl({})));

@@ -40,25 +40,25 @@ namespace syscall
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"bf_control_op_exit executes impl"} = []() {
+        bsl::ut_scenario{"bf_control_op_exit"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_bf_control_op_exit_executed = {};
+                g_bf_control_op_exit_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_control_op_exit();
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_bf_control_op_exit_executed);
+                        bsl::ut_check(g_bf_control_op_exit_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_control_op_wait executes impl"} = []() {
+        bsl::ut_scenario{"bf_control_op_wait"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_bf_control_op_wait_executed = {};
+                g_bf_control_op_wait_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_control_op_wait();
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_bf_control_op_wait_executed);
+                        bsl::ut_check(g_bf_control_op_wait_impl_executed);
                     };
                 };
             };

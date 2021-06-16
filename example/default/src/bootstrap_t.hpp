@@ -44,7 +44,7 @@ namespace example
     /// @class example::bootstrap_t
     ///
     /// <!-- description -->
-    ///   @brief Defines the extension's fail handler
+    ///   @brief Defines the extension's bootstrap handler
     ///
     class bootstrap_t final
     {

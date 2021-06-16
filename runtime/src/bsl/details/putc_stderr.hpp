@@ -26,7 +26,7 @@
 #define RUNTIME_BSL_DETAILS_PUTC_STDERR_HPP
 
 #include <bsl/char_type.hpp>
-#include <bsl/cstdio.hpp>
+#include "../cstdio.hpp"
 
 namespace bsl::details
 {

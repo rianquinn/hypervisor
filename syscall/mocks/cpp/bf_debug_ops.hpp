@@ -22,12 +22,11 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef MOCKS_BF_DEBUG_OPS_HPP
-#define MOCKS_BF_DEBUG_OPS_HPP
+#ifndef BF_DEBUG_OPS_HPP
+#define BF_DEBUG_OPS_HPP
 
+#include <bf_syscall_impl.hpp>
 #include <bf_types.hpp>
-#include <iomanip>
-#include <iostream>
 
 #include <bsl/char_type.hpp>
 #include <bsl/cstr_type.hpp>
@@ -51,7 +50,7 @@ namespace syscall
             return;
         }
 
-        std::cout << std::hex << "0x" << val1.get() << " 0x" << val2.get() << '\n';
+        bf_debug_op_out_impl(val1.get(), val2.get());
     }
 
     /// <!-- description -->
@@ -69,7 +68,7 @@ namespace syscall
             return;
         }
 
-        std::cout << std::hex << "vm [0x" << vmid.get() << "] dump: mock empty\n";
+        bf_debug_op_dump_vm_impl(vmid.get());
     }
 
     /// <!-- description -->
@@ -87,7 +86,7 @@ namespace syscall
             return;
         }
 
-        std::cout << std::hex << "vp [0x" << vpid.get() << "] dump: mock empty\n";
+        bf_debug_op_dump_vp_impl(vpid.get());
     }
 
     /// <!-- description -->
@@ -105,7 +104,7 @@ namespace syscall
             return;
         }
 
-        std::cout << std::hex << "vps [0x" << vpsid.get() << "] dump: mock empty\n";
+        bf_debug_op_dump_vps_impl(vpsid.get());
     }
 
     /// <!-- description -->
@@ -123,7 +122,7 @@ namespace syscall
             return;
         }
 
-        std::cout << std::hex << "vmexit log for pp [0x" << ppid.get() << "]: mock empty\n";
+        bf_debug_op_dump_vmexit_log_impl(ppid.get());
     }
 
     /// <!-- description -->
@@ -140,7 +139,7 @@ namespace syscall
             return;
         }
 
-        std::cout << c;
+        bf_debug_op_write_c_impl(c);
     }
 
     /// <!-- description -->
@@ -157,7 +156,7 @@ namespace syscall
             return;
         }
 
-        std::cout << str;
+        bf_debug_op_write_str_impl(str);
     }
 
     /// <!-- description -->
@@ -175,7 +174,7 @@ namespace syscall
             return;
         }
 
-        std::cout << std::hex << "ext [0x" << extid.get() << "] dump: mock empty\n";
+        bf_debug_op_dump_ext_impl(extid.get());
     }
 
     /// <!-- description -->
@@ -190,7 +189,7 @@ namespace syscall
             return;
         }
 
-        std::cout << "page pool dump: mock empty\n";
+        bf_debug_op_dump_page_pool_impl();
     }
 
     /// <!-- description -->
@@ -205,7 +204,7 @@ namespace syscall
             return;
         }
 
-        std::cout << "huge pool dump: mock empty\n";
+        bf_debug_op_dump_huge_pool_impl();
     }
 }
 

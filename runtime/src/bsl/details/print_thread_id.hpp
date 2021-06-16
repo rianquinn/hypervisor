@@ -27,9 +27,9 @@
 
 #include <bf_syscall_impl.hpp>
 
-#include <bsl/is_constant_evaluated.hpp>
 #include <bsl/details/out.hpp>
 #include <bsl/fmt.hpp>
+#include <bsl/is_constant_evaluated.hpp>
 
 namespace bsl::details
 {

@@ -28,7 +28,7 @@ add_library(runtime)
 # ------------------------------------------------------------------------------
 
 target_include_directories(runtime PUBLIC
-    src/bsl
+    src
 )
 
 # ------------------------------------------------------------------------------
@@ -49,6 +49,9 @@ list(APPEND HEADERS
 # ------------------------------------------------------------------------------
 
 target_compile_definitions(runtime PUBLIC
+    HYPERVISOR_START_NAME=_start
+    HYPERVISOR_STACK_CHK_FAIL_NAME=__stack_chk_fail
+    HYPERVISOR_STACK_CHK_GUARD_NAME=__stack_chk_guard
     HYPERVISOR_MEMCPY_NAME=memcpy
     HYPERVISOR_MEMSET_NAME=memset
     HYPERVISOR_PRINT_THREAD_ID_NAME=print_thread_id
@@ -66,12 +69,16 @@ hypervisor_target_source(runtime src/msg_stack_chk_fail.cpp ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     hypervisor_target_source(runtime src/x64/_start.S ${HEADERS})
+    hypervisor_target_source(runtime src/x64/__stack_chk_fail.S ${HEADERS})
+    hypervisor_target_source(runtime src/x64/__stack_chk_guard.S ${HEADERS})
     hypervisor_target_source(runtime src/x64/memcpy.S ${HEADERS})
     hypervisor_target_source(runtime src/x64/memset.S ${HEADERS})
 endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
     hypervisor_target_source(runtime src/arm/aarch64/_start.S ${HEADERS})
+    hypervisor_target_source(runtime src/arm/aarch64/__stack_chk_fail.S ${HEADERS})
+    hypervisor_target_source(runtime src/arm/aarch64/__stack_chk_guard.S ${HEADERS})
     hypervisor_target_source(runtime src/arm/aarch64/memcpy.S ${HEADERS})
     hypervisor_target_source(runtime src/arm/aarch64/memset.S ${HEADERS})
 endif()

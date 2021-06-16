@@ -25,7 +25,8 @@
 #ifndef MOCKS_TLS_T_HPP
 #define MOCKS_TLS_T_HPP
 
-#include <bsl/errc_type.hpp>
+#include <errc_types.hpp>
+#include <bsl/safe_integral.hpp>
 
 namespace example
 {
@@ -33,12 +34,15 @@ namespace example
     ///
     /// <!-- description -->
     ///   @brief Defines the extension's mocked version of tls_t, used for
-    ///     unit testing.
+    ///     unit testing. Specifically, this version only contains portions
+    ///     that are common for all architectures.
     ///
     struct tls_t final
     {
         /// @brief stores the return value for a test
         bsl::errc_type test_ret;
+        /// @brief stores the return value for a test
+        bsl::safe_uint16 test_ret_16bit;
     };
 }
 

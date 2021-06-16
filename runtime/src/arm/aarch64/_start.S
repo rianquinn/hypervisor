@@ -26,27 +26,12 @@
 
     .text
 
-    .globl  _start
-    .type   _start, @function
-_start:
+    .globl  HYPERVISOR_START_NAME
+    .type   HYPERVISOR_START_NAME, @function
+HYPERVISOR_START_NAME:
+
     bl ext_main_entry
-   .size _start, .-_start
-
-
-
-    .globl  __stack_chk_fail
-    .type   __stack_chk_fail, @function
-__stack_chk_fail:
-
-    bl msg_stack_chk_fail
     bl bf_control_op_exit_impl
+    ret
 
-    .size __stack_chk_fail, .-__stack_chk_fail
-
-
-
-    .rodata
-
-    .globl  __stack_chk_guard
-__stack_chk_guard:
-    .quad 0xDEADBEEFDEADBEEF
+   .size HYPERVISOR_START_NAME, .-HYPERVISOR_START_NAME

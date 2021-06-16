@@ -29,6 +29,7 @@
 #include <intrinsic_cpuid_impl.hpp>
 #include <tls_t.hpp>
 
+#include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
 
@@ -91,6 +92,8 @@ namespace example
         ///     EAX and ECX and returns the results.
         ///
         /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
         ///   @param rax the index used by CPUID, returns resulting rax
         ///   @param rbx returns resulting rbx
         ///   @param rcx the subindex used by CPUID, returns the resulting rcx
@@ -98,11 +101,16 @@ namespace example
         ///
         static constexpr void
         cpuid(
+            gs_t &gs,
+            tls_t &tls,
             bsl::safe_uint64 &rax,
             bsl::safe_uint64 &rbx,
             bsl::safe_uint64 &rcx,
             bsl::safe_uint64 &rdx) noexcept
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+
             intrinsic_cpuid_impl(rax.data(), rbx.data(), rcx.data(), rdx.data());
         }
     };

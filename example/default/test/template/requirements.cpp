@@ -27,7 +27,7 @@
 #include <bsl/discard.hpp>
 #include <bsl/ut.hpp>
 
-namespace example
+namespace
 {
     /// NOTE:
     /// - The requirements unit test ensures that the code adhere to specific
@@ -138,7 +138,7 @@ main() noexcept -> bsl::exit_code
     ///
 
     bsl::ut_scenario{"verify supports constinit"} = []() {
-        bsl::discard(example::verify_constinit);
+        bsl::discard(verify_constinit);
     };
 
     /// NOTE:
@@ -178,9 +178,9 @@ main() noexcept -> bsl::exit_code
 
     bsl::ut_scenario{"verify constness"} = []() {
         bsl::ut_given{} = []() {
-            example::fixture_t fixture2{};
+            fixture_t fixture2{};
             bsl::ut_then{} = [&fixture2]() {
-                static_assert(example::fixture1.test_member_const());
+                static_assert(fixture1.test_member_const());
                 bsl::ut_check(fixture2.test_member_nonconst());
             };
         };
@@ -196,8 +196,8 @@ main() noexcept -> bsl::exit_code
 
     bsl::ut_scenario{"verify constness without using constexpr"} = []() {
         bsl::ut_given{} = []() {
-            example::fixture_t fixture2{};
-            example::fixture_t const fixture3{};
+            fixture_t fixture2{};
+            fixture_t const fixture3{};
             bsl::ut_then{} = [&fixture2, &fixture3]() {
                 bsl::ut_check(fixture3.test_member_const());
                 bsl::ut_check(fixture2.test_member_nonconst());

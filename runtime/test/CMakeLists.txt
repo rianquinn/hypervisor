@@ -39,6 +39,9 @@ list(APPEND SYSTEM_INCLUDES
 # ------------------------------------------------------------------------------
 
 list(APPEND DEFINES
+    HYPERVISOR_START_NAME=ut_start
+    HYPERVISOR_STACK_CHK_FAIL_NAME=ut_stack_chk_fail
+    HYPERVISOR_STACK_CHK_GUARD_NAME=ut_stack_chk_guard
     HYPERVISOR_MEMCPY_NAME=ut_memcpy
     HYPERVISOR_MEMSET_NAME=ut_memset
     HYPERVISOR_PRINT_THREAD_ID_NAME=ut_print_thread_id
@@ -73,6 +76,9 @@ add_subdirectory(src/msg_stack_chk_fail)
 #
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_subdirectory(src/_start)
+    add_subdirectory(src/__stack_chk_fail)
+    add_subdirectory(src/__stack_chk_guard)
     add_subdirectory(src/memcpy)
     add_subdirectory(src/memset)
 endif()

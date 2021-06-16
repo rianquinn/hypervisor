@@ -27,13 +27,14 @@
 
 #include <bf_constants.hpp>
 #include <bf_reg_t.hpp>
+#include <bf_syscall_impl.hpp>
 #include <bf_types.hpp>
 #include <tuple>
 
 #include <bsl/errc_type.hpp>
 #include <bsl/is_unsigned.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/unlikely_assert.hpp>
+#include <bsl/unlikely.hpp>
 #include <bsl/unordered_map.hpp>
 
 namespace syscall
@@ -48,6 +49,8 @@ namespace syscall
     ///
     class bf_syscall_t final
     {
+        // clang-format off
+
         /// @brief stores the results for initialize
         bsl::errc_type m_initialize;
 
@@ -65,8 +68,7 @@ namespace syscall
         /// @brief stores the results for bf_vp_op_migrate
         bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint16_t>, bsl::errc_type> m_bf_vp_op_migrate;
         /// @brief stores the results for bf_vps_op_create_vps
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint16_t>, bf_uint16_t>
-            m_bf_vps_op_create_vps;
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint16_t>, bf_uint16_t> m_bf_vps_op_create_vps;
         /// @brief stores the results for bf_vps_op_destroy_vps
         bsl::unordered_map<bf_uint16_t, bsl::errc_type> m_bf_vps_op_destroy_vps;
         /// @brief stores the results for bf_vps_op_init_as_root
@@ -80,25 +82,19 @@ namespace syscall
         /// @brief stores the results for bf_vps_op_read64
         bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t>, bf_uint64_t> m_bf_vps_op_read64;
         /// @brief stores the results for bf_vps_op_write8
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint8_t>, bsl::errc_type>
-            m_bf_vps_op_write8;
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint8_t>, bsl::errc_type> m_bf_vps_op_write8;
         /// @brief stores the results for bf_vps_op_write16
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint16_t>, bsl::errc_type>
-            m_bf_vps_op_write16;
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint16_t>, bsl::errc_type> m_bf_vps_op_write16;
         /// @brief stores the results for bf_vps_op_write32
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint32_t>, bsl::errc_type>
-            m_bf_vps_op_write32;
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint32_t>, bsl::errc_type> m_bf_vps_op_write32;
         /// @brief stores the results for bf_vps_op_write64
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint64_t>, bsl::errc_type>
-            m_bf_vps_op_write64;
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint64_t, bf_uint64_t>, bsl::errc_type> m_bf_vps_op_write64;
         /// @brief stores the results for bf_vps_op_read_reg
         bsl::unordered_map<std::tuple<bf_uint16_t, bf_reg_t>, bf_uint64_t> m_bf_vps_op_read_reg;
         /// @brief stores the results for bf_vps_op_write_reg
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_reg_t, bf_uint64_t>, bsl::errc_type>
-            m_bf_vps_op_write_reg;
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_reg_t, bf_uint64_t>, bsl::errc_type> m_bf_vps_op_write_reg;
         /// @brief stores the results for bf_vps_op_run
-        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint16_t, bf_uint16_t>, bsl::errc_type>
-            m_bf_vps_op_run;
+        bsl::unordered_map<std::tuple<bf_uint16_t, bf_uint16_t, bf_uint16_t>, bsl::errc_type> m_bf_vps_op_run;
         /// @brief stores the results for bf_vps_op_run_current
         bsl::errc_type m_bf_vps_op_run_current;
         /// @brief stores the results for bf_vps_op_advance_ip
@@ -112,17 +108,13 @@ namespace syscall
         /// @brief stores the results for bf_intrinsic_op_rdmsr
         bsl::unordered_map<bf_uint32_t, bf_uint64_t> m_bf_intrinsic_op_rdmsr;
         /// @brief stores the results for bf_intrinsic_op_wrmsr
-        bsl::unordered_map<std::tuple<bf_uint32_t, bf_uint64_t>, bsl::errc_type>
-            m_bf_intrinsic_op_wrmsr;
+        bsl::unordered_map<std::tuple<bf_uint32_t, bf_uint64_t>, bsl::errc_type> m_bf_intrinsic_op_wrmsr;
         /// @brief stores the results for bf_intrinsic_op_invlpga
-        bsl::unordered_map<std::tuple<bf_uint64_t, bf_uint64_t>, bsl::errc_type>
-            m_bf_intrinsic_op_invlpga;
+        bsl::unordered_map<std::tuple<bf_uint64_t, bf_uint64_t>, bsl::errc_type> m_bf_intrinsic_op_invlpga;
         /// @brief stores the results for bf_intrinsic_op_invept
-        bsl::unordered_map<std::tuple<bf_uint64_t, bf_uint64_t>, bsl::errc_type>
-            m_bf_intrinsic_op_invept;
+        bsl::unordered_map<std::tuple<bf_uint64_t, bf_uint64_t>, bsl::errc_type> m_bf_intrinsic_op_invept;
         /// @brief stores the results for bf_intrinsic_op_invvpid
-        bsl::unordered_map<std::tuple<bf_uint64_t, bf_uint16_t, bf_uint64_t>, bsl::errc_type>
-            m_bf_intrinsic_op_invvpid;
+        bsl::unordered_map<std::tuple<bf_uint64_t, bf_uint16_t, bf_uint64_t>, bsl::errc_type> m_bf_intrinsic_op_invvpid;
         /// @brief stores the results for bf_mem_op_alloc_page
         bsl::errc_type m_bf_mem_op_alloc_page;
         /// @brief stores the results for bf_mem_op_free_page
@@ -131,17 +123,17 @@ namespace syscall
         bsl::errc_type m_bf_mem_op_alloc_huge;
         /// @brief stores the results for bf_mem_op_free_huge
         bsl::errc_type m_bf_mem_op_free_huge;
-        /// @brief stores the results for bf_read_phys
-        bsl::unordered_map<bf_uint64_t, bf_uint64_t> m_bf_read_phys;
-        /// @brief stores the results for bf_write_phys
-        bsl::unordered_map<std::tuple<bf_uint64_t, bf_uint64_t>, bsl::errc_type> m_bf_write_phys;
 
         /// @brief stores a map of allocations and their sizes
         bsl::unordered_map<void *, bf_uint64_t> m_alloc_free_map;
+        /// @brief stores the results for bf_read_phys
+        bsl::unordered_map<bf_uint64_t, bf_uint64_t> m_read_write_phys_map;
         /// @brief stores a map of virt to phys translations
-        bsl::unordered_map<void *, bf_uint64_t> m_bf_virt_to_phys_map;
+        bsl::unordered_map<void *, bf_uint64_t> m_virt_to_phys_map;
         /// @brief stores a map of phys to virt translations
-        bsl::unordered_map<bf_uint64_t, bsl::uint8 *> m_bf_phys_to_virt_map;
+        bsl::unordered_map<bf_uint64_t, bsl::uint8 *> m_phys_to_virt_map;
+
+        // clang-format on
 
     public:
         /// <!-- description -->
@@ -166,27 +158,27 @@ namespace syscall
             bf_callback_handler_vmexit_t const vmexit_handler,
             bf_callback_handler_fail_t const fail_handler) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!version)) {
+            if (bsl::unlikely(!version)) {
                 bsl::error() << "invalid version\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(version.is_zero())) {
+            if (bsl::unlikely(version.is_zero())) {
                 bsl::error() << "version cannot be zero\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(nullptr == bootstrap_handler)) {
+            if (bsl::unlikely(nullptr == bootstrap_handler)) {
                 bsl::error() << "invalid bootstrap_handler\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(nullptr == vmexit_handler)) {
+            if (bsl::unlikely(nullptr == vmexit_handler)) {
                 bsl::error() << "invalid vmexit_handler\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(nullptr == fail_handler)) {
+            if (bsl::unlikely(nullptr == fail_handler)) {
                 bsl::error() << "invalid fail_handler\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -240,7 +232,7 @@ namespace syscall
         constexpr void
         bf_tls_set_rax(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -269,7 +261,7 @@ namespace syscall
         constexpr void
         bf_tls_set_rbx(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -298,7 +290,7 @@ namespace syscall
         constexpr void
         bf_tls_set_rcx(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -327,7 +319,7 @@ namespace syscall
         constexpr void
         bf_tls_set_rdx(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -356,7 +348,7 @@ namespace syscall
         constexpr void
         bf_tls_set_rbp(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -385,7 +377,7 @@ namespace syscall
         constexpr void
         bf_tls_set_rsi(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -414,7 +406,7 @@ namespace syscall
         constexpr void
         bf_tls_set_rdi(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -443,7 +435,7 @@ namespace syscall
         constexpr void
         bf_tls_set_r8(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -472,7 +464,7 @@ namespace syscall
         constexpr void
         bf_tls_set_r9(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -501,7 +493,7 @@ namespace syscall
         constexpr void
         bf_tls_set_r10(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -530,7 +522,7 @@ namespace syscall
         constexpr void
         bf_tls_set_r11(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -559,7 +551,7 @@ namespace syscall
         constexpr void
         bf_tls_set_r12(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -588,7 +580,7 @@ namespace syscall
         constexpr void
         bf_tls_set_r13(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -617,7 +609,7 @@ namespace syscall
         constexpr void
         bf_tls_set_r14(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -646,7 +638,7 @@ namespace syscall
         constexpr void
         bf_tls_set_r15(bf_uint64_t const &val) &noexcept
         {
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::alert() << "invalid val\n" << bsl::here();
                 return;
             }
@@ -841,7 +833,7 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_vm_op_destroy_vm(bf_uint16_t const &vmid) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vmid)) {
+            if (bsl::unlikely(!vmid)) {
                 bsl::error() << "invalid vmid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -883,12 +875,12 @@ namespace syscall
         bf_vp_op_create_vp(bf_uint16_t const &vmid, bf_uint16_t const &ppid) &noexcept
             -> bf_uint16_t
         {
-            if (bsl::unlikely_assert(!vmid)) {
+            if (bsl::unlikely(!vmid)) {
                 bsl::error() << "invalid vmid\n" << bsl::here();
                 return bf_uint16_t::zero(true);
             }
 
-            if (bsl::unlikely_assert(!ppid)) {
+            if (bsl::unlikely(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();
                 return bf_uint16_t::zero(true);
             }
@@ -924,7 +916,7 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_vp_op_destroy_vp(bf_uint16_t const &vpid) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpid)) {
+            if (bsl::unlikely(!vpid)) {
                 bsl::error() << "invalid vpid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -994,12 +986,12 @@ namespace syscall
         bf_vp_op_migrate(bf_uint16_t const &vpid, bf_uint16_t const &ppid) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpid)) {
+            if (bsl::unlikely(!vpid)) {
                 bsl::error() << "invalid vpid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!ppid)) {
+            if (bsl::unlikely(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1042,12 +1034,12 @@ namespace syscall
         bf_vps_op_create_vps(bf_uint16_t const &vpid, bf_uint16_t const &ppid) &noexcept
             -> bf_uint16_t
         {
-            if (bsl::unlikely_assert(!vpid)) {
+            if (bsl::unlikely(!vpid)) {
                 bsl::error() << "invalid vpid\n" << bsl::here();
                 return bf_uint16_t::zero(true);
             }
 
-            if (bsl::unlikely_assert(!ppid)) {
+            if (bsl::unlikely(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();
                 return bf_uint16_t::zero(true);
             }
@@ -1084,7 +1076,7 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_vps_op_destroy_vps(bf_uint16_t const &vpsid) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1119,7 +1111,7 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_vps_op_init_as_root(bf_uint16_t const &vpsid) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1158,12 +1150,12 @@ namespace syscall
         bf_vps_op_read8(bf_uint16_t const &vpsid, bf_uint64_t const &index) const &noexcept
             -> bf_uint8_t
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bf_uint8_t::zero(true);
             }
 
-            if (bsl::unlikely_assert(!index)) {
+            if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
                 return bf_uint8_t::zero(true);
             }
@@ -1204,12 +1196,12 @@ namespace syscall
         bf_vps_op_read16(bf_uint16_t const &vpsid, bf_uint64_t const &index) const &noexcept
             -> bf_uint16_t
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bf_uint16_t::zero(true);
             }
 
-            if (bsl::unlikely_assert(!index)) {
+            if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
                 return bf_uint16_t::zero(true);
             }
@@ -1250,12 +1242,12 @@ namespace syscall
         bf_vps_op_read32(bf_uint16_t const &vpsid, bf_uint64_t const &index) const &noexcept
             -> bf_uint32_t
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bf_uint32_t::zero(true);
             }
 
-            if (bsl::unlikely_assert(!index)) {
+            if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
                 return bf_uint32_t::zero(true);
             }
@@ -1296,12 +1288,12 @@ namespace syscall
         bf_vps_op_read64(bf_uint16_t const &vpsid, bf_uint64_t const &index) const &noexcept
             -> bf_uint64_t
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bf_uint64_t::zero(true);
             }
 
-            if (bsl::unlikely_assert(!index)) {
+            if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
                 return bf_uint64_t::zero(true);
             }
@@ -1344,17 +1336,17 @@ namespace syscall
             bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint8_t const &value) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!index)) {
+            if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!value)) {
+            if (bsl::unlikely(!value)) {
                 bsl::error() << "invalid value\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1405,17 +1397,17 @@ namespace syscall
             bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint16_t const &value) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!index)) {
+            if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!value)) {
+            if (bsl::unlikely(!value)) {
                 bsl::error() << "invalid value\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1466,17 +1458,17 @@ namespace syscall
             bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint32_t const &value) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!index)) {
+            if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!value)) {
+            if (bsl::unlikely(!value)) {
                 bsl::error() << "invalid value\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1527,17 +1519,17 @@ namespace syscall
             bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint64_t const &value) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!index)) {
+            if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!value)) {
+            if (bsl::unlikely(!value)) {
                 bsl::error() << "invalid value\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1584,7 +1576,7 @@ namespace syscall
         bf_vps_op_read_reg(bf_uint16_t const &vpsid, bf_reg_t const reg) const &noexcept
             -> bf_uint64_t
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bf_uint64_t::zero(true);
             }
@@ -1625,12 +1617,12 @@ namespace syscall
             bf_uint16_t const &vpsid, bf_reg_t const reg, bf_uint64_t const &value) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!value)) {
+            if (bsl::unlikely(!value)) {
                 bsl::error() << "invalid value\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1714,17 +1706,17 @@ namespace syscall
             bf_uint16_t const &vmid, bf_uint16_t const &vpid, bf_uint16_t const &vpsid) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vmid)) {
+            if (bsl::unlikely(!vmid)) {
                 bsl::error() << "invalid vmid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!vpid)) {
+            if (bsl::unlikely(!vpid)) {
                 bsl::error() << "invalid vpid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1793,7 +1785,7 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_vps_op_advance_ip(bf_uint16_t const &vpsid) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1861,7 +1853,7 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_vps_op_promote(bf_uint16_t const &vpsid) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1901,7 +1893,7 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_vps_op_clear_vps(bf_uint16_t const &vpsid) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!vpsid)) {
+            if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -1943,7 +1935,7 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_intrinsic_op_rdmsr(bf_uint32_t const &msr) const &noexcept -> bf_uint64_t
         {
-            if (bsl::unlikely_assert(!msr)) {
+            if (bsl::unlikely(!msr)) {
                 bsl::error() << "invalid msr\n" << bsl::here();
                 return bf_uint64_t::zero(true);
             }
@@ -1984,12 +1976,12 @@ namespace syscall
         bf_intrinsic_op_wrmsr(bf_uint32_t const &msr, bf_uint64_t const &value) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!msr)) {
+            if (bsl::unlikely(!msr)) {
                 bsl::error() << "invalid msr\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!value)) {
+            if (bsl::unlikely(!value)) {
                 bsl::error() << "invalid value\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -2032,12 +2024,12 @@ namespace syscall
         bf_intrinsic_op_invlpga(bf_uint64_t const &addr, bf_uint64_t const &asid) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!addr)) {
+            if (bsl::unlikely(!addr)) {
                 bsl::error() << "invalid addr\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!asid)) {
+            if (bsl::unlikely(!asid)) {
                 bsl::error() << "invalid asid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -2077,12 +2069,12 @@ namespace syscall
         bf_intrinsic_op_invept(bf_uint64_t const &eptp, bf_uint64_t const &type) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!eptp)) {
+            if (bsl::unlikely(!eptp)) {
                 bsl::error() << "invalid eptp\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!type)) {
+            if (bsl::unlikely(!type)) {
                 bsl::error() << "invalid type\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -2124,17 +2116,17 @@ namespace syscall
             bf_uint64_t const &addr, bf_uint16_t const &vpid, bf_uint64_t const &type) &noexcept
             -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(!addr)) {
+            if (bsl::unlikely(!addr)) {
                 bsl::error() << "invalid addr\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!vpid)) {
+            if (bsl::unlikely(!vpid)) {
                 bsl::error() << "invalid vpid\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!type)) {
+            if (bsl::unlikely(!type)) {
                 bsl::error() << "invalid type\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
@@ -2179,7 +2171,7 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_mem_op_alloc_page(bf_uint64_t &phys) &noexcept -> void *
         {
-            if (bsl::unlikely_assert(!phys)) {
+            if (bsl::unlikely(!phys)) {
                 bsl::error() << "invalid phys\n" << bsl::here();
                 return nullptr;
             }
@@ -2191,9 +2183,9 @@ namespace syscall
             auto *const virt = new bsl::uint8[bsl::to_umax(HYPERVISOR_PAGE_SIZE).get()];
             m_alloc_free_map.at(virt) = bsl::to_umax(HYPERVISOR_PAGE_SIZE);
 
-            phys = m_alloc_free_map.size();
-            m_bf_virt_to_phys_map.at(virt) = phys;
-            m_bf_phys_to_virt_map.at(phys) = virt;
+            phys = (m_alloc_free_map.size() * bsl::to_umax(HYPERVISOR_PAGE_SIZE));
+            m_virt_to_phys_map.at(virt) = phys;
+            m_phys_to_virt_map.at(phys) = virt;
 
             return virt;
         }
@@ -2233,15 +2225,18 @@ namespace syscall
         ///     it.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param ptr The ptrual address of the page to free
+        ///   @param addr The virtual address of the page to free
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_mem_op_free_page(void *const ptr) &noexcept -> bsl::errc_type
+        bf_mem_op_free_page(void *const addr) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(nullptr == ptr)) {
-                bsl::error() << "ptr is a nullptr\n" << bsl::here();
+            bf_uint64_t phys{};
+            bsl::uint8 *virt{};
+
+            if (bsl::unlikely(nullptr == addr)) {
+                bsl::error() << "addr is a nullptr\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
@@ -2249,14 +2244,14 @@ namespace syscall
                 return m_bf_mem_op_free_page;
             }
 
-            if (m_alloc_free_map.at(ptr).is_zero()) {
+            if (m_alloc_free_map.at(addr).is_zero()) {
                 return bsl::errc_failure;
             }
 
-            auto const phys{m_bf_virt_to_phys_map.at(ptr)};
-            auto *const virt{m_bf_phys_to_virt_map.at(phys)};
-            m_bf_virt_to_phys_map.at(virt) = {};
-            m_bf_phys_to_virt_map.at(phys) = {};
+            phys = m_virt_to_phys_map.at(addr);
+            virt = m_phys_to_virt_map.at(phys);
+            m_virt_to_phys_map.at(virt) = {};
+            m_phys_to_virt_map.at(phys) = {};
 
             delete[] virt;    // GRCOV_EXCLUDE_BR
             m_alloc_free_map.at(virt) = {};
@@ -2303,12 +2298,12 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_mem_op_alloc_huge(bf_uint64_t const &size, bf_uint64_t &phys) &noexcept -> void *
         {
-            if (bsl::unlikely_assert(!size)) {
+            if (bsl::unlikely(!size)) {
                 bsl::error() << "invalid size\n" << bsl::here();
                 return nullptr;
             }
 
-            if (bsl::unlikely_assert(!phys)) {
+            if (bsl::unlikely(!phys)) {
                 bsl::error() << "invalid phys\n" << bsl::here();
                 return nullptr;
             }
@@ -2320,9 +2315,9 @@ namespace syscall
             auto *const virt = new bsl::uint8[size.get()];
             m_alloc_free_map.at(virt) = size;
 
-            phys = m_alloc_free_map.size();
-            m_bf_virt_to_phys_map.at(virt) = phys;
-            m_bf_phys_to_virt_map.at(phys) = virt;
+            phys = (m_alloc_free_map.size() * bsl::to_umax(HYPERVISOR_PAGE_SIZE));
+            m_virt_to_phys_map.at(virt) = phys;
+            m_phys_to_virt_map.at(phys) = virt;
 
             return virt;
         }
@@ -2375,15 +2370,18 @@ namespace syscall
         ///     it.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param ptr The ptrual address of the memory to free
+        ///   @param addr The virtual address of the memory to free
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_mem_op_free_huge(void *const ptr) &noexcept -> bsl::errc_type
+        bf_mem_op_free_huge(void *const addr) &noexcept -> bsl::errc_type
         {
-            if (bsl::unlikely_assert(nullptr == ptr)) {
-                bsl::error() << "ptr is a nullptr\n" << bsl::here();
+            bf_uint64_t phys{};
+            bsl::uint8 *virt{};
+
+            if (bsl::unlikely(nullptr == addr)) {
+                bsl::error() << "addr is a nullptr\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
@@ -2391,14 +2389,14 @@ namespace syscall
                 return m_bf_mem_op_free_huge;
             }
 
-            if (m_alloc_free_map.at(ptr).is_zero()) {
+            if (m_alloc_free_map.at(addr).is_zero()) {
                 return bsl::errc_failure;
             }
 
-            auto const phys{m_bf_virt_to_phys_map.at(ptr)};
-            auto *const virt{m_bf_phys_to_virt_map.at(phys)};
-            m_bf_virt_to_phys_map.at(virt) = {};
-            m_bf_phys_to_virt_map.at(phys) = {};
+            phys = m_virt_to_phys_map.at(addr);
+            virt = m_phys_to_virt_map.at(phys);
+            m_virt_to_phys_map.at(virt) = {};
+            m_phys_to_virt_map.at(phys) = {};
 
             delete[] virt;    // GRCOV_EXCLUDE_BR
             m_alloc_free_map.at(virt) = {};
@@ -2495,36 +2493,28 @@ namespace syscall
         bf_read_phys(bf_uint64_t const &phys) const &noexcept -> bsl::safe_integral<T>
         {
             static_assert(bsl::is_unsigned<T>::value);
+            bsl::safe_uintmax virt{};
 
-            if (bsl::unlikely_assert(!phys)) {
+            if (bsl::unlikely(!phys)) {
                 bsl::error() << "invalid phys\n" << bsl::here();
                 return bsl::safe_integral<T>::zero(true);
             }
 
-            if (bsl::unlikely_assert(phys.is_zero())) {
+            if (bsl::unlikely(phys.is_zero())) {
                 bsl::error() << "phys is a nullptr\n" << bsl::here();
                 return bsl::safe_integral<T>::zero(true);
             }
 
-            return bsl::convert<T>(m_bf_read_phys.at(phys));
-        }
+            virt = phys + bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR);
+            if (bsl::unlikely(!virt)) {
+                bsl::error() << "bf_read_phys failed due to invalid physical address "    // --
+                             << bsl::hex(phys) << bsl::endl                               // --
+                             << bsl::here();
 
-        /// <!-- description -->
-        ///   @brief Sets the return value of bf_read_phys.
-        ///     (unit testing only)
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam T the type of integral to read
-        ///   @param phys the physical address to read
-        ///   @param val the value to return when executing
-        ///     bf_read_phys
-        ///
-        template<typename T = bsl::uintmax>
-        constexpr void
-        set_bf_read_phys(bf_uint64_t const &phys, bsl::safe_integral<T> const &val) &noexcept
-        {
-            static_assert(bsl::is_unsigned<T>::value);
-            m_bf_read_phys.at(phys) = bsl::to_umax(val);
+                return bsl::safe_integral<T>::zero(true);
+            }
+
+            return bsl::convert<T>(m_read_write_phys_map.at(phys));
         }
 
         /// <!-- description -->
@@ -2537,54 +2527,40 @@ namespace syscall
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
-        template<typename T>
+        template<typename T = bsl::uintmax>
         [[nodiscard]] constexpr auto
         bf_write_phys(bf_uint64_t const &phys, bsl::safe_integral<T> const &val) &noexcept
             -> bsl::errc_type
         {
             static_assert(bsl::is_unsigned<T>::value);
+            bsl::safe_uintmax virt{};
 
-            if (bsl::unlikely_assert(!phys)) {
+            if (bsl::unlikely(!phys)) {
                 bsl::error() << "invalid phys\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(phys.is_zero())) {
+            if (bsl::unlikely(phys.is_zero())) {
                 bsl::error() << "phys is a nullptr\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (bsl::unlikely_assert(!val)) {
+            if (bsl::unlikely(!val)) {
                 bsl::error() << "invalid val\n" << bsl::here();
                 return bsl::errc_invalid_argument;
             }
 
-            if (m_bf_write_phys.at({phys, bsl::to_umax(val)})) {
-                m_bf_read_phys.at(phys) = bsl::to_umax(val);
+            virt = phys + bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR);
+            if (bsl::unlikely(!virt)) {
+                bsl::error() << "bf_write_phys failed due to invalid physical address "    // --
+                             << bsl::hex(phys) << bsl::endl                                // --
+                             << bsl::here();
+
+                return bsl::errc_failure;
             }
 
-            return m_bf_write_phys.at({phys, bsl::to_umax(val)});
-        }
-
-        /// <!-- description -->
-        ///   @brief Sets the return value of bf_write_phys.
-        ///     (unit testing only)
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @tparam T the type of integral to write
-        ///   @param phys the physical address to write
-        ///   @param val the value to write to the provided physical address
-        ///   @param errc the bsl::errc_type to return when executing
-        ///     bf_write_phys
-        ///
-        template<typename T>
-        constexpr void
-        set_bf_write_phys(
-            bf_uint64_t const &phys,
-            bsl::safe_integral<T> const &val,
-            bsl::errc_type const errc) &noexcept
-        {
-            m_bf_write_phys.at({phys, bsl::to_umax(val)}) = errc;
+            m_read_write_phys_map.at(phys) = bsl::to_u64(val);
+            return bsl::errc_success;
         }
 
         /// <!-- description -->
@@ -2600,27 +2576,35 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_virt_to_phys(void *const virt) const &noexcept -> bf_uint64_t
         {
-            if (bsl::unlikely_assert(nullptr == virt)) {
+            if (bsl::unlikely(nullptr == virt)) {
                 bsl::error() << "invalid virt\n" << bsl::here();
                 return bf_uint64_t::zero(true);
             }
 
-            return m_bf_virt_to_phys_map.at(virt);
-        }
+            /// NOTE:
+            /// - If you get this error message, it is because your code
+            ///   does not adhere to the ABI. Virt to phys conversions are
+            ///   only supported for memory that is allocated using
+            ///   bf_mem_op_alloc_page and bf_mem_op_alloc_huge. We added this
+            ///   extra check for sanity to help ensure the ABI is being
+            ///   adhered to as the regular code doesn't keep track of this
+            ///   which could result in UB.
+            ///
 
-        /// <!-- description -->
-        ///   @brief Sets the return value of bf_virt_to_phys.
-        ///     (unit testing only)
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param virt the virtual address to convert
-        ///   @param phys the physical address to return when executing
-        ///     bf_virt_to_phys
-        ///
-        constexpr void
-        set_bf_virt_to_phys(void *const virt, bf_uint64_t const &phys) &noexcept
-        {
-            m_bf_virt_to_phys_map.at(virt) = phys;
+            if (!m_virt_to_phys_map.contains(virt)) {
+                bsl::error() << "virtual address "          // --
+                             << virt                        // --
+                             << " was not obtained from"    // --
+                             << " bf_mem_op_alloc_page"     // --
+                             << " or "                      // --
+                             << " bf_mem_op_alloc_huge"     // --
+                             << bsl::endl                   // --
+                             << bsl::here();
+
+                return bf_uint64_t::zero(true);
+            }
+
+            return m_virt_to_phys_map.at(virt);
         }
 
         /// <!-- description -->
@@ -2636,33 +2620,40 @@ namespace syscall
         [[nodiscard]] constexpr auto
         bf_phys_to_virt(bf_uint64_t const &phys) const &noexcept -> void *
         {
-            if (bsl::unlikely_assert(!phys)) {
+            if (bsl::unlikely(!phys)) {
                 bsl::error() << "invalid phys\n" << bsl::here();
                 return nullptr;
             }
 
-            if (bsl::unlikely_assert(phys.is_zero())) {
+            if (bsl::unlikely(phys.is_zero())) {
                 bsl::error() << "phys is a nullptr\n" << bsl::here();
                 return nullptr;
             }
 
-            return m_bf_phys_to_virt_map.at(phys);
-        }
+            /// NOTE:
+            /// - If you get this error message, it is because your code
+            ///   does not adhere to the ABI. Virt to phys conversions are
+            ///   only supported for memory that is allocated using
+            ///   bf_mem_op_alloc_page and bf_mem_op_alloc_huge. We added this
+            ///   extra check for sanity to help ensure the ABI is being
+            ///   adhered to as the regular code doesn't keep track of this
+            ///   which could result in UB.
+            ///
 
-        /// <!-- description -->
-        ///   @brief Sets the return value of bf_phys_to_virt.
-        ///     (unit testing only)
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param phys the physical address to convert
-        ///   @param virt the virtual address to return when executing
-        ///     bf_phys_to_virt. Must be a bsl::uint8 * to support constexpr
-        ///     as void * is not supported.
-        ///
-        constexpr void
-        set_bf_phys_to_virt(bf_uint64_t const &phys, bsl::uint8 *const virt) &noexcept
-        {
-            m_bf_phys_to_virt_map.at(phys) = virt;
+            if (!m_phys_to_virt_map.contains(phys)) {
+                bsl::error() << "physical address "          // --
+                             << phys                         // --
+                             << " was not reserved using"    // --
+                             << " bf_mem_op_alloc_page"      // --
+                             << " or "                       // --
+                             << " bf_mem_op_alloc_huge"      // --
+                             << bsl::endl                    // --
+                             << bsl::here();
+
+                return nullptr;
+            }
+
+            return m_phys_to_virt_map.at(phys);
         }
     };
 }

@@ -25,21 +25,133 @@
 #ifndef MOCKS_BF_SYSCALL_IMPL_HPP
 #define MOCKS_BF_SYSCALL_IMPL_HPP
 
+#include <bf_constants.hpp>
 #include <bf_reg_t.hpp>
 #include <bf_types.hpp>
+#include <iomanip>
+#include <iostream>
 
 #include <bsl/char_type.hpp>
+#include <bsl/convert.hpp>
 #include <bsl/cstr_type.hpp>
 #include <bsl/discard.hpp>
+#include <bsl/unlikely.hpp>
+#include <bsl/unordered_map.hpp>
+
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
 
 namespace syscall
 {
+    /// NOTE:
+    /// - In general, this set of mocked "impl" APIs should not be used
+    ///   directly. Most of these APIs should be used through the bf_syscall_t
+    ///   wrapper, and the mocked version of that wrapper should be used
+    ///   instead as it was far more capable.
+    /// - There are some APIs in this library that provide some facilities.
+    ///   These specifically include the control ops and the debug ops.
+    ///   The syscall library provides these ops outside of the bf_syscall_t
+    ///   so that they can be used by an extension on their own.
+    /// - The control ops APIs should only be used in a single unit test
+    ///   designed to ensure the main.cpp (or whatever file the entry points
+    ///   are located in) are tested as this is the only file that should
+    ///   contain these control ops.
+    /// - The debug ops should only be used by whatever runtime library is
+    ///   used. This runtime library will provide the logic for how to
+    ///   handle the platform BSL functions. All other extension logic can
+    ///   simply use the BSL as it is, as the BSL already provides platform
+    ///   support for Windows and Linux which is what the unit tests will
+    ///   run on, meaning these libraries are only needed to support unit
+    ///   testing of the code that implements the syscall version of the
+    ///   BSL platform logic.
+    ///
+
+    // -------------------------------------------------------------------------
+    // global variables used by the impl mocks
+    // -------------------------------------------------------------------------
+
+    /// @brief stores the data to return for an API
+    constinit bsl::unordered_map<std::string, bf_uint64_t> g_data{};
+    /// @brief stores the error code to return for an API
+    constinit bsl::unordered_map<std::string, bf_status_t> g_errc{};
+
+    /// @brief stores whether or not bf_control_op_exit_impl was executed
+    constinit bool g_bf_control_op_exit_impl_executed{};
+    /// @brief stores whether or not bf_control_op_wait_impl was executed
+    constinit bool g_bf_control_op_wait_impl_executed{};
+
+    /// @brief stores whether or not bf_debug_op_out_impl was executed
+    constinit bool g_bf_debug_op_out_impl_executed{};
+    /// @brief stores whether or not bf_debug_op_dump_vm_impl was executed
+    constinit bool g_bf_debug_op_dump_vm_impl_executed{};
+    /// @brief stores whether or not bf_debug_op_dump_vp_impl was executed
+    constinit bool g_bf_debug_op_dump_vp_impl_executed{};
+    /// @brief stores whether or not bf_debug_op_dump_vps_impl was executed
+    constinit bool g_bf_debug_op_dump_vps_impl_executed{};
+    /// @brief stores whether or not bf_debug_op_dump_vmexit_log_impl was executed
+    constinit bool g_bf_debug_op_dump_vmexit_log_impl_executed{};
+    /// @brief stores whether or not bf_debug_op_write_c_impl was executed
+    constinit bool g_bf_debug_op_write_c_impl_executed{};
+    /// @brief stores whether or not bf_debug_op_write_str_impl was executed
+    constinit bool g_bf_debug_op_write_str_impl_executed{};
+    /// @brief stores whether or not bf_debug_op_dump_ext_impl was executed
+    constinit bool g_bf_debug_op_dump_ext_impl_executed{};
+    /// @brief stores whether or not bf_debug_op_dump_page_pool_impl was executed
+    constinit bool g_bf_debug_op_dump_page_pool_impl_executed{};
+    /// @brief stores whether or not bf_debug_op_dump_huge_pool_impl was executed
+    constinit bool g_bf_debug_op_dump_huge_pool_impl_executed{};
+
+    // -------------------------------------------------------------------------
+    // dummy callbacks
+    // -------------------------------------------------------------------------
+
+    /// <!-- description -->
+    ///   @brief Implements a dummy bootstrap entry function.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param ppid the physical process to bootstrap
+    ///
+    extern "C" inline void
+    dummy_bootstrap_entry(syscall::bf_uint16_t::value_type const ppid) noexcept
+    {
+        bsl::discard(ppid);
+    }
+
+    /// <!-- description -->
+    ///   @brief Implements a dummy VMExit entry function.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param vpsid the ID of the VPS that generated the VMExit
+    ///   @param exit_reason the exit reason associated with the VMExit
+    ///
+    extern "C" inline void
+    dummy_vmexit_entry(
+        syscall::bf_uint16_t::value_type const vpsid,
+        syscall::bf_uint64_t::value_type const exit_reason) noexcept
+    {
+        bsl::discard(vpsid);
+        bsl::discard(exit_reason);
+    }
+
+    /// <!-- description -->
+    ///   @brief Implements a dummy fast fail entry function.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param vpsid the ID of the VPS that generated the fail
+    ///   @param fail_reason the exit reason associated with the fail
+    ///
+    extern "C" inline void
+    dummy_fail_entry(
+        syscall::bf_uint16_t::value_type const vpsid,
+        syscall::bf_status_t::value_type const fail_reason) noexcept
+    {
+        bsl::discard(vpsid);
+        bsl::discard(fail_reason);
+    }
+
     // -------------------------------------------------------------------------
     // TLS ops
     // -------------------------------------------------------------------------
-
-    /// @brief stores whether or not bf_tls_rax_impl was executed
-    constinit inline bool g_bf_tls_rax_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_rax.
@@ -47,15 +159,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_rax_impl() noexcept -> bf_uint64_t::value_type
     {
-        g_bf_tls_rax_impl_executed = true;
-        return {};
+        return g_data.at("bf_tls_rax").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_rax_impl was executed
-    constinit inline bool g_bf_tls_set_rax_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_rax.
@@ -63,15 +171,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_rax_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
-        g_bf_tls_set_rax_impl_executed = true;
+        g_data.at("bf_tls_rax") = val;
     }
-
-    /// @brief stores whether or not bf_tls_rbx_impl was executed
-    constinit inline bool g_bf_tls_rbx_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_rbx.
@@ -79,14 +183,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_rbx_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_rbx").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_rbx_impl was executed
-    constinit inline bool g_bf_tls_set_rbx_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_rbx.
@@ -94,14 +195,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_rbx_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_rbx") = val;
     }
-
-    /// @brief stores whether or not bf_tls_rcx_impl was executed
-    constinit inline bool g_bf_tls_rcx_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_rcx.
@@ -109,14 +207,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_rcx_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_rcx").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_rcx_impl was executed
-    constinit inline bool g_bf_tls_set_rcx_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_rcx.
@@ -124,14 +219,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_rcx_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_rcx") = val;
     }
-
-    /// @brief stores whether or not bf_tls_rdx_impl was executed
-    constinit inline bool g_bf_tls_rdx_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_rdx.
@@ -139,14 +231,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_rdx_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_rdx").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_rdx_impl was executed
-    constinit inline bool g_bf_tls_set_rdx_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_rdx.
@@ -154,14 +243,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_rdx_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_rdx") = val;
     }
-
-    /// @brief stores whether or not bf_tls_rbp_impl was executed
-    constinit inline bool g_bf_tls_rbp_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_rbp.
@@ -169,14 +255,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_rbp_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_rbp").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_rbp_impl was executed
-    constinit inline bool g_bf_tls_set_rbp_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_rbp.
@@ -184,14 +267,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_rbp_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_rbp") = val;
     }
-
-    /// @brief stores whether or not bf_tls_rsi_impl was executed
-    constinit inline bool g_bf_tls_rsi_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_rsi.
@@ -199,14 +279,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_rsi_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_rsi").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_rsi_impl was executed
-    constinit inline bool g_bf_tls_set_rsi_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_rsi.
@@ -214,14 +291,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_rsi_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_rsi") = val;
     }
-
-    /// @brief stores whether or not bf_tls_rdi_impl was executed
-    constinit inline bool g_bf_tls_rdi_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_rdi.
@@ -229,14 +303,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_rdi_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_rdi").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_rdi_impl was executed
-    constinit inline bool g_bf_tls_set_rdi_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_rdi.
@@ -244,14 +315,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_rdi_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_rdi") = val;
     }
-
-    /// @brief stores whether or not bf_tls_r8_impl was executed
-    constinit inline bool g_bf_tls_r8_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_r8.
@@ -259,14 +327,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_r8_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_r8").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_r8_impl was executed
-    constinit inline bool g_bf_tls_set_r8_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_r8.
@@ -274,14 +339,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_r8_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_r8") = val;
     }
-
-    /// @brief stores whether or not bf_tls_r9_impl was executed
-    constinit inline bool g_bf_tls_r9_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_r9.
@@ -289,14 +351,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_r9_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_r9").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_r9_impl was executed
-    constinit inline bool g_bf_tls_set_r9_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_r9.
@@ -304,14 +363,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_r9_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_r9") = val;
     }
-
-    /// @brief stores whether or not bf_tls_r10_impl was executed
-    constinit inline bool g_bf_tls_r10_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_r10.
@@ -319,14 +375,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_r10_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_r10").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_r10_impl was executed
-    constinit inline bool g_bf_tls_set_r10_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_r10.
@@ -334,14 +387,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_r10_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_r10") = val;
     }
-
-    /// @brief stores whether or not bf_tls_r11_impl was executed
-    constinit inline bool g_bf_tls_r11_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_r11.
@@ -349,14 +399,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_r11_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_r11").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_r11_impl was executed
-    constinit inline bool g_bf_tls_set_r11_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_r11.
@@ -364,14 +411,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_r11_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_r11") = val;
     }
-
-    /// @brief stores whether or not bf_tls_r12_impl was executed
-    constinit inline bool g_bf_tls_r12_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_r12.
@@ -379,14 +423,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_r12_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_r12").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_r12_impl was executed
-    constinit inline bool g_bf_tls_set_r12_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_r12.
@@ -394,14 +435,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_r12_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_r12") = val;
     }
-
-    /// @brief stores whether or not bf_tls_r13_impl was executed
-    constinit inline bool g_bf_tls_r13_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_r13.
@@ -409,14 +447,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_r13_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_r13").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_r13_impl was executed
-    constinit inline bool g_bf_tls_set_r13_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_r13.
@@ -424,14 +459,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_r13_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_r13") = val;
     }
-
-    /// @brief stores whether or not bf_tls_r14_impl was executed
-    constinit inline bool g_bf_tls_r14_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_r14.
@@ -439,14 +471,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_r14_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_r14").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_r14_impl was executed
-    constinit inline bool g_bf_tls_set_r14_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_r14.
@@ -454,14 +483,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_r14_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_r14") = val;
     }
-
-    /// @brief stores whether or not bf_tls_r15_impl was executed
-    constinit inline bool g_bf_tls_r15_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_r15.
@@ -469,14 +495,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_r15_impl() noexcept -> bf_uint64_t::value_type
     {
-        return {};
+        return g_data.at("bf_tls_r15").get();
     }
-
-    /// @brief stores whether or not bf_tls_set_r15_impl was executed
-    constinit inline bool g_bf_tls_set_r15_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_set_r15.
@@ -484,14 +507,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param val n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_tls_set_r15_impl(bf_uint64_t::value_type const val) noexcept
     {
-        bsl::discard(val);
+        g_data.at("bf_tls_r15") = val;
     }
-
-    /// @brief stores whether or not bf_tls_extid_impl was executed
-    constinit inline bool g_bf_tls_extid_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_extid.
@@ -499,14 +519,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_extid_impl() noexcept -> bf_uint16_t::value_type
     {
-        return {};
+        return bsl::to_u16(g_data.at("bf_tls_extid")).get();
     }
-
-    /// @brief stores whether or not bf_tls_vmid_impl was executed
-    constinit inline bool g_bf_tls_vmid_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_vmid.
@@ -514,14 +531,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_vmid_impl() noexcept -> bf_uint16_t::value_type
     {
-        return {};
+        return bsl::to_u16(g_data.at("bf_tls_vmid")).get();
     }
-
-    /// @brief stores whether or not bf_tls_vpid_impl was executed
-    constinit inline bool g_bf_tls_vpid_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_vpid.
@@ -529,14 +543,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_vpid_impl() noexcept -> bf_uint16_t::value_type
     {
-        return {};
+        return bsl::to_u16(g_data.at("bf_tls_vpid")).get();
     }
-
-    /// @brief stores whether or not bf_tls_vpsid_impl was executed
-    constinit inline bool g_bf_tls_vpsid_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_vpsid.
@@ -544,14 +555,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_vpsid_impl() noexcept -> bf_uint16_t::value_type
     {
-        return {};
+        return bsl::to_u16(g_data.at("bf_tls_vpsid")).get();
     }
-
-    /// @brief stores whether or not bf_tls_ppid_impl was executed
-    constinit inline bool g_bf_tls_ppid_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_ppid.
@@ -559,14 +567,11 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_ppid_impl() noexcept -> bf_uint16_t::value_type
     {
-        return {};
+        return bsl::to_u16(g_data.at("bf_tls_ppid")).get();
     }
-
-    /// @brief stores whether or not bf_tls_online_pps_impl was executed
-    constinit inline bool g_bf_tls_online_pps_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_tls_online_pps.
@@ -574,42 +579,37 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_tls_online_pps_impl() noexcept -> bf_uint16_t::value_type
     {
-        return {};
+        return bsl::to_u16(g_data.at("bf_tls_online_pps")).get();
     }
 
     // -------------------------------------------------------------------------
     // bf_control_ops
     // -------------------------------------------------------------------------
 
-    /// @brief stores whether or not bf_control_op_exit_impl was executed
-    constinit inline bool g_bf_control_op_exit_impl_executed{};
-
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_control_op_exit.
     ///
-    extern "C" void
+    extern "C" inline void
     bf_control_op_exit_impl() noexcept
-    {}
-
-    /// @brief stores whether or not bf_control_op_wait_impl was executed
-    constinit inline bool g_bf_control_op_wait_impl_executed{};
+    {
+        g_bf_control_op_exit_impl_executed = true;
+    }
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_control_op_wait.
     ///
-    extern "C" void
+    extern "C" inline void
     bf_control_op_wait_impl() noexcept
-    {}
+    {
+        g_bf_control_op_wait_impl_executed = true;
+    }
 
     // -------------------------------------------------------------------------
     // bf_handle_ops
     // -------------------------------------------------------------------------
-
-    /// @brief stores whether or not bf_handle_op_open_handle_impl was executed
-    constinit inline bool g_bf_handle_op_open_handle_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_handle_op_open_handle.
@@ -619,19 +619,23 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_handle_op_open_handle_impl(
         bf_uint32_t::value_type const reg0_in, bf_uint64_t::value_type *const reg0_out) noexcept
         -> bf_status_t::value_type
     {
         bsl::discard(reg0_in);
-        bsl::discard(reg0_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_handle_op_open_handle_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = g_data.at("bf_handle_op_open_handle_impl_reg0_out").get();
+        }
+
+        return g_errc.at("bf_handle_op_open_handle_impl").get();
     }
-
-    /// @brief stores whether or not bf_handle_op_close_handle_impl was executed
-    constinit inline bool g_bf_handle_op_close_handle_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_handle_op_close_handle.
@@ -640,20 +644,17 @@ namespace syscall
     ///   @param reg0_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_handle_op_close_handle_impl(bf_uint64_t::value_type const reg0_in) noexcept
         -> bf_status_t::value_type
     {
         bsl::discard(reg0_in);
-        return {};
+        return g_errc.at("bf_handle_op_close_handle_impl").get();
     }
 
     // -------------------------------------------------------------------------
     // bf_debug_ops
     // -------------------------------------------------------------------------
-
-    /// @brief stores whether or not bf_debug_op_out_impl was executed
-    constinit inline bool g_bf_debug_op_out_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_debug_op_out.
@@ -662,16 +663,13 @@ namespace syscall
     ///   @param reg0_in n/a
     ///   @param reg1_in n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_debug_op_out_impl(
         bf_uint64_t::value_type const reg0_in, bf_uint64_t::value_type const reg1_in) noexcept
     {
-        bsl::discard(reg0_in);
-        bsl::discard(reg1_in);
+        g_bf_debug_op_out_impl_executed = true;
+        std::cout << std::hex << "0x" << reg0_in << " 0x" << reg1_in << '\n';
     }
-
-    /// @brief stores whether or not bf_debug_op_dump_vm_impl was executed
-    constinit inline bool g_bf_debug_op_dump_vm_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_debug_op_dump_vm.
@@ -679,14 +677,12 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param reg0_in n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_debug_op_dump_vm_impl(bf_uint16_t::value_type const reg0_in) noexcept
     {
-        bsl::discard(reg0_in);
+        g_bf_debug_op_dump_vm_impl_executed = true;
+        std::cout << std::hex << "vm [0x" << reg0_in << "] dump: mock empty\n";
     }
-
-    /// @brief stores whether or not bf_debug_op_dump_vp_impl was executed
-    constinit inline bool g_bf_debug_op_dump_vp_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_debug_op_dump_vp.
@@ -694,14 +690,12 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param reg0_in n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_debug_op_dump_vp_impl(bf_uint16_t::value_type const reg0_in) noexcept
     {
-        bsl::discard(reg0_in);
+        g_bf_debug_op_dump_vp_impl_executed = true;
+        std::cout << std::hex << "vp [0x" << reg0_in << "] dump: mock empty\n";
     }
-
-    /// @brief stores whether or not bf_debug_op_dump_vps_impl was executed
-    constinit inline bool g_bf_debug_op_dump_vps_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_debug_op_dump_vps.
@@ -709,14 +703,12 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param reg0_in n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_debug_op_dump_vps_impl(bf_uint16_t::value_type const reg0_in) noexcept
     {
-        bsl::discard(reg0_in);
+        g_bf_debug_op_dump_vps_impl_executed = true;
+        std::cout << std::hex << "vps [0x" << reg0_in << "] dump: mock empty\n";
     }
-
-    /// @brief stores whether or not bf_debug_op_dump_vmexit_log_impl was executed
-    constinit inline bool g_bf_debug_op_dump_vmexit_log_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_debug_op_dump_vmexit_log.
@@ -724,14 +716,12 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param reg0_in n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_debug_op_dump_vmexit_log_impl(bf_uint16_t::value_type const reg0_in) noexcept
     {
-        bsl::discard(reg0_in);
+        g_bf_debug_op_dump_vmexit_log_impl_executed = true;
+        std::cout << std::hex << "vmexit log for pp [0x" << reg0_in << "]: mock empty\n";
     }
-
-    /// @brief stores whether or not bf_debug_op_write_c_impl was executed
-    constinit inline bool g_bf_debug_op_write_c_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_debug_op_write_c.
@@ -739,14 +729,12 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param reg0_in n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_debug_op_write_c_impl(bsl::char_type const reg0_in) noexcept
     {
-        bsl::discard(reg0_in);
+        g_bf_debug_op_write_c_impl_executed = true;
+        std::cout << reg0_in;
     }
-
-    /// @brief stores whether or not bf_debug_op_write_str_impl was executed
-    constinit inline bool g_bf_debug_op_write_str_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_debug_op_write_str.
@@ -754,14 +742,12 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param reg0_in n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_debug_op_write_str_impl(bsl::char_type const *const reg0_in) noexcept
     {
-        bsl::discard(reg0_in);
+        g_bf_debug_op_write_str_impl_executed = true;
+        std::cout << reg0_in;
     }
-
-    /// @brief stores whether or not bf_debug_op_dump_ext_impl was executed
-    constinit inline bool g_bf_debug_op_dump_ext_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_debug_op_dump_ext.
@@ -769,40 +755,36 @@ namespace syscall
     /// <!-- inputs/outputs -->
     ///   @param reg0_in n/a
     ///
-    extern "C" void
+    extern "C" inline void
     bf_debug_op_dump_ext_impl(bf_uint16_t::value_type const reg0_in) noexcept
     {
-        bsl::discard(reg0_in);
+        g_bf_debug_op_dump_ext_impl_executed = true;
+        std::cout << std::hex << "ext [0x" << reg0_in << "] dump: mock empty\n";
     }
-
-    /// @brief stores whether or not bf_debug_op_dump_page_pool_impl was executed
-    constinit inline bool g_bf_debug_op_dump_page_pool_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_debug_op_dump_page_pool.
     ///
-    extern "C" void
+    extern "C" inline void
     bf_debug_op_dump_page_pool_impl() noexcept
     {
+        g_bf_debug_op_dump_page_pool_impl_executed = true;
+        std::cout << "page pool dump: mock empty\n";
     }
-
-    /// @brief stores whether or not bf_debug_op_dump_huge_pool_impl was executed
-    constinit inline bool g_bf_debug_op_dump_huge_pool_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_debug_op_dump_huge_pool.
     ///
-    extern "C" void
+    extern "C" inline void
     bf_debug_op_dump_huge_pool_impl() noexcept
     {
+        g_bf_debug_op_dump_huge_pool_impl_executed = true;
+        std::cout << "huge pool dump: mock empty\n";
     }
 
     // -------------------------------------------------------------------------
     // bf_callback_ops
     // -------------------------------------------------------------------------
-
-    /// @brief stores whether or not bf_callback_op_register_bootstrap_impl was executed
-    constinit inline bool g_bf_callback_op_register_bootstrap_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_callback_op_register_bootstrap.
@@ -812,7 +794,7 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_callback_op_register_bootstrap_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_callback_handler_bootstrap_t const reg1_in) noexcept -> bf_status_t::value_type
@@ -820,11 +802,8 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_callback_op_register_bootstrap_impl").get();
     }
-
-    /// @brief stores whether or not bf_callback_op_register_vmexit_impl was executed
-    constinit inline bool g_bf_callback_op_register_vmexit_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_callback_op_register_vmexit.
@@ -834,7 +813,7 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_callback_op_register_vmexit_impl(
         bf_uint64_t::value_type const reg0_in, bf_callback_handler_vmexit_t const reg1_in) noexcept
         -> bf_status_t::value_type
@@ -842,11 +821,8 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_callback_op_register_vmexit_impl").get();
     }
-
-    /// @brief stores whether or not bf_callback_op_register_fail_impl was executed
-    constinit inline bool g_bf_callback_op_register_fail_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_callback_op_register_fail.
@@ -856,7 +832,7 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_callback_op_register_fail_impl(
         bf_uint64_t::value_type const reg0_in, bf_callback_handler_fail_t const reg1_in) noexcept
         -> bf_status_t::value_type
@@ -864,15 +840,12 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_callback_op_register_fail_impl").get();
     }
 
     // -------------------------------------------------------------------------
     // bf_vm_ops
     // -------------------------------------------------------------------------
-
-    /// @brief stores whether or not bf_vm_op_create_vm_impl was executed
-    constinit inline bool g_bf_vm_op_create_vm_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vm_op_create_vm.
@@ -882,19 +855,23 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vm_op_create_vm_impl(
         bf_uint64_t::value_type const reg0_in, bf_uint16_t::value_type *const reg0_out) noexcept
         -> bf_status_t::value_type
     {
         bsl::discard(reg0_in);
-        bsl::discard(reg0_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_vm_op_create_vm_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = bsl::to_u16(g_data.at("bf_vm_op_create_vm_impl_reg0_out")).get();
+        }
+
+        return g_errc.at("bf_vm_op_create_vm_impl").get();
     }
-
-    /// @brief stores whether or not bf_vm_op_destroy_vm_impl was executed
-    constinit inline bool g_bf_vm_op_destroy_vm_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vm_op_destroy_vm.
@@ -904,7 +881,7 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vm_op_destroy_vm_impl(
         bf_uint64_t::value_type const reg0_in, bf_uint16_t::value_type const reg1_in) noexcept
         -> bf_status_t::value_type
@@ -912,15 +889,12 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_vm_op_destroy_vm_impl").get();
     }
 
     // -------------------------------------------------------------------------
     // bf_vp_ops
     // -------------------------------------------------------------------------
-
-    /// @brief stores whether or not bf_vp_op_create_vp_impl was executed
-    constinit inline bool g_bf_vp_op_create_vp_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vp_op_create_vp.
@@ -932,7 +906,7 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vp_op_create_vp_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -942,13 +916,17 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg0_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_vp_op_create_vp_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = bsl::to_u16(g_data.at("bf_vp_op_create_vp_impl_reg0_out")).get();
+        }
+
+        return g_errc.at("bf_vp_op_create_vp_impl").get();
     }
-
-    /// @brief stores whether or not bf_vp_op_destroy_vp_impl was executed
-    constinit inline bool g_bf_vp_op_destroy_vp_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vp_op_destroy_vp.
@@ -958,7 +936,7 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vp_op_destroy_vp_impl(
         bf_uint64_t::value_type const reg0_in, bf_uint16_t::value_type const reg1_in) noexcept
         -> bf_status_t::value_type
@@ -966,11 +944,8 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_vp_op_destroy_vp_impl").get();
     }
-
-    /// @brief stores whether or not bf_vp_op_migrate_impl was executed
-    constinit inline bool g_bf_vp_op_migrate_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vp_op_migrate.
@@ -981,7 +956,7 @@ namespace syscall
     ///   @param reg2_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vp_op_migrate_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -991,15 +966,12 @@ namespace syscall
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
 
-        return {};
+        return g_errc.at("bf_vp_op_migrate_impl").get();
     }
 
     // -------------------------------------------------------------------------
     // bf_vps_ops
     // -------------------------------------------------------------------------
-
-    /// @brief stores whether or not bf_vps_op_create_vps_impl was executed
-    constinit inline bool g_bf_vps_op_create_vps_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_create_vps.
@@ -1011,7 +983,7 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_create_vps_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1021,13 +993,17 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg0_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_vps_op_create_vps_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = bsl::to_u16(g_data.at("bf_vps_op_create_vps_impl_reg0_out")).get();
+        }
+
+        return g_errc.at("bf_vps_op_create_vps_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_destroy_vps_impl was executed
-    constinit inline bool g_bf_vps_op_destroy_vps_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_destroy_vps.
@@ -1037,7 +1013,7 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_destroy_vps_impl(
         bf_uint64_t::value_type const reg0_in, bf_uint16_t::value_type const reg1_in) noexcept
         -> bf_status_t::value_type
@@ -1045,11 +1021,8 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_vps_op_destroy_vps_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_init_as_root_impl was executed
-    constinit inline bool g_bf_vps_op_init_as_root_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_init_as_root.
@@ -1059,7 +1032,7 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_init_as_root_impl(
         bf_uint64_t::value_type const reg0_in, bf_uint16_t::value_type const reg1_in) noexcept
         -> bf_status_t::value_type
@@ -1067,11 +1040,8 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_vps_op_init_as_root_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_read8_impl was executed
-    constinit inline bool g_bf_vps_op_read8_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_read8.
@@ -1083,7 +1053,7 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_read8_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1093,13 +1063,17 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg0_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_vps_op_read8_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = bsl::to_u8(g_data.at("bf_vps_op_read8_impl_reg0_out")).get();
+        }
+
+        return g_errc.at("bf_vps_op_read8_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_read16_impl was executed
-    constinit inline bool g_bf_vps_op_read16_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_read16.
@@ -1111,7 +1085,7 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_read16_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1121,13 +1095,17 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg0_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_vps_op_read16_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = bsl::to_u16(g_data.at("bf_vps_op_read16_impl_reg0_out")).get();
+        }
+
+        return g_errc.at("bf_vps_op_read16_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_read32_impl was executed
-    constinit inline bool g_bf_vps_op_read32_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_read32.
@@ -1139,7 +1117,7 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_read32_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1149,13 +1127,17 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg0_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_vps_op_read32_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = bsl::to_u32(g_data.at("bf_vps_op_read32_impl_reg0_out")).get();
+        }
+
+        return g_errc.at("bf_vps_op_read32_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_read64_impl was executed
-    constinit inline bool g_bf_vps_op_read64_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_read64.
@@ -1167,7 +1149,7 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_read64_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1177,13 +1159,17 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg0_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_vps_op_read64_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = bsl::to_u64(g_data.at("bf_vps_op_read64_impl_reg0_out")).get();
+        }
+
+        return g_errc.at("bf_vps_op_read64_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_write8_impl was executed
-    constinit inline bool g_bf_vps_op_write8_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_write8.
@@ -1195,7 +1181,7 @@ namespace syscall
     ///   @param reg3_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_write8_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1205,13 +1191,13 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg3_in);
 
-        return {};
+        if (g_errc.at("bf_vps_op_write8_impl") == BF_STATUS_SUCCESS) {
+            g_data.at("bf_vps_op_write8_impl") = bsl::to_u64(reg3_in);
+        }
+
+        return g_errc.at("bf_vps_op_write8_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_write16_impl was executed
-    constinit inline bool g_bf_vps_op_write16_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_write16.
@@ -1223,7 +1209,7 @@ namespace syscall
     ///   @param reg3_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_write16_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1233,13 +1219,13 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg3_in);
 
-        return {};
+        if (g_errc.at("bf_vps_op_write16_impl") == BF_STATUS_SUCCESS) {
+            g_data.at("bf_vps_op_write16_impl") = bsl::to_u64(reg3_in);
+        }
+
+        return g_errc.at("bf_vps_op_write16_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_write32_impl was executed
-    constinit inline bool g_bf_vps_op_write32_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_write32.
@@ -1251,7 +1237,7 @@ namespace syscall
     ///   @param reg3_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_write32_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1261,13 +1247,13 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg3_in);
 
-        return {};
+        if (g_errc.at("bf_vps_op_write32_impl") == BF_STATUS_SUCCESS) {
+            g_data.at("bf_vps_op_write32_impl") = bsl::to_u64(reg3_in);
+        }
+
+        return g_errc.at("bf_vps_op_write32_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_write64_impl was executed
-    constinit inline bool g_bf_vps_op_write64_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_write64.
@@ -1279,7 +1265,7 @@ namespace syscall
     ///   @param reg3_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_write64_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1289,13 +1275,13 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg3_in);
 
-        return {};
+        if (g_errc.at("bf_vps_op_write64_impl") == BF_STATUS_SUCCESS) {
+            g_data.at("bf_vps_op_write64_impl") = bsl::to_u64(reg3_in);
+        }
+
+        return g_errc.at("bf_vps_op_write64_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_read_reg_impl was executed
-    constinit inline bool g_bf_vps_op_read_reg_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_read_reg_impl.
@@ -1307,7 +1293,7 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_read_reg_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1317,13 +1303,17 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg0_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_vps_op_read_reg_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = g_data.at("bf_vps_op_read_reg_impl_reg0_out").get();
+        }
+
+        return g_errc.at("bf_vps_op_read_reg_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_write_reg_impl was executed
-    constinit inline bool g_bf_vps_op_write_reg_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_write_reg.
@@ -1335,7 +1325,7 @@ namespace syscall
     ///   @param reg3_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_write_reg_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1345,13 +1335,13 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
-        bsl::discard(reg3_in);
 
-        return {};
+        if (g_errc.at("bf_vps_op_write_reg_impl") == BF_STATUS_SUCCESS) {
+            g_data.at("bf_vps_op_write_reg_impl") = bsl::to_u64(reg3_in);
+        }
+
+        return g_errc.at("bf_vps_op_write_reg_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_run_impl was executed
-    constinit inline bool g_bf_vps_op_run_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_run.
@@ -1363,7 +1353,7 @@ namespace syscall
     ///   @param reg3_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_run_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint16_t::value_type const reg1_in,
@@ -1375,11 +1365,8 @@ namespace syscall
         bsl::discard(reg2_in);
         bsl::discard(reg3_in);
 
-        return {};
+        return g_errc.at("bf_vps_op_run_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_run_current_impl was executed
-    constinit inline bool g_bf_vps_op_run_current_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_run_current.
@@ -1388,16 +1375,13 @@ namespace syscall
     ///   @param reg0_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_run_current_impl(bf_uint64_t::value_type const reg0_in) noexcept
         -> bf_status_t::value_type
     {
         bsl::discard(reg0_in);
-        return {};
+        return g_errc.at("bf_vps_op_run_current_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_advance_ip_impl was executed
-    constinit inline bool g_bf_vps_op_advance_ip_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_advance_ip.
@@ -1407,7 +1391,7 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_advance_ip_impl(
         bf_uint64_t::value_type const reg0_in, bf_uint16_t::value_type const reg1_in) noexcept
         -> bf_status_t::value_type
@@ -1415,11 +1399,8 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_vps_op_advance_ip_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_advance_ip_and_run_current_impl was executed
-    constinit inline bool g_bf_vps_op_advance_ip_and_run_current_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_advance_ip_and_run_current.
@@ -1428,16 +1409,13 @@ namespace syscall
     ///   @param reg0_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_advance_ip_and_run_current_impl(bf_uint64_t::value_type const reg0_in) noexcept
         -> bf_status_t::value_type
     {
         bsl::discard(reg0_in);
-        return {};
+        return g_errc.at("bf_vps_op_advance_ip_and_run_current_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_promote_impl was executed
-    constinit inline bool g_bf_vps_op_promote_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_promote.
@@ -1447,7 +1425,7 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_promote_impl(
         bf_uint64_t::value_type const reg0_in, bf_uint16_t::value_type const reg1_in) noexcept
         -> bf_status_t::value_type
@@ -1455,11 +1433,8 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_vps_op_promote_impl").get();
     }
-
-    /// @brief stores whether or not bf_vps_op_clear_vps_impl was executed
-    constinit inline bool g_bf_vps_op_clear_vps_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_vps_op_clear_vps.
@@ -1469,7 +1444,7 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_vps_op_clear_vps_impl(
         bf_uint64_t::value_type const reg0_in, bf_uint16_t::value_type const reg1_in) noexcept
         -> bf_status_t::value_type
@@ -1477,15 +1452,12 @@ namespace syscall
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_vps_op_clear_vps_impl").get();
     }
 
     // -------------------------------------------------------------------------
     // bf_intrinsic_ops
     // -------------------------------------------------------------------------
-
-    /// @brief stores whether or not bf_intrinsic_op_rdmsr_impl was executed
-    constinit inline bool g_bf_intrinsic_op_rdmsr_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_intrinsic_op_rdmsr.
@@ -1496,7 +1468,7 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_intrinsic_op_rdmsr_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint32_t::value_type const reg1_in,
@@ -1504,13 +1476,17 @@ namespace syscall
     {
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
-        bsl::discard(reg0_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_intrinsic_op_rdmsr_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = g_data.at("bf_intrinsic_op_rdmsr_impl_reg0_out").get();
+        }
+
+        return g_errc.at("bf_intrinsic_op_rdmsr_impl").get();
     }
-
-    /// @brief stores whether or not bf_intrinsic_op_wrmsr_impl was executed
-    constinit inline bool g_bf_intrinsic_op_wrmsr_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_intrinsic_op_wrmsr.
@@ -1521,7 +1497,7 @@ namespace syscall
     ///   @param reg2_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_intrinsic_op_wrmsr_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint32_t::value_type const reg1_in,
@@ -1529,13 +1505,13 @@ namespace syscall
     {
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
-        bsl::discard(reg2_in);
 
-        return {};
+        if (g_errc.at("bf_intrinsic_op_wrmsr_impl") == BF_STATUS_SUCCESS) {
+            g_data.at("bf_intrinsic_op_wrmsr_impl") = bsl::to_u64(reg2_in);
+        }
+
+        return g_errc.at("bf_intrinsic_op_wrmsr_impl").get();
     }
-
-    /// @brief stores whether or not bf_intrinsic_op_invlpga_impl was executed
-    constinit inline bool g_bf_intrinsic_op_invlpga_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_intrinsic_op_invlpga.
@@ -1546,7 +1522,7 @@ namespace syscall
     ///   @param reg2_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_intrinsic_op_invlpga_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint64_t::value_type const reg1_in,
@@ -1556,11 +1532,8 @@ namespace syscall
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
 
-        return {};
+        return g_errc.at("bf_intrinsic_op_invlpga_impl").get();
     }
-
-    /// @brief stores whether or not bf_intrinsic_op_invept_impl was executed
-    constinit inline bool g_bf_intrinsic_op_invept_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_intrinsic_op_invept.
@@ -1571,7 +1544,7 @@ namespace syscall
     ///   @param reg2_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_intrinsic_op_invept_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint64_t::value_type const reg1_in,
@@ -1581,11 +1554,8 @@ namespace syscall
         bsl::discard(reg1_in);
         bsl::discard(reg2_in);
 
-        return {};
+        return g_errc.at("bf_intrinsic_op_invept_impl").get();
     }
-
-    /// @brief stores whether or not bf_intrinsic_op_invvpid_impl was executed
-    constinit inline bool g_bf_intrinsic_op_invvpid_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_intrinsic_op_invvpid.
@@ -1597,7 +1567,7 @@ namespace syscall
     ///   @param reg3_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_intrinsic_op_invvpid_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint64_t::value_type const reg1_in,
@@ -1609,15 +1579,12 @@ namespace syscall
         bsl::discard(reg2_in);
         bsl::discard(reg3_in);
 
-        return {};
+        return g_errc.at("bf_intrinsic_op_invvpid_impl").get();
     }
 
     // -------------------------------------------------------------------------
     // bf_mem_ops
     // -------------------------------------------------------------------------
-
-    /// @brief stores whether or not bf_mem_op_alloc_page_impl was executed
-    constinit inline bool g_bf_mem_op_alloc_page_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_mem_op_alloc_page.
@@ -1628,21 +1595,29 @@ namespace syscall
     ///   @param reg1_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_mem_op_alloc_page_impl(
         bf_uint64_t::value_type const reg0_in,
         void **const reg0_out,
         bf_uint64_t::value_type *const reg1_out) noexcept -> bf_status_t::value_type
     {
         bsl::discard(reg0_in);
-        bsl::discard(reg0_out);
-        bsl::discard(reg1_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (bsl::unlikely(nullptr == reg1_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_mem_op_alloc_page_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = bsl::to_ptr<void *>(g_data.at("bf_mem_op_alloc_page_impl_reg0_out"));
+            *reg1_out = g_data.at("bf_mem_op_alloc_page_impl_reg1_out").get();
+        }
+
+        return g_errc.at("bf_mem_op_alloc_page_impl").get();
     }
-
-    /// @brief stores whether or not bf_mem_op_free_page_impl was executed
-    constinit inline bool g_bf_mem_op_free_page_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_mem_op_free_page.
@@ -1652,18 +1627,15 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_mem_op_free_page_impl(bf_uint64_t::value_type const reg0_in, void *const reg1_in) noexcept
         -> bf_status_t::value_type
     {
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_mem_op_free_page_impl").get();
     }
-
-    /// @brief stores whether or not bf_mem_op_alloc_huge_impl was executed
-    constinit inline bool g_bf_mem_op_alloc_huge_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_mem_op_alloc_huge.
@@ -1675,7 +1647,7 @@ namespace syscall
     ///   @param reg1_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_mem_op_alloc_huge_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint64_t::value_type const reg1_in,
@@ -1684,14 +1656,22 @@ namespace syscall
     {
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
-        bsl::discard(reg0_out);
-        bsl::discard(reg1_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (bsl::unlikely(nullptr == reg1_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_mem_op_alloc_huge_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = bsl::to_ptr<void *>(g_data.at("bf_mem_op_alloc_huge_impl_reg0_out"));
+            *reg1_out = g_data.at("bf_mem_op_alloc_huge_impl_reg1_out").get();
+        }
+
+        return g_errc.at("bf_mem_op_alloc_huge_impl").get();
     }
-
-    /// @brief stores whether or not bf_mem_op_free_huge_impl was executed
-    constinit inline bool g_bf_mem_op_free_huge_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_mem_op_free_huge.
@@ -1701,18 +1681,15 @@ namespace syscall
     ///   @param reg1_in n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_mem_op_free_huge_impl(bf_uint64_t::value_type const reg0_in, void *const reg1_in) noexcept
         -> bf_status_t::value_type
     {
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
 
-        return {};
+        return g_errc.at("bf_mem_op_free_huge_impl").get();
     }
-
-    /// @brief stores whether or not bf_mem_op_alloc_heap_impl was executed
-    constinit inline bool g_bf_mem_op_alloc_heap_impl_executed{};
 
     /// <!-- description -->
     ///   @brief Implements the ABI for bf_mem_op_alloc_heap.
@@ -1723,7 +1700,7 @@ namespace syscall
     ///   @param reg0_out n/a
     ///   @return n/a
     ///
-    extern "C" [[nodiscard]] auto
+    extern "C" [[nodiscard]] inline auto
     bf_mem_op_alloc_heap_impl(
         bf_uint64_t::value_type const reg0_in,
         bf_uint64_t::value_type const reg1_in,
@@ -1731,9 +1708,16 @@ namespace syscall
     {
         bsl::discard(reg0_in);
         bsl::discard(reg1_in);
-        bsl::discard(reg0_out);
 
-        return {};
+        if (bsl::unlikely(nullptr == reg0_out)) {
+            return BF_STATUS_FAILURE_UNKNOWN.get();
+        }
+
+        if (g_errc.at("bf_mem_op_alloc_heap_impl") == BF_STATUS_SUCCESS) {
+            *reg0_out = bsl::to_ptr<void *>(g_data.at("bf_mem_op_alloc_heap_impl_reg0_out"));
+        }
+
+        return g_errc.at("bf_mem_op_alloc_heap_impl").get();
     }
 }
 

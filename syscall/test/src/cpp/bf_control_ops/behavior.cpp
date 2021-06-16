@@ -28,27 +28,6 @@
 
 namespace syscall
 {
-    /// @brief stores whether or not the impl was executed.
-    bool g_executed{};
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_control_op_exit.
-    ///
-    extern "C" void
-    bf_control_op_exit_impl() noexcept
-    {
-        g_executed = true;
-    }
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_control_op_wait.
-    ///
-    extern "C" void
-    bf_control_op_wait_impl() noexcept
-    {
-        g_executed = true;
-    }
-
     /// <!-- description -->
     ///   @brief Used to execute the actual checks. We put the checks in this
     ///     function so that we can validate the tests both at compile-time
@@ -61,25 +40,25 @@ namespace syscall
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"bf_control_op_exit executes impl"} = []() {
+        bsl::ut_scenario{"bf_control_op_exit"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_control_op_exit_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_control_op_exit();
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_control_op_exit_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_control_op_wait executes impl"} = []() {
+        bsl::ut_scenario{"bf_control_op_wait"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_control_op_wait_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_control_op_wait();
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_control_op_wait_impl_executed);
                     };
                 };
             };

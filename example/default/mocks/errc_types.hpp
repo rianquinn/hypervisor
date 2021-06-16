@@ -34,6 +34,31 @@ namespace example
     // We want our implementation to mimic C++ here.
     // NOLINTNEXTLINE(bsl-name-case)
     constexpr bsl::errc_type errc_fail_initialize{bsl::to_i32(0x00FF0001)};
+
+    /// @brief Defines the "fail allocate" case
+    // We want our implementation to mimic C++ here.
+    // NOLINTNEXTLINE(bsl-name-case)
+    constexpr bsl::errc_type errc_fail_allocate{bsl::to_i32(0x00FF0002)};
+
+    /// @brief Defines the "fail dispatch" case
+    // We want our implementation to mimic C++ here.
+    // NOLINTNEXTLINE(bsl-name-case)
+    constexpr bsl::errc_type errc_fail_dispatch{bsl::to_i32(0x00FF0003)};
+
+    /// @brief Defines the "success stop" case
+    // We want our implementation to mimic C++ here.
+    // NOLINTNEXTLINE(bsl-name-case)
+    constexpr bsl::errc_type errc_success_stop{bsl::to_i32(0x00800001)};
+
+    /// @brief Defines the "success report on" case
+    // We want our implementation to mimic C++ here.
+    // NOLINTNEXTLINE(bsl-name-case)
+    constexpr bsl::errc_type errc_success_report_on{bsl::to_i32(0x00800002)};
+
+    /// @brief Defines the "success report off" case
+    // We want our implementation to mimic C++ here.
+    // NOLINTNEXTLINE(bsl-name-case)
+    constexpr bsl::errc_type errc_success_report_off{bsl::to_i32(0x00800003)};
 }
 
 #endif

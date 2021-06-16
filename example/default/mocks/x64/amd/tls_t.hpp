@@ -25,7 +25,7 @@
 #ifndef MOCKS_TLS_T_HPP
 #define MOCKS_TLS_T_HPP
 
-#include <bsl/errc_type.hpp>
+#include <errc_types.hpp>
 
 namespace example
 {
@@ -33,7 +33,7 @@ namespace example
     ///
     /// <!-- description -->
     ///   @brief Defines the extension's mocked version of tls_t, used for
-    ///     unit testing.
+    ///     unit testing. Specifically, this version is architecture specific.
     ///
     struct tls_t final
     {

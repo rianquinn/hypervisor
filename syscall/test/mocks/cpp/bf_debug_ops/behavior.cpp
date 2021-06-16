@@ -41,82 +41,122 @@ namespace syscall
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"bf_debug_op_out executes"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_debug_op_out"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                g_bf_debug_op_out_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_out({}, {});
+                    bsl::ut_then{} = []() {
+                        bsl::ut_check(g_bf_debug_op_out_impl_executed);
+                    };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_vm executes"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_vm"} = []() {
             bsl::ut_given_at_runtime{} = []() {
+                g_bf_debug_op_dump_vm_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_vm({});
+                    bsl::ut_then{} = []() {
+                        bsl::ut_check(g_bf_debug_op_dump_vm_impl_executed);
+                    };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_vp executes"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_vp"} = []() {
             bsl::ut_given_at_runtime{} = []() {
+                g_bf_debug_op_dump_vp_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_vp({});
+                    bsl::ut_then{} = []() {
+                        bsl::ut_check(g_bf_debug_op_dump_vp_impl_executed);
+                    };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_vps executes"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_vps"} = []() {
             bsl::ut_given_at_runtime{} = []() {
+                g_bf_debug_op_dump_vps_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_vps({});
+                    bsl::ut_then{} = []() {
+                        bsl::ut_check(g_bf_debug_op_dump_vps_impl_executed);
+                    };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_vmexit_log executes"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_vmexit_log"} = []() {
             bsl::ut_given_at_runtime{} = []() {
+                g_bf_debug_op_dump_vmexit_log_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_vmexit_log({});
+                    bsl::ut_then{} = []() {
+                        bsl::ut_check(g_bf_debug_op_dump_vmexit_log_impl_executed);
+                    };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_write_c executes"} = []() {
+        bsl::ut_scenario{"bf_debug_op_write_c"} = []() {
             bsl::ut_given_at_runtime{} = []() {
+                g_bf_debug_op_write_c_impl_executed = {};
                 bsl::ut_when{} = []() {
-                    bf_debug_op_write_c('*');
+                    bf_debug_op_write_c({});
+                    bsl::ut_then{} = []() {
+                        bsl::ut_check(g_bf_debug_op_write_c_impl_executed);
+                    };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_write_str executes"} = []() {
+        bsl::ut_scenario{"bf_debug_op_write_str"} = []() {
             bsl::ut_given_at_runtime{} = []() {
+                g_bf_debug_op_write_str_impl_executed = {};
                 bsl::ut_when{} = []() {
-                    bf_debug_op_write_str("the answer is 42");
+                    bf_debug_op_write_str({});
+                    bsl::ut_then{} = []() {
+                        bsl::ut_check(g_bf_debug_op_write_str_impl_executed);
+                    };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_ext executes"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_ext"} = []() {
             bsl::ut_given_at_runtime{} = []() {
+                g_bf_debug_op_dump_ext_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_ext({});
+                    bsl::ut_then{} = []() {
+                        bsl::ut_check(g_bf_debug_op_dump_ext_impl_executed);
+                    };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_page_pool executes"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_page_pool"} = []() {
             bsl::ut_given_at_runtime{} = []() {
+                g_bf_debug_op_dump_page_pool_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_page_pool();
+                    bsl::ut_then{} = []() {
+                        bsl::ut_check(g_bf_debug_op_dump_page_pool_impl_executed);
+                    };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_huge_pool executes"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_huge_pool"} = []() {
             bsl::ut_given_at_runtime{} = []() {
+                g_bf_debug_op_dump_huge_pool_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_huge_pool();
+                    bsl::ut_then{} = []() {
+                        bsl::ut_check(g_bf_debug_op_dump_huge_pool_impl_executed);
+                    };
                 };
             };
         };

@@ -28,12 +28,14 @@
 #include <bf_constants.hpp>
 #include <bf_syscall_t.hpp>
 #include <gs_t.hpp>
+#include <intrinsic_t.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/touch.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace example
 {

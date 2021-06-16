@@ -25,7 +25,7 @@
 #ifndef MOCKS_TLS_T_HPP
 #define MOCKS_TLS_T_HPP
 
-#include <bsl/errc_type.hpp>
+#include <errc_types.hpp>
 
 namespace example
 {

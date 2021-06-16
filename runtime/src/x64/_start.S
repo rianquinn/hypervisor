@@ -27,28 +27,15 @@
     .code64
     .intel_syntax noprefix
 
-    .globl  _start
-    .type   _start, @function
-_start:
+    .globl  HYPERVISOR_START_NAME
+    .type   HYPERVISOR_START_NAME, @function
+HYPERVISOR_START_NAME:
+
     call ext_main_entry
-   .size _start, .-_start
-
-
-
-    .globl  __stack_chk_fail
-    .type   __stack_chk_fail, @function
-__stack_chk_fail:
-
-    call msg_stack_chk_fail
     call bf_control_op_exit_impl
 
-    .size __stack_chk_fail, .-__stack_chk_fail
+    xor rax, rax
+    ret
+    int 3
 
-
-
-    .rodata
-    .intel_syntax noprefix
-
-    .globl  __stack_chk_guard
-__stack_chk_guard:
-    .quad 0xDEADBEEFDEADBEEF
+   .size HYPERVISOR_START_NAME, .-HYPERVISOR_START_NAME

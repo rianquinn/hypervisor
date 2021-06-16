@@ -39,6 +39,7 @@
 #include <bsl/finally_assert.hpp>
 #include <bsl/unlikely.hpp>
 #include <bsl/unlikely_assert.hpp>
+#include <bsl/safe_integral.hpp>
 
 namespace example
 {
@@ -160,8 +161,8 @@ namespace example
             ///   them to another function.
             ///
 
-            ret = sys.bf_vp_op_create_vp(vmid, ppid, vpid);
-            if (bsl::unlikely_assert(!ret)) {
+            vpid = sys.bf_vp_op_create_vp(vmid, ppid);
+            if (bsl::unlikely_assert(!vpid)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::safe_uint16::zero(true);
             }

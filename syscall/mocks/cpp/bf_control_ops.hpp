@@ -22,27 +22,15 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef MOCKS_BF_CONTROL_OPS_HPP
-#define MOCKS_BF_CONTROL_OPS_HPP
+#ifndef BF_CONTROL_OPS_HPP
+#define BF_CONTROL_OPS_HPP
+
+#include <bf_syscall_impl.hpp>
 
 #include <bsl/is_constant_evaluated.hpp>
 
 namespace syscall
 {
-    /// NOTE:
-    /// - These APIs do not support constexpr. Most extensions should have a
-    ///   single main.cpp files that contains all of the entry points, which
-    ///   also likely do not support constexpr. These entry points should be
-    ///   the only place that these APIs are used. All other code should be
-    ///   constexpr friendly, so these should only be needed to support
-    ///   unit testing a very small piece of code in an extension.
-    ///
-
-    /// @brief stores whether or not bf_control_op_exit was executed
-    constinit inline bool g_bf_control_op_exit_executed{};
-    /// @brief stores whether or not bf_control_op_wait was executed
-    constinit inline bool g_bf_control_op_wait_executed{};
-
     /// <!-- description -->
     ///   @brief This syscall tells the microkernel to exit the execution
     ///     of an extension, providing a means to fast fail.
@@ -54,7 +42,7 @@ namespace syscall
             return;
         }
 
-        g_bf_control_op_exit_executed = true;
+        bf_control_op_exit_impl();
     }
 
     /// <!-- description -->
@@ -70,7 +58,7 @@ namespace syscall
             return;
         }
 
-        g_bf_control_op_wait_executed = true;
+        bf_control_op_wait_impl();
     }
 }
 

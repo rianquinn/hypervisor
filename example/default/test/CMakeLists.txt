@@ -170,5 +170,12 @@ add_subdirectory(template)
 #   is unit tested during CI which might be running on an Intel based system.
 #
 
-add_subdirectory(vp_pool_t)
-add_subdirectory(vps_pool_t)
+add_subdirectory(mocks/vp_pool_t)
+add_subdirectory(mocks/vp_t)
+add_subdirectory(mocks/vps_pool_t)
+
+add_subdirectory(src/vp_pool_t)
+add_subdirectory(src/vp_t)
+add_subdirectory(src/vps_pool_t)
+
+add_subdirectory(src/x64/amd/vps_t)

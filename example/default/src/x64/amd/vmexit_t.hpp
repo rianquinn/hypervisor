@@ -95,18 +95,29 @@ namespace example
         ///   @brief Handles the CPUID VMexit
         ///
         /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
         ///   @param sys the bf_syscall_t to use
         ///   @param intrinsic the intrinsic_t to use
+        ///   @param vp_pool the vp_pool_t to use
+        ///   @param vps_pool the vps_pool_t to use
         ///   @param vpsid the ID of the VPS that generated the VMExit
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
         handle_cpuid(
+            gs_t &gs,
+            tls_t &tls,
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
+            vp_pool_t &vp_pool,
+            vps_pool_t &vps_pool,
             bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
         {
+            bsl::discard(vp_pool);
+            bsl::discard(vps_pool);
+
             bsl::errc_type ret{};
 
             /// NOTE:
@@ -239,7 +250,7 @@ namespace example
             ///   returning the results.
             ///
 
-            intrinsic.cpuid(rax, rbx, rcx, rdx);
+            intrinsic.cpuid(gs, tls, rax, rbx, rcx, rdx);
 
             /// NOTE:
             /// - Write the results of CPUID to the VP's registers. Note that
@@ -287,11 +298,6 @@ namespace example
             bsl::safe_uint16 const &vpsid,
             bsl::safe_uint64 const &exit_reason) noexcept -> bsl::errc_type
         {
-            bsl::discard(gs);
-            bsl::discard(tls);
-            bsl::discard(vp_pool);
-            bsl::discard(vps_pool);
-
             /// NOTE:
             /// - Define the different VMExits that this dispatcher will
             ///   support. At a minimum, we need to handle CPUID on AMD.
@@ -305,7 +311,7 @@ namespace example
 
             switch (exit_reason.get()) {
                 case exit_reason_cpuid.get(): {
-                    return handle_cpuid(sys, intrinsic, vpsid);
+                    return handle_cpuid(gs, tls, sys, intrinsic, vp_pool, vps_pool, vpsid);
                 }
 
                 default: {

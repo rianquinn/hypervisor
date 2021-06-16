@@ -29,135 +29,6 @@
 
 namespace syscall
 {
-    /// @brief stores whether or not the impl was executed.
-    bool g_executed{};
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_out.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///   @param reg1_in n/a
-    ///
-    extern "C" void
-    bf_debug_op_out_impl(
-        bf_uint64_t::value_type const reg0_in, bf_uint64_t::value_type const reg1_in) noexcept
-    {
-        bsl::discard(reg0_in);
-        bsl::discard(reg1_in);
-
-        g_executed = true;
-    }
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_dump_vm.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void
-    bf_debug_op_dump_vm_impl(bf_uint16_t::value_type const reg0_in) noexcept
-    {
-        bsl::discard(reg0_in);
-        g_executed = true;
-    }
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_dump_vp.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void
-    bf_debug_op_dump_vp_impl(bf_uint16_t::value_type const reg0_in) noexcept
-    {
-        bsl::discard(reg0_in);
-        g_executed = true;
-    }
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_dump_vps.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void
-    bf_debug_op_dump_vps_impl(bf_uint16_t::value_type const reg0_in) noexcept
-    {
-        bsl::discard(reg0_in);
-        g_executed = true;
-    }
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_dump_vmexit_log.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void
-    bf_debug_op_dump_vmexit_log_impl(bf_uint16_t::value_type const reg0_in) noexcept
-    {
-        bsl::discard(reg0_in);
-        g_executed = true;
-    }
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_write_c.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void
-    bf_debug_op_write_c_impl(bsl::char_type const reg0_in) noexcept
-    {
-        bsl::discard(reg0_in);
-        g_executed = true;
-    }
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_write_str.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void
-    bf_debug_op_write_str_impl(bsl::char_type const *const reg0_in) noexcept
-    {
-        bsl::discard(reg0_in);
-        g_executed = true;
-    }
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_dump_ext.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param reg0_in n/a
-    ///
-    extern "C" void
-    bf_debug_op_dump_ext_impl(bf_uint16_t::value_type const reg0_in) noexcept
-    {
-        bsl::discard(reg0_in);
-        g_executed = true;
-    }
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_dump_page_pool.
-    ///
-    extern "C" void
-    bf_debug_op_dump_page_pool_impl() noexcept
-    {
-        g_executed = true;
-    }
-
-    /// <!-- description -->
-    ///   @brief Implements the ABI for bf_debug_op_dump_huge_pool.
-    ///
-    extern "C" void
-    bf_debug_op_dump_huge_pool_impl() noexcept
-    {
-        g_executed = true;
-    }
-
     /// <!-- description -->
     ///   @brief Used to execute the actual checks. We put the checks in this
     ///     function so that we can validate the tests both at compile-time
@@ -170,121 +41,121 @@ namespace syscall
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"bf_debug_op_out executes impl"} = []() {
+        bsl::ut_scenario{"bf_debug_op_out"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_debug_op_out_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_out({}, {});
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_debug_op_out_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_vm executes impl"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_vm"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_debug_op_dump_vm_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_vm({});
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_debug_op_dump_vm_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_vp executes impl"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_vp"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_debug_op_dump_vp_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_vp({});
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_debug_op_dump_vp_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_vps executes impl"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_vps"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_debug_op_dump_vps_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_vps({});
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_debug_op_dump_vps_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_vmexit_log executes impl"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_vmexit_log"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_debug_op_dump_vmexit_log_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_vmexit_log({});
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_debug_op_dump_vmexit_log_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_write_c executes impl"} = []() {
+        bsl::ut_scenario{"bf_debug_op_write_c"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_debug_op_write_c_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_write_c({});
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_debug_op_write_c_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_write_str executes impl"} = []() {
+        bsl::ut_scenario{"bf_debug_op_write_str"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_debug_op_write_str_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_write_str({});
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_debug_op_write_str_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_ext executes impl"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_ext"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_debug_op_dump_ext_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_ext({});
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_debug_op_dump_ext_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_page_pool executes impl"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_page_pool"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_debug_op_dump_page_pool_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_page_pool();
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_debug_op_dump_page_pool_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_debug_op_dump_huge_pool executes impl"} = []() {
+        bsl::ut_scenario{"bf_debug_op_dump_huge_pool"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                g_executed = {};
+                g_bf_debug_op_dump_huge_pool_impl_executed = {};
                 bsl::ut_when{} = []() {
                     bf_debug_op_dump_huge_pool();
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_executed);
+                        bsl::ut_check(g_bf_debug_op_dump_huge_pool_impl_executed);
                     };
                 };
             };

@@ -113,7 +113,7 @@ namespace example
             vp_pool_t &vp_pool,
             vps_pool_t &vps_pool,
             bsl::safe_uint16 const &vpsid,
-            bsl::safe_uint64 const fail_reason) noexcept -> bsl::errc_type
+            bsl::safe_uint64 const &fail_reason) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);

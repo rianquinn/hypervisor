@@ -25,7 +25,7 @@
 #ifndef RUNTIME_BSL_DETAILS_PUTS_STDERR_HPP
 #define RUNTIME_BSL_DETAILS_PUTS_STDERR_HPP
 
-#include <bsl/cstdio.hpp>
+#include "../cstdio.hpp"
 #include <bsl/cstr_type.hpp>
 
 namespace bsl::details

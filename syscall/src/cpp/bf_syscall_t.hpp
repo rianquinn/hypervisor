@@ -2180,7 +2180,7 @@ namespace syscall
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     otherwise
         ///
-        template<typename T>
+        template<typename T = bsl::uintmax>
         [[nodiscard]] static constexpr auto
         bf_write_phys(bf_uint64_t const &phys, bsl::safe_integral<T> const &val) noexcept
             -> bsl::errc_type
@@ -2237,12 +2237,8 @@ namespace syscall
             }
 
             phys = bsl::to_umax(virt) - bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR);
-            if (bsl::unlikely_assert(!phys)) {
-                bsl::error() << "bf_virt_to_phys failed due to invalid virtual address "    // --
-                             << virt                                                        // --
-                             << bsl::endl                                                   // --
-                             << bsl::here();
-
+            if (bsl::unlikely(!phys)) {
+                bsl::error() << "bf_virt_to_phys arithmetic overflowed\n" << bsl::here();
                 return bf_uint64_t::zero(true);
             }
 
@@ -2275,12 +2271,8 @@ namespace syscall
             }
 
             virt = phys + bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR);
-            if (bsl::unlikely_assert(!virt)) {
-                bsl::error() << "bf_phys_to_virt failed due to invalid physical address "    // --
-                             << phys                                                         // --
-                             << bsl::endl                                                    // --
-                             << bsl::here();
-
+            if (bsl::unlikely(!virt)) {
+                bsl::error() << "bf_phys_to_virt arithmetic overflowed\n" << bsl::here();
                 return nullptr;
             }
 
