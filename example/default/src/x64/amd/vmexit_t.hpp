@@ -188,6 +188,9 @@ namespace example
                             syscall::bf_debug_op_dump_page_pool();
                             bsl::print() << bsl::endl;
                         }
+                        else {
+                            bsl::touch();
+                        }
 
                         /// NOTE:
                         /// - If the debug level is set to something higher

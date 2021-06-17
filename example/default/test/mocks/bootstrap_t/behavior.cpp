@@ -51,9 +51,11 @@ namespace example
                 vps_pool_t vps_pool{};
                 bsl::ut_when{} = [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
                     bootstrap.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
-                        bsl::ut_check(!bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
-                    };
+                    bsl::ut_then{} =
+                        [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                            bsl::ut_check(
+                                !bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
+                        };
                 };
             };
         };

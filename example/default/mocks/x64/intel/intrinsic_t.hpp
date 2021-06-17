@@ -22,11 +22,14 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef INTRINSIC_HPP
-#define INTRINSIC_HPP
+#ifndef MOCKS_INTRINSIC_HPP
+#define MOCKS_INTRINSIC_HPP
 
-#include <intrinsic_cpuid_impl.hpp>
+#include <gs_t.hpp>
+#include <tls_t.hpp>
 
+#include <bsl/convert.hpp>
+#include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
 
@@ -35,41 +38,67 @@ namespace example
     /// @class example::intrinsic_t
     ///
     /// <!-- description -->
-    ///   @brief Provides raw access to intrinsics. Instead of using global
-    ///     functions, the intrinsics class provides a means for the rest of
-    ///     the extension to mock the intrinsics when needed during testing.
+    ///   @brief Provides raw access to intrinsics used for unit testing.
+    ///     Specifically, this version is architecture specific.
     ///
     class intrinsic_t final
     {
+        /// @brief stores the return value for initialize
+        bsl::errc_type m_initialize{};
+        /// @brief stores the return value for eax with cpuid
+        bsl::safe_uint32 m_eax{};
+        /// @brief stores the return value for ebx with cpuid
+        bsl::safe_uint32 m_ebx{};
+        /// @brief stores the return value for ecx with cpuid
+        bsl::safe_uint32 m_ecx{};
+        /// @brief stores the return value for edx with cpuid
+        bsl::safe_uint32 m_edx{};
+
     public:
         /// <!-- description -->
         ///   @brief Initializes this intrinsic_t.
         ///
         /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize() &noexcept -> bsl::errc_type
+        initialize(gs_t &gs, tls_t &tls) noexcept -> bsl::errc_type
         {
-            /// NOTE:
-            /// - Add initialization code here if needed. Otherwise, this
-            ///   function can be removed if it is not needed.
-            ///
+            bsl::discard(gs);
+            bsl::discard(tls);
 
-            return bsl::errc_success;
+            return m_initialize;
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of initialize.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     initialize
+        ///
+        constexpr void
+        set_initialize(bsl::errc_type const &errc) noexcept
+        {
+            m_initialize = errc;
         }
 
         /// <!-- description -->
         ///   @brief Release the intrinsic_t.
         ///
-        constexpr void
-        release() &noexcept
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///
+        static constexpr void
+        release(gs_t &gs, tls_t &tls) noexcept
         {
-            /// NOTE:
-            /// - Release functions are usually only needed in the event of
-            ///   an error, or during unit testing.
-            ///
+            bsl::discard(gs);
+            bsl::discard(tls);
         }
 
         /// <!-- description -->
@@ -89,7 +118,35 @@ namespace example
             bsl::safe_uint64 &rcx,
             bsl::safe_uint64 &rdx) noexcept
         {
-            intrinsic_cpuid_impl(rax.data(), rbx.data(), rcx.data(), rdx.data());
+            constexpr auto mask{bsl::to_umax(0xFFFFFFFF00000000U)};
+
+            rax = ((rax & mask) | bsl::to_umax(m_eax));
+            rbx = ((rbx & mask) | bsl::to_umax(m_ebx));
+            rcx = ((rcx & mask) | bsl::to_umax(m_ecx));
+            rdx = ((rdx & mask) | bsl::to_umax(m_edx));
+        }
+
+        /// <!-- description -->
+        ///   @brief Sets the return value of cpuid.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param eax the value to return from cpuid for eax
+        ///   @param ebx the value to return from cpuid for ebx
+        ///   @param ecx the value to return from cpuid for ecx
+        ///   @param edx the value to return from cpuid for edx
+        ///
+        constexpr void
+        set_cpuid(
+            bsl::safe_uint32 const &eax,
+            bsl::safe_uint32 const &ebx,
+            bsl::safe_uint32 const &ecx,
+            bsl::safe_uint32 const &edx) noexcept
+        {
+            m_eax = eax;
+            m_ebx = ebx;
+            m_ecx = ecx;
+            m_edx = edx;
         }
     };
 }

@@ -71,7 +71,7 @@ namespace example
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
             vp_pool_t &vp_pool,
-            vps_pool_t &vps_pool) &noexcept -> bsl::errc_type
+            vps_pool_t &vps_pool) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);
@@ -92,7 +92,7 @@ namespace example
         ///     initialize
         ///
         constexpr void
-        set_initialize(bsl::errc_type const &errc) &noexcept
+        set_initialize(bsl::errc_type const &errc) noexcept
         {
             m_initialize = errc;
         }
@@ -150,7 +150,7 @@ namespace example
             vp_pool_t &vp_pool,
             vps_pool_t &vps_pool,
             bsl::safe_uint16 const &vpsid,
-            bsl::safe_uint64 const &fail_reason) &noexcept -> bsl::errc_type
+            bsl::safe_uint64 const &fail_reason) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);
@@ -173,7 +173,7 @@ namespace example
         ///     dispatch
         ///
         constexpr void
-        set_dispatch(bsl::errc_type const &errc) &noexcept
+        set_dispatch(bsl::errc_type const &errc) noexcept
         {
             m_dispatch = errc;
         }

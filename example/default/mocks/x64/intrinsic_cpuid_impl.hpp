@@ -44,7 +44,7 @@ namespace example
     ///   @param rcx the subindex used by CPUID, returns the resulting rcx
     ///   @param rdx returns resulting rdx
     ///
-    extern "C" void
+    extern "C" constexpr void
     intrinsic_cpuid_impl(
         bsl::uint64 *const rax,
         bsl::uint64 *const rbx,

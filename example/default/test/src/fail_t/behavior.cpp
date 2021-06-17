@@ -80,7 +80,8 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 bsl::ut_when{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
-                    bsl::ut_required_step(fail.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
+                    bsl::ut_required_step(
+                        fail.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     bsl::ut_then{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
                         fail.release(gs, tls, sys, intrinsic, vp_pool, vps_pool);
                     };

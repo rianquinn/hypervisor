@@ -163,13 +163,13 @@ namespace example
             constexpr auto vmcs_procbased_ctls_idx{bsl::to_umax(0x4002U)};
             constexpr auto vmcs_set_nmi_window_exiting{bsl::to_u32(0x400000U)};
 
-            bsl::safe_uint32 val;
+            bsl::safe_uint32 val{};
             bsl::errc_type ret{};
 
             val = sys.bf_vps_op_read32(vpsid, vmcs_procbased_ctls_idx);
             if (bsl::unlikely_assert(!val)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return ret;
+                return bsl::errc_failure;
             }
 
             val |= vmcs_set_nmi_window_exiting;
@@ -180,7 +180,7 @@ namespace example
                 return ret;
             }
 
-            return ret;
+            return sys.bf_vps_op_run_current();
         }
 
         /// <!-- description -->
@@ -226,13 +226,13 @@ namespace example
             constexpr auto vmcs_procbased_ctls_idx{bsl::to_umax(0x4002U)};
             constexpr auto vmcs_clear_nmi_window_exiting{bsl::to_u32(0xFFBFFFFFU)};
 
-            bsl::safe_uint32 val;
+            bsl::safe_uint32 val{};
             bsl::errc_type ret{};
 
             val = sys.bf_vps_op_read32(vpsid, vmcs_procbased_ctls_idx);
             if (bsl::unlikely_assert(!val)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return ret;
+                return bsl::errc_failure;
             }
 
             val &= vmcs_clear_nmi_window_exiting;
@@ -260,7 +260,7 @@ namespace example
                 return ret;
             }
 
-            return ret;
+            return sys.bf_vps_op_run_current();
         }
 
         /// <!-- description -->
@@ -330,6 +330,9 @@ namespace example
                             bsl::print() << bsl::endl;
                             syscall::bf_debug_op_dump_page_pool();
                             bsl::print() << bsl::endl;
+                        }
+                        else {
+                            bsl::touch();
                         }
 
                         /// NOTE:

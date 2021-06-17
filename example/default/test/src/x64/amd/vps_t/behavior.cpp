@@ -240,6 +240,23 @@ namespace example
             };
         };
 
+        bsl::ut_scenario{"allocate when ppid does not match vpsid"} = []() {
+            bsl::ut_given{} = []() {
+                vps_t vps{};
+                gs_t gs{};
+                tls_t tls{};
+                syscall::bf_syscall_t sys{};
+                intrinsic_t intrinsic{};
+                constexpr auto ppid{bsl::to_u16(42)};
+                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &ppid]() {
+                    bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
+                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic, &ppid]() {
+                        bsl::ut_check(vps.allocate(gs, tls, sys, intrinsic, {}, ppid));
+                    };
+                };
+            };
+        };
+
         bsl::ut_scenario{"allocate bf_vps_op_write32 fails for asid"} = []() {
             bsl::ut_given{} = []() {
                 vps_t vps{};
@@ -292,23 +309,6 @@ namespace example
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
                     bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
-                    };
-                };
-            };
-        };
-
-        bsl::ut_scenario{"allocate when ppid is not 0"} = []() {
-            bsl::ut_given{} = []() {
-                vps_t vps{};
-                gs_t gs{};
-                tls_t tls{};
-                syscall::bf_syscall_t sys{};
-                intrinsic_t intrinsic{};
-                constexpr auto ppid{bsl::to_u16(42)};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &ppid]() {
-                    bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic, &ppid]() {
-                        bsl::ut_check(vps.allocate(gs, tls, sys, intrinsic, {}, ppid));
                     };
                 };
             };

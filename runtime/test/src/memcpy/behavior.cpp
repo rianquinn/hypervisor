@@ -43,8 +43,8 @@ namespace mk
     ///   @param num number of bytes to copy.
     ///   @return Returns dst
     ///
-    extern "C" void *
-    ut_memcpy(void *const dst, void const *const src, bsl::uintmax const num) noexcept;
+    extern "C" [[nodiscard]] auto
+    ut_memcpy(void *const dst, void const *const src, bsl::uintmax const num) noexcept -> void *;
 
     /// <!-- description -->
     ///   @brief Used to execute the actual checks. We put the checks in this
@@ -68,10 +68,11 @@ namespace mk
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
-                    ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get());
+                    bsl::discard(
+                        ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
-                            bsl::ut_check(*elem.data == val.get());
+                            bsl::ut_check(*elem.data == val);
                         }
                     };
                 };
@@ -88,10 +89,11 @@ namespace mk
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
-                    ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get());
+                    bsl::discard(
+                        ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
-                            bsl::ut_check(*elem.data == val.get());
+                            bsl::ut_check(*elem.data == val);
                         }
                     };
                 };
@@ -108,10 +110,11 @@ namespace mk
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
-                    ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get());
+                    bsl::discard(
+                        ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
-                            bsl::ut_check(*elem.data == val.get());
+                            bsl::ut_check(*elem.data == val);
                         }
                     };
                 };
@@ -128,10 +131,11 @@ namespace mk
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
-                    ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get());
+                    bsl::discard(
+                        ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
-                            bsl::ut_check(*elem.data == val.get());
+                            bsl::ut_check(*elem.data == val);
                         }
                     };
                 };
@@ -148,10 +152,11 @@ namespace mk
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
-                    ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get());
+                    bsl::discard(
+                        ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
-                            bsl::ut_check(*elem.data == val.get());
+                            bsl::ut_check(*elem.data == val);
                         }
                     };
                 };
@@ -168,10 +173,11 @@ namespace mk
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
-                    ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get());
+                    bsl::discard(
+                        ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
-                            bsl::ut_check(*elem.data == val.get());
+                            bsl::ut_check(*elem.data == val);
                         }
                     };
                 };
@@ -188,10 +194,11 @@ namespace mk
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
-                    ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get());
+                    bsl::discard(
+                        ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
-                            bsl::ut_check(*elem.data == val.get());
+                            bsl::ut_check(*elem.data == val);
                         }
                     };
                 };
@@ -208,10 +215,11 @@ namespace mk
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
-                    ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get());
+                    bsl::discard(
+                        ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
-                            bsl::ut_check(*elem.data == val.get());
+                            bsl::ut_check(*elem.data == val);
                         }
                     };
                 };
@@ -228,12 +236,26 @@ namespace mk
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
-                    ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get());
+                    bsl::discard(
+                        ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
-                            bsl::ut_check(*elem.data == val.get());
+                            bsl::ut_check(*elem.data == val);
                         }
                     };
+                };
+            };
+        };
+
+        bsl::ut_scenario{"memcpy return"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                constexpr auto size{bsl::to_umax(1)};
+                bsl::array<bsl::uint8, size.get()> data_dst{};
+                bsl::array<bsl::uint8, size.get()> data_src{};
+                bsl::ut_then{} = [&data_dst, &data_src]() {
+                    bsl::ut_check(
+                        ut_memcpy(data_dst.data(), data_src.data(), data_src.size_bytes().get()) ==
+                        data_dst.data());
                 };
             };
         };

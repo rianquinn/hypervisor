@@ -25,15 +25,13 @@
 #ifndef MOCKS_GS_T_HPP
 #define MOCKS_GS_T_HPP
 
-#include <bsl/errc_type.hpp>
-
 namespace example
 {
     /// @class example::gs_t
     ///
     /// <!-- description -->
-    ///   @brief Defines the extension's mocked version of gs_t, used for
-    ///     unit testing.
+    ///   @brief  Defines the extension's mocked version of gs_t, used for
+    ///     unit testing. Specifically, this version is architecture specific.
     ///
     struct gs_t final
     {};

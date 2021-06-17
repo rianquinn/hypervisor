@@ -2390,7 +2390,7 @@ namespace syscall
                     g_data.clear();
                     g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = g_answer64;
                     bsl::ut_then{} = [&sys, &phys]() {
-                        bsl::ut_check(!sys.bf_mem_op_alloc_page(phys));
+                        bsl::ut_check(sys.bf_mem_op_alloc_page(phys) == nullptr);
                     };
                 };
             };
@@ -2406,8 +2406,8 @@ namespace syscall
                     g_errc.at("bf_mem_op_alloc_page_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = g_answer64;
                     bsl::ut_then{} = [&sys, &phys]() {
-                        bsl::ut_check(!sys.bf_mem_op_alloc_page(phys));
-                        bsl::ut_check(!sys.bf_mem_op_alloc_page());
+                        bsl::ut_check(sys.bf_mem_op_alloc_page(phys) == nullptr);
+                        bsl::ut_check(sys.bf_mem_op_alloc_page() == nullptr);
                     };
                 };
             };
@@ -2477,7 +2477,7 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid size"} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid size #1"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t size{bf_uint64_t::zero(true)};
@@ -2487,7 +2487,23 @@ namespace syscall
                     g_data.clear();
                     g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = g_answer64;
                     bsl::ut_then{} = [&sys, &size, &phys]() {
-                        bsl::ut_check(!sys.bf_mem_op_alloc_huge(size, phys));
+                        bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
+                    };
+                };
+            };
+        };
+
+        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid size #2"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                bf_syscall_t sys{};
+                bf_uint64_t size{};
+                bf_uint64_t phys{};
+                bsl::ut_when{} = [&sys, &size, &phys]() {
+                    g_errc.clear();
+                    g_data.clear();
+                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = g_answer64;
+                    bsl::ut_then{} = [&sys, &size, &phys]() {
+                        bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                     };
                 };
             };
@@ -2503,7 +2519,7 @@ namespace syscall
                     g_data.clear();
                     g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = g_answer64;
                     bsl::ut_then{} = [&sys, &size, &phys]() {
-                        bsl::ut_check(!sys.bf_mem_op_alloc_huge(size, phys));
+                        bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                     };
                 };
             };
@@ -2520,8 +2536,8 @@ namespace syscall
                     g_errc.at("bf_mem_op_alloc_huge_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = g_answer64;
                     bsl::ut_then{} = [&sys, &size, &phys]() {
-                        bsl::ut_check(!sys.bf_mem_op_alloc_huge(size, phys));
-                        bsl::ut_check(!sys.bf_mem_op_alloc_huge(size));
+                        bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
+                        bsl::ut_check(sys.bf_mem_op_alloc_huge(size) == nullptr);
                     };
                 };
             };
@@ -2600,7 +2616,7 @@ namespace syscall
                     g_data.clear();
                     g_data.at("bf_mem_op_alloc_heap_impl_reg0_out") = g_answer64;
                     bsl::ut_then{} = [&sys, &size]() {
-                        bsl::ut_check(!sys.bf_mem_op_alloc_heap(size));
+                        bsl::ut_check(sys.bf_mem_op_alloc_heap(size) == nullptr);
                     };
                 };
             };
@@ -2616,7 +2632,7 @@ namespace syscall
                     g_errc.at("bf_mem_op_alloc_heap_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_mem_op_alloc_heap_impl_reg0_out") = g_answer64;
                     bsl::ut_then{} = [&sys, &size]() {
-                        bsl::ut_check(!sys.bf_mem_op_alloc_heap(size));
+                        bsl::ut_check(sys.bf_mem_op_alloc_heap(size) == nullptr);
                     };
                 };
             };

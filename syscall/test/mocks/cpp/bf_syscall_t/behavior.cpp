@@ -1988,7 +1988,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::zero(true)};
                 bsl::ut_then{} = [&sys, &phys]() {
-                    bsl::ut_check(!sys.bf_mem_op_alloc_page(phys));
+                    bsl::ut_check(sys.bf_mem_op_alloc_page(phys) == nullptr);
                 };
             };
         };
@@ -2000,8 +2000,8 @@ namespace syscall
                 bsl::ut_when{} = [&sys, &phys]() {
                     sys.set_bf_mem_op_alloc_page(bsl::errc_failure);
                     bsl::ut_then{} = [&sys, &phys]() {
-                        bsl::ut_check(!sys.bf_mem_op_alloc_page(phys));
-                        bsl::ut_check(!sys.bf_mem_op_alloc_page());
+                        bsl::ut_check(sys.bf_mem_op_alloc_page(phys) == nullptr);
+                        bsl::ut_check(sys.bf_mem_op_alloc_page() == nullptr);
                     };
                 };
             };
@@ -2063,13 +2063,24 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid size"} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid size #1"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t size{bf_uint64_t::zero(true)};
                 bf_uint64_t phys{};
                 bsl::ut_then{} = [&sys, &size, &phys]() {
-                    bsl::ut_check(!sys.bf_mem_op_alloc_huge(size, phys));
+                    bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
+                };
+            };
+        };
+
+        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid size #2"} = []() {
+            bsl::ut_given{} = []() {
+                bf_syscall_t sys{};
+                bf_uint64_t size{};
+                bf_uint64_t phys{};
+                bsl::ut_then{} = [&sys, &size, &phys]() {
+                    bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                 };
             };
         };
@@ -2080,7 +2091,7 @@ namespace syscall
                 bf_uint64_t size{g_answer64};
                 bf_uint64_t phys{bf_uint64_t::zero(true)};
                 bsl::ut_then{} = [&sys, &size, &phys]() {
-                    bsl::ut_check(!sys.bf_mem_op_alloc_huge(size, phys));
+                    bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                 };
             };
         };
@@ -2093,8 +2104,8 @@ namespace syscall
                 bsl::ut_when{} = [&sys, &size, &phys]() {
                     sys.set_bf_mem_op_alloc_huge(bsl::errc_failure);
                     bsl::ut_then{} = [&sys, &size, &phys]() {
-                        bsl::ut_check(!sys.bf_mem_op_alloc_huge(size, phys));
-                        bsl::ut_check(!sys.bf_mem_op_alloc_huge(size));
+                        bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
+                        bsl::ut_check(sys.bf_mem_op_alloc_huge(size) == nullptr);
                     };
                 };
             };

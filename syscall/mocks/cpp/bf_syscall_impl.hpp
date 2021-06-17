@@ -35,6 +35,7 @@
 #include <bsl/convert.hpp>
 #include <bsl/cstr_type.hpp>
 #include <bsl/discard.hpp>
+#include <bsl/touch.hpp>
 #include <bsl/unlikely.hpp>
 #include <bsl/unordered_map.hpp>
 
@@ -633,6 +634,9 @@ namespace syscall
         if (g_errc.at("bf_handle_op_open_handle_impl") == BF_STATUS_SUCCESS) {
             *reg0_out = g_data.at("bf_handle_op_open_handle_impl_reg0_out").get();
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_handle_op_open_handle_impl").get();
     }
@@ -668,6 +672,7 @@ namespace syscall
         bf_uint64_t::value_type const reg0_in, bf_uint64_t::value_type const reg1_in) noexcept
     {
         g_bf_debug_op_out_impl_executed = true;
+        // NOLINTNEXTLINE(bsl-function-name-use)
         std::cout << std::hex << "0x" << reg0_in << " 0x" << reg1_in << '\n';
     }
 
@@ -681,6 +686,7 @@ namespace syscall
     bf_debug_op_dump_vm_impl(bf_uint16_t::value_type const reg0_in) noexcept
     {
         g_bf_debug_op_dump_vm_impl_executed = true;
+        // NOLINTNEXTLINE(bsl-function-name-use)
         std::cout << std::hex << "vm [0x" << reg0_in << "] dump: mock empty\n";
     }
 
@@ -694,6 +700,7 @@ namespace syscall
     bf_debug_op_dump_vp_impl(bf_uint16_t::value_type const reg0_in) noexcept
     {
         g_bf_debug_op_dump_vp_impl_executed = true;
+        // NOLINTNEXTLINE(bsl-function-name-use)
         std::cout << std::hex << "vp [0x" << reg0_in << "] dump: mock empty\n";
     }
 
@@ -707,6 +714,7 @@ namespace syscall
     bf_debug_op_dump_vps_impl(bf_uint16_t::value_type const reg0_in) noexcept
     {
         g_bf_debug_op_dump_vps_impl_executed = true;
+        // NOLINTNEXTLINE(bsl-function-name-use)
         std::cout << std::hex << "vps [0x" << reg0_in << "] dump: mock empty\n";
     }
 
@@ -720,6 +728,7 @@ namespace syscall
     bf_debug_op_dump_vmexit_log_impl(bf_uint16_t::value_type const reg0_in) noexcept
     {
         g_bf_debug_op_dump_vmexit_log_impl_executed = true;
+        // NOLINTNEXTLINE(bsl-function-name-use)
         std::cout << std::hex << "vmexit log for pp [0x" << reg0_in << "]: mock empty\n";
     }
 
@@ -759,6 +768,7 @@ namespace syscall
     bf_debug_op_dump_ext_impl(bf_uint16_t::value_type const reg0_in) noexcept
     {
         g_bf_debug_op_dump_ext_impl_executed = true;
+        // NOLINTNEXTLINE(bsl-function-name-use)
         std::cout << std::hex << "ext [0x" << reg0_in << "] dump: mock empty\n";
     }
 
@@ -869,6 +879,9 @@ namespace syscall
         if (g_errc.at("bf_vm_op_create_vm_impl") == BF_STATUS_SUCCESS) {
             *reg0_out = bsl::to_u16(g_data.at("bf_vm_op_create_vm_impl_reg0_out")).get();
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_vm_op_create_vm_impl").get();
     }
@@ -923,6 +936,9 @@ namespace syscall
 
         if (g_errc.at("bf_vp_op_create_vp_impl") == BF_STATUS_SUCCESS) {
             *reg0_out = bsl::to_u16(g_data.at("bf_vp_op_create_vp_impl_reg0_out")).get();
+        }
+        else {
+            bsl::touch();
         }
 
         return g_errc.at("bf_vp_op_create_vp_impl").get();
@@ -1001,6 +1017,9 @@ namespace syscall
         if (g_errc.at("bf_vps_op_create_vps_impl") == BF_STATUS_SUCCESS) {
             *reg0_out = bsl::to_u16(g_data.at("bf_vps_op_create_vps_impl_reg0_out")).get();
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_vps_op_create_vps_impl").get();
     }
@@ -1071,6 +1090,9 @@ namespace syscall
         if (g_errc.at("bf_vps_op_read8_impl") == BF_STATUS_SUCCESS) {
             *reg0_out = bsl::to_u8(g_data.at("bf_vps_op_read8_impl_reg0_out")).get();
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_vps_op_read8_impl").get();
     }
@@ -1102,6 +1124,9 @@ namespace syscall
 
         if (g_errc.at("bf_vps_op_read16_impl") == BF_STATUS_SUCCESS) {
             *reg0_out = bsl::to_u16(g_data.at("bf_vps_op_read16_impl_reg0_out")).get();
+        }
+        else {
+            bsl::touch();
         }
 
         return g_errc.at("bf_vps_op_read16_impl").get();
@@ -1135,6 +1160,9 @@ namespace syscall
         if (g_errc.at("bf_vps_op_read32_impl") == BF_STATUS_SUCCESS) {
             *reg0_out = bsl::to_u32(g_data.at("bf_vps_op_read32_impl_reg0_out")).get();
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_vps_op_read32_impl").get();
     }
@@ -1167,6 +1195,9 @@ namespace syscall
         if (g_errc.at("bf_vps_op_read64_impl") == BF_STATUS_SUCCESS) {
             *reg0_out = bsl::to_u64(g_data.at("bf_vps_op_read64_impl_reg0_out")).get();
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_vps_op_read64_impl").get();
     }
@@ -1194,6 +1225,9 @@ namespace syscall
 
         if (g_errc.at("bf_vps_op_write8_impl") == BF_STATUS_SUCCESS) {
             g_data.at("bf_vps_op_write8_impl") = bsl::to_u64(reg3_in);
+        }
+        else {
+            bsl::touch();
         }
 
         return g_errc.at("bf_vps_op_write8_impl").get();
@@ -1223,6 +1257,9 @@ namespace syscall
         if (g_errc.at("bf_vps_op_write16_impl") == BF_STATUS_SUCCESS) {
             g_data.at("bf_vps_op_write16_impl") = bsl::to_u64(reg3_in);
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_vps_op_write16_impl").get();
     }
@@ -1251,6 +1288,9 @@ namespace syscall
         if (g_errc.at("bf_vps_op_write32_impl") == BF_STATUS_SUCCESS) {
             g_data.at("bf_vps_op_write32_impl") = bsl::to_u64(reg3_in);
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_vps_op_write32_impl").get();
     }
@@ -1278,6 +1318,9 @@ namespace syscall
 
         if (g_errc.at("bf_vps_op_write64_impl") == BF_STATUS_SUCCESS) {
             g_data.at("bf_vps_op_write64_impl") = bsl::to_u64(reg3_in);
+        }
+        else {
+            bsl::touch();
         }
 
         return g_errc.at("bf_vps_op_write64_impl").get();
@@ -1311,6 +1354,9 @@ namespace syscall
         if (g_errc.at("bf_vps_op_read_reg_impl") == BF_STATUS_SUCCESS) {
             *reg0_out = g_data.at("bf_vps_op_read_reg_impl_reg0_out").get();
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_vps_op_read_reg_impl").get();
     }
@@ -1338,6 +1384,9 @@ namespace syscall
 
         if (g_errc.at("bf_vps_op_write_reg_impl") == BF_STATUS_SUCCESS) {
             g_data.at("bf_vps_op_write_reg_impl") = bsl::to_u64(reg3_in);
+        }
+        else {
+            bsl::touch();
         }
 
         return g_errc.at("bf_vps_op_write_reg_impl").get();
@@ -1484,6 +1533,9 @@ namespace syscall
         if (g_errc.at("bf_intrinsic_op_rdmsr_impl") == BF_STATUS_SUCCESS) {
             *reg0_out = g_data.at("bf_intrinsic_op_rdmsr_impl_reg0_out").get();
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_intrinsic_op_rdmsr_impl").get();
     }
@@ -1508,6 +1560,9 @@ namespace syscall
 
         if (g_errc.at("bf_intrinsic_op_wrmsr_impl") == BF_STATUS_SUCCESS) {
             g_data.at("bf_intrinsic_op_wrmsr_impl") = bsl::to_u64(reg2_in);
+        }
+        else {
+            bsl::touch();
         }
 
         return g_errc.at("bf_intrinsic_op_wrmsr_impl").get();
@@ -1615,6 +1670,9 @@ namespace syscall
             *reg0_out = bsl::to_ptr<void *>(g_data.at("bf_mem_op_alloc_page_impl_reg0_out"));
             *reg1_out = g_data.at("bf_mem_op_alloc_page_impl_reg1_out").get();
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_mem_op_alloc_page_impl").get();
     }
@@ -1669,6 +1727,9 @@ namespace syscall
             *reg0_out = bsl::to_ptr<void *>(g_data.at("bf_mem_op_alloc_huge_impl_reg0_out"));
             *reg1_out = g_data.at("bf_mem_op_alloc_huge_impl_reg1_out").get();
         }
+        else {
+            bsl::touch();
+        }
 
         return g_errc.at("bf_mem_op_alloc_huge_impl").get();
     }
@@ -1715,6 +1776,9 @@ namespace syscall
 
         if (g_errc.at("bf_mem_op_alloc_heap_impl") == BF_STATUS_SUCCESS) {
             *reg0_out = bsl::to_ptr<void *>(g_data.at("bf_mem_op_alloc_heap_impl_reg0_out"));
+        }
+        else {
+            bsl::touch();
         }
 
         return g_errc.at("bf_mem_op_alloc_heap_impl").get();

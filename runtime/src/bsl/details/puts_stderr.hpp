@@ -38,6 +38,7 @@ namespace bsl::details
     ///   @param str the string to output to stderr
     ///
     constexpr void
+    /// NOLINTNEXTLINE(bsl-documentation)
     HYPERVISOR_PUTS_STDERR_NAME(cstr_type const str) noexcept
     {
         bsl::fputs(str);

@@ -40,8 +40,8 @@ namespace
         example::intrinsic_t intrinsic{};
 
     public:
-        [[nodiscard]] constexpr auto
-        test_member_const() const noexcept -> bool
+        [[nodiscard]] static constexpr auto
+        test_member_const() noexcept -> bool
         {
             /// NOTE:
             /// - intrinsic_t does not contain const member functions

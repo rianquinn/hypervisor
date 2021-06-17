@@ -38,6 +38,7 @@ namespace bsl::details
     ///   @param c the character to output to stderr
     ///
     constexpr void
+    /// NOLINTNEXTLINE(bsl-documentation)
     HYPERVISOR_PUTC_STDERR_NAME(char_type const c) noexcept
     {
         bsl::fputc(c);

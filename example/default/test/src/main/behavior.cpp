@@ -39,20 +39,27 @@
 namespace example
 {
     /// @brief stores the bf_syscall_t that this code will use
+    // NOLINTNEXTLINE(bsl-non-pod-static)
     extern syscall::bf_syscall_t g_sys;
     /// @brief stores the intrinsic_t that this code will use
+    // NOLINTNEXTLINE(bsl-non-pod-static)
     extern intrinsic_t g_intrinsic;
 
     /// @brief stores the pool of VPs that we will use
+    // NOLINTNEXTLINE(bsl-non-pod-static)
     extern vp_pool_t g_vp_pool;
     /// @brief stores the pool of VPSs that we will use
+    // NOLINTNEXTLINE(bsl-non-pod-static)
     extern vps_pool_t g_vps_pool;
 
     /// @brief stores the bootstrap_t that this code will use
+    // NOLINTNEXTLINE(bsl-non-pod-static)
     extern bootstrap_t g_bootstrap;
     /// @brief stores the fail_t that this code will use
+    // NOLINTNEXTLINE(bsl-non-pod-static)
     extern fail_t g_fail;
     /// @brief stores the vmexit_t that this code will use
+    // NOLINTNEXTLINE(bsl-non-pod-static)
     extern vmexit_t g_vmexit;
 
     /// <!-- description -->

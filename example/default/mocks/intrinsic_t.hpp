@@ -56,7 +56,7 @@ namespace example
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(gs_t &gs, tls_t &tls) &noexcept -> bsl::errc_type
+        initialize(gs_t &gs, tls_t &tls) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);
@@ -73,7 +73,7 @@ namespace example
         ///     initialize
         ///
         constexpr void
-        set_initialize(bsl::errc_type const &errc) &noexcept
+        set_initialize(bsl::errc_type const &errc) noexcept
         {
             m_initialize = errc;
         }

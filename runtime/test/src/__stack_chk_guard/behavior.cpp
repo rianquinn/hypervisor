@@ -29,6 +29,7 @@ namespace mk
     extern "C"
     {
         /// @brief defines an extern of __stack_chk_guard
+        // NOLINTNEXTLINE(bsl-non-safe-integral-types-are-forbidden)
         extern bsl::uintmax ut_stack_chk_guard;
     }
 

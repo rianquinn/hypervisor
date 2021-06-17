@@ -56,13 +56,13 @@ namespace example
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         initialize(
             gs_t &gs,
             tls_t &tls,
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
-            bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &i) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(sys);
@@ -81,8 +81,8 @@ namespace example
         ///   @param sys the bf_syscall_t to use
         ///   @param intrinsic the intrinsic_t to use
         ///
-        constexpr void
-        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
+        static constexpr void
+        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) noexcept
         {
             bsl::discard(gs);
             bsl::discard(tls);
@@ -103,14 +103,14 @@ namespace example
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         allocate(
             gs_t &gs,
             tls_t &tls,
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
             bsl::safe_uint16 const &vpid,
-            bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &ppid) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(sys);

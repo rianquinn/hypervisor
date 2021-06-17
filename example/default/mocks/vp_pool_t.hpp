@@ -30,15 +30,9 @@
 #include <intrinsic_t.hpp>
 #include <tls_t.hpp>
 
-#include <bsl/array.hpp>
-#include <bsl/debug.hpp>
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
-#include <bsl/finally.hpp>
-#include <bsl/finally_assert.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/unlikely.hpp>
-#include <bsl/unlikely_assert.hpp>
 
 namespace example
 {
@@ -68,7 +62,7 @@ namespace example
         ///
         [[nodiscard]] constexpr auto
         initialize(
-            gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
+            gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) noexcept
             -> bsl::errc_type
         {
             bsl::discard(gs);
@@ -88,7 +82,7 @@ namespace example
         ///     initialize
         ///
         constexpr void
-        set_initialize(bsl::errc_type const &errc) &noexcept
+        set_initialize(bsl::errc_type const &errc) noexcept
         {
             m_initialize = errc;
         }
@@ -102,8 +96,8 @@ namespace example
         ///   @param sys the bf_syscall_t to use
         ///   @param intrinsic the intrinsic_t to use
         ///
-        constexpr void
-        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
+        static constexpr void
+        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) noexcept
         {
             bsl::discard(gs);
             bsl::discard(tls);
@@ -131,7 +125,7 @@ namespace example
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
             bsl::safe_uint16 const &vmid,
-            bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
+            bsl::safe_uint16 const &ppid) noexcept -> bsl::safe_uint16
         {
             bsl::discard(gs);
             bsl::discard(tls);
@@ -152,7 +146,7 @@ namespace example
         ///     allocate
         ///
         constexpr void
-        set_allocate(bsl::safe_uint16 const &val) &noexcept
+        set_allocate(bsl::safe_uint16 const &val) noexcept
         {
             m_allocate = val;
         }

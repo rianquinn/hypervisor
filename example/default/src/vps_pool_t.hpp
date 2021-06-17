@@ -67,7 +67,7 @@ namespace example
         ///
         [[nodiscard]] constexpr auto
         initialize(
-            gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
+            gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) noexcept
             -> bsl::errc_type
         {
             /// NOTE:
@@ -122,7 +122,7 @@ namespace example
         ///   @param intrinsic the intrinsic_t to use
         ///
         constexpr void
-        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
+        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) noexcept
         {
             /// NOTE:
             /// - Release functions are usually only needed in the event of
@@ -154,7 +154,7 @@ namespace example
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
             bsl::safe_uint16 const &vpid,
-            bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
+            bsl::safe_uint16 const &ppid) noexcept -> bsl::safe_uint16
         {
             bsl::errc_type ret{};
             bsl::safe_uint16 vpsid{};

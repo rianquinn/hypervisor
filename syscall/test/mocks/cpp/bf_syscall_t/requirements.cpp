@@ -183,13 +183,15 @@ namespace syscall
             sys.set_bf_intrinsic_op_invept({}, {}, {});
             bsl::discard(sys.bf_intrinsic_op_invvpid({}, {}, {}));
             sys.set_bf_intrinsic_op_invvpid({}, {}, {}, {});
-            bsl::discard(sys.bf_mem_op_alloc_page(phys));
-            bsl::discard(sys.bf_mem_op_alloc_page());
+            bsl::discard(sys.bf_mem_op_free_page(sys.bf_mem_op_alloc_page(phys)));
+            bsl::discard(sys.bf_mem_op_free_page(sys.bf_mem_op_alloc_page()));
             sys.set_bf_mem_op_alloc_page({});
             bsl::discard(sys.bf_mem_op_free_page({}));
             sys.set_bf_mem_op_free_page({});
-            bsl::discard(sys.bf_mem_op_alloc_huge({}, phys));
-            bsl::discard(sys.bf_mem_op_alloc_huge({}));
+            bsl::discard(sys.bf_mem_op_free_huge(
+                sys.bf_mem_op_alloc_huge(bsl::to_umax(HYPERVISOR_PAGE_SIZE), phys)));
+            bsl::discard(sys.bf_mem_op_free_huge(
+                sys.bf_mem_op_alloc_huge(bsl::to_umax(HYPERVISOR_PAGE_SIZE))));
             sys.set_bf_mem_op_alloc_huge({});
             bsl::discard(sys.bf_mem_op_free_huge({}));
             sys.set_bf_mem_op_free_huge({});

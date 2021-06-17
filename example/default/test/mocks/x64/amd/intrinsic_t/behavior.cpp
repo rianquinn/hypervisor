@@ -79,15 +79,17 @@ namespace example
         bsl::ut_scenario{"cpuid"} = []() {
             bsl::ut_given{} = []() {
                 intrinsic_t intrinsic{};
-                constexpr auto eax{bsl::to_u32(0x42)};
-                constexpr auto ebx{bsl::to_u32(0x42)};
-                constexpr auto ecx{bsl::to_u32(0x42)};
-                constexpr auto edx{bsl::to_u32(0x42)};
-                auto rax{bsl::to_umax(0x1234567800000000)};
-                auto rbx{bsl::to_umax(0x1234567800000000)};
-                auto rcx{bsl::to_umax(0x1234567800000000)};
-                auto rdx{bsl::to_umax(0x1234567800000000)};
+                constexpr auto cpuid{bsl::to_umax(0x42)};
+                constexpr auto input{bsl::to_umax(0x1234567800000000)};
                 constexpr auto expected_result{bsl::to_umax(0x1234567800000042)};
+                constexpr auto eax{bsl::to_u32(cpuid)};
+                constexpr auto ebx{bsl::to_u32(cpuid)};
+                constexpr auto ecx{bsl::to_u32(cpuid)};
+                constexpr auto edx{bsl::to_u32(cpuid)};
+                auto rax{bsl::to_umax(input)};
+                auto rbx{bsl::to_umax(input)};
+                auto rcx{bsl::to_umax(input)};
+                auto rdx{bsl::to_umax(input)};
                 bsl::ut_when{} = [&intrinsic,
                                   &eax,
                                   &ebx,

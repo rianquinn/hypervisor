@@ -94,10 +94,11 @@ namespace
         [[nodiscard]] constexpr auto
         test_member_nonconst() noexcept -> bool
         {
-            bsl::discard(bsl::errc_type{});
-            bsl::discard(bsl::errc_type{42});
-            bsl::discard(bsl::errc_type{bsl::to_i32(42)});
+            constexpr auto the_answer{bsl::to_i32(42)};
 
+            bsl::discard(bsl::errc_type{});
+            bsl::discard(bsl::errc_type{the_answer.get()});
+            bsl::discard(bsl::errc_type{the_answer});
             bsl::discard(errc1.get());
             bsl::discard(!errc1);
             bsl::discard(errc1.success());
@@ -151,11 +152,11 @@ main() noexcept -> bsl::exit_code
         bsl::ut_given{} = []() {
             bsl::errc_type errc1{};
             bsl::errc_type errc2{};
+            constexpr auto the_answer{bsl::to_i32(42)};
             bsl::ut_then{} = []() {
                 static_assert(noexcept(bsl::errc_type{}));
-                static_assert(noexcept(bsl::errc_type{42}));
-                static_assert(noexcept(bsl::errc_type{bsl::to_i32(42)}));
-
+                static_assert(noexcept(bsl::errc_type{the_answer.get()}));
+                static_assert(noexcept(bsl::errc_type{the_answer}));
                 static_assert(noexcept(errc1.get()));
                 static_assert(noexcept(!errc1));
                 static_assert(noexcept(errc1.success()));

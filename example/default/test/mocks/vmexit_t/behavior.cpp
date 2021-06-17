@@ -52,7 +52,8 @@ namespace example
                 bsl::ut_when{} = [&vmexit, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
                     vmexit.set_initialize(bsl::errc_failure);
                     bsl::ut_then{} = [&vmexit, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
-                        bsl::ut_check(!vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
+                        bsl::ut_check(
+                            !vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     };
                 };
             };

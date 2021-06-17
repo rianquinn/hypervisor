@@ -65,7 +65,7 @@ namespace example
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(gs_t &gs, tls_t &tls) &noexcept -> bsl::errc_type
+        initialize(gs_t &gs, tls_t &tls) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);
@@ -82,7 +82,7 @@ namespace example
         ///     initialize
         ///
         constexpr void
-        set_initialize(bsl::errc_type const &errc) &noexcept
+        set_initialize(bsl::errc_type const &errc) noexcept
         {
             m_initialize = errc;
         }
@@ -116,9 +116,9 @@ namespace example
             bsl::safe_uint64 &rax,
             bsl::safe_uint64 &rbx,
             bsl::safe_uint64 &rcx,
-            bsl::safe_uint64 &rdx) &noexcept
+            bsl::safe_uint64 &rdx) noexcept
         {
-            constexpr auto mask{bsl::to_umax(0xFFFFFFFF00000000)};
+            constexpr auto mask{bsl::to_umax(0xFFFFFFFF00000000U)};
 
             rax = ((rax & mask) | bsl::to_umax(m_eax));
             rbx = ((rbx & mask) | bsl::to_umax(m_ebx));
@@ -141,7 +141,7 @@ namespace example
             bsl::safe_uint32 const &eax,
             bsl::safe_uint32 const &ebx,
             bsl::safe_uint32 const &ecx,
-            bsl::safe_uint32 const &edx) &noexcept
+            bsl::safe_uint32 const &edx) noexcept
         {
             m_eax = eax;
             m_ebx = ebx;

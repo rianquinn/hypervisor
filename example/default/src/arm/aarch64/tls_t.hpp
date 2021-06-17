@@ -39,7 +39,7 @@ namespace example
     ///     specific logic and data to ensure tests can support constexpr
     ///     style unit testing. Also note that this is stored in the arch
     ///     specific folders as it usually needs to store arch specific
-    ///     resources.
+    ///     resources. In this simple example, we leave this empty.
     ///
     /// <!-- notes -->
     ///   @note IMPORTANT: Extensions are limited to a single 4k page for the

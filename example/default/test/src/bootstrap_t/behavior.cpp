@@ -80,10 +80,12 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 bsl::ut_when{} = [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
-                    bsl::ut_required_step(bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
-                    bsl::ut_then{} = [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
-                        bootstrap.release(gs, tls, sys, intrinsic, vp_pool, vps_pool);
-                    };
+                    bsl::ut_required_step(
+                        bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
+                    bsl::ut_then{} =
+                        [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                            bootstrap.release(gs, tls, sys, intrinsic, vp_pool, vps_pool);
+                        };
                 };
             };
         };
@@ -98,7 +100,8 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 bsl::ut_when{} = [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
-                    bsl::ut_required_step(bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
+                    bsl::ut_required_step(
+                        bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     vp_pool.set_allocate(bsl::safe_uint16::zero(true));
                     bsl::ut_then{} =
                         [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
@@ -119,7 +122,8 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 bsl::ut_when{} = [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
-                    bsl::ut_required_step(bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
+                    bsl::ut_required_step(
+                        bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     vps_pool.set_allocate(bsl::safe_uint16::zero(true));
                     bsl::ut_then{} =
                         [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
@@ -140,7 +144,8 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 bsl::ut_when{} = [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
-                    bsl::ut_required_step(bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
+                    bsl::ut_required_step(
+                        bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     bsl::ut_then{} =
                         [&bootstrap, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
                             bsl::ut_check(

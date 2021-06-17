@@ -1354,6 +1354,9 @@ namespace syscall
             if (m_bf_vps_op_write8.at({vpsid, index, value})) {
                 m_bf_vps_op_read8.at({vpsid, index}) = value;
             }
+            else {
+                bsl::touch();
+            }
 
             return m_bf_vps_op_write8.at({vpsid, index, value});
         }
@@ -1414,6 +1417,9 @@ namespace syscall
 
             if (m_bf_vps_op_write16.at({vpsid, index, value})) {
                 m_bf_vps_op_read16.at({vpsid, index}) = value;
+            }
+            else {
+                bsl::touch();
             }
 
             return m_bf_vps_op_write16.at({vpsid, index, value});
@@ -1476,6 +1482,9 @@ namespace syscall
             if (m_bf_vps_op_write32.at({vpsid, index, value})) {
                 m_bf_vps_op_read32.at({vpsid, index}) = value;
             }
+            else {
+                bsl::touch();
+            }
 
             return m_bf_vps_op_write32.at({vpsid, index, value});
         }
@@ -1536,6 +1545,9 @@ namespace syscall
 
             if (m_bf_vps_op_write64.at({vpsid, index, value})) {
                 m_bf_vps_op_read64.at({vpsid, index}) = value;
+            }
+            else {
+                bsl::touch();
             }
 
             return m_bf_vps_op_write64.at({vpsid, index, value});
@@ -1629,6 +1641,9 @@ namespace syscall
 
             if (m_bf_vps_op_write_reg.at({vpsid, reg, value})) {
                 m_bf_vps_op_read_reg.at({vpsid, reg}) = value;
+            }
+            else {
+                bsl::touch();
             }
 
             return m_bf_vps_op_write_reg.at({vpsid, reg, value});
@@ -1989,6 +2004,9 @@ namespace syscall
             if (m_bf_intrinsic_op_wrmsr.at({msr, value})) {
                 m_bf_intrinsic_op_rdmsr.at(msr) = value;
             }
+            else {
+                bsl::touch();
+            }
 
             return m_bf_intrinsic_op_wrmsr.at({msr, value});
         }
@@ -2180,7 +2198,7 @@ namespace syscall
                 return nullptr;
             }
 
-            auto *const virt = new bsl::uint8[bsl::to_umax(HYPERVISOR_PAGE_SIZE).get()];
+            auto *const virt{new bsl::uint8[bsl::to_umax(HYPERVISOR_PAGE_SIZE).get()]};
             m_alloc_free_map.at(virt) = bsl::to_umax(HYPERVISOR_PAGE_SIZE);
 
             phys = (m_alloc_free_map.size() * bsl::to_umax(HYPERVISOR_PAGE_SIZE));
@@ -2253,6 +2271,7 @@ namespace syscall
             m_virt_to_phys_map.at(virt) = {};
             m_phys_to_virt_map.at(phys) = {};
 
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
             delete[] virt;    // GRCOV_EXCLUDE_BR
             m_alloc_free_map.at(virt) = {};
 
@@ -2303,6 +2322,11 @@ namespace syscall
                 return nullptr;
             }
 
+            if (bsl::unlikely(size.is_zero())) {
+                bsl::error() << "size cannot be 0\n" << bsl::here();
+                return nullptr;
+            }
+
             if (bsl::unlikely(!phys)) {
                 bsl::error() << "invalid phys\n" << bsl::here();
                 return nullptr;
@@ -2312,7 +2336,7 @@ namespace syscall
                 return nullptr;
             }
 
-            auto *const virt = new bsl::uint8[size.get()];
+            auto *const virt{new bsl::uint8[size.get()]};
             m_alloc_free_map.at(virt) = size;
 
             phys = (m_alloc_free_map.size() * bsl::to_umax(HYPERVISOR_PAGE_SIZE));
@@ -2398,6 +2422,7 @@ namespace syscall
             m_virt_to_phys_map.at(virt) = {};
             m_phys_to_virt_map.at(phys) = {};
 
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
             delete[] virt;    // GRCOV_EXCLUDE_BR
             m_alloc_free_map.at(virt) = {};
 
@@ -2439,8 +2464,8 @@ namespace syscall
         ///   @return Returns a pointer to the newly allocated memory on success,
         ///     or a nullptr on failure.
         ///
-        [[nodiscard]] constexpr auto
-        bf_mem_op_alloc_heap(bf_uint64_t const &size) &noexcept -> void *
+        [[nodiscard]] static constexpr auto
+        bf_mem_op_alloc_heap(bf_uint64_t const &size) noexcept -> void *
         {
             bsl::discard(size);
 

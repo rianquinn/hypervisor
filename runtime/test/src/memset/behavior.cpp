@@ -26,6 +26,7 @@
 #include <bsl/as_const.hpp>
 #include <bsl/convert.hpp>
 #include <bsl/cstdint.hpp>
+#include <bsl/discard.hpp>
 #include <bsl/safe_integral.hpp>
 #include <bsl/ut.hpp>
 
@@ -42,8 +43,8 @@ namespace mk
     ///   @param num number of bytes to be set to the val.
     ///   @return Returns dst
     ///
-    extern "C" void *
-    ut_memset(void *const dst, bsl::int32 const val, bsl::uintmax const num) noexcept;
+    extern "C" [[nodiscard]] auto
+    ut_memset(void *const dst, bsl::int32 const val, bsl::uintmax const num) noexcept -> void *;
 
     /// <!-- description -->
     ///   @brief Used to execute the actual checks. We put the checks in this
@@ -63,7 +64,8 @@ namespace mk
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::ut_when{} = [&data_dst]() {
                     constexpr auto val{bsl::to_i32(42)};
-                    ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get());
+                    bsl::discard(
+                        ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
@@ -79,7 +81,8 @@ namespace mk
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::ut_when{} = [&data_dst]() {
                     constexpr auto val{bsl::to_i32(42)};
-                    ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get());
+                    bsl::discard(
+                        ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
@@ -95,7 +98,8 @@ namespace mk
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::ut_when{} = [&data_dst]() {
                     constexpr auto val{bsl::to_i32(42)};
-                    ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get());
+                    bsl::discard(
+                        ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
@@ -111,7 +115,8 @@ namespace mk
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::ut_when{} = [&data_dst]() {
                     constexpr auto val{bsl::to_i32(42)};
-                    ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get());
+                    bsl::discard(
+                        ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
@@ -127,7 +132,8 @@ namespace mk
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::ut_when{} = [&data_dst]() {
                     constexpr auto val{bsl::to_i32(42)};
-                    ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get());
+                    bsl::discard(
+                        ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
@@ -143,7 +149,8 @@ namespace mk
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::ut_when{} = [&data_dst]() {
                     constexpr auto val{bsl::to_i32(42)};
-                    ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get());
+                    bsl::discard(
+                        ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
@@ -159,7 +166,8 @@ namespace mk
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::ut_when{} = [&data_dst]() {
                     constexpr auto val{bsl::to_i32(42)};
-                    ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get());
+                    bsl::discard(
+                        ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
@@ -175,7 +183,8 @@ namespace mk
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::ut_when{} = [&data_dst]() {
                     constexpr auto val{bsl::to_i32(42)};
-                    ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get());
+                    bsl::discard(
+                        ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
@@ -191,12 +200,26 @@ namespace mk
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::ut_when{} = [&data_dst]() {
                     constexpr auto val{bsl::to_i32(42)};
-                    ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get());
+                    bsl::discard(
+                        ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
                     bsl::ut_then{} = [&data_dst, &val]() {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
                         }
                     };
+                };
+            };
+        };
+
+        bsl::ut_scenario{"memset return"} = []() {
+            bsl::ut_given_at_runtime{} = []() {
+                constexpr auto size{bsl::to_umax(1)};
+                bsl::array<bsl::uint8, size.get()> data_dst{};
+                bsl::ut_then{} = [&data_dst]() {
+                    constexpr auto val{bsl::to_i32(42)};
+                    bsl::ut_check(
+                        ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()) ==
+                        data_dst.data());
                 };
             };
         };

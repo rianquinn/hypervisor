@@ -37,14 +37,10 @@ namespace mk
     /// <!-- description -->
     ///   @brief Stores information about each VMExit per PP
     ///
-    /// <!-- template parameters -->
-    ///   @tparam VMEXIT_LOG_SIZE defines the max number of VMExit log entries
-    ///
-    template<bsl::uintmax VMEXIT_LOG_SIZE>
     struct vmexit_log_pp_t final
     {
         /// @brief stores the VMExit log
-        bsl::array<vmexit_log_record_t, VMEXIT_LOG_SIZE> log;
+        bsl::array<vmexit_log_record_t, HYPERVISOR_VMEXIT_LOG_SIZE> log;
         /// @brief stores the VMExit log circular cursor
         bsl::safe_uintmax crsr;
     };

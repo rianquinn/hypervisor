@@ -39,6 +39,21 @@
 
 namespace example
 {
+    /// <!-- description -->
+    ///   @brief Returns the masked version of the VMCS control fields
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param val the value of the control fields read from the MSRs
+    ///   @return The masked version of the control fields.
+    ///
+    [[nodiscard]] constexpr auto
+    ctls_mask(bsl::safe_uintmax const &val) noexcept -> bsl::safe_uint32
+    {
+        constexpr auto mask{bsl::to_umax(0x00000000FFFFFFFFU)};
+        constexpr auto shift{bsl::to_umax(32)};
+        return bsl::to_u32_unsafe((val & mask) & (val >> shift));
+    };
+
     /// @class example::vps_t
     ///
     /// <!-- description -->
@@ -77,7 +92,7 @@ namespace example
             tls_t &tls,
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
-            bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &i) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);
@@ -147,7 +162,7 @@ namespace example
         ///   @param intrinsic the intrinsic_t to use
         ///
         constexpr void
-        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
+        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) noexcept
         {
             bsl::errc_type ret{};
 
@@ -158,6 +173,9 @@ namespace example
             ret = sys.bf_mem_op_free_page(m_msr_bitmap);
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
+            }
+            else {
+                bsl::touch();
             }
 
             /// NOTE:
@@ -190,7 +208,7 @@ namespace example
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
             bsl::safe_uint16 const &vpid,
-            bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &ppid) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);
@@ -371,12 +389,6 @@ namespace example
 
             bsl::safe_uintmax ctls{};
 
-            auto mask = [](bsl::safe_uintmax const &val) noexcept -> bsl::safe_uint32 {
-                constexpr auto ctls_mask{bsl::to_umax(0x00000000FFFFFFFFU)};
-                constexpr auto ctls_shift{bsl::to_umax(32)};
-                return bsl::to_u32_unsafe((val & ctls_mask) & (val >> ctls_shift));
-            };
-
             /// NOTE:
             /// - Configure the pin based controls
             ///
@@ -384,10 +396,10 @@ namespace example
             ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_pinbased_ctls);
             if (bsl::unlikely_assert(!ctls)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return ret;
+                return bsl::errc_failure;
             }
 
-            ret = sys.bf_vps_op_write32(m_id, vmcs_pinbased_ctls_idx, mask(ctls));
+            ret = sys.bf_vps_op_write32(m_id, vmcs_pinbased_ctls_idx, ctls_mask(ctls));
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
@@ -401,15 +413,15 @@ namespace example
             constexpr auto enable_procbased_ctls2{bsl::to_umax(0x80000000U)};
 
             ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_procbased_ctls);
-            if (bsl::unlikely_assert(!ret)) {
+            if (bsl::unlikely_assert(!ctls)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return ret;
+                return bsl::errc_failure;
             }
 
             ctls |= enable_msr_bitmaps;
             ctls |= enable_procbased_ctls2;
 
-            ret = sys.bf_vps_op_write32(m_id, vmcs_procbased_ctls_idx, mask(ctls));
+            ret = sys.bf_vps_op_write32(m_id, vmcs_procbased_ctls_idx, ctls_mask(ctls));
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
@@ -420,12 +432,12 @@ namespace example
             ///
 
             ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_exit_ctls);
-            if (bsl::unlikely_assert(!ret)) {
+            if (bsl::unlikely_assert(!ctls)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return ret;
+                return bsl::errc_failure;
             }
 
-            ret = sys.bf_vps_op_write32(m_id, vmcs_exit_ctls_idx, mask(ctls));
+            ret = sys.bf_vps_op_write32(m_id, vmcs_exit_ctls_idx, ctls_mask(ctls));
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
@@ -436,12 +448,12 @@ namespace example
             ///
 
             ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_entry_ctls);
-            if (bsl::unlikely_assert(!ret)) {
+            if (bsl::unlikely_assert(!ctls)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return ret;
+                return bsl::errc_failure;
             }
 
-            ret = sys.bf_vps_op_write32(m_id, vmcs_entry_ctls_idx, mask(ctls));
+            ret = sys.bf_vps_op_write32(m_id, vmcs_entry_ctls_idx, ctls_mask(ctls));
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
@@ -458,9 +470,9 @@ namespace example
             constexpr auto enable_uwait{bsl::to_umax(0x04000000U)};
 
             ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_procbased_ctls2);
-            if (bsl::unlikely_assert(!ret)) {
+            if (bsl::unlikely_assert(!ctls)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return ret;
+                return bsl::errc_failure;
             }
 
             ctls |= enable_vpid;
@@ -469,7 +481,7 @@ namespace example
             ctls |= enable_xsave;
             ctls |= enable_uwait;
 
-            ret = sys.bf_vps_op_write32(m_id, vmcs_procbased_ctls2_idx, mask(ctls));
+            ret = sys.bf_vps_op_write32(m_id, vmcs_procbased_ctls2_idx, ctls_mask(ctls));
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;

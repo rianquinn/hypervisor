@@ -2001,6 +2001,11 @@ namespace syscall
                 return nullptr;
             }
 
+            if (bsl::unlikely_assert(size.is_zero())) {
+                bsl::error() << "size cannot be 0\n" << bsl::here();
+                return nullptr;
+            }
+
             if (bsl::unlikely_assert(!phys)) {
                 bsl::error() << "invalid phys\n" << bsl::here();
                 return nullptr;

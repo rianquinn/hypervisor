@@ -71,7 +71,7 @@ namespace example
             tls_t &tls,
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
-            bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &i) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);
@@ -136,7 +136,7 @@ namespace example
         ///   @param intrinsic the intrinsic_t to use
         ///
         constexpr void
-        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
+        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) noexcept
         {
             bsl::discard(gs);
             bsl::discard(tls);
@@ -173,7 +173,7 @@ namespace example
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
             bsl::safe_uint16 const &vmid,
-            bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &ppid) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);

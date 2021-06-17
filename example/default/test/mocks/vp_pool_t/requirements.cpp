@@ -42,8 +42,8 @@ namespace
         example::vp_pool_t vp_pool{};
 
     public:
-        [[nodiscard]] constexpr auto
-        test_member_const() const noexcept -> bool
+        [[nodiscard]] static constexpr auto
+        test_member_const() noexcept -> bool
         {
             /// NOTE:
             /// - vp_pool_t does not contain const member functions

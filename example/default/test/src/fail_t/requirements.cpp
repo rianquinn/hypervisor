@@ -44,8 +44,8 @@ namespace
         example::fail_t vp_pool{};
 
     public:
-        [[nodiscard]] constexpr auto
-        test_member_const() const noexcept -> bool
+        [[nodiscard]] static constexpr auto
+        test_member_const() noexcept -> bool
         {
             /// NOTE:
             /// - fail_t does not contain const member functions
@@ -58,7 +58,8 @@ namespace
         test_member_nonconst() noexcept -> bool
         {
             bsl::discard(example::fail_t{});
-            bsl::discard(vp_pool.initialize(g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool));
+            bsl::discard(
+                vp_pool.initialize(g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool));
             vp_pool.release(g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool);
             bsl::discard(
                 vp_pool.dispatch(g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool, {}, {}));
@@ -90,8 +91,10 @@ main() noexcept -> bsl::exit_code
             example::fail_t vp_pool{};
             bsl::ut_then{} = []() {
                 static_assert(noexcept(example::fail_t{}));
-                static_assert(noexcept(vp_pool.initialize(g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool)));
-                static_assert(noexcept(vp_pool.release(g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool)));
+                static_assert(noexcept(
+                    vp_pool.initialize(g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool)));
+                static_assert(noexcept(
+                    vp_pool.release(g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool)));
                 static_assert(noexcept(vp_pool.dispatch(
                     g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool, {}, {})));
             };

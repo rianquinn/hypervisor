@@ -27,9 +27,15 @@
 
 #include <bf_constants.hpp>
 #include <bf_syscall_t.hpp>
+#include <gs_t.hpp>
+#include <intrinsic_t.hpp>
+#include <tls_t.hpp>
 
+#include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
+#include <bsl/touch.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace example
 {
@@ -41,24 +47,38 @@ namespace example
     class vps_t final
     {
         /// @brief stores the ID associated with this vps_t
-        auto m_id{bsl::safe_uint16::zero(true)};
+        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
         /// @brief stores the ID of the VP this vps_t is assigned to
-        auto m_assigned_vpid{syscall::BF_INVALID_ID};
+        bsl::safe_uint16 m_assigned_vpid{syscall::BF_INVALID_ID};
         /// @brief stores the ID of the PP this vps_t is assigned to
-        auto m_assigned_ppid{syscall::BF_INVALID_ID};
+        bsl::safe_uint16 m_assigned_ppid{syscall::BF_INVALID_ID};
 
     public:
         /// <!-- description -->
         ///   @brief Initializes this vps_t
         ///
         /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///   @param i the ID for this vps_t
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        initialize(
+            gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic,
+            bsl::safe_uint16 const &i) noexcept -> bsl::errc_type
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
+
             /// NOTE:
             /// - The following is a pedantic check to make sure we have
             ///   not already initialized ourselves. In larger extensions,
@@ -110,9 +130,20 @@ namespace example
         /// <!-- description -->
         ///   @brief Release the vps_t.
         ///
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
+        ///
         constexpr void
-        release() &noexcept
+        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) noexcept
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
+
             /// NOTE:
             /// - Release functions are usually only needed in the event of
             ///   an error, or during unit testing.
@@ -127,7 +158,10 @@ namespace example
         ///   @brief Allocates a vps_t and returns it's ID
         ///
         /// <!-- inputs/outputs -->
-        ///   @param sys the bf_syscall_t to use.
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///   @param vpid the ID of the VP to assign the vps_t to
         ///   @param ppid the ID of the PP to assign the vps_t to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
@@ -135,10 +169,17 @@ namespace example
         ///
         [[nodiscard]] constexpr auto
         allocate(
+            gs_t &gs,
+            tls_t &tls,
             syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic,
             bsl::safe_uint16 const &vpid,
-            bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &ppid) noexcept -> bsl::errc_type
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+            bsl::discard(intrinsic);
+
             bsl::errc_type ret{};
 
             /// NOTE:
@@ -237,6 +278,8 @@ namespace example
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
+
+                bsl::touch();
             }
             else {
 
@@ -247,45 +290,6 @@ namespace example
                 ///
 
                 bsl::touch();
-            }
-
-            /// NOTE:
-            /// - Set up ASID. For this simple example, we will use "1", but
-            ///   in most cases you will want to use something based on the
-            ///   VMID that this VPS is assigned to (which is based on which
-            ///   VP the VPS is assigned to, as VPs are assigned to VMs and
-            ///   VPSs are assigned to VPs).
-            ///
-
-            constexpr auto guest_asid_idx{bsl::to_u64(0x0058U)};
-            constexpr auto guest_asid_val{bsl::to_u32(0x1U)};
-
-            ret = sys.bf_vps_op_write32(m_id, guest_asid_idx, guest_asid_val);
-            if (bsl::unlikely_assert(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return ret;
-            }
-
-            /// NOTE:
-            /// - Set up intercept controls. On AMD, we need to intercept
-            ///   VMRun, and CPUID if we plan to support reporting and stopping.
-            ///
-
-            constexpr auto intercept_instr1_idx{bsl::to_u64(0x000CU)};
-            constexpr auto intercept_instr1_val{bsl::to_u32(0x00040000U)};
-            constexpr auto intercept_instr2_idx{bsl::to_u64(0x0010U)};
-            constexpr auto intercept_instr2_val{bsl::to_u32(0x00000001U)};
-
-            ret = sys.bf_vps_op_write32(m_id, intercept_instr1_idx, intercept_instr1_val);
-            if (bsl::unlikely_assert(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return ret;
-            }
-
-            ret = sys.bf_vps_op_write32(m_id, intercept_instr2_idx, intercept_instr2_val);
-            if (bsl::unlikely_assert(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return ret;
             }
 
             /// NOTE:
