@@ -27,6 +27,7 @@
 
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
+#include <ext_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -39,15 +40,13 @@ namespace mk
     ///   @brief Implements the bf_mem_op_alloc_page syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_page(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_mem_op_alloc_page(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         /// NOTE:
         /// - ext.alloc_page is assumped to be exception UNSAFE
@@ -74,15 +73,13 @@ namespace mk
     ///   @brief Implements the bf_mem_op_free_page syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_free_page(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_mem_op_free_page(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         auto const ret{ext.free_page(bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
@@ -98,15 +95,13 @@ namespace mk
     ///   @brief Implements the bf_mem_op_alloc_huge syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_huge(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_mem_op_alloc_huge(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         auto const huge{ext.alloc_huge(tls, bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!huge.virt)) {
@@ -125,15 +120,13 @@ namespace mk
     ///   @brief Implements the bf_mem_op_free_huge syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_free_huge(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_mem_op_free_huge(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         auto const ret{ext.free_huge(bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
@@ -149,15 +142,13 @@ namespace mk
     ///   @brief Implements the bf_mem_op_alloc_heap syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_heap(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_mem_op_alloc_heap(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         auto const previous_heap_virt{ext.alloc_heap(tls, bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!previous_heap_virt)) {
@@ -175,15 +166,13 @@ namespace mk
     ///   @brief Dispatches the bf_mem_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_mem_op(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    dispatch_syscall_mem_op(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

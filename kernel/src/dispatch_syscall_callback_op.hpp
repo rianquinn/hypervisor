@@ -27,6 +27,7 @@
 
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
+#include <ext_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -41,15 +42,13 @@ namespace mk
     ///   @brief Implements the bf_callback_op_register_bootstrap syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_callback_op_register_bootstrap(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_callback_op_register_bootstrap(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
@@ -80,15 +79,13 @@ namespace mk
     ///   @brief Implements the bf_callback_op_register_vmexit syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_callback_op_register_vmexit(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_callback_op_register_vmexit(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
@@ -110,7 +107,7 @@ namespace mk
 
         if (bsl::unlikely(nullptr != tls.ext_vmexit)) {
             bsl::error() << "ext "                                                        // --
-                         << bsl::hex(static_cast<EXT_CONCEPT *>(tls.ext_vmexit)->id())    // --
+                         << bsl::hex(static_cast<ext_t *>(tls.ext_vmexit)->id())    // --
                          << " already registered a vmexit callback\n"                     // --
                          << bsl::here();                                                  // --
 
@@ -129,15 +126,13 @@ namespace mk
     ///   @brief Implements the bf_callback_op_register_fail syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_callback_op_register_fail(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_callback_op_register_fail(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         bsl::safe_uintmax callback{tls.ext_reg1};
         if (bsl::unlikely(callback.is_zero())) {
@@ -159,7 +154,7 @@ namespace mk
 
         if (bsl::unlikely(nullptr != tls.ext_fail)) {
             bsl::error() << "ext "                                                      // --
-                         << bsl::hex(static_cast<EXT_CONCEPT *>(tls.ext_fail)->id())    // --
+                         << bsl::hex(static_cast<ext_t *>(tls.ext_fail)->id())    // --
                          << " already registered a fast fail callback\n"                // --
                          << bsl::here();                                                // --
 
@@ -178,15 +173,13 @@ namespace mk
     ///   @brief Dispatches the bf_callback_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_callback_op(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    dispatch_syscall_callback_op(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

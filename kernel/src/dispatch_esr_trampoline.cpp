@@ -32,14 +32,7 @@
 namespace mk
 {
     /// <!-- description -->
-    ///   @brief Since we cannot create a template function pointer, we need
-    ///     a way to call a template function from our ASM entry point.
-    ///     Normally the way this works in a normal program is the OS calls
-    ///     _start, which then calls main(). The main() function, which is
-    ///     an extern C function, similar to this function, can then call a
-    ///     template function as needed. So the whole point of this function
-    ///     is to simply trampoline from our ASM logic, to a C++ template
-    ///     function that is easy to test.
+    ///   @brief Remove me
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
@@ -49,7 +42,6 @@ namespace mk
     extern "C" [[nodiscard]] auto
     dispatch_esr_trampoline(tls_t *const tls) noexcept -> bsl::exit_code
     {
-        return dispatch_esr<mk_ext_type, mk_intrinsic_type>(
-            *tls, static_cast<mk_ext_type *>(tls->ext), g_intrinsic);
+        return dispatch_esr(*tls, static_cast<mk_ext_type *>(tls->ext), g_intrinsic);
     }
 }

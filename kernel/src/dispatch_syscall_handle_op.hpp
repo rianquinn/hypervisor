@@ -27,6 +27,7 @@
 
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
+#include <ext_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/unlikely.hpp>
@@ -37,15 +38,13 @@ namespace mk
     ///   @brief Implements the bf_handle_op_open_handle syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_handle_op_open_handle(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_handle_op_open_handle(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         if (bsl::unlikely(bsl::to_u32(tls.ext_reg0) != syscall::BF_SPEC_ID1_VAL)) {
             bsl::error() << "unsupported syscall ABI "    //--
@@ -75,15 +74,13 @@ namespace mk
     ///   @brief Implements the bf_handle_op_close_handle syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_handle_op_close_handle(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    syscall_handle_op_close_handle(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         if (bsl::unlikely(!ext.is_handle_valid(tls.ext_reg0))) {
             bsl::error() << "invalid handle "         // --
@@ -112,15 +109,13 @@ namespace mk
     ///   @brief Dispatches the bf_handle_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_handle_op(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    dispatch_syscall_handle_op(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

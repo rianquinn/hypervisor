@@ -27,6 +27,14 @@
 
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
+#include <ext_pool_t.hpp>
+#include <intrinsic_t.hpp>
+#include <page_pool_t.hpp>
+#include <huge_pool_t.hpp>
+#include <vps_pool_t.hpp>
+#include <vp_pool_t.hpp>
+#include <vm_pool_t.hpp>
+#include <vmexit_log_t.hpp>
 
 #include <bsl/char_type.hpp>
 #include <bsl/cstr_type.hpp>
@@ -39,14 +47,6 @@ namespace mk
     ///   @brief Dispatches the bf_debug_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
-    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-    ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
-    ///   @tparam HUGE_POOL_CONCEPT defines the type of huge pool to use
-    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-    ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
-    ///   @tparam VMEXIT_LOG_CONCEPT defines the type of VMExit log to use
     ///   @param tls the current TLS block
     ///   @param ext_pool the extension pool to use
     ///   @param intrinsic the intrinsics to use
@@ -59,26 +59,17 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<
-        typename EXT_POOL_CONCEPT,
-        typename INTRINSIC_CONCEPT,
-        typename PAGE_POOL_CONCEPT,
-        typename HUGE_POOL_CONCEPT,
-        typename VPS_POOL_CONCEPT,
-        typename VP_POOL_CONCEPT,
-        typename VM_POOL_CONCEPT,
-        typename VMEXIT_LOG_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_debug_op(
         tls_t &tls,
-        EXT_POOL_CONCEPT &ext_pool,
-        INTRINSIC_CONCEPT &intrinsic,
-        PAGE_POOL_CONCEPT &page_pool,
-        HUGE_POOL_CONCEPT &huge_pool,
-        VPS_POOL_CONCEPT &vps_pool,
-        VP_POOL_CONCEPT &vp_pool,
-        VM_POOL_CONCEPT &vm_pool,
-        VMEXIT_LOG_CONCEPT &log) noexcept -> bsl::errc_type
+        ext_ppol_t &ext_pool,
+        intrinsic_t &intrinsic,
+        page_pool_t &page_pool,
+        huge_pool_t &huge_pool,
+        vps_pool_t &vps_pool,
+        vp_pool_t &vp_pool,
+        vm_pool_t &vm_pool,
+        vmexit_log_t &log) noexcept -> bsl::errc_type
     {
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_DEBUG_OP_OUT_IDX_VAL.get(): {
