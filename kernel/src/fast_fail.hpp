@@ -27,6 +27,7 @@
 
 #include <return_to_vmexit_loop.hpp>
 #include <tls_t.hpp>
+#include <ext_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
@@ -41,15 +42,13 @@ namespace mk
     ///     or a halt() will occur.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext_fail the ext_t to handle the VMExit
     ///   @return Returns bsl::exit_success if the fail was handled,
     ///     bsl::exit_failure otherwise.
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    fast_fail(tls_t &tls, EXT_CONCEPT *const ext_fail) noexcept -> bsl::exit_code
+    fast_fail(tls_t &tls, ext_t *const ext_fail) noexcept -> bsl::exit_code
     {
         bsl::print() << bsl::red << "\nfast failing:";
         bsl::print() << bsl::rst << bsl::endl;

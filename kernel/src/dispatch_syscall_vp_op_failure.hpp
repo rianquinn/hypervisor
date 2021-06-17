@@ -27,6 +27,8 @@
 
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
+#include <vp_pool_t.hpp>
+#include <vps_pool_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -39,18 +41,15 @@ namespace mk
     ///   @brief Implements the bf_vp_op_create_vp syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
     ///   @param vp_pool the VP pool to use
     ///   @param vps_pool the VPS pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename VP_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vp_op_create_vp_failure(
-        tls_t &tls, VP_POOL_CONCEPT &vp_pool, VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
+        tls_t &tls, vp_pool_t &vp_pool, vps_pool_t &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -71,15 +70,13 @@ namespace mk
     ///   @brief Implements the bf_vp_op_destroy_vp syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @param tls the current TLS block
     ///   @param vp_pool the VP pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vp_op_destroy_vp_failure(tls_t &tls, VP_POOL_CONCEPT &vp_pool) noexcept
+    syscall_vp_op_destroy_vp_failure(tls_t &tls, vp_pool_t &vp_pool) noexcept
         -> bsl::errc_type
     {
         bsl::errc_type ret{};
@@ -101,18 +98,15 @@ namespace mk
     ///   @brief Dispatches the bf_vp_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
     ///   @param vp_pool the VP pool to use
     ///   @param vps_pool the VPS pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename VP_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_vp_op_failure(
-        tls_t &tls, VP_POOL_CONCEPT &vp_pool, VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
+        tls_t &tls, vp_pool_t &vp_pool, vps_pool_t &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

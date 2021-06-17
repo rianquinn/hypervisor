@@ -27,6 +27,9 @@
 
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
+#include <vm_pool_t.hpp>
+#include <vp_pool_t.hpp>
+#include <vps_pool_t.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
@@ -37,9 +40,6 @@ namespace mk
     ///   @brief Dispatches the bf_debug_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
     ///   @param vm_pool the VM pool to use
     ///   @param vp_pool the VP pool to use
@@ -47,13 +47,12 @@ namespace mk
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename VM_POOL_CONCEPT, typename VP_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_debug_op(
         tls_t &tls,
-        VM_POOL_CONCEPT &vm_pool,
-        VP_POOL_CONCEPT &vp_pool,
-        VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
+        vm_pool_t &vm_pool,
+        vp_pool_t &vp_pool,
+        vps_pool_t &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(vm_pool);

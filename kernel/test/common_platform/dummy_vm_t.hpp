@@ -79,17 +79,14 @@ namespace mk
         ///   @brief Release the vm_t.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
-        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
         ///   @param ext_pool the extension pool to use
         ///   @param vp_pool the VP pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept
+        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
             -> bsl::errc_type
         {
             bsl::discard(ext_pool);
@@ -110,14 +107,11 @@ namespace mk
         ///   @brief Allocates this vm_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
-        ///   @param tls the current TLS block
         ///   @param ext_pool the extension pool to use
         ///   @return Returns ID of the newly allocated vm
         ///
-        template<typename EXT_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate(tls_t &tls, EXT_POOL_CONCEPT &ext_pool) &noexcept -> bsl::safe_uint16
+        allocate(tls_t &tls, ext_pool_t &ext_pool) &noexcept -> bsl::safe_uint16
         {
             bsl::discard(ext_pool);
 
@@ -133,17 +127,14 @@ namespace mk
         ///   @brief Deallocates this vm_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
-        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
         ///   @param ext_pool the extension pool to use
         ///   @param vp_pool the VP pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        deallocate(tls_t &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept
+        deallocate(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
             -> bsl::errc_type
         {
             bsl::discard(ext_pool);

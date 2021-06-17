@@ -31,6 +31,9 @@
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
 
+#include <vp_t.hpp>
+#include <vps_pool_t.hpp>
+
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
@@ -40,40 +43,32 @@
 
 namespace mk
 {
+    class vm_pool_t;
+
     /// @class mk::vp_pool_t
     ///
     /// <!-- description -->
     ///   @brief Defines the microkernel's VP pool
     ///
-    /// <!-- template parameters -->
-    ///   @tparam VP_CONCEPT the type of vp_t that this class manages.
-    ///   @tparam MAX_VPS the max number of VPs supported
-    ///
-    template<typename VP_CONCEPT, bsl::uintmax MAX_VPS>
     class vp_pool_t final
     {
-        /// @brief stores the pool of VP_CONCEPTs
-        bsl::array<VP_CONCEPT, MAX_VPS> m_pool{};
+        /// @brief stores the pool of vp_ts
+        bsl::array<vp_t, HYPERVISOR_MAX_VPS> m_pool{};
         /// @brief safe guards operations on the pool.
         mutable spinlock_t m_lock{};
 
     public:
-        /// @brief an alias for VP_CONCEPT
-        using vp_type = VP_CONCEPT;
-
         /// <!-- description -->
         ///   @brief Initializes this vp_pool_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
         ///   @param tls the current TLS block
         ///   @param vps_pool the VPS pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename VPS_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize(tls_t &tls, VPS_POOL_CONCEPT &vps_pool) &noexcept -> bsl::errc_type
+        initialize(tls_t &tls, vps_pool_t &vps_pool) &noexcept -> bsl::errc_type
         {
             bsl::finally_assert release_on_error{[this, &tls, &vps_pool]() noexcept -> void {
                 auto const ret{this->release(tls, vps_pool)};
@@ -105,15 +100,13 @@ namespace mk
         ///     vp_pool_t after calling this function will results in UB.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
         ///   @param tls the current TLS block
         ///   @param vps_pool the VPS pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename VPS_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, VPS_POOL_CONCEPT &vps_pool) &noexcept -> bsl::errc_type
+        release(tls_t &tls, vps_pool_t &vps_pool) &noexcept -> bsl::errc_type
         {
             for (auto const vp : m_pool) {
                 auto const ret{vp.data->release(tls, vps_pool)};
@@ -132,24 +125,22 @@ namespace mk
         ///   @brief Allocates a vp from the vp pool.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
         ///   @param tls the current TLS block
         ///   @param vm_pool the VM pool to use
         ///   @param vmid The ID of the VM to assign the newly created VP to
         ///   @param ppid The ID of the PP to assign the newly created VP to
         ///   @return Returns ID of the newly allocated vp
         ///
-        template<typename VM_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
         allocate(
             tls_t &tls,
-            VM_POOL_CONCEPT &vm_pool,
+            vm_pool_t &vm_pool,
             bsl::safe_uint16 const &vmid,
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
         {
             lock_guard_t lock{tls, m_lock};
 
-            VP_CONCEPT *vp{};
+            vp_t *vp{};
             for (auto const elem : m_pool) {
                 if (elem.data->is_deallocated()) {
                     vp = elem.data;
@@ -172,24 +163,22 @@ namespace mk
         ///     function to the vp pool.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
         ///   @param tls the current TLS block
         ///   @param vps_pool the VPS pool to use
         ///   @param vpid the ID of the vp to deallocate
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename VPS_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        deallocate(tls_t &tls, VPS_POOL_CONCEPT &vps_pool, bsl::safe_uint16 const &vpid) &noexcept
+        deallocate(tls_t &tls, vps_pool_t &vps_pool, bsl::safe_uint16 const &vpid) &noexcept
             -> bsl::errc_type
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -215,8 +204,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -248,8 +237,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -280,8 +269,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -312,8 +301,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -378,8 +367,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -405,8 +394,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -435,8 +424,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -465,8 +454,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -494,8 +483,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -519,8 +508,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -544,8 +533,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -573,8 +562,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vpid "                                                   // --
                              << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VPS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 

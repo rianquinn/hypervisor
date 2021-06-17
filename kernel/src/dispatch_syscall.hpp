@@ -37,6 +37,16 @@
 #include <dispatch_syscall_vps_op.hpp>
 #include <tls_t.hpp>
 
+#include <ext_pool_t.hpp>
+#include <ext_t.hpp>
+#include <intrinsic_t.hpp>
+#include <page_pool_t.hpp>
+#include <huge_pool_t.hpp>
+#include <vps_pool_t.hpp>
+#include <vp_pool_t.hpp>
+#include <vm_pool_t.hpp>
+#include <vmexit_log_t.hpp>
+
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
 #include <bsl/unlikely.hpp>
@@ -48,15 +58,6 @@ namespace mk
     ///     will dispatch syscalls as needed.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
-    ///   @tparam EXT_CONCEPT defines the type of extension to use
-    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-    ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
-    ///   @tparam HUGE_POOL_CONCEPT defines the type of huge pool to use
-    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-    ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
-    ///   @tparam VMEXIT_LOG_CONCEPT defines the type of VMExit log to use
     ///   @param tls the current TLS block
     ///   @param ext_pool the extension pool to use
     ///   @param ext the extension that made the syscall
@@ -70,28 +71,18 @@ namespace mk
     ///   @return Returns bsl::exit_success on success, bsl::exit_failure
     ///     otherwise
     ///
-    template<
-        typename EXT_POOL_CONCEPT,
-        typename EXT_CONCEPT,
-        typename INTRINSIC_CONCEPT,
-        typename PAGE_POOL_CONCEPT,
-        typename HUGE_POOL_CONCEPT,
-        typename VPS_POOL_CONCEPT,
-        typename VP_POOL_CONCEPT,
-        typename VM_POOL_CONCEPT,
-        typename VMEXIT_LOG_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall(
         tls_t &tls,
-        EXT_POOL_CONCEPT &ext_pool,
-        EXT_CONCEPT &ext,
-        INTRINSIC_CONCEPT &intrinsic,
-        PAGE_POOL_CONCEPT &page_pool,
-        HUGE_POOL_CONCEPT &huge_pool,
-        VPS_POOL_CONCEPT &vps_pool,
-        VP_POOL_CONCEPT &vp_pool,
-        VM_POOL_CONCEPT &vm_pool,
-        VMEXIT_LOG_CONCEPT &log) noexcept -> bsl::exit_code
+        ext_pool_t &ext_pool,
+        ext_t &ext,
+        intrinsic_t &intrinsic,
+        page_pool_t &page_pool,
+        huge_pool_t &huge_pool,
+        vps_pool_t &vps_pool,
+        vp_pool_t &vp_pool,
+        vm_pool_t &vm_pool,
+        vmexit_log_t &log) noexcept -> bsl::exit_code
     {
         bsl::errc_type ret{};
 

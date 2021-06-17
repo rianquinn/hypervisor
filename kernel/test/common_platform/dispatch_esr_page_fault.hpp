@@ -26,6 +26,7 @@
 #define TEST_DISPATCH_ESR_PAGE_FAULT_HPP
 
 #include <tls_t.hpp>
+#include <ext_t.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
@@ -36,15 +37,13 @@ namespace mk
     ///   @brief Provides the ESR handler for page faults
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::exit_success if the exception was handled,
     ///     bsl::exit_failure otherwise
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_esr_page_fault(tls_t &tls, EXT_CONCEPT *const ext) noexcept -> bsl::errc_type
+    dispatch_esr_page_fault(tls_t &tls, ext_t *const ext) noexcept -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(ext);

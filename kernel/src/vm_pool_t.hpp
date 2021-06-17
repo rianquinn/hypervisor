@@ -30,6 +30,9 @@
 
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
+#include <vm_t.hpp>
+#include <ext_pool_t.hpp>
+#include <vp_pool_t.hpp>
 
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
@@ -45,37 +48,29 @@ namespace mk
     /// <!-- description -->
     ///   @brief Defines the microkernel's VM pool
     ///
-    /// <!-- template parameters -->
-    ///   @tparam VM_CONCEPT the type of vm_t that this class manages.
-    ///   @tparam MAX_VMS the max number of VMs supported
-    ///
-    template<typename VM_CONCEPT, bsl::uintmax MAX_VMS>
     class vm_pool_t final
     {
-        /// @brief stores the pool of VM_CONCEPTs
-        bsl::array<VM_CONCEPT, MAX_VMS> m_pool{};
+        /// @brief stores the pool of vm_ts
+        bsl::array<vm_t, HYPERVISOR_MAX_VMS> m_pool{};
         /// @brief safe guards operations on the pool.
         mutable spinlock_t m_lock{};
 
     public:
-        /// @brief an alias for VM_CONCEPT
-        using vm_type = VM_CONCEPT;
+        /// @brief an alias for vm_t
+        using vm_type = vm_t;
 
         /// <!-- description -->
         ///   @brief Initializes this vm_pool_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
-        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
         ///   @param ext_pool the extension pool to use
         ///   @param vp_pool the VP pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize(tls_t &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept
+        initialize(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
             -> bsl::errc_type
         {
             bsl::finally_assert release_on_error{
@@ -107,17 +102,14 @@ namespace mk
         ///   @brief Release the vm_pool_t.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
-        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
         ///   @param ext_pool the extension pool to use
         ///   @param vp_pool the VP pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept
+        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
             -> bsl::errc_type
         {
             for (auto const vm : m_pool) {
@@ -137,18 +129,16 @@ namespace mk
         ///   @brief Allocates a vm from the vm pool.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
         ///   @param tls the current TLS block
         ///   @param ext_pool the extension pool to use
         ///   @return Returns ID of the newly allocated vm
         ///
-        template<typename EXT_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate(tls_t &tls, EXT_POOL_CONCEPT &ext_pool) &noexcept -> bsl::safe_uint16
+        allocate(tls_t &tls, ext_pool_t &ext_pool) &noexcept -> bsl::safe_uint16
         {
             lock_guard_t lock{tls, m_lock};
 
-            VM_CONCEPT *vm{};
+            vm_t *vm{};
             for (auto const elem : m_pool) {
                 if (elem.data->is_deallocated()) {
                     vm = elem.data;
@@ -171,8 +161,6 @@ namespace mk
         ///     function to the vm pool.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
-        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
         ///   @param ext_pool the extension pool to use
         ///   @param vp_pool the VP pool to use
@@ -180,20 +168,19 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
         deallocate(
             tls_t &tls,
-            EXT_POOL_CONCEPT &ext_pool,
-            VP_POOL_CONCEPT const &vp_pool,
+            ext_pool_t &ext_pool,
+            vp_pool_t const &vp_pool,
             bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vmid "                                                   // --
                              << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -219,8 +206,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vmid "                                                   // --
                              << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -252,8 +239,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vmid "                                                   // --
                              << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -284,8 +271,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vmid "                                                   // --
                              << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -316,8 +303,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vmid "                                                   // --
                              << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -343,8 +330,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vmid "                                                   // --
                              << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -370,8 +357,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vmid "                                                   // --
                              << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -400,8 +387,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vmid "                                                   // --
                              << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -430,8 +417,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vmid "                                                   // --
                              << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
@@ -459,8 +446,8 @@ namespace mk
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vmid "                                                   // --
                              << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                            // --
+                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 

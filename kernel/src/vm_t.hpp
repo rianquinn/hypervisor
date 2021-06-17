@@ -31,6 +31,8 @@
 #include <allocated_status_t.hpp>
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
+#include <ext_pool_t.hpp>
+#include <vp_pool_t.hpp>
 
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
@@ -71,10 +73,6 @@ namespace mk
     ///     VPS, we only have to track if it is active or not since it can
     ///     only be active on one PP at a time.
     ///
-    /// <!-- template parameters -->
-    ///   @tparam MAX_PPS the max number of PPs supported
-    ///
-    template<bsl::uintmax MAX_PPS>
     class vm_t final
     {
         /// @brief stores the ID associated with this vm_t
@@ -82,7 +80,7 @@ namespace mk
         /// @brief stores whether or not this vm_t is allocated.
         allocated_status_t m_allocated{allocated_status_t::deallocated};
         /// @brief stores whether or not this vm_t is active.
-        bsl::array<bool, MAX_PPS> m_active{};
+        bsl::array<bool, HYPERVISOR_MAX_PPS> m_active{};
         /// @brief safe guards operations on the pool.
         mutable spinlock_t m_lock;
 
@@ -129,17 +127,14 @@ namespace mk
         ///   @brief Release the vm_t.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
-        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
         ///   @param ext_pool the extension pool to use
         ///   @param vp_pool the VP pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept
+        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
             -> bsl::errc_type
         {
             bsl::errc_type ret{};
@@ -217,14 +212,12 @@ namespace mk
         ///   @brief Allocates this vm_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
         ///   @param tls the current TLS block
         ///   @param ext_pool the extension pool to use
         ///   @return Returns ID of the newly allocated vm
         ///
-        template<typename EXT_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        allocate(tls_t &tls, EXT_POOL_CONCEPT &ext_pool) &noexcept -> bsl::safe_uint16
+        allocate(tls_t &tls, ext_pool_t &ext_pool) &noexcept -> bsl::safe_uint16
         {
             bsl::errc_type ret{};
             lock_guard_t lock{tls, m_lock};
@@ -271,17 +264,14 @@ namespace mk
         ///   @brief Deallocates this vm_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
-        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
         ///   @param ext_pool the extension pool to use
         ///   @param vp_pool the VP pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename EXT_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        deallocate(tls_t &tls, EXT_POOL_CONCEPT &ext_pool, VP_POOL_CONCEPT &vp_pool) &noexcept
+        deallocate(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
             -> bsl::errc_type
         {
             bsl::errc_type ret{};
@@ -479,8 +469,8 @@ namespace mk
             if (bsl::unlikely_assert(nullptr == active)) {
                 bsl::error() << "tls.ppid "                        // --
                              << bsl::hex(m_id)                     // --
-                             << " is greater than the MAX_PPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_PPS))     // --
+                             << " is greater than the HYPERVISOR_MAX_PPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_PPS))     // --
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 
@@ -558,8 +548,8 @@ namespace mk
             if (bsl::unlikely_assert(nullptr == active)) {
                 bsl::error() << "tls.ppid "                        // --
                              << bsl::hex(m_id)                     // --
-                             << " is greater than the MAX_PPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_PPS))     // --
+                             << " is greater than the HYPERVISOR_MAX_PPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_PPS))     // --
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 
@@ -626,8 +616,8 @@ namespace mk
             if (bsl::unlikely(nullptr == active)) {
                 bsl::error() << "tls.ppid "                        // --
                              << bsl::hex(m_id)                     // --
-                             << " is greater than the MAX_PPS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_PPS))     // --
+                             << " is greater than the HYPERVISOR_MAX_PPS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_PPS))     // --
                              << bsl::endl                          // --
                              << bsl::here();                       // --
 

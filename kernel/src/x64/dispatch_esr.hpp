@@ -28,6 +28,8 @@
 #include <dispatch_esr_nmi.hpp>
 #include <dispatch_esr_page_fault.hpp>
 #include <tls_t.hpp>
+#include <ext_t.hpp>
+#include <intrinsic_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
@@ -231,17 +233,14 @@ namespace mk
     ///     function will dispatch exceptions as needed.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @param intrinsic the intrinsics to use
     ///   @return Returns bsl::exit_success if the exception was handled,
     ///     bsl::exit_failure otherwise
     ///
-    template<typename EXT_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_esr(tls_t &tls, EXT_CONCEPT *const ext, INTRINSIC_CONCEPT &intrinsic) noexcept
+    dispatch_esr(tls_t &tls, ext_t *const ext, intrinsic_t &intrinsic) noexcept
         -> bsl::exit_code
     {
         bsl::finally reset_on_exit{[&tls]() noexcept -> void {

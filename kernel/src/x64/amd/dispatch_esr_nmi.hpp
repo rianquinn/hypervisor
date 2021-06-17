@@ -26,6 +26,7 @@
 #define DISPATCH_ESR_NMI_HPP
 
 #include <tls_t.hpp>
+#include <intrinsic_t.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
@@ -37,15 +38,13 @@ namespace mk
     ///     on AMD do not occur as NMIs are blocked).
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param intrinsic the intrinsics to use
     ///   @return Returns bsl::errc_success if the exception was handled,
     ///     bsl::errc_failure otherwise
     ///
-    template<typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_esr_nmi(tls_t &tls, INTRINSIC_CONCEPT &intrinsic) noexcept -> bsl::errc_type
+    dispatch_esr_nmi(tls_t &tls, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(intrinsic);

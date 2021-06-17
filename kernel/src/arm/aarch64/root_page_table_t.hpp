@@ -40,6 +40,10 @@
 #include <map_page_flags.hpp>
 #include <tls_t.hpp>
 
+#include <page_pool_t.hpp>
+#include <intrinsic_t.hpp>
+#include <huge_pool_t.hpp>
+
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
@@ -58,29 +62,16 @@ namespace mk
     ///   @brief Implements the root pages tables used by the microkernel
     ///     for mapping extension memory.
     ///
-    /// <!-- template parameters -->
-    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-    ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
-    ///   @tparam HUGE_POOL_CONCEPT defines the type of huge pool to use
-    ///   @tparam PAGE_SIZE defines the size of a page
-    ///   @tparam PAGE_SHIFT defines number of bits in a page
-    ///
-    template<
-        typename INTRINSIC_CONCEPT,
-        typename PAGE_POOL_CONCEPT,
-        typename HUGE_POOL_CONCEPT,
-        bsl::uintmax PAGE_SIZE,
-        bsl::uintmax PAGE_SHIFT>
     class root_page_table_t final
     {
         /// @brief stores true if initialized() has been executed
         bool m_initialized{};
         /// @brief stores a reference to the intrinsics to use
-        INTRINSIC_CONCEPT *m_intrinsic{};
+        intrinsic_t *m_intrinsic{};
         /// @brief stores a reference to the page pool to use
-        PAGE_POOL_CONCEPT *m_page_pool{};
+        page_pool_t *m_page_pool{};
         /// @brief stores a reference to the huge pool to use
-        HUGE_POOL_CONCEPT *m_huge_pool{};
+        huge_pool_t *m_huge_pool{};
         /// @brief stores a pointer to the l0t
         l0t_t *m_l0t{};
         /// @brief stores the physical address of the l0t
@@ -354,7 +345,7 @@ namespace mk
         // [[nodiscard]] constexpr auto
         // add_l1t(tls_t &tls, loader::l0te_t *const l0te) noexcept -> bsl::errc_type
         // {
-        //     auto const *const table{m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_PDPTS)};
+        //     auto const *const table{m_page_pool->allocate(tls, ALLOCATE_TAG_PDPTS)};
         //     if (bsl::unlikely(nullptr == table)) {
         //         bsl::print<bsl::V>() << bsl::here();
         //         return bsl::errc_failure;
@@ -366,7 +357,7 @@ namespace mk
         //         return bsl::errc_failure;
         //     }
 
-        //     l0te->phys = (table_phys >> PAGE_SHIFT).get();
+        //     l0te->phys = (table_phys >> HYPERVISOR_PAGE_SHIFT).get();
         //     l0te->p = bsl::ONE_UMAX.get();
         //     l0te->rw = bsl::ONE_UMAX.get();
         //     l0te->us = bsl::ONE_UMAX.get();
@@ -408,7 +399,7 @@ namespace mk
         // get_l1t(loader::l0te_t *const l0te) noexcept -> l1t_t *
         // {
         //     bsl::safe_uintmax entry_phys{l0te->phys};
-        //     entry_phys <<= PAGE_SHIFT;
+        //     entry_phys <<= HYPERVISOR_PAGE_SHIFT;
 
         //     return m_page_pool->template phys_to_virt<l1t_t>(entry_phys);
         // }
@@ -425,7 +416,7 @@ namespace mk
         // get_l1t(loader::l0te_t const *const l0te) const noexcept -> l1t_t const *
         // {
         //     bsl::safe_uintmax entry_phys{l0te->phys};
-        //     entry_phys <<= PAGE_SHIFT;
+        //     entry_phys <<= HYPERVISOR_PAGE_SHIFT;
 
         //     return m_page_pool->template phys_to_virt<l1t_t const>(entry_phys);
         // }
@@ -487,7 +478,7 @@ namespace mk
         // [[nodiscard]] constexpr auto
         // add_l2t(tls_t &tls, loader::l1te_t *const l1te) noexcept -> bsl::errc_type
         // {
-        //     auto const *const table{m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_PDTS)};
+        //     auto const *const table{m_page_pool->allocate(tls, ALLOCATE_TAG_PDTS)};
         //     if (bsl::unlikely(nullptr == table)) {
         //         bsl::print<bsl::V>() << bsl::here();
         //         return bsl::errc_failure;
@@ -499,7 +490,7 @@ namespace mk
         //         return bsl::errc_failure;
         //     }
 
-        //     l1te->phys = (table_phys >> PAGE_SHIFT).get();
+        //     l1te->phys = (table_phys >> HYPERVISOR_PAGE_SHIFT).get();
         //     l1te->p = bsl::ONE_UMAX.get();
         //     l1te->rw = bsl::ONE_UMAX.get();
         //     l1te->us = bsl::ONE_UMAX.get();
@@ -541,7 +532,7 @@ namespace mk
         // get_l2t(loader::l1te_t *const l1te) noexcept -> l2t_t *
         // {
         //     bsl::safe_uintmax entry_phys{l1te->phys};
-        //     entry_phys <<= PAGE_SHIFT;
+        //     entry_phys <<= HYPERVISOR_PAGE_SHIFT;
 
         //     return m_page_pool->template phys_to_virt<l2t_t>(entry_phys);
         // }
@@ -558,7 +549,7 @@ namespace mk
         // get_l2t(loader::l1te_t const *const l1te) const noexcept -> l2t_t const *
         // {
         //     bsl::safe_uintmax entry_phys{l1te->phys};
-        //     entry_phys <<= PAGE_SHIFT;
+        //     entry_phys <<= HYPERVISOR_PAGE_SHIFT;
 
         //     return m_page_pool->template phys_to_virt<l2t_t const>(entry_phys);
         // }
@@ -627,7 +618,7 @@ namespace mk
         // [[nodiscard]] constexpr auto
         // add_l3t(tls_t &tls, loader::l2te_t *const l2te) noexcept -> bsl::errc_type
         // {
-        //     auto const *const table{m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_PTS)};
+        //     auto const *const table{m_page_pool->allocate(tls, ALLOCATE_TAG_PTS)};
         //     if (bsl::unlikely(nullptr == table)) {
         //         bsl::print<bsl::V>() << bsl::here();
         //         return bsl::errc_failure;
@@ -639,7 +630,7 @@ namespace mk
         //         return bsl::errc_failure;
         //     }
 
-        //     l2te->phys = (table_phys >> PAGE_SHIFT).get();
+        //     l2te->phys = (table_phys >> HYPERVISOR_PAGE_SHIFT).get();
         //     l2te->p = bsl::ONE_UMAX.get();
         //     l2te->rw = bsl::ONE_UMAX.get();
         //     l2te->us = bsl::ONE_UMAX.get();
@@ -735,7 +726,7 @@ namespace mk
         // get_l3t(loader::l2te_t *const l2te) noexcept -> l3t_t *
         // {
         //     bsl::safe_uintmax entry_phys{l2te->phys};
-        //     entry_phys <<= PAGE_SHIFT;
+        //     entry_phys <<= HYPERVISOR_PAGE_SHIFT;
 
         //     return m_page_pool->template phys_to_virt<l3t_t>(entry_phys);
         // }
@@ -752,7 +743,7 @@ namespace mk
         // get_l3t(loader::l2te_t const *const l2te) const noexcept -> l3t_t const *
         // {
         //     bsl::safe_uintmax entry_phys{l2te->phys};
-        //     entry_phys <<= PAGE_SHIFT;
+        //     entry_phys <<= HYPERVISOR_PAGE_SHIFT;
 
         //     return m_page_pool->template phys_to_virt<l3t_t const>(entry_phys);
         // }
@@ -822,9 +813,9 @@ namespace mk
         // l3te_from_page_pool_to_virt(loader::l3te_t *const l3te) noexcept -> void *
         // {
         //     bsl::safe_uintmax entry_phys{l3te->phys};
-        //     entry_phys <<= PAGE_SHIFT;
+        //     entry_phys <<= HYPERVISOR_PAGE_SHIFT;
 
-        //     return m_page_pool->template phys_to_virt<void>(entry_phys);
+        //     return m_page_pool->phys_to_virt(entry_phys);
         // }
 
         // /// <!-- descril3tion -->
@@ -840,9 +831,9 @@ namespace mk
         // l3te_from_huge_pool_to_virt(loader::l3te_t *const l3te) noexcept -> void *
         // {
         //     bsl::safe_uintmax entry_phys{l3te->phys};
-        //     entry_phys <<= PAGE_SHIFT;
+        //     entry_phys <<= HYPERVISOR_PAGE_SHIFT;
 
-        //     return m_huge_pool->template phys_to_virt<void>(entry_phys);
+        //     return m_huge_pool->phys_to_virt(entry_phys);
         // }
 
         /// <!-- descril3tion -->
@@ -855,7 +846,7 @@ namespace mk
         [[nodiscard]] static constexpr auto
         page_aligned(bsl::safe_uintmax const &addr) noexcept -> bsl::safe_uintmax
         {
-            return (addr & ~(PAGE_SIZE - bsl::ONE_UMAX));
+            return (addr & ~(HYPERVISOR_PAGE_SIZE - bsl::ONE_UMAX));
         }
 
         /// <!-- descril3tion -->
@@ -868,7 +859,7 @@ namespace mk
         [[nodiscard]] static constexpr auto
         is_page_aligned(bsl::safe_uintmax const &addr) noexcept -> bool
         {
-            return (addr & (PAGE_SIZE - bsl::ONE_UMAX)) == bsl::ZERO_UMAX;
+            return (addr & (HYPERVISOR_PAGE_SIZE - bsl::ONE_UMAX)) == bsl::ZERO_UMAX;
         }
 
         /// <!-- descril3tion -->
@@ -905,17 +896,17 @@ namespace mk
             bsl::discard(auto_release);
             // switch (auto_release.get()) {
             //     case MAP_PAGE_AUTO_RELEASE_STACK.get(): {
-            //         page = m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_EXT_STACK);
+            //         page = m_page_pool->allocate(tls, ALLOCATE_TAG_EXT_STACK);
             //         break;
             //     }
 
             //     case MAP_PAGE_AUTO_RELEASE_TLS.get(): {
-            //         page = m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_EXT_TLS);
+            //         page = m_page_pool->allocate(tls, ALLOCATE_TAG_EXT_TLS);
             //         break;
             //     }
 
             //     case MAP_PAGE_AUTO_RELEASE_ELF.get(): {
-            //         page = m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_EXT_ELF);
+            //         page = m_page_pool->allocate(tls, ALLOCATE_TAG_EXT_ELF);
             //         break;
             //     }
 
@@ -988,12 +979,12 @@ namespace mk
         // }
 
     public:
-        /// @brief an alias for INTRINSIC_CONCEPT
-        using intrinsic_type = INTRINSIC_CONCEPT;
-        /// @brief an alias for PAGE_POOL_CONCEPT
-        using page_pool_type = PAGE_POOL_CONCEPT;
-        /// @brief an alias for HUGE_POOL_CONCEPT
-        using huge_pool_type = HUGE_POOL_CONCEPT;
+        /// @brief an alias for intrinsic_t
+        using intrinsic_type = intrinsic_t;
+        /// @brief an alias for page_pool_t
+        using page_pool_type = page_pool_t;
+        /// @brief an alias for huge_pool_t
+        using huge_pool_type = huge_pool_t;
 
         /// <!-- descril3tion -->
         ///   @brief Initializes this root_page_table_t
@@ -1009,9 +1000,9 @@ namespace mk
         [[nodiscard]] constexpr auto
         initialize(
             tls_t &tls,
-            INTRINSIC_CONCEPT *const intrinsic,
-            PAGE_POOL_CONCEPT *const page_pool,
-            HUGE_POOL_CONCEPT *const huge_pool) &noexcept -> bsl::errc_type
+            intrinsic_t *const intrinsic,
+            page_pool_t *const page_pool,
+            huge_pool_t *const huge_pool) &noexcept -> bsl::errc_type
         {
             bsl::print() << bsl::rst << "Hello from ARMv8 on a Raspberry Pi 4!!!\n";
             bsl::print() << bsl::endl;
@@ -1360,7 +1351,7 @@ namespace mk
             //     return bsl::errc_already_exists;
             // }
 
-            // l3te->phys = (page_phys >> PAGE_SHIFT).get();
+            // l3te->phys = (page_phys >> HYPERVISOR_PAGE_SHIFT).get();
             // l3te->p = bsl::ONE_UMAX.get();
             // l3te->us = bsl::ONE_UMAX.get();
             // l3te->auto_release = auto_release.get();

@@ -28,6 +28,14 @@
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
 #include <vmexit_loop_entry.hpp>
+#include <intrinsic_t.hpp>
+#include <page_pool_t.hpp>
+#include <huge_pool_t.hpp>
+#include <root_page_table_t.hpp>
+#include <vps_pool_t.hpp>
+#include <vp_pool_t.hpp>
+#include <vm_pool_t.hpp>
+#include <ext_pool_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
@@ -39,7 +47,7 @@
 
 namespace mk
 {
-    /// @class mk::mk_main
+    /// @class mk::mk_main_t
     ///
     /// <!-- description -->
     ///   @brief Provide the main entry point for the microkernel. The
@@ -50,59 +58,24 @@ namespace mk
     ///     the entry logic into something that can be easily tested with no
     ///     dependencies on global resources.
     ///
-    /// <!-- template parameters -->
-    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-    ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
-    ///   @tparam HUGE_POOL_CONCEPT defines the type of huge pool to use
-    ///   @tparam ROOT_PAGE_TABLE_CONCEPT defines the type of RPT pool to use
-    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-    ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
-    ///   @tparam EXT_POOL_CONCEPT defines the type of extension pool to use
-    ///   @tparam PAGE_SIZE defines the size of a page
-    ///   @tparam MAX_PPS the max number of PPs supported
-    ///   @tparam MK_CODE_SIZE the max size of the microkernel's code
-    ///   @tparam EXT_CODE_SIZE the max size of the extension's code
-    ///   @tparam EXT_STACK_ADDR the address of the extension's stack
-    ///   @tparam EXT_STACK_SIZE the size of the extension's stack
-    ///   @tparam EXT_TLS_ADDR the address of the extension's TLS block
-    ///   @tparam EXT_TLS_SIZE the size of the extension's TLS block
-    ///
-    template<
-        typename INTRINSIC_CONCEPT,
-        typename PAGE_POOL_CONCEPT,
-        typename HUGE_POOL_CONCEPT,
-        typename ROOT_PAGE_TABLE_CONCEPT,
-        typename VPS_POOL_CONCEPT,
-        typename VP_POOL_CONCEPT,
-        typename VM_POOL_CONCEPT,
-        typename EXT_POOL_CONCEPT,
-        bsl::uintmax PAGE_SIZE,
-        bsl::uintmax MAX_PPS,
-        bsl::uintmax MK_CODE_SIZE,
-        bsl::uintmax EXT_CODE_SIZE,
-        bsl::uintmax EXT_STACK_ADDR,
-        bsl::uintmax EXT_STACK_SIZE,
-        bsl::uintmax EXT_TLS_ADDR,
-        bsl::uintmax EXT_TLS_SIZE>
-    class mk_main final
+    class mk_main_t final
     {
         /// @brief stores a reference to the intrinsics to use
-        INTRINSIC_CONCEPT &m_intrinsic;
+        intrinsic_t &m_intrinsic;
         /// @brief stores a reference to the page pool to use
-        PAGE_POOL_CONCEPT &m_page_pool;
+        page_pool_t &m_page_pool;
         /// @brief stores a reference to the huge pool to use
-        HUGE_POOL_CONCEPT &m_huge_pool;
+        huge_pool_t &m_huge_pool;
         /// @brief stores system RPT provided by the loader
-        ROOT_PAGE_TABLE_CONCEPT &m_system_rpt;
+        root_page_table_t &m_system_rpt;
         /// @brief stores a reference to the VPS pool to use
-        VPS_POOL_CONCEPT &m_vps_pool;
+        vps_pool_t &m_vps_pool;
         /// @brief stores a reference to the VP pool to use
-        VP_POOL_CONCEPT &m_vp_pool;
+        vp_pool_t &m_vp_pool;
         /// @brief stores a reference to the VM pool to use
-        VM_POOL_CONCEPT &m_vm_pool;
+        vm_pool_t &m_vm_pool;
         /// @brief stores a reference to the extension pool to use
-        EXT_POOL_CONCEPT &m_ext_pool;
+        ext_pool_t &m_ext_pool;
 
         /// @brief stores the root VMID
         bsl::safe_uint16 m_root_vmid;
@@ -118,15 +91,13 @@ namespace mk
         ///     sanity checks where possible.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam MK_ARGS_CONCEPT the type of mk_args to use
         ///   @param args the loader provided arguments to the microkernel.
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename MK_ARGS_CONCEPT>
         [[nodiscard]] constexpr auto
-        verify_args(MK_ARGS_CONCEPT *const args, tls_t &tls) noexcept -> bsl::errc_type
+        verify_args(loader::mk_args_t *const args, tls_t &tls) noexcept -> bsl::errc_type
         {
             if (args->ppid == syscall::BF_BS_PPID) {
                 if (bsl::unlikely_assert(syscall::BF_INVALID_ID != tls.active_vmid)) {
@@ -195,11 +166,11 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(tls.online_pps > bsl::to_u16(MAX_PPS))) {
+            if (bsl::unlikely_assert(tls.online_pps > bsl::to_u16(HYPERVISOR_MAX_PPS))) {
                 bsl::error() << "tls.online_pps ["                            // --
                              << bsl::hex(tls.online_pps)                      // --
                              << "] is not less or equal to than the max ["    // --
-                             << bsl::hex(MAX_PPS)                             // --
+                             << bsl::hex(HYPERVISOR_MAX_PPS)                             // --
                              << "]"                                           // --
                              << bsl::endl                                     // --
                              << bsl::here();                                  // --
@@ -259,7 +230,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(!(args->mk_elf_file.size() < MK_CODE_SIZE))) {
+            if (bsl::unlikely_assert(!(args->mk_elf_file.size() < HYPERVISOR_MK_CODE_SIZE))) {
                 bsl::error() << "args->mk_elf_file's size is too big"    // --
                              << bsl::endl                                // --
                              << bsl::here();                             // --
@@ -283,7 +254,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(!(args->ext_elf_files.front().size() < MK_CODE_SIZE))) {
+            if (bsl::unlikely_assert(!(args->ext_elf_files.front().size() < HYPERVISOR_MK_CODE_SIZE))) {
                 bsl::error() << "args->ext_elf_files.front()'s size is too big"    // --
                              << bsl::endl                                          // --
                              << bsl::here();                                       // --
@@ -323,7 +294,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(args->page_pool.size() < PAGE_SIZE)) {
+            if (bsl::unlikely_assert(args->page_pool.size() < HYPERVISOR_PAGE_SIZE)) {
                 bsl::error() << "args->page_pool's size is too small"    // --
                              << bsl::endl                                // --
                              << bsl::here();                             // --
@@ -347,7 +318,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(args->huge_pool.size() < PAGE_SIZE)) {
+            if (bsl::unlikely_assert(args->huge_pool.size() < HYPERVISOR_PAGE_SIZE)) {
                 bsl::error() << "args->huge_pool's size is too small"    // --
                              << bsl::endl                                // --
                              << bsl::here();                             // --
@@ -368,10 +339,10 @@ namespace mk
         constexpr void
         set_extension_sp(tls_t &tls) noexcept
         {
-            constexpr bsl::safe_uintmax stack_addr{EXT_STACK_ADDR};
-            constexpr bsl::safe_uintmax stack_size{EXT_STACK_SIZE};
+            constexpr bsl::safe_uintmax stack_addr{HYPERVISOR_EXT_STACK_ADDR};
+            constexpr bsl::safe_uintmax stack_size{HYPERVISOR_EXT_STACK_SIZE};
 
-            auto const offs{(stack_size + PAGE_SIZE) * bsl::to_umax(tls.ppid)};
+            auto const offs{(stack_size + HYPERVISOR_PAGE_SIZE) * bsl::to_umax(tls.ppid)};
             tls.sp = (stack_addr + offs + stack_size).get();
         }
 
@@ -385,11 +356,11 @@ namespace mk
         constexpr void
         set_extension_tp(tls_t &tls) noexcept
         {
-            constexpr bsl::safe_uintmax tls_addr{EXT_TLS_ADDR};
-            constexpr bsl::safe_uintmax tls_size{EXT_TLS_SIZE};
+            constexpr bsl::safe_uintmax tls_addr{HYPERVISOR_EXT_TLS_ADDR};
+            constexpr bsl::safe_uintmax tls_size{HYPERVISOR_EXT_TLS_SIZE};
 
-            auto const offs{(tls_size + PAGE_SIZE) * bsl::to_umax(tls.ppid)};
-            tls.tp = (tls_addr + offs + PAGE_SIZE).get();
+            auto const offs{(tls_size + HYPERVISOR_PAGE_SIZE) * bsl::to_umax(tls.ppid)};
+            tls.tp = (tls_addr + offs + HYPERVISOR_PAGE_SIZE).get();
 
             m_intrinsic.set_tp(tls.tp);
         }
@@ -399,15 +370,13 @@ namespace mk
         ///     depends on.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam MK_ARGS_CONCEPT the type of mk_args to use
         ///   @param args the loader provided arguments to the microkernel.
         ///   @param tls the current TLS block
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename MK_ARGS_CONCEPT>
         [[nodiscard]] constexpr auto
-        initialize(MK_ARGS_CONCEPT *const args, tls_t &tls) noexcept -> bsl::errc_type
+        initialize(loader::mk_args_t *const args, tls_t &tls) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -498,23 +467,6 @@ namespace mk
         }
 
     public:
-        /// @brief an alias for INTRINSIC_CONCEPT
-        using intrinsic_type = INTRINSIC_CONCEPT;
-        /// @brief an alias for PAGE_POOL_CONCEPT
-        using page_pool_type = PAGE_POOL_CONCEPT;
-        /// @brief an alias for HUGE_POOL_CONCEPT
-        using huge_pool_type = HUGE_POOL_CONCEPT;
-        /// @brief an alias for ROOT_PAGE_TABLE_CONCEPT
-        using root_page_table_type = ROOT_PAGE_TABLE_CONCEPT;
-        /// @brief an alias for VPS_POOL_CONCEPT
-        using vps_pool_type = VPS_POOL_CONCEPT;
-        /// @brief an alias for VP_POOL_CONCEPT
-        using vp_pool_type = VP_POOL_CONCEPT;
-        /// @brief an alias for VM_POOL_CONCEPT
-        using vm_pool_type = VM_POOL_CONCEPT;
-        /// @brief an alias for EXT_POOL_CONCEPT
-        using ext_pool_type = EXT_POOL_CONCEPT;
-
         /// <!-- description -->
         ///   @brief Creates the microkernel's main class given the global
         ///     resources that the microkernel will rely on.
@@ -529,15 +481,15 @@ namespace mk
         ///   @param vm_pool the vm pool to use
         ///   @param ext_pool the extension pool to use
         ///
-        constexpr mk_main(
-            INTRINSIC_CONCEPT &intrinsic,
-            PAGE_POOL_CONCEPT &page_pool,
-            HUGE_POOL_CONCEPT &huge_pool,
-            ROOT_PAGE_TABLE_CONCEPT &system_rpt,
-            VPS_POOL_CONCEPT &vps_pool,
-            VP_POOL_CONCEPT &vp_pool,
-            VM_POOL_CONCEPT &vm_pool,
-            EXT_POOL_CONCEPT &ext_pool) noexcept
+        constexpr mk_main_t(
+            intrinsic_t &intrinsic,
+            page_pool_t &page_pool,
+            huge_pool_t &huge_pool,
+            root_page_table_t &system_rpt,
+            vps_pool_t &vps_pool,
+            vp_pool_t &vp_pool,
+            vm_pool_t &vm_pool,
+            ext_pool_t &ext_pool) noexcept
             : m_intrinsic{intrinsic}
             , m_page_pool{page_pool}
             , m_huge_pool{huge_pool}
@@ -558,16 +510,14 @@ namespace mk
         ///     will return bsl::exit_failure.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam MK_ARGS_CONCEPT the type of mk_args to use
         ///   @param args the loader provided arguments to the microkernel.
         ///   @param tls the current TLS block
         ///   @return If the user provided command succeeds, this function
         ///     will return bsl::exit_success, otherwise this function
         ///     will return bsl::exit_failure.
         ///
-        template<typename MK_ARGS_CONCEPT>
         [[nodiscard]] constexpr auto
-        process(MK_ARGS_CONCEPT *const args, tls_t &tls) &noexcept -> bsl::exit_code
+        process(loader::mk_args_t *const args, tls_t &tls) &noexcept -> bsl::exit_code
         {
             bsl::errc_type ret{};
 

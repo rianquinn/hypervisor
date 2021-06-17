@@ -27,6 +27,7 @@
 
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
+#include <ext_t.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
@@ -37,15 +38,13 @@ namespace mk
     ///   @brief Dispatches the bf_mem_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename EXT_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_mem_op(tls_t &tls, EXT_CONCEPT &ext) noexcept -> bsl::errc_type
+    dispatch_syscall_mem_op(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(ext);

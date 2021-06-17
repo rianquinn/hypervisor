@@ -44,15 +44,10 @@ namespace mk
     ///     important when implementing guest support as VPSs can swap between
     ///     execution on the same PP as the hypervisor is moving between VMs.
     ///
-    /// <!-- template parameters -->
-    ///   @tparam VMEXIT_LOG_SIZE defines the max number of VMExit log entries
-    ///   @tparam MAX_PPS the max number of PPs supported
-    ///
-    template<bsl::uintmax VMEXIT_LOG_SIZE, bsl::uintmax MAX_PPS>
     class vmexit_log_t final
     {
         /// @brief stores the VMExit log
-        bsl::array<vmexit_log_pp_t<VMEXIT_LOG_SIZE>, MAX_PPS> m_vmexit_logs{};
+        bsl::array<vmexit_log_pp_t<HYPERVISOR_VMEXIT_LOG_SIZE>, HYPERVISOR_MAX_PPS> m_vmexit_logs{};
 
         /// <!-- description -->
         ///   @brief Dumps the contents of the VMExit log for the requested PP

@@ -27,6 +27,8 @@
 
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
+#include <ext_t.hpp>
+#include <intrinsic_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -39,17 +41,14 @@ namespace mk
     ///   @brief Dispatches the bf_intrinsic_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @param intrinsic the intrinsics to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename EXT_CONCEPT, typename INTRINSIC_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_intrinsic_op(tls_t &tls, EXT_CONCEPT const &ext, INTRINSIC_CONCEPT &intrinsic)
+    dispatch_syscall_intrinsic_op(tls_t &tls, ext_t const &ext, intrinsic_t &intrinsic)
         -> bsl::errc_type
     {
         bsl::discard(intrinsic);

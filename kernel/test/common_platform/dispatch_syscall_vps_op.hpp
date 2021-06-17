@@ -37,11 +37,6 @@ namespace mk
     ///   @brief Dispatches the bf_vps_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_POOL_CONCEPT defines the type of ext_pool_t to use
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-    ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
     ///   @param ext_pool the extension pool to use
     ///   @param ext the extension that made the syscall
@@ -51,20 +46,14 @@ namespace mk
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<
-        typename EXT_POOL_CONCEPT,
-        typename EXT_CONCEPT,
-        typename VM_POOL_CONCEPT,
-        typename VP_POOL_CONCEPT,
-        typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_vps_op(
         tls_t &tls,
-        EXT_POOL_CONCEPT &ext_pool,
-        EXT_CONCEPT &ext,
-        VM_POOL_CONCEPT &vm_pool,
-        VP_POOL_CONCEPT &vp_pool,
-        VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
+        ext_pool_t &ext_pool,
+        ext_t &ext,
+        vm_pool_t &vm_pool,
+        vp_pool_t &vp_pool,
+        vps_pool_t &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(ext_pool);

@@ -89,11 +89,6 @@ namespace mk
     ///      can all be done with simple arithmetic (i.e., no lookups are
     ///      needed). This is what is typically called a direct map.
     ///
-    /// <!-- template parameters -->
-    ///   @tparam PAGE_SIZE defines the size of a page
-    ///   @tparam MK_PAGE_POOL_ADDR defines the base address of the page pool
-    ///
-    template<bsl::uintmax PAGE_SIZE, bsl::uintmax MK_PAGE_POOL_ADDR>
     class page_pool_t final
     {
         /// @brief stores true if initialized() has been executed
@@ -215,7 +210,7 @@ namespace mk
         ///   @param tag the tag to mark the allocation with
         ///   @return Returns a pointer to the newly allocated page
         ///
-        template<typename T>
+        template<typename T = void>
         [[nodiscard]] constexpr auto
         allocate(tls_t &tls, bsl::string_view const &tag) &noexcept -> T *
         {
@@ -271,9 +266,9 @@ namespace mk
 
             void *const ptr{m_head};
             m_head = *static_cast<void **>(m_head);
-            record->usd += PAGE_SIZE;
+            record->usd += HYPERVISOR_PAGE_SIZE;
 
-            bsl::builtin_memset(ptr, '\0', PAGE_SIZE);
+            bsl::builtin_memset(ptr, '\0', HYPERVISOR_PAGE_SIZE);
 
             if constexpr (!bsl::is_void<T>::value) {
                 static_assert(bsl::is_standard_layout<T>::value, "T must be a standard layout");
@@ -306,7 +301,7 @@ namespace mk
                 return;
             }
 
-            if (bsl::to_umax(ptr) < MK_PAGE_POOL_ADDR) {
+            if (bsl::to_umax(ptr) < HYPERVISOR_MK_PAGE_POOL_ADDR) {
                 bsl::error() << "invalid ptr"    // --
                              << ptr              // --
                              << bsl::endl        // --
@@ -344,7 +339,7 @@ namespace mk
 
             *static_cast<void **>(ptr) = m_head;
             m_head = ptr;
-            record->usd -= PAGE_SIZE;
+            record->usd -= HYPERVISOR_PAGE_SIZE;
         }
 
         /// <!-- description -->
@@ -361,12 +356,12 @@ namespace mk
         ///   @param virt the virtual address to convert
         ///   @return the resulting physical address
         ///
-        template<typename T>
+        template<typename T = void>
         [[nodiscard]] constexpr auto
         virt_to_phys(T const *const virt) const &noexcept -> bsl::safe_uintmax
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_umax(virt) - MK_PAGE_POOL_ADDR;
+            return bsl::to_umax(virt) - HYPERVISOR_MK_PAGE_POOL_ADDR;
         }
 
         /// <!-- description -->
@@ -383,12 +378,12 @@ namespace mk
         ///   @param phys the physical address to convert
         ///   @return the resulting virtual address
         ///
-        template<typename T>
+        template<typename T = void>
         [[nodiscard]] constexpr auto
         phys_to_virt(bsl::safe_uintmax const &phys) const &noexcept -> T *
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_ptr<T *>(phys + MK_PAGE_POOL_ADDR);
+            return bsl::to_ptr<T *>(phys + HYPERVISOR_MK_PAGE_POOL_ADDR);
         }
 
         /// <!-- description -->

@@ -27,6 +27,10 @@
 
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
+#include <ext_t.hpp>
+#include <vm_pool_t.hpp>
+#include <vp_pool_t.hpp>
+#include <vps_pool_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -39,17 +43,14 @@ namespace mk
     ///   @brief Implements the bf_vp_op_create_vp syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @param tls the current TLS block
     ///   @param vm_pool the VM pool to use
     ///   @param vp_pool the VP pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename VM_POOL_CONCEPT, typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vp_op_create_vp(tls_t &tls, VM_POOL_CONCEPT &vm_pool, VP_POOL_CONCEPT &vp_pool) noexcept
+    syscall_vp_op_create_vp(tls_t &tls, vm_pool_t &vm_pool, vp_pool_t &vp_pool) noexcept
         -> bsl::errc_type
     {
         auto const vpid{vp_pool.allocate(
@@ -71,18 +72,15 @@ namespace mk
     ///   @brief Implements the bf_vp_op_destroy_vp syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
     ///   @param vp_pool the VP pool to use
     ///   @param vps_pool the VPS pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename VP_POOL_CONCEPT, typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     syscall_vp_op_destroy_vp(
-        tls_t &tls, VP_POOL_CONCEPT &vp_pool, VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
+        tls_t &tls, vp_pool_t &vp_pool, vps_pool_t &vps_pool) noexcept -> bsl::errc_type
     {
         auto const ret{vp_pool.deallocate(tls, vps_pool, bsl::to_u16_unsafe(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {
@@ -98,15 +96,13 @@ namespace mk
     ///   @brief Implements the bf_vp_op_migrate syscall
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @param tls the current TLS block
     ///   @param vp_pool the VP pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    syscall_vp_op_migrate(tls_t &tls, VP_POOL_CONCEPT &vp_pool) noexcept -> bsl::errc_type
+    syscall_vp_op_migrate(tls_t &tls, vp_pool_t &vp_pool) noexcept -> bsl::errc_type
     {
         auto const ret{vp_pool.migrate(
             tls, bsl::to_u16_unsafe(tls.ext_reg1), bsl::to_u16_unsafe(tls.ext_reg2))};
@@ -124,10 +120,6 @@ namespace mk
     ///   @brief Dispatches the bf_vp_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-    ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
-    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @param vm_pool the VM pool to use
@@ -136,18 +128,13 @@ namespace mk
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
-    template<
-        typename EXT_CONCEPT,
-        typename VM_POOL_CONCEPT,
-        typename VP_POOL_CONCEPT,
-        typename VPS_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
     dispatch_syscall_vp_op(
         tls_t &tls,
-        EXT_CONCEPT const &ext,
-        VM_POOL_CONCEPT &vm_pool,
-        VP_POOL_CONCEPT &vp_pool,
-        VPS_POOL_CONCEPT &vps_pool) noexcept -> bsl::errc_type
+        ext_t const &ext,
+        vm_pool_t &vm_pool,
+        vp_pool_t &vp_pool,
+        vps_pool_t &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

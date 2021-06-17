@@ -31,6 +31,11 @@
 #include <tls_t.hpp>
 #include <vmcb_t.hpp>
 
+#include <page_pool_t.hpp>
+#include <intrinsic_t.hpp>
+#include <vmexit_log_t.hpp>
+
+
 #include <bsl/cstr_type.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/discard.hpp>
@@ -155,15 +160,13 @@ namespace mk
         ///     vp_t after calling this function will results in UB.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
         ///   @param tls the current TLS block
         ///   @param page_pool the page pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename PAGE_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, PAGE_POOL_CONCEPT &page_pool) &noexcept -> bsl::errc_type
+        release(tls_t &tls, page_pool_t &page_pool) &noexcept -> bsl::errc_type
         {
             bsl::discard(page_pool);
 
@@ -217,9 +220,6 @@ namespace mk
         ///   @brief Allocates this vps_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-        ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
-        ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param page_pool the page pool to use
@@ -228,13 +228,12 @@ namespace mk
         ///   @param ppid The ID of the PP to assign the newly created VP to
         ///   @return Returns ID of the newly allocated vps
         ///
-        template<typename INTRINSIC_CONCEPT, typename PAGE_POOL_CONCEPT, typename VP_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
         allocate(
             tls_t &tls,
-            INTRINSIC_CONCEPT &intrinsic,
-            PAGE_POOL_CONCEPT &page_pool,
-            VP_POOL_CONCEPT &vp_pool,
+            intrinsic_t &intrinsic,
+            page_pool_t &page_pool,
+            vp_pool_t &vp_pool,
             bsl::safe_uint16 const &vpid,
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
         {
@@ -342,15 +341,13 @@ namespace mk
         ///   @brief Deallocates this vps_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
         ///   @param tls the current TLS block
         ///   @param page_pool the page pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename PAGE_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        deallocate(tls_t &tls, PAGE_POOL_CONCEPT &page_pool) &noexcept -> bsl::errc_type
+        deallocate(tls_t &tls, page_pool_t &page_pool) &noexcept -> bsl::errc_type
         {
             bsl::discard(page_pool);
 
@@ -471,15 +468,13 @@ namespace mk
         ///   @brief Sets this vps_t as active.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        set_active(tls_t &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
+        set_active(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
         {
             bsl::discard(intrinsic);
 
@@ -573,15 +568,13 @@ namespace mk
         ///   @brief Sets this vps_t as inactive.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        set_inactive(tls_t &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
+        set_inactive(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
@@ -704,16 +697,14 @@ namespace mk
         ///     VP's ID. If it doesn't we need to migrate the VPS.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param ppid the ID of the PP to migrate to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        migrate(tls_t &tls, INTRINSIC_CONCEPT &intrinsic, bsl::safe_uint16 const &ppid) &noexcept
+        migrate(tls_t &tls, intrinsic_t &intrinsic, bsl::safe_uint16 const &ppid) &noexcept
             -> bsl::errc_type
         {
             bsl::discard(tls);
@@ -828,18 +819,15 @@ namespace mk
         ///   @brief Stores the provided state in the VPS.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-        ///   @tparam STATE_SAVE_CONCEPT the type of state save to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param state the state to set the VPS to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
         state_save_to_vps(
-            tls_t &tls, INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT const &state) &noexcept
+            tls_t &tls, intrinsic_t &intrinsic, loader::state_save_t const &state) &noexcept
             -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
@@ -914,18 +902,15 @@ namespace mk
         ///   @brief Stores the VPS state in the provided state save.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-        ///   @tparam STATE_SAVE_CONCEPT the type of state save to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param state the state save to store the VPS state to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename INTRINSIC_CONCEPT, typename STATE_SAVE_CONCEPT>
         [[nodiscard]] constexpr auto
         vps_to_state_save(
-            tls_t &tls, INTRINSIC_CONCEPT &intrinsic, STATE_SAVE_CONCEPT &state) &noexcept
+            tls_t &tls, intrinsic_t &intrinsic, loader::state_save_t &state) &noexcept
             -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
@@ -1002,7 +987,6 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam FIELD_TYPE the type (i.e., size) of field to read
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param index the index of the field to read from the VPS
@@ -1010,9 +994,9 @@ namespace mk
         ///     VPS or bsl::safe_integral<FIELD_TYPE>::zero(true)
         ///     on failure.
         ///
-        template<typename FIELD_TYPE, typename INTRINSIC_CONCEPT>
+        template<typename FIELD_TYPE>
         [[nodiscard]] constexpr auto
-        read(tls_t &tls, INTRINSIC_CONCEPT &intrinsic, bsl::safe_uintmax const &index) &noexcept
+        read(tls_t &tls, intrinsic_t &intrinsic, bsl::safe_uintmax const &index) &noexcept
             -> bsl::safe_integral<FIELD_TYPE>
         {
             bsl::discard(tls);
@@ -1029,7 +1013,6 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam FIELD_TYPE the type (i.e., size) of field to write
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param index the index of the field to write to the VPS
@@ -1037,11 +1020,11 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename FIELD_TYPE, typename INTRINSIC_CONCEPT>
+        template<typename FIELD_TYPE>
         [[nodiscard]] constexpr auto
         write(
             tls_t &tls,
-            INTRINSIC_CONCEPT &intrinsic,
+            intrinsic_t &intrinsic,
             bsl::safe_uintmax const &index,
             bsl::safe_integral<FIELD_TYPE> const &val) &noexcept -> bsl::errc_type
         {
@@ -1059,16 +1042,14 @@ namespace mk
         ///     defining the field to read.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param reg a bf_reg_t defining the field to read from the VPS
         ///   @return Returns the value of the requested field from the
         ///     VPS or bsl::safe_uintmax::zero(true) on failure.
         ///
-        template<typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        read_reg(tls_t &tls, INTRINSIC_CONCEPT &intrinsic, syscall::bf_reg_t const reg) &noexcept
+        read_reg(tls_t &tls, intrinsic_t &intrinsic, syscall::bf_reg_t const reg) &noexcept
             -> bsl::safe_uintmax
         {
             if (bsl::unlikely_assert(!m_id)) {
@@ -1236,7 +1217,6 @@ namespace mk
         ///     defining the field and a value to write.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param reg a bf_reg_t defining the field to write to the VPS
@@ -1244,11 +1224,10 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
         write_reg(
             tls_t &tls,
-            INTRINSIC_CONCEPT &intrinsic,
+            intrinsic_t &intrinsic,
             syscall::bf_reg_t const reg,
             bsl::safe_uintmax const &val) &noexcept -> bsl::errc_type
         {
@@ -1453,17 +1432,14 @@ namespace mk
         ///     will return the VMExit reason.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-        ///   @tparam VMEXIT_LOG_CONCEPT defines the type of VMExit log to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param log the VMExit log to use
         ///   @return Returns the VMExit reason on success, or
         ///     bsl::safe_uintmax::zero(true) on failure.
         ///
-        template<typename INTRINSIC_CONCEPT, typename VMEXIT_LOG_CONCEPT>
         [[nodiscard]] constexpr auto
-        run(tls_t &tls, INTRINSIC_CONCEPT &intrinsic, VMEXIT_LOG_CONCEPT &log) &noexcept
+        run(tls_t &tls, intrinsic_t &intrinsic, vmexit_log_t &log) &noexcept
             -> bsl::safe_uintmax
         {
             if (bsl::unlikely_assert(!m_id)) {
@@ -1540,15 +1516,13 @@ namespace mk
         ///   @brief Advance the IP of the VPS
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        advance_ip(tls_t &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
+        advance_ip(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
         {
             bsl::discard(intrinsic);
 
@@ -1589,15 +1563,13 @@ namespace mk
         ///     values stored in the VPS.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename INTRINSIC_CONCEPT>
         [[nodiscard]] constexpr auto
-        clear(tls_t &tls, INTRINSIC_CONCEPT &intrinsic) &noexcept -> bsl::errc_type
+        clear(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
         {
             bsl::discard(intrinsic);
 
@@ -1636,13 +1608,11 @@ namespace mk
         ///   @brief Dumps the vm_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///
-        template<typename INTRINSIC_CONCEPT>
         constexpr void
-        dump(tls_t &tls, INTRINSIC_CONCEPT &intrinsic) const &noexcept
+        dump(tls_t &tls, intrinsic_t &intrinsic) const &noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;

@@ -109,7 +109,6 @@ namespace mk
     ///   @brief Dispatches the bf_vm_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam ext_pool_t defines the type of extension pool to use
     ///   @param tls the current TLS block
     ///   @param ext_pool the extension pool to use
     ///   @param vm_pool the VM pool to use

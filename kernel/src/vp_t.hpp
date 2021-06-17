@@ -29,6 +29,8 @@
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
 
+#include <vps_pool_t.hpp>
+
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
@@ -38,6 +40,8 @@
 
 namespace mk
 {
+    class vm_pool_t;
+
     /// @class mk::vp_t
     ///
     /// <!-- description -->
@@ -99,15 +103,13 @@ namespace mk
         ///   @brief Release the vp_t.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
         ///   @param tls the current TLS block
         ///   @param vps_pool the VPS pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename VPS_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, VPS_POOL_CONCEPT &vps_pool) &noexcept -> bsl::errc_type
+        release(tls_t &tls, vps_pool_t &vps_pool) &noexcept -> bsl::errc_type
         {
             if (this->is_zombie()) {
                 return bsl::errc_success;
@@ -172,7 +174,6 @@ namespace mk
         ///   @brief Allocates this vp_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam VM_POOL_CONCEPT defines the type of VM pool to use
         ///   @param tls the current TLS block
         ///   @param vm_pool the VM pool to use
         ///   @param vmid The ID of the VM to assign the newly created VP to
@@ -180,11 +181,10 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename VM_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
         allocate(
             tls_t &tls,
-            VM_POOL_CONCEPT &vm_pool,
+            vm_pool_t &vm_pool,
             bsl::safe_uint16 const &vmid,
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
         {
@@ -289,15 +289,13 @@ namespace mk
         ///   @brief Deallocates this vp_t
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
         ///   @param tls the current TLS block
         ///   @param vps_pool the VPS pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        template<typename VPS_POOL_CONCEPT>
         [[nodiscard]] constexpr auto
-        deallocate(tls_t &tls, VPS_POOL_CONCEPT &vps_pool) &noexcept -> bsl::errc_type
+        deallocate(tls_t &tls, vps_pool_t &vps_pool) &noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vp_t not initialized\n" << bsl::here();

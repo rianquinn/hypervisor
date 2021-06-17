@@ -37,17 +37,14 @@ namespace mk
     ///   @brief Dispatches the bf_vp_op syscalls
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-    ///   @tparam VP_POOL_CONCEPT defines the type of VP pool to use
     ///   @param tls the current TLS block
     ///   @param ext the extension that made the syscall
     ///   @param vp_pool the VP pool to use
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
-    template<typename EXT_CONCEPT, typename VP_POOL_CONCEPT>
     [[nodiscard]] constexpr auto
-    dispatch_syscall_vp_op(tls_t &tls, EXT_CONCEPT const &ext, VP_POOL_CONCEPT &vp_pool) noexcept
+    dispatch_syscall_vp_op(tls_t &tls, ext_t const &ext, vp_pool_t &vp_pool) noexcept
         -> bsl::errc_type
     {
         bsl::discard(tls);

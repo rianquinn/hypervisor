@@ -25,7 +25,10 @@
 #ifndef VMEXIT_LOOP_HPP
 #define VMEXIT_LOOP_HPP
 
-#include <tls_t.hpp>
+#include <ext_t.hpp>
+#include <intrinsic_t.hpp>
+#include <vps_pool_t.hpp>
+#include <vmexit_log_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
@@ -38,10 +41,6 @@ namespace mk
     ///     after a successful launch of the hypervisor.
     ///
     /// <!-- inputs/outputs -->
-    ///   @tparam EXT_CONCEPT defines the type of ext_t to use
-    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-    ///   @tparam VPS_POOL_CONCEPT defines the type of VPS pool to use
-    ///   @tparam VMEXIT_LOG_CONCEPT defines the type of VMExit log to use
     ///   @param tls the current TLS block
     ///   @param ext the ext_t to handle the VMExit
     ///   @param intrinsic the intrinsics to use
@@ -50,18 +49,13 @@ namespace mk
     ///   @return Returns bsl::exit_success on success, bsl::exit_failure
     ///     otherwise
     ///
-    template<
-        typename EXT_CONCEPT,
-        typename INTRINSIC_CONCEPT,
-        typename VPS_POOL_CONCEPT,
-        typename VMEXIT_LOG_CONCEPT>
     [[nodiscard]] constexpr auto
     vmexit_loop(
         tls_t &tls,
-        EXT_CONCEPT &ext,
-        INTRINSIC_CONCEPT &intrinsic,
-        VPS_POOL_CONCEPT &vps_pool,
-        VMEXIT_LOG_CONCEPT &log) noexcept -> bsl::exit_code
+        ext_t &ext,
+        intrinsic_t &intrinsic,
+        vps_pool_t &vps_pool,
+        vmexit_log_t &log) noexcept -> bsl::exit_code
     {
         auto const exit_reason{vps_pool.run(tls, intrinsic, tls.active_vpsid, log)};
         if (bsl::unlikely(!exit_reason)) {

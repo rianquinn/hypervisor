@@ -106,7 +106,7 @@ list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/src/global_resources.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/huge_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/lock_guard_t.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/mk_main.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/mk_main_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/page_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/serial_write.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/spinlock_t.hpp

@@ -35,6 +35,11 @@
 #include <page_t.hpp>
 #include <tls_t.hpp>
 
+#include <intrinsic_t.hpp>
+#include <page_pool_t.hpp>
+#include <huge_pool_t.hpp>
+#include <root_page_pool_t.hpp>
+
 #include <bsl/array.hpp>
 #include <bsl/discard.hpp>
 #include <bsl/finally.hpp>
@@ -94,68 +99,23 @@ namespace mk
     ///     well as the extension's memory map, ELF file, stack, TLS blocks,
     ///     and all of it's memory map functions.
     ///
-    /// <!-- template parameters -->
-    ///   @tparam INTRINSIC_CONCEPT defines the type of intrinsics to use
-    ///   @tparam PAGE_POOL_CONCEPT defines the type of page pool to use
-    ///   @tparam HUGE_POOL_CONCEPT defines the type of huge pool to use
-    ///   @tparam ROOT_PAGE_TABLE_CONCEPT defines the type of RPT pool to use
-    ///   @tparam PAGE_SIZE defines the size of a page
-    ///   @tparam MAX_PPS the max number of PPs supported
-    ///   @tparam MAX_VMS the max number of VMs supported
-    ///   @tparam EXT_DIRECT_MAP_ADDR the address of the extension's direct map
-    ///   @tparam EXT_DIRECT_MAP_SIZE the size of the extension's direct map
-    ///   @tparam EXT_STACK_ADDR the address of the extension's stack
-    ///   @tparam EXT_STACK_SIZE the size of the extension's stack
-    ///   @tparam EXT_CODE_ADDR the address of the extension's code
-    ///   @tparam EXT_CODE_SIZE the size of the extension's code
-    ///   @tparam EXT_TLS_ADDR the address of the extension's TLS block
-    ///   @tparam EXT_TLS_SIZE the size of the extension's TLS block
-    ///   @tparam EXT_PAGE_POOL_ADDR the address of the extension's page pool
-    ///   @tparam EXT_PAGE_POOL_SIZE the size of the extension's page pool
-    ///   @tparam EXT_HUGE_POOL_ADDR the address of the extension's huge pool
-    ///   @tparam EXT_HUGE_POOL_SIZE the size of the extension's huge pool
-    ///   @tparam EXT_HEAP_POOL_ADDR the address of the extension's heap pool
-    ///   @tparam EXT_HEAP_POOL_SIZE the size of the extension's heap pool
-    ///
-    template<
-        typename INTRINSIC_CONCEPT,
-        typename PAGE_POOL_CONCEPT,
-        typename HUGE_POOL_CONCEPT,
-        typename ROOT_PAGE_TABLE_CONCEPT,
-        bsl::uintmax PAGE_SIZE,
-        bsl::uintmax MAX_PPS,
-        bsl::uintmax MAX_VMS,
-        bsl::uintmax EXT_DIRECT_MAP_ADDR,
-        bsl::uintmax EXT_DIRECT_MAP_SIZE,
-        bsl::uintmax EXT_STACK_ADDR,
-        bsl::uintmax EXT_STACK_SIZE,
-        bsl::uintmax EXT_CODE_ADDR,
-        bsl::uintmax EXT_CODE_SIZE,
-        bsl::uintmax EXT_TLS_ADDR,
-        bsl::uintmax EXT_TLS_SIZE,
-        bsl::uintmax EXT_PAGE_POOL_ADDR,
-        bsl::uintmax EXT_PAGE_POOL_SIZE,
-        bsl::uintmax EXT_HUGE_POOL_ADDR,
-        bsl::uintmax EXT_HUGE_POOL_SIZE,
-        bsl::uintmax EXT_HEAP_POOL_ADDR,
-        bsl::uintmax EXT_HEAP_POOL_SIZE>
     class ext_t final
     {
         /// @brief stores a reference to the intrinsics to use
-        INTRINSIC_CONCEPT *m_intrinsic{};
+        intrinsic_t *m_intrinsic{};
         /// @brief stores a reference to the page pool to use
-        PAGE_POOL_CONCEPT *m_page_pool{};
+        page_pool_t *m_page_pool{};
         /// @brief stores a reference to the huge pool to use
-        HUGE_POOL_CONCEPT *m_huge_pool{};
+        huge_pool_t *m_huge_pool{};
         /// @brief stores true if start() has been executed
         bool m_started{};
         /// @brief stores the ID associated with this ext_t
         bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
 
         /// @brief stores the main rpt
-        ROOT_PAGE_TABLE_CONCEPT m_main_rpt{};
+        root_page_pool_t m_main_rpt{};
         /// @brief stores the direct map rpts
-        bsl::array<ROOT_PAGE_TABLE_CONCEPT, MAX_VMS> m_direct_map_rpts{};
+        bsl::array<root_page_pool_t, HYPERVISOR_MAX_VMS> m_direct_map_rpts{};
         /// @brief stores the main IP registered by the extension
         bsl::safe_uintmax m_entry_ip{bsl::safe_uintmax::zero(true)};
         /// @brief stores the bootstrap IP registered by the extension
@@ -212,13 +172,13 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(bsl::to_umax(phdr->p_vaddr) < EXT_CODE_ADDR)) {
+            if (bsl::unlikely(bsl::to_umax(phdr->p_vaddr) < HYPERVISOR_EXT_CODE_ADDR)) {
                 bsl::error() << "ELF code segment virtual address not supported\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             auto const required_memsz{bsl::to_umax(phdr->p_vaddr) + bsl::to_umax(phdr->p_memsz)};
-            if (bsl::unlikely(required_memsz > (EXT_CODE_ADDR + EXT_CODE_SIZE))) {
+            if (bsl::unlikely(required_memsz > (HYPERVISOR_EXT_CODE_ADDR + HYPERVISOR_EXT_CODE_SIZE))) {
                 bsl::error() << "ELF code segment virtual address not supported\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -229,12 +189,12 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(bsl::to_umax(phdr->p_memsz) > EXT_CODE_SIZE)) {
+            if (bsl::unlikely(bsl::to_umax(phdr->p_memsz) > HYPERVISOR_EXT_CODE_SIZE)) {
                 bsl::error() << "ELF code segment memsz invalid\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(phdr->p_align != PAGE_SIZE)) {
+            if (bsl::unlikely(phdr->p_align != HYPERVISOR_PAGE_SIZE)) {
                 bsl::error() << "ELF code segment alignment not supported\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -285,13 +245,13 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(bsl::to_umax(phdr->p_vaddr) < EXT_CODE_ADDR)) {
+            if (bsl::unlikely(bsl::to_umax(phdr->p_vaddr) < HYPERVISOR_EXT_CODE_ADDR)) {
                 bsl::error() << "ELF TLS segment virtual address not supported\n" << bsl::here();
                 return bsl::errc_failure;
             }
 
             auto const required_memsz{bsl::to_umax(phdr->p_vaddr) + bsl::to_umax(phdr->p_memsz)};
-            if (bsl::unlikely(required_memsz > (EXT_CODE_ADDR + EXT_CODE_SIZE))) {
+            if (bsl::unlikely(required_memsz > (HYPERVISOR_EXT_CODE_ADDR + HYPERVISOR_EXT_CODE_SIZE))) {
                 bsl::error() << "ELF TLS segment virtual address not supported\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -302,7 +262,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely(bsl::to_umax(phdr->p_memsz) > PAGE_SIZE)) {
+            if (bsl::unlikely(bsl::to_umax(phdr->p_memsz) > HYPERVISOR_PAGE_SIZE)) {
                 bsl::error() << "ELF TLS segment memsz invalid\n" << bsl::here();
                 return bsl::errc_failure;
             }
@@ -405,7 +365,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         add_segments(
             tls_t &tls,
-            ROOT_PAGE_TABLE_CONCEPT &rpt,
+            root_page_pool_t &rpt,
             bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
         {
             bsl::span<bsl::byte> page{};
@@ -421,8 +381,8 @@ namespace mk
                 bsl::safe_uintmax const bytes_to_allocate{phdr->p_memsz};
                 bsl::safe_uintmax bytes_to_copy{phdr->p_filesz};
 
-                bsl::safe_uintmax bytes_to_next_page{PAGE_SIZE};
-                bsl::safe_uintmax bytes_into_page{phdr->p_vaddr & (PAGE_SIZE - bsl::ONE_UMAX)};
+                bsl::safe_uintmax bytes_to_next_page{HYPERVISOR_PAGE_SIZE};
+                bsl::safe_uintmax bytes_into_page{phdr->p_vaddr & (HYPERVISOR_PAGE_SIZE - bsl::ONE_UMAX)};
 
                 if (bytes_into_page.is_pos()) {
                     bytes_to_next_page -= bytes_into_page;
@@ -434,18 +394,18 @@ namespace mk
                 bsl::safe_uintmax bytes{};
                 while (bytes < bytes_to_allocate) {
 
-                    if (bytes_to_next_page == PAGE_SIZE) {
+                    if (bytes_to_next_page == HYPERVISOR_PAGE_SIZE) {
                         if ((phdr->p_flags & bfelf::PF_X).is_pos()) {
                             page = bsl::as_writable_t<bsl::byte>(
                                 rpt.allocate_page_rx(
                                     tls, phdr->p_vaddr + bytes, MAP_PAGE_AUTO_RELEASE_ELF),
-                                PAGE_SIZE);
+                                HYPERVISOR_PAGE_SIZE);
                         }
                         else {
                             page = bsl::as_writable_t<bsl::byte>(
                                 rpt.allocate_page_rw(
                                     tls, phdr->p_vaddr + bytes, MAP_PAGE_AUTO_RELEASE_ELF),
-                                PAGE_SIZE);
+                                HYPERVISOR_PAGE_SIZE);
                         }
 
                         if (bsl::unlikely(!page)) {
@@ -493,7 +453,7 @@ namespace mk
                     }
 
                     bytes += bytes_to_next_page;
-                    bytes_to_next_page = PAGE_SIZE;
+                    bytes_to_next_page = HYPERVISOR_PAGE_SIZE;
                     bytes_into_page = bsl::ZERO_UMAX;
                 }
             }
@@ -513,10 +473,10 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        add_stack(tls_t &tls, ROOT_PAGE_TABLE_CONCEPT &rpt, bsl::safe_uintmax const &addr) &noexcept
+        add_stack(tls_t &tls, root_page_pool_t &rpt, bsl::safe_uintmax const &addr) &noexcept
             -> bsl::errc_type
         {
-            for (bsl::safe_uintmax bytes{}; bytes < EXT_STACK_SIZE; bytes += PAGE_SIZE) {
+            for (bsl::safe_uintmax bytes{}; bytes < HYPERVISOR_EXT_STACK_SIZE; bytes += HYPERVISOR_PAGE_SIZE) {
                 void *page{rpt.allocate_page_rw(tls, addr + bytes, MAP_PAGE_AUTO_RELEASE_STACK)};
                 if (bsl::unlikely(nullptr == page)) {
                     bsl::print<bsl::V>() << bsl::here();
@@ -540,11 +500,11 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        add_stacks(tls_t &tls, ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept -> bsl::errc_type
+        add_stacks(tls_t &tls, root_page_pool_t &rpt) &noexcept -> bsl::errc_type
         {
             for (bsl::safe_uintmax pp{}; pp < bsl::to_umax(tls.online_pps); ++pp) {
-                auto const offs{(EXT_STACK_SIZE + PAGE_SIZE) * pp};
-                auto const addr{(EXT_STACK_ADDR + offs)};
+                auto const offs{(HYPERVISOR_EXT_STACK_SIZE + HYPERVISOR_PAGE_SIZE) * pp};
+                auto const addr{(HYPERVISOR_EXT_STACK_ADDR + offs)};
 
                 if (bsl::unlikely(!this->add_stack(tls, rpt, addr))) {
                     bsl::print<bsl::V>() << bsl::here();
@@ -573,7 +533,7 @@ namespace mk
         [[nodiscard]] constexpr auto
         add_tls_block(
             tls_t &tls,
-            ROOT_PAGE_TABLE_CONCEPT &rpt,
+            root_page_pool_t &rpt,
             bsl::safe_uintmax const &addr_usr,
             bsl::safe_uintmax const &addr_abi,
             bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
@@ -582,14 +542,14 @@ namespace mk
             bsl::span<bsl::uintmax> page_abi{};
 
             page_usr = bsl::as_writable_t<bsl::uint8>(
-                rpt.allocate_page_rw(tls, addr_usr, MAP_PAGE_AUTO_RELEASE_TLS), PAGE_SIZE);
+                rpt.allocate_page_rw(tls, addr_usr, MAP_PAGE_AUTO_RELEASE_TLS), HYPERVISOR_PAGE_SIZE);
             if (bsl::unlikely(!page_usr)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
             page_abi = bsl::as_writable_t<bsl::uintmax>(
-                rpt.allocate_page_rw(tls, addr_abi, MAP_PAGE_AUTO_RELEASE_TLS), PAGE_SIZE);
+                rpt.allocate_page_rw(tls, addr_abi, MAP_PAGE_AUTO_RELEASE_TLS), HYPERVISOR_PAGE_SIZE);
             if (bsl::unlikely(!page_abi)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -606,7 +566,7 @@ namespace mk
                 }
 
                 auto const *const src_addr{elf_file.at_if(phdr->p_offset)};
-                auto const dst_index{PAGE_SIZE - bsl::to_umax(phdr->p_memsz)};
+                auto const dst_index{HYPERVISOR_PAGE_SIZE - bsl::to_umax(phdr->p_memsz)};
                 bsl::builtin_memcpy(page_usr.at_if(dst_index), src_addr, phdr->p_memsz);
 
                 return bsl::errc_success;
@@ -629,16 +589,16 @@ namespace mk
         [[nodiscard]] constexpr auto
         add_tls_blocks(
             tls_t &tls,
-            ROOT_PAGE_TABLE_CONCEPT &rpt,
+            root_page_pool_t &rpt,
             bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
             for (bsl::safe_uintmax pp{}; pp < bsl::to_umax(tls.online_pps); ++pp) {
-                auto const offs{(EXT_TLS_SIZE + PAGE_SIZE) * pp};
-                auto const addr{(EXT_TLS_ADDR + offs)};
+                auto const offs{(HYPERVISOR_EXT_TLS_SIZE + HYPERVISOR_PAGE_SIZE) * pp};
+                auto const addr{(HYPERVISOR_EXT_TLS_ADDR + offs)};
 
-                ret = this->add_tls_block(tls, rpt, addr, addr + PAGE_SIZE, elf_file);
+                ret = this->add_tls_block(tls, rpt, addr, addr + HYPERVISOR_PAGE_SIZE, elf_file);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
@@ -666,8 +626,8 @@ namespace mk
         [[nodiscard]] constexpr auto
         initialize_rpt(
             tls_t &tls,
-            ROOT_PAGE_TABLE_CONCEPT &rpt,
-            ROOT_PAGE_TABLE_CONCEPT const &system_rpt,
+            root_page_pool_t &rpt,
+            root_page_pool_t const &system_rpt,
             bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(!rpt.initialize(tls, m_intrinsic, m_page_pool, m_huge_pool))) {
@@ -715,7 +675,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize_direct_map_rpt(tls_t &tls, ROOT_PAGE_TABLE_CONCEPT &rpt) &noexcept
+        initialize_direct_map_rpt(tls_t &tls, root_page_pool_t &rpt) &noexcept
             -> bsl::errc_type
         {
             if (bsl::unlikely(!rpt.initialize(tls, m_intrinsic, m_page_pool, m_huge_pool))) {
@@ -893,15 +853,6 @@ namespace mk
         }
 
     public:
-        /// @brief an alias for INTRINSIC_CONCEPT
-        using intrinsic_type = INTRINSIC_CONCEPT;
-        /// @brief an alias for PAGE_POOL_CONCEPT
-        using page_pool_type = PAGE_POOL_CONCEPT;
-        /// @brief an alias for HUGE_POOL_CONCEPT
-        using huge_pool_type = HUGE_POOL_CONCEPT;
-        /// @brief an alias for ROOT_PAGE_TABLE_CONCEPT
-        using root_page_table_type = ROOT_PAGE_TABLE_CONCEPT;
-
         /// <!-- description -->
         ///   @brief Default constructor
         ///
@@ -924,12 +875,12 @@ namespace mk
         [[nodiscard]] constexpr auto
         initialize(
             tls_t &tls,
-            INTRINSIC_CONCEPT *const intrinsic,
-            PAGE_POOL_CONCEPT *const page_pool,
-            HUGE_POOL_CONCEPT *const huge_pool,
+            intrinsic_t *const intrinsic,
+            page_pool_t *const page_pool,
+            huge_pool_t *const huge_pool,
             bsl::safe_uint16 const &i,
             bsl::span<bsl::byte const> const &ext_elf_file,
-            ROOT_PAGE_TABLE_CONCEPT const *const system_rpt) &noexcept -> bsl::errc_type
+            root_page_pool_t const *const system_rpt) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -1241,7 +1192,7 @@ namespace mk
             }
 
             auto const *const page{
-                m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_BF_MEM_OP_ALLOC_PAGE)};
+                m_page_pool->allocate(tls, ALLOCATE_TAG_BF_MEM_OP_ALLOC_PAGE)};
             if (bsl::unlikely(nullptr == page)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
@@ -1253,7 +1204,7 @@ namespace mk
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
-            auto const page_virt{EXT_PAGE_POOL_ADDR + page_phys};
+            auto const page_virt{HYPERVISOR_EXT_PAGE_POOL_ADDR + page_phys};
             if (bsl::unlikely_assert(!page_virt)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
@@ -1326,7 +1277,7 @@ namespace mk
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
-            if (bsl::unlikely((size % PAGE_SIZE) != bsl::ZERO_UMAX)) {
+            if (bsl::unlikely((size % HYPERVISOR_PAGE_SIZE) != bsl::ZERO_UMAX)) {
                 bsl::error() << "invalid size "    // --
                              << bsl::hex(size)     // --
                              << bsl::endl          // --
@@ -1335,7 +1286,7 @@ namespace mk
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
-            auto const *const huge{m_huge_pool->template allocate<void>(tls, size)};
+            auto const *const huge{m_huge_pool->allocate(tls, size)};
             if (bsl::unlikely(nullptr == huge)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
@@ -1347,7 +1298,7 @@ namespace mk
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
             }
 
-            auto const huge_virt{EXT_PAGE_POOL_ADDR + huge_phys};
+            auto const huge_virt{HYPERVISOR_EXT_PAGE_POOL_ADDR + huge_phys};
             if (bsl::unlikely_assert(!huge_virt)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
@@ -1366,7 +1317,7 @@ namespace mk
             ///   would any other physical address.
             ///
 
-            for (bsl::safe_uintmax i{}; i < size; i += PAGE_SIZE) {
+            for (bsl::safe_uintmax i{}; i < size; i += HYPERVISOR_PAGE_SIZE) {
                 ret = m_direct_map_rpts.front().map_page(
                     tls,
                     huge_virt + i,
@@ -1420,8 +1371,8 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            constexpr auto pool_addr{bsl::to_umax(EXT_HEAP_POOL_ADDR)};
-            constexpr auto pool_size{bsl::to_umax(EXT_HEAP_POOL_SIZE)};
+            constexpr auto pool_addr{bsl::to_umax(HYPERVISOR_EXT_HEAP_POOL_ADDR)};
+            constexpr auto pool_size{bsl::to_umax(HYPERVISOR_EXT_HEAP_POOL_SIZE)};
 
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
@@ -1437,15 +1388,15 @@ namespace mk
                 return bsl::safe_uintmax::zero(true);
             }
 
-            auto pages{size / PAGE_SIZE};
-            if ((size % PAGE_SIZE) != bsl::ZERO_UMAX) {
+            auto pages{size / HYPERVISOR_PAGE_SIZE};
+            if ((size % HYPERVISOR_PAGE_SIZE) != bsl::ZERO_UMAX) {
                 ++pages;
             }
             else {
                 bsl::touch();
             }
 
-            if (bsl::unlikely((m_heap_crsr + (pages * PAGE_SIZE)) > pool_size)) {
+            if (bsl::unlikely((m_heap_crsr + (pages * HYPERVISOR_PAGE_SIZE)) > pool_size)) {
                 bsl::error() << "the extension's heap pool is out of memory"    // --
                              << bsl::endl                                       // --
                              << bsl::here();                                    // --
@@ -1461,7 +1412,7 @@ namespace mk
 
             for (bsl::safe_uintmax i{}; i < pages; ++i) {
                 auto const *const page{
-                    m_page_pool->template allocate<void>(tls, ALLOCATE_TAG_BF_MEM_OP_ALLOC_HEAP)};
+                    m_page_pool->allocate(tls, ALLOCATE_TAG_BF_MEM_OP_ALLOC_HEAP)};
                 if (bsl::unlikely(nullptr == page)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::safe_uintmax::zero(true);
@@ -1491,7 +1442,7 @@ namespace mk
                     return bsl::safe_uintmax::zero(true);
                 }
 
-                m_heap_crsr += PAGE_SIZE;
+                m_heap_crsr += HYPERVISOR_PAGE_SIZE;
             }
 
             ret = this->update_direct_map_rpts(tls);
@@ -1518,8 +1469,8 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            constexpr auto dm_addr{bsl::to_umax(EXT_DIRECT_MAP_ADDR)};
-            constexpr auto dm_size{bsl::to_umax(EXT_DIRECT_MAP_SIZE)};
+            constexpr auto dm_addr{bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+            constexpr auto dm_size{bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_SIZE)};
 
             constexpr auto min_dm_addr{dm_addr};
             constexpr auto max_dm_addr{dm_addr + (dm_size - bsl::ONE_UMAX)};
@@ -1583,8 +1534,8 @@ namespace mk
             if (bsl::unlikely_assert(nullptr == rpt)) {
                 bsl::error() << "vmid "                                       // --
                              << bsl::hex(vmid)                                // --
-                             << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << " is invalid or greater than the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                // --
                              << bsl::endl                                     // --
                              << bsl::here();                                  // --
 
@@ -1621,8 +1572,8 @@ namespace mk
             if (bsl::unlikely_assert(nullptr == rpt)) {
                 bsl::error() << "vmid "                                       // --
                              << bsl::hex(vmid)                                // --
-                             << " is invalid or greater than the MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(MAX_VMS))                // --
+                             << " is invalid or greater than the HYPERVISOR_MAX_VMS "    // --
+                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                // --
                              << bsl::endl                                     // --
                              << bsl::here();                                  // --
 

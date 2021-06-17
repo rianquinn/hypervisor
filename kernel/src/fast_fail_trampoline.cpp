@@ -29,14 +29,7 @@
 namespace mk
 {
     /// <!-- description -->
-    ///   @brief Since we cannot create a template function pointer, we need
-    ///     a way to call a template function from our ASM entry point.
-    ///     Normally the way this works in a normal program is the OS calls
-    ///     _start, which then calls main(). The main() function, which is
-    ///     an extern C function, similar to this function, can then call a
-    ///     template function as needed. So the whole point of this function
-    ///     is to simply trampoline from our ASM logic, to a C++ template
-    ///     function that is easy to test.
+    ///   @brief remove me
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
