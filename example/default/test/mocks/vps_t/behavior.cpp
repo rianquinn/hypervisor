@@ -45,10 +45,12 @@ namespace example
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_when{} = [&vps, &gs, &tls]() {
+                syscall::bf_syscall_t sys{};
+                intrinsic_t intrinsic{};
+                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
                     tls.test_ret = bsl::errc_failure;
-                    bsl::ut_then{} = [&vps, &gs, &tls]() {
-                        bsl::ut_check(!vps.initialize(gs, tls, {}));
+                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                        bsl::ut_check(!vps.initialize(gs, tls, sys, intrinsic, {}));
                     };
                 };
             };
@@ -59,8 +61,10 @@ namespace example
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&vps, &gs, &tls]() {
-                    bsl::ut_check(vps.initialize(gs, tls, {}));
+                syscall::bf_syscall_t sys{};
+                intrinsic_t intrinsic{};
+                bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_check(vps.initialize(gs, tls, sys, intrinsic, {}));
                 };
             };
         };
@@ -70,8 +74,10 @@ namespace example
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&vps, &gs, &tls]() {
-                    vps.release(gs, tls);
+                syscall::bf_syscall_t sys{};
+                intrinsic_t intrinsic{};
+                bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };

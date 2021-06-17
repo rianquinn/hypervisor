@@ -45,10 +45,12 @@ namespace example
                 vp_t vp{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_when{} = [&vp, &gs, &tls]() {
+                syscall::bf_syscall_t sys{};
+                intrinsic_t intrinsic{};
+                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
                     tls.test_ret = bsl::errc_failure;
-                    bsl::ut_then{} = [&vp, &gs, &tls]() {
-                        bsl::ut_check(!vp.initialize(gs, tls, {}));
+                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                        bsl::ut_check(!vp.initialize(gs, tls, sys, intrinsic, {}));
                     };
                 };
             };
@@ -59,8 +61,10 @@ namespace example
                 vp_t vp{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&vp, &gs, &tls]() {
-                    bsl::ut_check(vp.initialize(gs, tls, {}));
+                syscall::bf_syscall_t sys{};
+                intrinsic_t intrinsic{};
+                bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_check(vp.initialize(gs, tls, sys, intrinsic, {}));
                 };
             };
         };
@@ -70,8 +74,10 @@ namespace example
                 vp_t vp{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&vp, &gs, &tls]() {
-                    vp.release(gs, tls);
+                syscall::bf_syscall_t sys{};
+                intrinsic_t intrinsic{};
+                bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                    vp.release(gs, tls, sys, intrinsic);
                 };
             };
         };

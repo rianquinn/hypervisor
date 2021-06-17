@@ -66,10 +66,9 @@ namespace example
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(gs_t &gs,
-            tls_t &tls,
-            syscall::bf_syscall_t &sys,
-            intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
+        initialize(
+            gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
+            -> bsl::errc_type
         {
             /// NOTE:
             /// - The following is used in the event of an error. Basically,
@@ -78,9 +77,10 @@ namespace example
             ///   ignore() function, which we do at the end when all is good.
             ///
 
-            bsl::finally_assert release_on_error{[this, &gs, &tls]() noexcept -> void {
-                this->release(gs, tls, sys, intrinsic);
-            }};
+            bsl::finally_assert release_on_error{
+                [this, &gs, &tls, &sys, &intrinsic]() noexcept -> void {
+                    this->release(gs, tls, sys, intrinsic);
+                }};
 
             /// NOTE:
             /// - Initialize all of the VPSs. This basically gives each one it's
@@ -93,7 +93,7 @@ namespace example
 
             bsl::errc_type ret{};
             for (bsl::safe_uintmax i{}; i < m_pool.size(); ++i) {
-                ret = m_pool.at_if(i)->initialize(gs, tls, bsl::to_u16(i));
+                ret = m_pool.at_if(i)->initialize(gs, tls, sys, intrinsic, bsl::to_u16(i));
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -122,10 +122,7 @@ namespace example
         ///   @param intrinsic the intrinsic_t to use
         ///
         constexpr void
-        release(gs_t &gs,
-            tls_t &tls,
-            syscall::bf_syscall_t &sys,
-            intrinsic_t &intrinsic) &noexcept
+        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
         {
             /// NOTE:
             /// - Release functions are usually only needed in the event of

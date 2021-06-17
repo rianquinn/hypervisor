@@ -25,6 +25,7 @@
 #ifndef VMEXIT_T_HPP
 #define VMEXIT_T_HPP
 
+#include <bf_debug_ops.hpp>
 #include <bf_syscall_t.hpp>
 #include <cpuid_commands.hpp>
 #include <gs_t.hpp>
@@ -55,14 +56,28 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
+        ///   @param vp_pool the vp_pool_t to use
+        ///   @param vps_pool the vps_pool_t to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] static constexpr auto
-        initialize(gs_t &gs, tls_t &tls) noexcept -> bsl::errc_type
+        initialize(
+            gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic,
+            vp_pool_t &vp_pool,
+            vps_pool_t &vps_pool) noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
+            bsl::discard(vp_pool);
+            bsl::discard(vps_pool);
 
             /// NOTE:
             /// - Add initialization code here if needed. Otherwise, this
@@ -78,12 +93,26 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
+        ///   @param vp_pool the vp_pool_t to use
+        ///   @param vps_pool the vps_pool_t to use
         ///
         static constexpr void
-        release(gs_t &gs, tls_t &tls) noexcept
+        release(
+            gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic,
+            vp_pool_t &vp_pool,
+            vps_pool_t &vps_pool) noexcept
         {
             bsl::discard(gs);
             bsl::discard(tls);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
+            bsl::discard(vp_pool);
+            bsl::discard(vps_pool);
 
             /// NOTE:
             /// - Release functions are usually only needed in the event of

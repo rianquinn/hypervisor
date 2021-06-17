@@ -45,10 +45,14 @@ namespace example
                 fail_t fail{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_when{} = [&fail, &gs, &tls]() {
+                syscall::bf_syscall_t sys{};
+                intrinsic_t intrinsic{};
+                vp_pool_t vp_pool{};
+                vps_pool_t vps_pool{};
+                bsl::ut_when{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
                     fail.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&fail, &gs, &tls]() {
-                        bsl::ut_check(!fail.initialize(gs, tls));
+                    bsl::ut_then{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                        bsl::ut_check(!fail.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     };
                 };
             };
@@ -59,8 +63,12 @@ namespace example
                 fail_t fail{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&fail, &gs, &tls]() {
-                    bsl::ut_check(fail.initialize(gs, tls));
+                syscall::bf_syscall_t sys{};
+                intrinsic_t intrinsic{};
+                vp_pool_t vp_pool{};
+                vps_pool_t vps_pool{};
+                bsl::ut_then{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                    bsl::ut_check(fail.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                 };
             };
         };
@@ -70,8 +78,12 @@ namespace example
                 fail_t fail{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&fail, &gs, &tls]() {
-                    fail.release(gs, tls);
+                syscall::bf_syscall_t sys{};
+                intrinsic_t intrinsic{};
+                vp_pool_t vp_pool{};
+                vps_pool_t vps_pool{};
+                bsl::ut_then{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                    fail.release(gs, tls, sys, intrinsic, vp_pool, vps_pool);
                 };
             };
         };

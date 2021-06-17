@@ -48,6 +48,8 @@ namespace example
     {
         /// @brief stores the MSR bitmap used by this vps_t
         void *m_msr_bitmap{};
+        /// @brief stores the physical address of the MSR bitmap above
+        bsl::safe_uintmax m_msr_bitmap_phys{};
 
         /// @brief stores the ID associated with this vps_t
         bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
@@ -70,14 +72,15 @@ namespace example
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(gs_t &gs,
+        initialize(
+            gs_t &gs,
             tls_t &tls,
             syscall::bf_syscall_t &sys,
-            intrinsic_t &intrinsic, bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+            intrinsic_t &intrinsic,
+            bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);
-            bsl::discard(sys);
             bsl::discard(intrinsic);
 
             /// NOTE:
@@ -119,6 +122,12 @@ namespace example
                 return bsl::errc_invalid_argument;
             }
 
+            m_msr_bitmap = sys.bf_mem_op_alloc_page(m_msr_bitmap_phys);
+            if (bsl::unlikely_assert(nullptr == m_msr_bitmap)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
+
             /// NOTE:
             /// - Finally, store the ID assigned to this vps_t and report
             ///   success.
@@ -138,15 +147,18 @@ namespace example
         ///   @param intrinsic the intrinsic_t to use
         ///
         constexpr void
-        release(gs_t &gs,
-            tls_t &tls,
-            syscall::bf_syscall_t &sys,
-            intrinsic_t &intrinsic) &noexcept
+        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
         {
+            bsl::errc_type ret{};
+
             bsl::discard(gs);
             bsl::discard(tls);
-            bsl::discard(sys);
             bsl::discard(intrinsic);
+
+            ret = sys.bf_mem_op_free_page(m_msr_bitmap);
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+            }
 
             /// NOTE:
             /// - Release functions are usually only needed in the event of
@@ -472,16 +484,7 @@ namespace example
 
             constexpr auto vmcs_msr_bitmaps{bsl::to_umax(0x2004U)};
 
-            bsl::safe_uintmax msr_bitmap_phys{};
-            if (nullptr == m_msr_bitmap) {
-                m_msr_bitmap = sys.bf_mem_op_alloc_page(msr_bitmap_phys);
-                if (bsl::unlikely_assert(nullptr == m_msr_bitmap)) {
-                    bsl::print<bsl::V>() << bsl::here();
-                    return ret;
-                }
-            }
-
-            ret = sys.bf_vps_op_write64(m_id, vmcs_msr_bitmaps, msr_bitmap_phys);
+            ret = sys.bf_vps_op_write64(m_id, vmcs_msr_bitmaps, m_msr_bitmap_phys);
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;

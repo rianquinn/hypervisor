@@ -66,10 +66,9 @@ namespace example
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(gs_t &gs,
-            tls_t &tls,
-            syscall::bf_syscall_t &sys,
-            intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
+        initialize(
+            gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
+            -> bsl::errc_type
         {
             /// NOTE:
             /// - The following is used in the event of an error. Basically,
@@ -78,9 +77,10 @@ namespace example
             ///   ignore() function, which we do at the end when all is good.
             ///
 
-            bsl::finally_assert release_on_error{[this, &gs, &tls]() noexcept -> void {
-                this->release(gs, tls, sys, intrinsic);
-            }};
+            bsl::finally_assert release_on_error{
+                [this, &gs, &tls, &sys, &intrinsic]() noexcept -> void {
+                    this->release(gs, tls, sys, intrinsic);
+                }};
 
             /// NOTE:
             /// - Initialize all of the VPs. This basically gives each one it's
@@ -122,10 +122,7 @@ namespace example
         ///   @param intrinsic the intrinsic_t to use
         ///
         constexpr void
-        release(gs_t &gs,
-            tls_t &tls,
-            syscall::bf_syscall_t &sys,
-            intrinsic_t &intrinsic) &noexcept
+        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
         {
             /// NOTE:
             /// - Release functions are usually only needed in the event of
@@ -133,7 +130,7 @@ namespace example
             ///
 
             for (bsl::safe_uintmax i{}; i < m_pool.size(); ++i) {
-                m_pool.at_if(i)->release(gs, tls);
+                m_pool.at_if(i)->release(gs, tls, sys, intrinsic);
             }
         }
 

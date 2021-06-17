@@ -56,8 +56,8 @@ namespace
         test_member_nonconst() noexcept -> bool
         {
             bsl::discard(example::vps_pool_t{});
-            bsl::discard(vps_pool.initialize(g_gs, g_tls));
-            vps_pool.release(g_gs, g_tls);
+            bsl::discard(vps_pool.initialize(g_gs, g_tls, g_sys, g_intrinsic));
+            vps_pool.release(g_gs, g_tls, g_sys, g_intrinsic);
             bsl::discard(vps_pool.allocate(g_gs, g_tls, g_sys, g_intrinsic, {}, {}));
 
             return true;
@@ -87,8 +87,8 @@ main() noexcept -> bsl::exit_code
             example::vps_pool_t vps_pool{};
             bsl::ut_then{} = []() {
                 static_assert(noexcept(example::vps_pool_t{}));
-                static_assert(noexcept(vps_pool.initialize(g_gs, g_tls)));
-                static_assert(noexcept(vps_pool.release(g_gs, g_tls)));
+                static_assert(noexcept(vps_pool.initialize(g_gs, g_tls, g_sys, g_intrinsic)));
+                static_assert(noexcept(vps_pool.release(g_gs, g_tls, g_sys, g_intrinsic)));
                 static_assert(noexcept(vps_pool.allocate(g_gs, g_tls, g_sys, g_intrinsic, {}, {})));
             };
         };

@@ -60,15 +60,24 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///   @param i the ID for this vps_t
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(gs_t &gs, tls_t &tls, bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        initialize(
+            gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic,
+            bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
             bsl::discard(tls);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
 
             /// NOTE:
             /// - The following is a pedantic check to make sure we have
@@ -124,12 +133,16 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///
         constexpr void
-        release(gs_t &gs, tls_t &tls) &noexcept
+        release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) &noexcept
         {
             bsl::discard(gs);
             bsl::discard(tls);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
 
             /// NOTE:
             /// - Release functions are usually only needed in the event of

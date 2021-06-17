@@ -296,7 +296,7 @@ namespace example
         ///   logic that might be needed, otherwise it can be removed.
         ///
 
-        ret = g_bootstrap.initialize(g_gs, g_tls);
+        ret = g_bootstrap.initialize(g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
@@ -307,7 +307,7 @@ namespace example
         ///   logic that might be needed, otherwise it can be removed.
         ///
 
-        ret = g_fail.initialize(g_gs, g_tls);
+        ret = g_fail.initialize(g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
@@ -318,7 +318,7 @@ namespace example
         ///   logic that might be needed, otherwise it can be removed.
         ///
 
-        ret = g_vmexit.initialize(g_gs, g_tls);
+        ret = g_vmexit.initialize(g_gs, g_tls, g_sys, g_intrinsic, g_vp_pool, g_vps_pool);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
