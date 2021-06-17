@@ -46,7 +46,7 @@ namespace example
                 gs_t gs{};
                 tls_t tls{};
                 bsl::ut_when{} = [&vps_pool, &gs, &tls]() {
-                    tls.test_ret = errc_fail_initialize;
+                    tls.test_ret = bsl::errc_failure;
                     bsl::ut_then{} = [&vps_pool, &gs, &tls]() {
                         bsl::ut_check(!vps_pool.initialize(gs, tls));
                     };
@@ -97,13 +97,11 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::safe_uint16 vpid{};
-                bsl::safe_uint16 ppid{};
-                bsl::ut_when{} = [&vps_pool, &gs, &tls, &sys, &intrinsic, &vpid, &ppid]() {
+                bsl::ut_when{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
                     bsl::ut_required_step(vps_pool.initialize(gs, tls));
-                    sys.set_bf_vps_op_create_vps(vpid, ppid, bsl::safe_uint16::zero(true));
-                    bsl::ut_then{} = [&vps_pool, &gs, &tls, &sys, &intrinsic, &vpid, &ppid]() {
-                        bsl::ut_check(!vps_pool.allocate(gs, tls, sys, intrinsic, vpid, ppid));
+                    sys.set_bf_vps_op_create_vps({}, {}, bsl::safe_uint16::zero(true));
+                    bsl::ut_then{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
+                        bsl::ut_check(!vps_pool.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
             };
@@ -116,13 +114,11 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::safe_uint16 vpid{};
-                bsl::safe_uint16 ppid{};
-                bsl::ut_when{} = [&vps_pool, &gs, &tls, &sys, &intrinsic, &vpid, &ppid]() {
+                bsl::ut_when{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
                     bsl::ut_required_step(vps_pool.initialize(gs, tls));
-                    sys.set_bf_vps_op_create_vps(vpid, ppid, syscall::BF_INVALID_ID);
-                    bsl::ut_then{} = [&vps_pool, &gs, &tls, &sys, &intrinsic, &vpid, &ppid]() {
-                        bsl::ut_check(!vps_pool.allocate(gs, tls, sys, intrinsic, vpid, ppid));
+                    sys.set_bf_vps_op_create_vps({}, {}, syscall::BF_INVALID_ID);
+                    bsl::ut_then{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
+                        bsl::ut_check(!vps_pool.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
             };
@@ -135,13 +131,11 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::safe_uint16 vpid{};
-                bsl::safe_uint16 ppid{};
-                bsl::ut_when{} = [&vps_pool, &gs, &tls, &sys, &intrinsic, &vpid, &ppid]() {
+                bsl::ut_when{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
                     bsl::ut_required_step(vps_pool.initialize(gs, tls));
-                    tls.test_ret = errc_fail_allocate;
-                    bsl::ut_then{} = [&vps_pool, &gs, &tls, &sys, &intrinsic, &vpid, &ppid]() {
-                        bsl::ut_check(!vps_pool.allocate(gs, tls, sys, intrinsic, vpid, ppid));
+                    tls.test_ret = bsl::errc_failure;
+                    bsl::ut_then{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
+                        bsl::ut_check(!vps_pool.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
             };
@@ -154,12 +148,10 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::safe_uint16 vpid{};
-                bsl::safe_uint16 ppid{};
-                bsl::ut_when{} = [&vps_pool, &gs, &tls, &sys, &intrinsic, &vpid, &ppid]() {
+                bsl::ut_when{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
                     bsl::ut_required_step(vps_pool.initialize(gs, tls));
-                    bsl::ut_then{} = [&vps_pool, &gs, &tls, &sys, &intrinsic, &vpid, &ppid]() {
-                        bsl::ut_check(vps_pool.allocate(gs, tls, sys, intrinsic, vpid, ppid));
+                    bsl::ut_then{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
+                        bsl::ut_check(vps_pool.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
             };

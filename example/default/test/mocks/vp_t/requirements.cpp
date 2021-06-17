@@ -22,7 +22,7 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include "../../../src/vp_pool_t.hpp"
+#include "../../../mocks/vp_t.hpp"
 
 #include <bsl/discard.hpp>
 #include <bsl/ut.hpp>
@@ -34,19 +34,19 @@ namespace
     constinit syscall::bf_syscall_t g_sys{};
     constinit example::intrinsic_t g_intrinsic{};
 
-    constinit example::vp_pool_t const verify_constinit{};
+    constinit example::vp_t const verify_constinit{};
 
     // NOLINTNEXTLINE(bsl-user-defined-type-names-match-header-name)
     class fixture_t final
     {
-        example::vp_pool_t vp_pool{};
+        example::vp_t vp{};
 
     public:
         [[nodiscard]] constexpr auto
         test_member_const() const noexcept -> bool
         {
             /// NOTE:
-            /// - vp_pool_t does not contain const member functions
+            /// - vp_t does not contain const member functions
             ///
 
             return true;
@@ -55,10 +55,10 @@ namespace
         [[nodiscard]] constexpr auto
         test_member_nonconst() noexcept -> bool
         {
-            bsl::discard(example::vp_pool_t{});
-            bsl::discard(vp_pool.initialize(g_gs, g_tls));
-            vp_pool.release(g_gs, g_tls);
-            bsl::discard(vp_pool.allocate(g_gs, g_tls, g_sys, g_intrinsic, {}, {}));
+            bsl::discard(example::vp_t{});
+            bsl::discard(vp.initialize(g_gs, g_tls, {}));
+            vp.release(g_gs, g_tls);
+            bsl::discard(vp.allocate(g_gs, g_tls, g_sys, g_intrinsic, {}, {}));
 
             return true;
         }
@@ -84,12 +84,12 @@ main() noexcept -> bsl::exit_code
 
     bsl::ut_scenario{"verify noexcept"} = []() {
         bsl::ut_given{} = []() {
-            example::vp_pool_t vp_pool{};
+            example::vp_t vp{};
             bsl::ut_then{} = []() {
-                static_assert(noexcept(example::vp_pool_t{}));
-                static_assert(noexcept(vp_pool.initialize(g_gs, g_tls)));
-                static_assert(noexcept(vp_pool.release(g_gs, g_tls)));
-                static_assert(noexcept(vp_pool.allocate(g_gs, g_tls, g_sys, g_intrinsic, {}, {})));
+                static_assert(noexcept(example::vp_t{}));
+                static_assert(noexcept(vp.initialize(g_gs, g_tls, {})));
+                static_assert(noexcept(vp.release(g_gs, g_tls)));
+                static_assert(noexcept(vp.allocate(g_gs, g_tls, g_sys, g_intrinsic, {}, {})));
             };
         };
     };

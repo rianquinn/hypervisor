@@ -68,6 +68,7 @@ list(APPEND INCLUDES
 list(APPEND SYSTEM_INCLUDES
     ${CMAKE_SOURCE_DIR}/syscall/include/cpp
     ${CMAKE_SOURCE_DIR}/syscall/mocks/cpp
+    ${CMAKE_SOURCE_DIR}/loader/include/interface/cpp
 )
 
 list(APPEND COMMON_INCLUDES
@@ -79,51 +80,55 @@ list(APPEND COMMON_SYSTEM_INCLUDES
 )
 
 list(APPEND X64_INCLUDES
-    ${INCLUDES}
     ${CMAKE_CURRENT_LIST_DIR}/../include/x64
     ${CMAKE_CURRENT_LIST_DIR}/../mocks/x64
+    ${INCLUDES}
 )
 
 list(APPEND X64_SYSTEM_INCLUDES
-    ${SYSTEM_INCLUDES}
     ${CMAKE_SOURCE_DIR}/syscall/include/cpp/x64
     ${CMAKE_SOURCE_DIR}/syscall/mocks/cpp/x64
+    ${CMAKE_SOURCE_DIR}/loader/include/interface/cpp/x64
+    ${SYSTEM_INCLUDES}
 )
 
 list(APPEND AMD_INCLUDES
-    ${X64_INCLUDES}
     ${CMAKE_CURRENT_LIST_DIR}/../include/x64/amd
     ${CMAKE_CURRENT_LIST_DIR}/../mocks/x64/amd
+    ${X64_INCLUDES}
 )
 
 list(APPEND AMD_SYSTEM_INCLUDES
-    ${X64_SYSTEM_INCLUDES}
     ${CMAKE_SOURCE_DIR}/syscall/include/cpp/x64/amd
     ${CMAKE_SOURCE_DIR}/syscall/mocks/cpp/x64/amd
+    ${CMAKE_SOURCE_DIR}/loader/include/interface/cpp/x64/amd
+    ${X64_SYSTEM_INCLUDES}
 )
 
 list(APPEND INTEL_INCLUDES
-    ${X64_INCLUDES}
     ${CMAKE_CURRENT_LIST_DIR}/../include/x64/intel
     ${CMAKE_CURRENT_LIST_DIR}/../mocks/x64/intel
+    ${X64_INCLUDES}
 )
 
 list(APPEND INTEL_SYSTEM_INCLUDES
-    ${X64_SYSTEM_INCLUDES}
     ${CMAKE_SOURCE_DIR}/syscall/include/cpp/x64/intel
     ${CMAKE_SOURCE_DIR}/syscall/mocks/cpp/x64/intel
+    ${CMAKE_SOURCE_DIR}/loader/include/interface/cpp/x64/intel
+    ${X64_SYSTEM_INCLUDES}
 )
 
 list(APPEND AARCH64_INCLUDES
-    ${INCLUDES}
     ${CMAKE_CURRENT_LIST_DIR}/../include/arm/aarch64
     ${CMAKE_CURRENT_LIST_DIR}/../mocks/arm/aarch64
+    ${INCLUDES}
 )
 
 list(APPEND AARCH64_SYSTEM_INCLUDES
-    ${SYSTEM_INCLUDES}
     ${CMAKE_SOURCE_DIR}/syscall/include/cpp/arm/aarch64
     ${CMAKE_SOURCE_DIR}/syscall/mocks/cpp/arm/aarch64
+    ${CMAKE_SOURCE_DIR}/loader/include/interface/cpp/arm/aarch64
+    ${SYSTEM_INCLUDES}
 )
 
 # ------------------------------------------------------------------------------
@@ -144,11 +149,31 @@ list(APPEND AARCH64_SYSTEM_INCLUDES
 # - See the individual CMakeLists.txt for each test for more information.
 #
 
-list(APPEND COMMON_DEFINES
+list(APPEND DEFINES
     HYPERVISOR_PAGE_SIZE=0x1000
     HYPERVISOR_MAX_VPS=2
     HYPERVISOR_MAX_VPSS=2
     HYPERVISOR_EXT_DIRECT_MAP_ADDR=0x0000600000000000
+)
+
+list(APPEND COMMON_DEFINES
+    ${DEFINES}
+)
+
+list(APPEND X64_DEFINES
+    ${DEFINES}
+)
+
+list(APPEND AMD_DEFINES
+    ${X64_DEFINES}
+)
+
+list(APPEND INTEL_DEFINES
+    ${X64_DEFINES}
+)
+
+list(APPEND AARCH64_DEFINES
+    ${DEFINES}
 )
 
 # ------------------------------------------------------------------------------
@@ -170,12 +195,29 @@ add_subdirectory(template)
 #   is unit tested during CI which might be running on an Intel based system.
 #
 
-add_subdirectory(mocks/vp_pool_t)
-add_subdirectory(mocks/vp_t)
-add_subdirectory(mocks/vps_pool_t)
+add_subdirectory(mocks/bootstrap_t)
+add_subdirectory(mocks/fail_t)
+add_subdirectory(mocks/intrinsic_t)
+add_subdirectory(mocks/vmexit_t)
+# add_subdirectory(mocks/vp_pool_t)
+# add_subdirectory(mocks/vp_t)
+# add_subdirectory(mocks/vps_pool_t)
+# add_subdirectory(mocks/vps_t)
+add_subdirectory(mocks/x64/intrinsic_cpuid_impl)
+add_subdirectory(mocks/x64/amd/intrinsic_t)
 
-add_subdirectory(src/vp_pool_t)
-add_subdirectory(src/vp_t)
-add_subdirectory(src/vps_pool_t)
+add_subdirectory(src/bootstrap_t)
+add_subdirectory(src/fail_t)
+add_subdirectory(src/main)
+# add_subdirectory(src/vp_pool_t)
+# add_subdirectory(src/vp_t)
+# add_subdirectory(src/vps_pool_t)
+add_subdirectory(src/x64/amd/intrinsic_t)
+# add_subdirectory(src/x64/amd/vps_t)
+add_subdirectory(src/x64/amd/vmexit_t)
 
-add_subdirectory(src/x64/amd/vps_t)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+        add_subdirectory(src/x64/intrinsic_cpuid_impl)
+    endif()
+endif()

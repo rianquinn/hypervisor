@@ -34,18 +34,18 @@ namespace syscall
     // -------------------------------------------------------------------------
 
     /// @brief stores the answer to all things (in 8 bits)
-    constexpr bf_uint8_t g_answer8{bsl::to_u8(42)};
+    constexpr auto g_answer8{bsl::to_u8(42)};
     /// @brief stores the answer to all things (in 16 bits)
-    constexpr bf_uint16_t g_answer16{bsl::to_u16(42)};
+    constexpr auto g_answer16{bsl::to_u16(42)};
     /// @brief stores the answer to all things (in 32 bits)
-    constexpr bf_uint32_t g_answer32{bsl::to_u32(42)};
+    constexpr auto g_answer32{bsl::to_u32(42)};
     /// @brief stores the answer to all things (in 64 bits)
-    constexpr bf_uint64_t g_answer64{bsl::to_u64(42)};
+    constexpr auto g_answer64{bsl::to_u64(42)};
 
     /// @brief stores a bad address
-    constexpr bf_uint64_t g_bad_addr{bsl::to_u64(0xFFFFFFFFFFFFFFFFU)};
+    constexpr auto g_bad_addr{bsl::to_u64(0xFFFFFFFFFFFFFFFFU)};
     /// @brief stores a bad version
-    constexpr bf_uint32_t g_bad_version{bsl::to_u32(0x80000000U)};
+    constexpr auto g_bad_version{bsl::to_u32(0x80000000U)};
 
     // -------------------------------------------------------------------------
     // tests

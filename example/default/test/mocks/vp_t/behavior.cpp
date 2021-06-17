@@ -40,49 +40,13 @@ namespace example
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"initialize twice fails"} = []() {
-            bsl::ut_given{} = []() {
-                vp_t vp{};
-                gs_t gs{};
-                tls_t tls{};
-                bsl::ut_then{} = [&vp, &gs, &tls]() {
-                    bsl::ut_required_step(vp.initialize(gs, tls, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls]() {
-                        bsl::ut_check(!vp.initialize(gs, tls, {}));
-                    };
-                };
-            };
-        };
-
-        bsl::ut_scenario{"initialize invalid id #1"} = []() {
-            bsl::ut_given{} = []() {
-                vp_t vp{};
-                gs_t gs{};
-                tls_t tls{};
-                bsl::ut_then{} = [&vp, &gs, &tls]() {
-                    bsl::ut_check(!vp.initialize(gs, tls, bsl::safe_uint16::zero(true)));
-                };
-            };
-        };
-
-        bsl::ut_scenario{"initialize invalid id #2"} = []() {
-            bsl::ut_given{} = []() {
-                vp_t vp{};
-                gs_t gs{};
-                tls_t tls{};
-                bsl::ut_then{} = [&vp, &gs, &tls]() {
-                    bsl::ut_check(!vp.initialize(gs, tls, syscall::BF_INVALID_ID));
-                };
-            };
-        };
-
         bsl::ut_scenario{"initialize fails"} = []() {
             bsl::ut_given{} = []() {
                 vp_t vp{};
                 gs_t gs{};
                 tls_t tls{};
                 bsl::ut_when{} = [&vp, &gs, &tls]() {
-                    tls.test_ret = errc_fail_initialize;
+                    tls.test_ret = bsl::errc_failure;
                     bsl::ut_then{} = [&vp, &gs, &tls]() {
                         bsl::ut_check(!vp.initialize(gs, tls, {}));
                     };
@@ -101,121 +65,13 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"release executes without initialize"} = []() {
+        bsl::ut_scenario{"release executes"} = []() {
             bsl::ut_given{} = []() {
                 vp_t vp{};
                 gs_t gs{};
                 tls_t tls{};
                 bsl::ut_then{} = [&vp, &gs, &tls]() {
                     vp.release(gs, tls);
-                };
-            };
-        };
-
-        bsl::ut_scenario{"release executes with initialize"} = []() {
-            bsl::ut_given{} = []() {
-                vp_t vp{};
-                gs_t gs{};
-                tls_t tls{};
-                bsl::ut_when{} = [&vp, &gs, &tls]() {
-                    bsl::ut_required_step(vp.initialize(gs, tls, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls]() {
-                        vp.release(gs, tls);
-                    };
-                };
-            };
-        };
-
-        bsl::ut_scenario{"allocate not initialized"} = []() {
-            bsl::ut_given{} = []() {
-                vp_t vp{};
-                gs_t gs{};
-                tls_t tls{};
-                syscall::bf_syscall_t sys{};
-                intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                    bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, {}, {}));
-                };
-            };
-        };
-
-        bsl::ut_scenario{"allocate already allocated"} = []() {
-            bsl::ut_given{} = []() {
-                vp_t vp{};
-                gs_t gs{};
-                tls_t tls{};
-                syscall::bf_syscall_t sys{};
-                intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                    bsl::ut_required_step(vp.initialize(gs, tls, {}));
-                    bsl::ut_required_step(vp.allocate(gs, tls, sys, intrinsic, {}, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, {}, {}));
-                    };
-                };
-            };
-        };
-
-        bsl::ut_scenario{"allocate invalid vmid #1"} = []() {
-            bsl::ut_given{} = []() {
-                vp_t vp{};
-                gs_t gs{};
-                tls_t tls{};
-                syscall::bf_syscall_t sys{};
-                intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                    bsl::ut_required_step(vp.initialize(gs, tls, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, bsl::safe_uint16::zero(true), {}));
-                    };
-                };
-            };
-        };
-
-        bsl::ut_scenario{"allocate invalid vmid #2"} = []() {
-            bsl::ut_given{} = []() {
-                vp_t vp{};
-                gs_t gs{};
-                tls_t tls{};
-                syscall::bf_syscall_t sys{};
-                intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                    bsl::ut_required_step(vp.initialize(gs, tls, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, syscall::BF_INVALID_ID, {}));
-                    };
-                };
-            };
-        };
-
-        bsl::ut_scenario{"allocate invalid ppid #1"} = []() {
-            bsl::ut_given{} = []() {
-                vp_t vp{};
-                gs_t gs{};
-                tls_t tls{};
-                syscall::bf_syscall_t sys{};
-                intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                    bsl::ut_required_step(vp.initialize(gs, tls, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, {}, bsl::safe_uint16::zero(true)));
-                    };
-                };
-            };
-        };
-
-        bsl::ut_scenario{"allocate invalid ppid #2"} = []() {
-            bsl::ut_given{} = []() {
-                vp_t vp{};
-                gs_t gs{};
-                tls_t tls{};
-                syscall::bf_syscall_t sys{};
-                intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                    bsl::ut_required_step(vp.initialize(gs, tls, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, {}, syscall::BF_INVALID_ID));
-                    };
                 };
             };
         };
@@ -228,8 +84,7 @@ namespace example
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
                 bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                    bsl::ut_required_step(vp.initialize(gs, tls, {}));
-                    tls.test_ret = errc_fail_allocate;
+                    tls.test_ret = bsl::errc_failure;
                     bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
                         bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
@@ -244,11 +99,8 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                    bsl::ut_required_step(vp.initialize(gs, tls, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(vp.allocate(gs, tls, sys, intrinsic, {}, {}));
-                    };
+                bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_check(vp.allocate(gs, tls, sys, intrinsic, {}, {}));
                 };
             };
         };

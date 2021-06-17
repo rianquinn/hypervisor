@@ -279,7 +279,7 @@ namespace example
             ///   support. At a minimum, we need to handle CPUID on AMD.
             ///
 
-            constexpr bsl::safe_uintmax exit_reason_cpuid{bsl::to_umax(0x72U)};
+            constexpr auto exit_reason_cpuid{bsl::to_umax(0x72U)};
 
             /// NOTE:
             /// - Dispatch and handle each VMExit.

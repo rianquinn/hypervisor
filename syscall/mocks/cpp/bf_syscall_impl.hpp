@@ -71,35 +71,35 @@ namespace syscall
     // -------------------------------------------------------------------------
 
     /// @brief stores the data to return for an API
-    constinit bsl::unordered_map<std::string, bf_uint64_t> g_data{};
+    constinit inline bsl::unordered_map<std::string, bf_uint64_t> g_data{};    // GRCOV_EXCLUDE_BR
     /// @brief stores the error code to return for an API
-    constinit bsl::unordered_map<std::string, bf_status_t> g_errc{};
+    constinit inline bsl::unordered_map<std::string, bf_status_t> g_errc{};    // GRCOV_EXCLUDE_BR
 
     /// @brief stores whether or not bf_control_op_exit_impl was executed
-    constinit bool g_bf_control_op_exit_impl_executed{};
+    constinit inline bool g_bf_control_op_exit_impl_executed{};
     /// @brief stores whether or not bf_control_op_wait_impl was executed
-    constinit bool g_bf_control_op_wait_impl_executed{};
+    constinit inline bool g_bf_control_op_wait_impl_executed{};
 
     /// @brief stores whether or not bf_debug_op_out_impl was executed
-    constinit bool g_bf_debug_op_out_impl_executed{};
+    constinit inline bool g_bf_debug_op_out_impl_executed{};
     /// @brief stores whether or not bf_debug_op_dump_vm_impl was executed
-    constinit bool g_bf_debug_op_dump_vm_impl_executed{};
+    constinit inline bool g_bf_debug_op_dump_vm_impl_executed{};
     /// @brief stores whether or not bf_debug_op_dump_vp_impl was executed
-    constinit bool g_bf_debug_op_dump_vp_impl_executed{};
+    constinit inline bool g_bf_debug_op_dump_vp_impl_executed{};
     /// @brief stores whether or not bf_debug_op_dump_vps_impl was executed
-    constinit bool g_bf_debug_op_dump_vps_impl_executed{};
+    constinit inline bool g_bf_debug_op_dump_vps_impl_executed{};
     /// @brief stores whether or not bf_debug_op_dump_vmexit_log_impl was executed
-    constinit bool g_bf_debug_op_dump_vmexit_log_impl_executed{};
+    constinit inline bool g_bf_debug_op_dump_vmexit_log_impl_executed{};
     /// @brief stores whether or not bf_debug_op_write_c_impl was executed
-    constinit bool g_bf_debug_op_write_c_impl_executed{};
+    constinit inline bool g_bf_debug_op_write_c_impl_executed{};
     /// @brief stores whether or not bf_debug_op_write_str_impl was executed
-    constinit bool g_bf_debug_op_write_str_impl_executed{};
+    constinit inline bool g_bf_debug_op_write_str_impl_executed{};
     /// @brief stores whether or not bf_debug_op_dump_ext_impl was executed
-    constinit bool g_bf_debug_op_dump_ext_impl_executed{};
+    constinit inline bool g_bf_debug_op_dump_ext_impl_executed{};
     /// @brief stores whether or not bf_debug_op_dump_page_pool_impl was executed
-    constinit bool g_bf_debug_op_dump_page_pool_impl_executed{};
+    constinit inline bool g_bf_debug_op_dump_page_pool_impl_executed{};
     /// @brief stores whether or not bf_debug_op_dump_huge_pool_impl was executed
-    constinit bool g_bf_debug_op_dump_huge_pool_impl_executed{};
+    constinit inline bool g_bf_debug_op_dump_huge_pool_impl_executed{};
 
     // -------------------------------------------------------------------------
     // dummy callbacks

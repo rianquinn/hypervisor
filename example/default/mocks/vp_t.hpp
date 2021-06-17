@@ -25,7 +25,6 @@
 #ifndef MOCKS_VP_T_HPP
 #define MOCKS_VP_T_HPP
 
-#include <bf_constants.hpp>
 #include <bf_syscall_t.hpp>
 #include <gs_t.hpp>
 #include <intrinsic_t.hpp>
@@ -44,13 +43,6 @@ namespace example
     ///
     class vp_t final
     {
-        /// @brief stores the ID associated with this vp_t
-        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
-        /// @brief stores the ID of the VM this vp_t is assigned to
-        bsl::safe_uint16 m_assigned_vmid{syscall::BF_INVALID_ID};
-        /// @brief stores the ID of the PP this vp_t is assigned to
-        bsl::safe_uint16 m_assigned_ppid{syscall::BF_INVALID_ID};
-
     public:
         /// <!-- description -->
         ///   @brief Initializes this vp_t
@@ -58,68 +50,24 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///   @param i the ID for this vp_t
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(gs_t &gs, tls_t &tls, bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        initialize(gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic, bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
+            bsl::discard(i);
 
-            /// NOTE:
-            /// - All mocks should behave the same as the original to ensure
-            ///   that unit testing can find weird issues. Some functions
-            ///   that the original might call cannot be called, which is
-            ///   where the tls.test_ret comes into play. Here, we can set
-            ///   specific error codes that when seen by the mock, will cause
-            ///   the mock to return pass/fail for a specific thing that it
-            ///   cannot mimic outright.
-            /// - Most of the original code will use bsl::unlikely_assert
-            ///   where checks are not expected to be an issue at runtime,
-            ///   and all of these should be changed to bsl::unlikely for the
-            ///   mock to ensure that at all times, these are being checked.
-            ///
-
-            if (bsl::unlikely(m_id)) {
-                bsl::error() << "vp_t already initialized\n" << bsl::here();
-                return bsl::errc_precondition;
-            }
-
-            if (bsl::unlikely(!i)) {
-                bsl::error() << "invalid id\n" << bsl::here();
-                return bsl::errc_invalid_argument;
-            }
-
-            if (bsl::unlikely(syscall::BF_INVALID_ID == i)) {
-                bsl::error() << "id "                                                  // --
-                             << bsl::hex(i)                                            // --
-                             << " is invalid and cannot be used for initialization"    // --
-                             << bsl::endl                                              // --
-                             << bsl::here();                                           // --
-
-                return bsl::errc_invalid_argument;
-            }
-
-            /// NOTE:
-            /// - This is an example of providing an error case that the
-            ///   original code does not have. Any code that is using this
-            ///   will have no idea how this function is implemented, and
-            ///   at any time it might return an error. This ensure that
-            ///   this is handled.
-            ///
-
-            if (tls.test_ret == errc_fail_initialize) {
-                return bsl::errc_failure;
-            }
-
-            /// NOTE:
-            /// - Finally, store the ID assigned to this vp_t just like the
-            ///   original does.
-            ///
-
-            m_id = i;
-            return bsl::errc_success;
+            return tls.test_ret;
         }
 
         /// <!-- description -->
@@ -128,21 +76,19 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///
         constexpr void
-        release(gs_t &gs, tls_t &tls) &noexcept
+        release(gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic) &noexcept
         {
             bsl::discard(gs);
             bsl::discard(tls);
-
-            /// NOTE:
-            /// - Release functions are usually only needed in the event of
-            ///   an error, or during unit testing.
-            ///
-
-            m_assigned_ppid = syscall::BF_INVALID_ID;
-            m_assigned_vmid = syscall::BF_INVALID_ID;
-            m_id = bsl::safe_uint16::zero(true);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
         }
 
         /// <!-- description -->
@@ -168,90 +114,12 @@ namespace example
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
-            bsl::discard(tls);
             bsl::discard(sys);
             bsl::discard(intrinsic);
+            bsl::discard(vmid);
+            bsl::discard(ppid);
 
-            /// NOTE:
-            /// - All mocks should behave the same as the original to ensure
-            ///   that unit testing can find weird issues. Some functions
-            ///   that the original might call cannot be called, which is
-            ///   where the tls.test_ret comes into play. Here, we can set
-            ///   specific error codes that when seen by the mock, will cause
-            ///   the mock to return pass/fail for a specific thing that it
-            ///   cannot mimic outright.
-            /// - Most of the original code will use bsl::unlikely_assert
-            ///   where checks are not expected to be an issue at runtime,
-            ///   and all of these should be changed to bsl::unlikely for the
-            ///   mock to ensure that at all times, these are being checked.
-            ///
-
-            if (bsl::unlikely(!m_id)) {
-                bsl::error() << "vp_t not initialized\n" << bsl::here();
-                return bsl::errc_precondition;
-            }
-
-            if (bsl::unlikely(syscall::BF_INVALID_ID != m_assigned_ppid)) {
-                bsl::error() << "vp "                                            // --
-                             << bsl::hex(m_id)                                   // --
-                             << " is already allocated and cannot be created"    // --
-                             << bsl::endl                                        // --
-                             << bsl::here();                                     // --
-
-                return bsl::errc_precondition;
-            }
-
-            if (bsl::unlikely(!vmid)) {
-                bsl::error() << "invalid vmid\n" << bsl::here();
-                return bsl::errc_invalid_argument;
-            }
-
-            if (bsl::unlikely(syscall::BF_INVALID_ID == vmid)) {
-                bsl::error() << "vm "                                              // --
-                             << bsl::hex(vmid)                                     // --
-                             << " is invalid and a vp cannot be assigned to it"    // --
-                             << bsl::endl                                          // --
-                             << bsl::here();                                       // --
-
-                return bsl::errc_invalid_argument;
-            }
-
-            if (bsl::unlikely(!ppid)) {
-                bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::errc_invalid_argument;
-            }
-
-            if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
-                bsl::error() << "pp "                                              // --
-                             << bsl::hex(ppid)                                     // --
-                             << " is invalid and a vp cannot be assigned to it"    // --
-                             << bsl::endl                                          // --
-                             << bsl::here();                                       // --
-
-                return bsl::errc_invalid_argument;
-            }
-
-            /// NOTE:
-            /// - This is an example of providing an error case that the
-            ///   original code does not have. Any code that is using this
-            ///   will have no idea how this function is implemented, and
-            ///   at any time it might return an error. This ensure that
-            ///   this is handled.
-            ///
-
-            if (tls.test_ret == errc_fail_allocate) {
-                return bsl::errc_failure;
-            }
-
-            /// NOTE:
-            /// - Finally, store the IDs of the VM and PP that this vp_t is
-            ///   assigned to just like the original.
-            ///
-
-            m_assigned_vmid = vmid;
-            m_assigned_ppid = ppid;
-
-            return bsl::errc_success;
+            return tls.test_ret;
         }
     };
 }

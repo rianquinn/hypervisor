@@ -31,9 +31,7 @@
 #include <tls_t.hpp>
 #include <vmexit_t.hpp>
 #include <vp_pool_t.hpp>
-#include <vp_t.hpp>
 #include <vps_pool_t.hpp>
-#include <vps_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -75,24 +73,24 @@ namespace example
     ///
 
     /// @brief stores the bf_syscall_t that this code will use
-    constinit static syscall::bf_syscall_t g_sys{};
+    constinit syscall::bf_syscall_t g_sys{};
     /// @brief stores the intrinsic_t that this code will use
-    constinit static intrinsic_t g_intrinsic{};
+    constinit intrinsic_t g_intrinsic{};
 
     /// @brief stores the pool of VPs that we will use
-    constinit static vp_pool_t g_vp_pool{};
+    constinit vp_pool_t g_vp_pool{};
     /// @brief stores the pool of VPSs that we will use
-    constinit static vps_pool_t g_vps_pool{};
+    constinit vps_pool_t g_vps_pool{};
 
     /// @brief stores the bootstrap_t that this code will use
-    constinit static bootstrap_t g_bootstrap{};
+    constinit bootstrap_t g_bootstrap{};
     /// @brief stores the fail_t that this code will use
-    constinit static fail_t g_fail{};
+    constinit fail_t g_fail{};
     /// @brief stores the vmexit_t that this code will use
-    constinit static vmexit_t g_vmexit{};
+    constinit vmexit_t g_vmexit{};
 
     /// @brief stores the Global Storage for this extension
-    constinit static gs_t g_gs{};
+    constinit gs_t g_gs{};
     /// @brief stores the Thread Local Storage for this extension on this PP
     thread_local tls_t g_tls{};
 
@@ -134,53 +132,6 @@ namespace example
         ///   always call one of the "run" ABIs to return back to the
         ///   microkernel when a bootstrap is finished. If this is called, it
         ///   is because the bootstrap handler returned with an error.
-        ///
-
-        return syscall::bf_control_op_exit();
-    }
-
-    /// <!-- description -->
-    ///   @brief Implements the VMExit entry function. This is registered
-    ///     by the main function to execute whenever a VMExit occurs.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param vpsid the ID of the VPS that generated the VMExit
-    ///   @param exit_reason the exit reason associated with the VMExit
-    ///
-    extern "C" void
-    vmexit_entry(
-        syscall::bf_uint16_t::value_type const vpsid,
-        syscall::bf_uint64_t::value_type const exit_reason) noexcept
-    {
-        bsl::errc_type ret{};
-
-        /// NOTE:
-        /// - Call into the vmexit handler. This entry point serves as a
-        ///   trampoline between C and C++. Specifically, the microkernel
-        ///   cannot call a member function directly, and can only call
-        ///   a C style function.
-        ///
-
-        ret = g_vmexit.dispatch(    // --
-            g_gs,                   // --
-            g_tls,                  // --
-            g_sys,                  // --
-            g_intrinsic,            // --
-            g_vp_pool,              // --
-            g_vps_pool,             // --
-            vpsid,                  // --
-            exit_reason);
-
-        if (bsl::unlikely_assert(!ret)) {
-            bsl::print<bsl::V>() << bsl::here();
-            return syscall::bf_control_op_exit();
-        }
-
-        /// NOTE:
-        /// - This code should never be reached. The VMExit handler should
-        ///   always call one of the "run" ABIs to return back to the
-        ///   microkernel when a VMExit is finished. If this is called, it
-        ///   is because the VMExit handler returned with an error.
         ///
 
         return syscall::bf_control_op_exit();
@@ -234,6 +185,53 @@ namespace example
     }
 
     /// <!-- description -->
+    ///   @brief Implements the VMExit entry function. This is registered
+    ///     by the main function to execute whenever a VMExit occurs.
+    ///
+    /// <!-- inputs/outputs -->
+    ///   @param vpsid the ID of the VPS that generated the VMExit
+    ///   @param exit_reason the exit reason associated with the VMExit
+    ///
+    extern "C" void
+    vmexit_entry(
+        syscall::bf_uint16_t::value_type const vpsid,
+        syscall::bf_uint64_t::value_type const exit_reason) noexcept
+    {
+        bsl::errc_type ret{};
+
+        /// NOTE:
+        /// - Call into the vmexit handler. This entry point serves as a
+        ///   trampoline between C and C++. Specifically, the microkernel
+        ///   cannot call a member function directly, and can only call
+        ///   a C style function.
+        ///
+
+        ret = g_vmexit.dispatch(    // --
+            g_gs,                   // --
+            g_tls,                  // --
+            g_sys,                  // --
+            g_intrinsic,            // --
+            g_vp_pool,              // --
+            g_vps_pool,             // --
+            vpsid,                  // --
+            exit_reason);
+
+        if (bsl::unlikely_assert(!ret)) {
+            bsl::print<bsl::V>() << bsl::here();
+            return syscall::bf_control_op_exit();
+        }
+
+        /// NOTE:
+        /// - This code should never be reached. The VMExit handler should
+        ///   always call one of the "run" ABIs to return back to the
+        ///   microkernel when a VMExit is finished. If this is called, it
+        ///   is because the VMExit handler returned with an error.
+        ///
+
+        return syscall::bf_control_op_exit();
+    }
+
+    /// <!-- description -->
     ///   @brief Implements the main entry function for this example
     ///
     /// <!-- inputs/outputs -->
@@ -276,7 +274,7 @@ namespace example
         ///   their IDs so that they can be allocated.
         ///
 
-        ret = g_vp_pool.initialize(g_gs, g_tls);
+        ret = g_vp_pool.initialize(g_gs, g_tls, g_sys, g_intrinsic);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();
@@ -287,7 +285,7 @@ namespace example
         ///   their IDs so that they can be allocated.
         ///
 
-        ret = g_vps_pool.initialize(g_gs, g_tls);
+        ret = g_vps_pool.initialize(g_gs, g_tls, g_sys, g_intrinsic);
         if (bsl::unlikely_assert(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return syscall::bf_control_op_exit();

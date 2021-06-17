@@ -25,8 +25,7 @@
 #ifndef MOCKS_TLS_T_HPP
 #define MOCKS_TLS_T_HPP
 
-#include <errc_types.hpp>
-#include <bsl/safe_integral.hpp>
+#include <bsl/errc_type.hpp>
 
 namespace example
 {
@@ -39,10 +38,8 @@ namespace example
     ///
     struct tls_t final
     {
-        /// @brief stores the return value for a test
+        /// @brief tells certain mocks when to fail
         bsl::errc_type test_ret;
-        /// @brief stores the return value for a test
-        bsl::safe_uint16 test_ret_16bit;
     };
 }
 

@@ -39,7 +39,8 @@ namespace mk
     /// <!-- description -->
     ///   @brief Defines a mock of the ext_main_entry function
     ///
-    extern "C" void ext_main_entry() noexcept
+    extern "C" void
+    ext_main_entry() noexcept
     {
         g_ext_main_entry_executed = true;
     }
@@ -47,7 +48,8 @@ namespace mk
     /// <!-- description -->
     ///   @brief Defines a mock of the bf_control_op_exit_impl function
     ///
-    extern "C" void bf_control_op_exit_impl() noexcept
+    extern "C" void
+    bf_control_op_exit_impl() noexcept
     {
         g_bf_control_op_exit_impl_executed = true;
     }

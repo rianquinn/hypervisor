@@ -31,7 +31,6 @@
 #include <tls_t.hpp>
 #include <vp_pool_t.hpp>
 #include <vps_pool_t.hpp>
-#include <errc_types.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
@@ -46,6 +45,11 @@ namespace example
     ///
     class fail_t final
     {
+        /// @brief stores the return value for initialize
+        bsl::errc_type m_initialize{};
+        /// @brief stores the return value for dispatch
+        bsl::errc_type m_dispatch{};
+
     public:
         /// <!-- description -->
         ///   @brief Initializes this fail_t.
@@ -56,24 +60,27 @@ namespace example
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] static constexpr auto
-        initialize(gs_t &gs, tls_t &tls) noexcept -> bsl::errc_type
+        [[nodiscard]] constexpr auto
+        initialize(gs_t &gs, tls_t &tls) &noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
+            bsl::discard(tls);
 
-            /// NOTE:
-            /// - This is an example of providing an error case that the
-            ///   original code does not have. Any code that is using this
-            ///   will have no idea how this function is implemented, and
-            ///   at any time it might return an error. This ensure that
-            ///   this is handled.
-            ///
+            return m_initialize;
+        }
 
-            if (tls.test_ret == errc_fail_initialize) {
-                return bsl::errc_failure;
-            }
-
-            return bsl::errc_success;
+        /// <!-- description -->
+        ///   @brief Sets the return value of initialize.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     initialize
+        ///
+        constexpr void
+        set_initialize(bsl::errc_type const &errc) &noexcept
+        {
+            m_initialize = errc;
         }
 
         /// <!-- description -->
@@ -106,7 +113,7 @@ namespace example
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] static constexpr auto
+        [[nodiscard]] constexpr auto
         dispatch(
             gs_t &gs,
             tls_t &tls,
@@ -115,9 +122,10 @@ namespace example
             vp_pool_t &vp_pool,
             vps_pool_t &vps_pool,
             bsl::safe_uint16 const &vpsid,
-            bsl::safe_uint64 const &fail_reason) noexcept -> bsl::errc_type
+            bsl::safe_uint64 const &fail_reason) &noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
+            bsl::discard(tls);
             bsl::discard(sys);
             bsl::discard(intrinsic);
             bsl::discard(vp_pool);
@@ -125,19 +133,21 @@ namespace example
             bsl::discard(vpsid);
             bsl::discard(fail_reason);
 
-            /// NOTE:
-            /// - This is an example of providing an error case that the
-            ///   original code does not have. Any code that is using this
-            ///   will have no idea how this function is implemented, and
-            ///   at any time it might return an error. This ensure that
-            ///   this is handled.
-            ///
+            return m_dispatch;
+        }
 
-            if (tls.test_ret == errc_fail_dispatch) {
-                return bsl::errc_failure;
-            }
-
-            return bsl::errc_success;
+        /// <!-- description -->
+        ///   @brief Sets the return value of dispatch.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     dispatch
+        ///
+        constexpr void
+        set_dispatch(bsl::errc_type const &errc) &noexcept
+        {
+            m_dispatch = errc;
         }
     };
 }

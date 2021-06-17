@@ -60,11 +60,11 @@ namespace mk
     {
         bsl::ut_scenario{"copy an array of size 1"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                constexpr bsl::safe_uintmax size{bsl::to_umax(1)};
+                constexpr auto size{bsl::to_umax(1)};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::array<bsl::uint8, size.get()> data_src{};
                 bsl::ut_when{} = [&data_dst, &data_src]() {
-                    constexpr bsl::safe_uint8 val{bsl::to_u8(42)};
+                    constexpr auto val{bsl::to_u8(42)};
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
@@ -80,11 +80,11 @@ namespace mk
 
         bsl::ut_scenario{"copy an array of size 15 (unaligned)"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                constexpr bsl::safe_uintmax size{bsl::to_umax(15)};
+                constexpr auto size{bsl::to_umax(15)};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::array<bsl::uint8, size.get()> data_src{};
                 bsl::ut_when{} = [&data_dst, &data_src]() {
-                    constexpr bsl::safe_uint8 val{bsl::to_u8(42)};
+                    constexpr auto val{bsl::to_u8(42)};
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
@@ -100,11 +100,11 @@ namespace mk
 
         bsl::ut_scenario{"copy an array of size 16 (aligned)"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                constexpr bsl::safe_uintmax size{bsl::to_umax(16)};
+                constexpr auto size{bsl::to_umax(16)};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::array<bsl::uint8, size.get()> data_src{};
                 bsl::ut_when{} = [&data_dst, &data_src]() {
-                    constexpr bsl::safe_uint8 val{bsl::to_u8(42)};
+                    constexpr auto val{bsl::to_u8(42)};
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
@@ -120,11 +120,11 @@ namespace mk
 
         bsl::ut_scenario{"copy an array of size 31 (unaligned)"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                constexpr bsl::safe_uintmax size{bsl::to_umax(31)};
+                constexpr auto size{bsl::to_umax(31)};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::array<bsl::uint8, size.get()> data_src{};
                 bsl::ut_when{} = [&data_dst, &data_src]() {
-                    constexpr bsl::safe_uint8 val{bsl::to_u8(42)};
+                    constexpr auto val{bsl::to_u8(42)};
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
@@ -140,11 +140,11 @@ namespace mk
 
         bsl::ut_scenario{"copy an array of size 32 (aligned)"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                constexpr bsl::safe_uintmax size{bsl::to_umax(32)};
+                constexpr auto size{bsl::to_umax(32)};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::array<bsl::uint8, size.get()> data_src{};
                 bsl::ut_when{} = [&data_dst, &data_src]() {
-                    constexpr bsl::safe_uint8 val{bsl::to_u8(42)};
+                    constexpr auto val{bsl::to_u8(42)};
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
@@ -160,11 +160,11 @@ namespace mk
 
         bsl::ut_scenario{"copy an array of size 127 (unaligned)"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                constexpr bsl::safe_uintmax size{bsl::to_umax(127)};
+                constexpr auto size{bsl::to_umax(127)};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::array<bsl::uint8, size.get()> data_src{};
                 bsl::ut_when{} = [&data_dst, &data_src]() {
-                    constexpr bsl::safe_uint8 val{bsl::to_u8(42)};
+                    constexpr auto val{bsl::to_u8(42)};
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
@@ -180,11 +180,11 @@ namespace mk
 
         bsl::ut_scenario{"copy an array of size 128 (aligned)"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                constexpr bsl::safe_uintmax size{bsl::to_umax(128)};
+                constexpr auto size{bsl::to_umax(128)};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::array<bsl::uint8, size.get()> data_src{};
                 bsl::ut_when{} = [&data_dst, &data_src]() {
-                    constexpr bsl::safe_uint8 val{bsl::to_u8(42)};
+                    constexpr auto val{bsl::to_u8(42)};
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
@@ -200,11 +200,11 @@ namespace mk
 
         bsl::ut_scenario{"copy an array of size 0xFFFFF (unaligned)"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                constexpr bsl::safe_uintmax size{bsl::to_umax(0xFFFFF)};
+                constexpr auto size{bsl::to_umax(0xFFFFF)};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::array<bsl::uint8, size.get()> data_src{};
                 bsl::ut_when{} = [&data_dst, &data_src]() {
-                    constexpr bsl::safe_uint8 val{bsl::to_u8(42)};
+                    constexpr auto val{bsl::to_u8(42)};
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }
@@ -220,11 +220,11 @@ namespace mk
 
         bsl::ut_scenario{"copy an array of size 0x100000 (aligned)"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                constexpr bsl::safe_uintmax size{bsl::to_umax(0x100000)};
+                constexpr auto size{bsl::to_umax(0x100000)};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
                 bsl::array<bsl::uint8, size.get()> data_src{};
                 bsl::ut_when{} = [&data_dst, &data_src]() {
-                    constexpr bsl::safe_uint8 val{bsl::to_u8(42)};
+                    constexpr auto val{bsl::to_u8(42)};
                     for (auto const elem : data_src) {
                         *elem.data = val.get();
                     }

@@ -27,9 +27,8 @@
 
 #include <gs_t.hpp>
 #include <tls_t.hpp>
-#include <cpuid_commands.hpp>
-#include <errc_types.hpp>
 
+#include <bsl/convert.hpp>
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
@@ -44,6 +43,17 @@ namespace example
     ///
     class intrinsic_t final
     {
+        /// @brief stores the return value for initialize
+        bsl::errc_type m_initialize{};
+        /// @brief stores the return value for eax with cpuid
+        bsl::safe_uint32 m_eax{};
+        /// @brief stores the return value for ebx with cpuid
+        bsl::safe_uint32 m_ebx{};
+        /// @brief stores the return value for ecx with cpuid
+        bsl::safe_uint32 m_ecx{};
+        /// @brief stores the return value for edx with cpuid
+        bsl::safe_uint32 m_edx{};
+
     public:
         /// <!-- description -->
         ///   @brief Initializes this intrinsic_t.
@@ -54,24 +64,27 @@ namespace example
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] static constexpr auto
-        initialize(gs_t &gs, tls_t &tls) noexcept -> bsl::errc_type
+        [[nodiscard]] constexpr auto
+        initialize(gs_t &gs, tls_t &tls) &noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
+            bsl::discard(tls);
 
-            /// NOTE:
-            /// - This is an example of providing an error case that the
-            ///   original code does not have. Any code that is using this
-            ///   will have no idea how this function is implemented, and
-            ///   at any time it might return an error. This ensure that
-            ///   this is handled.
-            ///
+            return m_initialize;
+        }
 
-            if (tls.test_ret == errc_fail_initialize) {
-                return bsl::errc_failure;
-            }
-
-            return bsl::errc_success;
+        /// <!-- description -->
+        ///   @brief Sets the return value of initialize.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     initialize
+        ///
+        constexpr void
+        set_initialize(bsl::errc_type const &errc) &noexcept
+        {
+            m_initialize = errc;
         }
 
         /// <!-- description -->
@@ -93,53 +106,47 @@ namespace example
         ///     EAX and ECX and returns the results.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param gs the gs_t to use
-        ///   @param tls the tls_t to use
         ///   @param rax the index used by CPUID, returns resulting rax
         ///   @param rbx returns resulting rbx
         ///   @param rcx the subindex used by CPUID, returns the resulting rcx
         ///   @param rdx returns resulting rdx
         ///
-        static constexpr void
+        constexpr void
         cpuid(
-            gs_t &gs,
-            tls_t &tls,
             bsl::safe_uint64 &rax,
             bsl::safe_uint64 &rbx,
             bsl::safe_uint64 &rcx,
-            bsl::safe_uint64 &rdx) noexcept
+            bsl::safe_uint64 &rdx) &noexcept
         {
-            bsl::discard(gs);
             constexpr auto mask{bsl::to_umax(0xFFFFFFFF00000000)};
 
-            if (tls.test_ret == errc_success_stop) {
-                rax = bsl::to_umax(loader::CPUID_COMMAND_EAX);
-                rcx = bsl::to_umax(loader::CPUID_COMMAND_ECX_STOP);
-                return;
-            }
+            rax = ((rax & mask) | bsl::to_umax(m_eax));
+            rbx = ((rbx & mask) | bsl::to_umax(m_ebx));
+            rcx = ((rcx & mask) | bsl::to_umax(m_ecx));
+            rdx = ((rdx & mask) | bsl::to_umax(m_edx));
+        }
 
-            if (tls.test_ret == errc_success_report_on) {
-                rax = bsl::to_umax(loader::CPUID_COMMAND_EAX);
-                rcx = bsl::to_umax(loader::CPUID_COMMAND_ECX_REPORT_ON);
-                return;
-            }
-
-            if (tls.test_ret == errc_success_report_off) {
-                rax = bsl::to_umax(loader::CPUID_COMMAND_EAX);
-                rcx = bsl::to_umax(loader::CPUID_COMMAND_ECX_REPORT_OFF);
-                return;
-            }
-
-            /// NOTE:
-            /// - The following returns all zeros without touching the upper
-            ///   bits as expected from CPUID. The values above are our ABI
-            ///   which does actually touch these bits.
-            ///
-
-            rax &= mask;
-            rbx &= mask;
-            rcx &= mask;
-            rdx &= mask;
+        /// <!-- description -->
+        ///   @brief Sets the return value of cpuid.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param eax the value to return from cpuid for eax
+        ///   @param ebx the value to return from cpuid for ebx
+        ///   @param ecx the value to return from cpuid for ecx
+        ///   @param edx the value to return from cpuid for edx
+        ///
+        constexpr void
+        set_cpuid(
+            bsl::safe_uint32 const &eax,
+            bsl::safe_uint32 const &ebx,
+            bsl::safe_uint32 const &ecx,
+            bsl::safe_uint32 const &edx) &noexcept
+        {
+            m_eax = eax;
+            m_ebx = ebx;
+            m_ecx = ecx;
+            m_edx = edx;
         }
     };
 }

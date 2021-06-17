@@ -27,10 +27,15 @@
 
 #include <bf_constants.hpp>
 #include <bf_syscall_t.hpp>
+#include <gs_t.hpp>
+#include <intrinsic_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
+#include <bsl/touch.hpp>
+#include <bsl/unlikely_assert.hpp>
 
 namespace example
 {
@@ -41,6 +46,9 @@ namespace example
     ///
     class vps_t final
     {
+        /// @brief stores the MSR bitmap used by this vps_t
+        void *m_msr_bitmap{};
+
         /// @brief stores the ID associated with this vps_t
         bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
         /// @brief stores the ID of the VP this vps_t is assigned to
@@ -53,13 +61,25 @@ namespace example
         ///   @brief Initializes this vps_t
         ///
         /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///   @param i the ID for this vps_t
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        initialize(gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic, bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
+
             /// NOTE:
             /// - The following is a pedantic check to make sure we have
             ///   not already initialized ourselves. In larger extensions,
@@ -111,9 +131,23 @@ namespace example
         /// <!-- description -->
         ///   @brief Release the vps_t.
         ///
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
+        ///
         constexpr void
-        release() &noexcept
+        release(gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic) &noexcept
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
+
             /// NOTE:
             /// - Release functions are usually only needed in the event of
             ///   an error, or during unit testing.
@@ -248,6 +282,8 @@ namespace example
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
+
+                bsl::touch();
             }
             else {
 
@@ -261,39 +297,191 @@ namespace example
             }
 
             /// NOTE:
-            /// - Set up ASID. For this simple example, we will use "1", but
-            ///   in most cases you will want to use something based on the
-            ///   VMID that this VPS is assigned to (which is based on which
-            ///   VP the VPS is assigned to, as VPs are assigned to VMs and
-            ///   VPSs are assigned to VPs).
+            /// - Set up VPID
             ///
 
-            constexpr bsl::safe_uint64 guest_asid_idx{bsl::to_u64(0x0058U)};
-            constexpr bsl::safe_uint32 guest_asid_val{bsl::to_u32(0x1U)};
+            constexpr auto vmcs_vpid_idx{bsl::to_umax(0x0000U)};
+            constexpr auto vmcs_vpid_val{bsl::to_u16(0x1)};
 
-            ret = sys.bf_vps_op_write32(m_id, guest_asid_idx, guest_asid_val);
+            ret = sys.bf_vps_op_write16(m_id, vmcs_vpid_idx, vmcs_vpid_val);
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
 
             /// NOTE:
-            /// - Set up intercept controls. On AMD, we need to intercept
-            ///   VMRun, and CPUID if we plan to support reporting and stopping.
+            /// - Set up the VMCS link pointer
             ///
 
-            constexpr bsl::safe_uint64 intercept_instr1_idx{bsl::to_u64(0x000CU)};
-            constexpr bsl::safe_uint32 intercept_instr1_val{bsl::to_u32(0x00040000U)};
-            constexpr bsl::safe_uint64 intercept_instr2_idx{bsl::to_u64(0x0010U)};
-            constexpr bsl::safe_uint32 intercept_instr2_val{bsl::to_u32(0x00000001U)};
+            constexpr auto vmcs_link_ptr_idx{bsl::to_umax(0x2800U)};
+            constexpr auto vmcs_link_ptr_val{bsl::to_umax(0xFFFFFFFFFFFFFFFFU)};
 
-            ret = sys.bf_vps_op_write32(m_id, intercept_instr1_idx, intercept_instr1_val);
+            ret = sys.bf_vps_op_write64(m_id, vmcs_link_ptr_idx, vmcs_link_ptr_val);
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;
             }
 
-            ret = sys.bf_vps_op_write32(m_id, intercept_instr2_idx, intercept_instr2_val);
+            /// NOTE:
+            /// - Set up the VMCS pin based, proc based, exit and entry controls
+            /// - We turn on MSR bitmaps so that we do not trap on MSR reads and
+            ///   writes. If you do not configure this, or you use the bitmap
+            ///   to trap to specific MSR accesses, make sure you keep the VMCS
+            ///   in sync with your MSR mods. Any MSR that is in the VMCS also
+            ///   needs to be written to the VMCS, otherwise, VMEntry/VMExit will
+            ///   replace any values you write.
+            /// - We also turn on secondary controls so that we can turn on VPID,
+            ///   and turn on instructions that the OS is relying on, like
+            ///   RDTSCP. Failure to do this will cause the invalid opcodes to
+            ///   occur.
+            /// - The lambda below performs the MSR conversion of the CTLS
+            ///   registers to determine the bits that must always be set to 1,
+            ///   and the bits that must always be set to 0. This allows us to
+            ///   turn on as much as possible, letting the MSRs decide what is
+            ///   allowed and what is not.
+            /// - Also note that we do not attempt to detect support for the
+            ///   secondary controls. This is because the loader ensures that
+            ///   this support is present as it is a minimum requirement for the
+            ///   project.
+            ///
+
+            constexpr auto vmcs_pinbased_ctls_idx{bsl::to_umax(0x4000U)};
+            constexpr auto vmcs_procbased_ctls_idx{bsl::to_umax(0x4002U)};
+            constexpr auto vmcs_exit_ctls_idx{bsl::to_umax(0x400CU)};
+            constexpr auto vmcs_entry_ctls_idx{bsl::to_umax(0x4012U)};
+            constexpr auto vmcs_procbased_ctls2_idx{bsl::to_umax(0x401EU)};
+
+            constexpr auto ia32_vmx_true_pinbased_ctls{bsl::to_u32(0x48DU)};
+            constexpr auto ia32_vmx_true_procbased_ctls{bsl::to_u32(0x48EU)};
+            constexpr auto ia32_vmx_true_exit_ctls{bsl::to_u32(0x48FU)};
+            constexpr auto ia32_vmx_true_entry_ctls{bsl::to_u32(0x490U)};
+            constexpr auto ia32_vmx_true_procbased_ctls2{bsl::to_u32(0x48BU)};
+
+            bsl::safe_uintmax ctls{};
+
+            auto mask = [](bsl::safe_uintmax const &val) noexcept -> bsl::safe_uint32 {
+                constexpr auto ctls_mask{bsl::to_umax(0x00000000FFFFFFFFU)};
+                constexpr auto ctls_shift{bsl::to_umax(32)};
+                return bsl::to_u32_unsafe((val & ctls_mask) & (val >> ctls_shift));
+            };
+
+            /// NOTE:
+            /// - Configure the pin based controls
+            ///
+
+            ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_pinbased_ctls);
+            if (bsl::unlikely_assert(!ctls)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            ret = sys.bf_vps_op_write32(m_id, vmcs_pinbased_ctls_idx, mask(ctls));
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            /// NOTE:
+            /// - Configure the proc based controls
+            ///
+
+            constexpr auto enable_msr_bitmaps{bsl::to_umax(0x10000000U)};
+            constexpr auto enable_procbased_ctls2{bsl::to_umax(0x80000000U)};
+
+            ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_procbased_ctls);
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            ctls |= enable_msr_bitmaps;
+            ctls |= enable_procbased_ctls2;
+
+            ret = sys.bf_vps_op_write32(m_id, vmcs_procbased_ctls_idx, mask(ctls));
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            /// NOTE:
+            /// - Configure the exit controls
+            ///
+
+            ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_exit_ctls);
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            ret = sys.bf_vps_op_write32(m_id, vmcs_exit_ctls_idx, mask(ctls));
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            /// NOTE:
+            /// - Configure the entry controls
+            ///
+
+            ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_entry_ctls);
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            ret = sys.bf_vps_op_write32(m_id, vmcs_entry_ctls_idx, mask(ctls));
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            /// NOTE:
+            /// - Configure the secondary proc controls.
+            ///
+
+            constexpr auto enable_vpid{bsl::to_umax(0x00000020U)};
+            constexpr auto enable_rdtscp{bsl::to_umax(0x00000008U)};
+            constexpr auto enable_invpcid{bsl::to_umax(0x00001000U)};
+            constexpr auto enable_xsave{bsl::to_umax(0x00100000U)};
+            constexpr auto enable_uwait{bsl::to_umax(0x04000000U)};
+
+            ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_procbased_ctls2);
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            ctls |= enable_vpid;
+            ctls |= enable_rdtscp;
+            ctls |= enable_invpcid;
+            ctls |= enable_xsave;
+            ctls |= enable_uwait;
+
+            ret = sys.bf_vps_op_write32(m_id, vmcs_procbased_ctls2_idx, mask(ctls));
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            /// NOTE:
+            /// - Configure the MSR bitmaps. This ensures that we do not trap
+            ///   on MSR reads and writes. Also note that in most applications,
+            ///   you only need one of these, regardless of the total number of
+            ///   CPUs you are running on.
+            ///
+
+            constexpr auto vmcs_msr_bitmaps{bsl::to_umax(0x2004U)};
+
+            bsl::safe_uintmax msr_bitmap_phys{};
+            if (nullptr == m_msr_bitmap) {
+                m_msr_bitmap = sys.bf_mem_op_alloc_page(msr_bitmap_phys);
+                if (bsl::unlikely_assert(nullptr == m_msr_bitmap)) {
+                    bsl::print<bsl::V>() << bsl::here();
+                    return ret;
+                }
+            }
+
+            ret = sys.bf_vps_op_write64(m_id, vmcs_msr_bitmaps, msr_bitmap_phys);
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;

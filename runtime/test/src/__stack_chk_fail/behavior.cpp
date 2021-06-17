@@ -39,7 +39,8 @@ namespace mk
     /// <!-- description -->
     ///   @brief Defines a mock of the msg_stack_chk_fail function
     ///
-    extern "C" void msg_stack_chk_fail() noexcept
+    extern "C" void
+    msg_stack_chk_fail() noexcept
     {
         g_msg_stack_chk_fail_executed = true;
     }
@@ -47,7 +48,8 @@ namespace mk
     /// <!-- description -->
     ///   @brief Defines a mock of the bf_control_op_exit_impl function
     ///
-    extern "C" void bf_control_op_exit_impl() noexcept
+    extern "C" void
+    bf_control_op_exit_impl() noexcept
     {
         g_bf_control_op_exit_impl_executed = true;
     }

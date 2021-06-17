@@ -53,12 +53,17 @@ namespace example
         ///   @brief Initializes this vmexit_t.
         ///
         /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
-        initialize() &noexcept -> bsl::errc_type
+        [[nodiscard]] static constexpr auto
+        initialize(gs_t &gs, tls_t &tls) noexcept -> bsl::errc_type
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+
             /// NOTE:
             /// - Add initialization code here if needed. Otherwise, this
             ///   function can be removed if it is not needed.
@@ -70,9 +75,16 @@ namespace example
         /// <!-- description -->
         ///   @brief Release the vmexit_t.
         ///
-        constexpr void
-        release() &noexcept
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///
+        static constexpr void
+        release(gs_t &gs, tls_t &tls) noexcept
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+
             /// NOTE:
             /// - Release functions are usually only needed in the event of
             ///   an error, or during unit testing.
@@ -80,19 +92,177 @@ namespace example
         }
 
         /// <!-- description -->
+        ///   @brief Handle NMIs. This is required by Intel.
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
+        ///   @param vp_pool the vp_pool_t to use
+        ///   @param vps_pool the vps_pool_t to use
+        ///   @param vpsid the ID of the VPS that generated the VMExit
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     and friends otherwise
+        ///
+        [[nodiscard]] static constexpr auto
+        handle_nmi(
+            gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic,
+            vp_pool_t &vp_pool,
+            vps_pool_t &vps_pool,
+            bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
+        {
+            bsl::discard(gs);
+            bsl::discard(tls);
+            bsl::discard(intrinsic);
+            bsl::discard(vp_pool);
+            bsl::discard(vps_pool);
+
+            /// NOTE:
+            /// - If we caught an NMI, we need to inject it into the VM. To do
+            ///   this, all we do is enable the NMI window, which will tell us
+            ///   when we can safely inject the NMI.
+            /// - Note that the microkernel will do the same thing. If an NMI
+            ///   fires while the hypevisor is running, it will enable the NMI
+            ///   window, which the extension will see as a VMExit, and must
+            ///   from there, inject the NMI into the appropriate VPS.
+            ///
+
+            constexpr auto vmcs_procbased_ctls_idx{bsl::to_umax(0x4002U)};
+            constexpr auto vmcs_set_nmi_window_exiting{bsl::to_u32(0x400000U)};
+
+            bsl::safe_uint32 val;
+            bsl::errc_type ret{};
+
+            val = sys.bf_vps_op_read32(vpsid, vmcs_procbased_ctls_idx);
+            if (bsl::unlikely_assert(!val)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            val |= vmcs_set_nmi_window_exiting;
+
+            ret = sys.bf_vps_op_write32(vpsid, vmcs_procbased_ctls_idx, val);
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            return ret;
+        }
+
+        /// <!-- description -->
+        ///   @brief Handle NMIs Windows
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
+        ///   @param vp_pool the vp_pool_t to use
+        ///   @param vps_pool the vps_pool_t to use
+        ///   @param vpsid the ID of the VPS that generated the VMExit
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     and friends otherwise
+        ///
+        [[nodiscard]] static constexpr auto
+        handle_nmi_window(
+            gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic,
+            vp_pool_t &vp_pool,
+            vps_pool_t &vps_pool,
+            bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
+        {
+            bsl::discard(gs);
+            bsl::discard(tls);
+            bsl::discard(intrinsic);
+            bsl::discard(vp_pool);
+            bsl::discard(vps_pool);
+
+            /// NOTE:
+            /// - If we see this exit, it is because an NMI fired. There are two
+            ///   situations where this could occur, either while the hypervisor
+            ///   is running, or the VPS is running. In either case, we need to
+            ///   clear the NMI window and inject the NMI into the appropriate
+            ///   VPS so that it can be handled. Note that Intel requires that
+            ///   we handle NMIs, and they actually happen a lot with Linux based
+            ///   on what hardware you are using (e.g., a laptop).
+            ///
+
+            constexpr auto vmcs_procbased_ctls_idx{bsl::to_umax(0x4002U)};
+            constexpr auto vmcs_clear_nmi_window_exiting{bsl::to_u32(0xFFBFFFFFU)};
+
+            bsl::safe_uint32 val;
+            bsl::errc_type ret{};
+
+            val = sys.bf_vps_op_read32(vpsid, vmcs_procbased_ctls_idx);
+            if (bsl::unlikely_assert(!val)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            val &= vmcs_clear_nmi_window_exiting;
+
+            ret = sys.bf_vps_op_write32(vpsid, vmcs_procbased_ctls_idx, val);
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            /// NOTE:
+            /// - Inject an NMI. If the NMI window was enabled, it is because we
+            ///   need to inject a NMI. Note that the NMI window can be enabled
+            ///   both by this extension, as well as by the microkernel itself,
+            ///   so we are required to implement it on Intel.
+            ///
+
+            constexpr auto vmcs_entry_interrupt_info_idx{bsl::to_umax(0x4016U)};
+            constexpr auto vmcs_entry_interrupt_info_val{bsl::to_u32(0x80000202U)};
+
+            ret = sys.bf_vps_op_write32(
+                vpsid, vmcs_entry_interrupt_info_idx, vmcs_entry_interrupt_info_val);
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return ret;
+            }
+
+            return ret;
+        }
+
+        /// <!-- description -->
         ///   @brief Handles the CPUID VMexit
         ///
         /// <!-- inputs/outputs -->
+        ///   @param gs the gs_t to use
+        ///   @param tls the tls_t to use
         ///   @param sys the bf_syscall_t to use
         ///   @param intrinsic the intrinsic_t to use
+        ///   @param vp_pool the vp_pool_t to use
+        ///   @param vps_pool the vps_pool_t to use
         ///   @param vpsid the ID of the VPS that generated the VMExit
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         handle_cpuid(
+            gs_t &gs,
+            tls_t &tls,
             syscall::bf_syscall_t &sys,
             intrinsic_t &intrinsic,
-            bsl::safe_uint16 const &vpsid) &noexcept -> bsl::errc_type
+            vp_pool_t &vp_pool,
+            vps_pool_t &vps_pool,
+            bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
+            bsl::discard(vp_pool);
+            bsl::discard(vps_pool);
+
             bsl::errc_type ret{};
 
             /// NOTE:
@@ -119,6 +289,38 @@ namespace example
                     case loader::CPUID_COMMAND_ECX_STOP.get(): {
 
                         /// NOTE:
+                        /// - If this is the first PP to stop (which is the
+                        ///   last PP in the list as we stop in reverse order),
+                        ///   print out how much memory was used by the
+                        ///   hypervisor. This is a debugging feature that can
+                        ///   be disabled, but it helps to track if memory is
+                        ///   being over used.
+                        ///
+
+                        if (sys.bf_tls_ppid() == (sys.bf_tls_online_pps() - bsl::ONE_U16)) {
+                            bsl::print() << bsl::endl;
+                            syscall::bf_debug_op_dump_page_pool();
+                            bsl::print() << bsl::endl;
+                        }
+
+                        /// NOTE:
+                        /// - If the debug level is set to something higher
+                        ///   than bsl::V, we can print out a VMExit log. How
+                        ///   many entries we print is configurable, and you
+                        ///   can control which PP you want to output if you
+                        ///   only care about a specific PP. Note that this log
+                        ///   will show VMExits for the whole PP, meaning you
+                        ///   will see the order in which different VM's are
+                        ///   making VMExits. The VMExit log doesn't attempt
+                        ///   to decode anything, so that is up to you.
+                        ///
+
+                        if constexpr (BSL_DEBUG_LEVEL > bsl::V) {
+                            bsl::print() << bsl::endl;
+                            syscall::bf_debug_op_dump_vmexit_log(sys.bf_tls_ppid());
+                        }
+
+                        /// NOTE:
                         /// - Report that the root OS is no longer in a VM for
                         ///   this specific PP. Note that you can do whatever
                         ///   you want here, this is just the default behavior.
@@ -130,11 +332,11 @@ namespace example
                         ///   it is "done", because it might fail.
                         ///
 
-                        bsl::debug() << bsl::rst << "about to"                               // --
-                                     << bsl::red << " promote "                              // --
-                                     << bsl::rst << "root OS on pp "                         // --
-                                     << bsl::cyn << bsl::hex(syscall::bf_tls_ppid_impl())    // --
-                                     << bsl::rst << bsl::endl;                               // --
+                        bsl::debug() << bsl::rst << "about to"                     // --
+                                     << bsl::red << " promote "                    // --
+                                     << bsl::rst << "root OS on pp "               // --
+                                     << bsl::cyn << bsl::hex(sys.bf_tls_ppid())    // --
+                                     << bsl::rst << bsl::endl;                     // --
 
                         /// NOTE:
                         /// - Report success
@@ -176,13 +378,13 @@ namespace example
                         ///   want here, this is just the default behavior.
                         ///
 
-                        bsl::debug() << bsl::rst << "root OS had been"                       // --
-                                     << bsl::grn << " demoted "                              // --
-                                     << bsl::rst << "to vm "                                 // --
-                                     << bsl::cyn << bsl::hex(syscall::bf_tls_vmid_impl())    // --
-                                     << bsl::rst << " on pp "                                // --
-                                     << bsl::cyn << bsl::hex(syscall::bf_tls_ppid_impl())    // --
-                                     << bsl::rst << bsl::endl;                               // --
+                        bsl::debug() << bsl::rst << "root OS had been"             // --
+                                     << bsl::grn << " demoted "                    // --
+                                     << bsl::rst << "to vm "                       // --
+                                     << bsl::cyn << bsl::hex(sys.bf_tls_vmid())    // --
+                                     << bsl::rst << " on pp "                      // --
+                                     << bsl::cyn << bsl::hex(sys.bf_tls_ppid())    // --
+                                     << bsl::rst << bsl::endl;                     // --
 
                         break;
                     }
@@ -206,6 +408,8 @@ namespace example
                                      << bsl::hex(rcx)                   // --
                                      << bsl::endl                       // --
                                      << bsl::here();                    // --
+
+                        break;
                     }
                 }
 
@@ -257,8 +461,10 @@ namespace example
         ///   @param vps_pool the vps_pool_t to use
         ///   @param vpsid the ID of the VPS that generated the VMExit
         ///   @param exit_reason the exit reason associated with the VMExit
+        ///   @return Returns bsl::errc_success on success, bsl::errc_failure
+        ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         dispatch(
             gs_t &gs,
             tls_t &tls,
@@ -267,27 +473,33 @@ namespace example
             vp_pool_t &vp_pool,
             vps_pool_t &vps_pool,
             bsl::safe_uint16 const &vpsid,
-            bsl::safe_uint64 const &exit_reason) &noexcept -> bsl::errc_type
+            bsl::safe_uint64 const &exit_reason) noexcept -> bsl::errc_type
         {
-            bsl::discard(gs);
-            bsl::discard(tls);
-            bsl::discard(vp_pool);
-            bsl::discard(vps_pool);
-
             /// NOTE:
             /// - Define the different VMExits that this dispatcher will
-            ///   support. At a minimum, we need to handle CPUID on AMD.
+            ///   support. At a minimum, we need to handle CPUID, and NMIs
+            ///   on Intel (as there is no way to disable NMIs on Intel).
             ///
 
-            constexpr bsl::safe_uintmax exit_reason_cpuid{bsl::to_umax(0x72U)};
+            constexpr auto exit_reason_nmi{bsl::to_umax(0x0)};
+            constexpr auto exit_reason_nmi_window{bsl::to_umax(0x8)};
+            constexpr auto exit_reason_cpuid{bsl::to_umax(0xA)};
 
             /// NOTE:
             /// - Dispatch and handle each VMExit.
             ///
 
             switch (exit_reason.get()) {
+                case exit_reason_nmi.get(): {
+                    return handle_nmi(gs, tls, sys, intrinsic, vp_pool, vps_pool, vpsid);
+                }
+
+                case exit_reason_nmi_window.get(): {
+                    return handle_nmi_window(gs, tls, sys, intrinsic, vp_pool, vps_pool, vpsid);
+                }
+
                 case exit_reason_cpuid.get(): {
-                    return this->handle_cpuid(sys, intrinsic, vpsid);
+                    return handle_cpuid(gs, tls, sys, intrinsic, vp_pool, vps_pool, vpsid);
                 }
 
                 default: {

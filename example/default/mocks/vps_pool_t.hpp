@@ -36,9 +36,9 @@
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
 #include <bsl/finally_assert.hpp>
+#include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
 #include <bsl/unlikely_assert.hpp>
-#include <bsl/safe_integral.hpp>
 
 namespace example
 {
@@ -49,6 +49,11 @@ namespace example
     ///
     class vps_pool_t final
     {
+        /// @brief stores the return value for initialize
+        bsl::errc_type m_initialize{};
+        /// @brief stores the return value for allocate
+        bsl::safe_uint16 m_allocate{};
+
     public:
         /// <!-- description -->
         ///   @brief Initializes this vps_pool_t
@@ -56,32 +61,37 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(gs_t &gs, tls_t &tls) &noexcept -> bsl::errc_type
+        initialize(gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
         {
             bsl::discard(gs);
+            bsl::discard(tls);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
 
-            /// NOTE:
-            /// - This is an example of providing an error case that the
-            ///   original code does not have. Any code that is using this
-            ///   will have no idea how this function is implemented, and
-            ///   at any time it might return an error. This ensure that
-            ///   this is handled.
-            ///
+            return m_initialize;
+        }
 
-            if (tls.test_ret == errc_fail_initialize) {
-                return bsl::errc_failure;
-            }
-
-            /// NOTE:
-            /// - Finally, store the ID assigned to this vps_t just like the
-            ///   original does.
-            ///
-
-            return bsl::errc_success;
+        /// <!-- description -->
+        ///   @brief Sets the return value of initialize.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param errc the bsl::errc_type to return when executing
+        ///     initialize
+        ///
+        constexpr void
+        set_initialize(bsl::errc_type const &errc) &noexcept
+        {
+            m_initialize = errc;
         }
 
         /// <!-- description -->
@@ -90,12 +100,19 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///
         constexpr void
-        release(gs_t &gs, tls_t &tls) &noexcept
+        release(gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic) &noexcept
         {
             bsl::discard(gs);
             bsl::discard(tls);
+            bsl::discard(sys);
+            bsl::discard(intrinsic);
         }
 
         /// <!-- description -->
@@ -121,24 +138,27 @@ namespace example
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
         {
             bsl::discard(gs);
+            bsl::discard(tls);
             bsl::discard(sys);
             bsl::discard(intrinsic);
             bsl::discard(vpid);
             bsl::discard(ppid);
 
-            /// NOTE:
-            /// - This is an example of providing an error case that the
-            ///   original code does not have. Any code that is using this
-            ///   will have no idea how this function is implemented, and
-            ///   at any time it might return an error. This ensure that
-            ///   this is handled.
-            ///
+            return m_allocate;
+        }
 
-            if (tls.test_ret == errc_fail_allocate) {
-                return bsl::safe_uint16::zero(true);
-            }
-
-            return tls.test_ret_16bit;
+        /// <!-- description -->
+        ///   @brief Sets the return value of allocate.
+        ///     (unit testing only)
+        ///
+        /// <!-- inputs/outputs -->
+        ///   @param val the bsl::safe_uint16 to return when executing
+        ///     allocate
+        ///
+        constexpr void
+        set_allocate(bsl::safe_uint16 const &val) &noexcept
+        {
+            m_allocate = val;
         }
     };
 }

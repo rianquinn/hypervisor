@@ -152,7 +152,8 @@ namespace example
                 bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, {}));
                     bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, bsl::safe_uint16::zero(true), {}));
+                        bsl::ut_check(!vp.allocate(
+                            gs, tls, sys, intrinsic, bsl::safe_uint16::zero(true), {}));
                     };
                 };
             };
@@ -168,7 +169,8 @@ namespace example
                 bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, {}));
                     bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, syscall::BF_INVALID_ID, {}));
+                        bsl::ut_check(
+                            !vp.allocate(gs, tls, sys, intrinsic, syscall::BF_INVALID_ID, {}));
                     };
                 };
             };
@@ -184,7 +186,8 @@ namespace example
                 bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, {}));
                     bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, {}, bsl::safe_uint16::zero(true)));
+                        bsl::ut_check(!vp.allocate(
+                            gs, tls, sys, intrinsic, {}, bsl::safe_uint16::zero(true)));
                     };
                 };
             };
@@ -200,7 +203,8 @@ namespace example
                 bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, {}));
                     bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, {}, syscall::BF_INVALID_ID));
+                        bsl::ut_check(
+                            !vp.allocate(gs, tls, sys, intrinsic, {}, syscall::BF_INVALID_ID));
                     };
                 };
             };

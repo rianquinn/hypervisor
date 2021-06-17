@@ -37,9 +37,9 @@
 #include <bsl/errc_type.hpp>
 #include <bsl/finally.hpp>
 #include <bsl/finally_assert.hpp>
+#include <bsl/safe_integral.hpp>
 #include <bsl/unlikely.hpp>
 #include <bsl/unlikely_assert.hpp>
-#include <bsl/safe_integral.hpp>
 
 namespace example
 {
@@ -60,11 +60,16 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(gs_t &gs, tls_t &tls) &noexcept -> bsl::errc_type
+        initialize(gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
         {
             /// NOTE:
             /// - The following is used in the event of an error. Basically,
@@ -74,7 +79,7 @@ namespace example
             ///
 
             bsl::finally_assert release_on_error{[this, &gs, &tls]() noexcept -> void {
-                this->release(gs, tls);
+                this->release(gs, tls, sys, intrinsic);
             }};
 
             /// NOTE:
@@ -113,9 +118,14 @@ namespace example
         /// <!-- inputs/outputs -->
         ///   @param gs the gs_t to use
         ///   @param tls the tls_t to use
+        ///   @param sys the bf_syscall_t to use
+        ///   @param intrinsic the intrinsic_t to use
         ///
         constexpr void
-        release(gs_t &gs, tls_t &tls) &noexcept
+        release(gs_t &gs,
+            tls_t &tls,
+            syscall::bf_syscall_t &sys,
+            intrinsic_t &intrinsic) &noexcept
         {
             /// NOTE:
             /// - Release functions are usually only needed in the event of
@@ -123,7 +133,7 @@ namespace example
             ///
 
             for (bsl::safe_uintmax i{}; i < m_pool.size(); ++i) {
-                m_pool.at_if(i)->release(gs, tls);
+                m_pool.at_if(i)->release(gs, tls, sys, intrinsic);
             }
         }
 

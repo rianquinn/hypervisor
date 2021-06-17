@@ -115,6 +115,8 @@ namespace example
             vps_pool_t &vps_pool,
             bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
         {
+            bsl::discard(gs);
+            bsl::discard(tls);
             bsl::discard(vp_pool);
             bsl::discard(vps_pool);
 
@@ -144,6 +146,38 @@ namespace example
                     case loader::CPUID_COMMAND_ECX_STOP.get(): {
 
                         /// NOTE:
+                        /// - If this is the first PP to stop (which is the
+                        ///   last PP in the list as we stop in reverse order),
+                        ///   print out how much memory was used by the
+                        ///   hypervisor. This is a debugging feature that can
+                        ///   be disabled, but it helps to track if memory is
+                        ///   being over used.
+                        ///
+
+                        if (sys.bf_tls_ppid() == (sys.bf_tls_online_pps() - bsl::ONE_U16)) {
+                            bsl::print() << bsl::endl;
+                            syscall::bf_debug_op_dump_page_pool();
+                            bsl::print() << bsl::endl;
+                        }
+
+                        /// NOTE:
+                        /// - If the debug level is set to something higher
+                        ///   than bsl::V, we can print out a VMExit log. How
+                        ///   many entries we print is configurable, and you
+                        ///   can control which PP you want to output if you
+                        ///   only care about a specific PP. Note that this log
+                        ///   will show VMExits for the whole PP, meaning you
+                        ///   will see the order in which different VM's are
+                        ///   making VMExits. The VMExit log doesn't attempt
+                        ///   to decode anything, so that is up to you.
+                        ///
+
+                        if constexpr (BSL_DEBUG_LEVEL > bsl::V) {
+                            bsl::print() << bsl::endl;
+                            syscall::bf_debug_op_dump_vmexit_log(sys.bf_tls_ppid());
+                        }
+
+                        /// NOTE:
                         /// - Report that the root OS is no longer in a VM for
                         ///   this specific PP. Note that you can do whatever
                         ///   you want here, this is just the default behavior.
@@ -155,11 +189,11 @@ namespace example
                         ///   it is "done", because it might fail.
                         ///
 
-                        bsl::debug() << bsl::rst << "about to"                               // --
-                                     << bsl::red << " promote "                              // --
-                                     << bsl::rst << "root OS on pp "                         // --
-                                     << bsl::cyn << bsl::hex(syscall::bf_tls_ppid_impl())    // --
-                                     << bsl::rst << bsl::endl;                               // --
+                        bsl::debug() << bsl::rst << "about to"                     // --
+                                     << bsl::red << " promote "                    // --
+                                     << bsl::rst << "root OS on pp "               // --
+                                     << bsl::cyn << bsl::hex(sys.bf_tls_ppid())    // --
+                                     << bsl::rst << bsl::endl;                     // --
 
                         /// NOTE:
                         /// - Report success
@@ -201,13 +235,13 @@ namespace example
                         ///   want here, this is just the default behavior.
                         ///
 
-                        bsl::debug() << bsl::rst << "root OS had been"                       // --
-                                     << bsl::grn << " demoted "                              // --
-                                     << bsl::rst << "to vm "                                 // --
-                                     << bsl::cyn << bsl::hex(syscall::bf_tls_vmid_impl())    // --
-                                     << bsl::rst << " on pp "                                // --
-                                     << bsl::cyn << bsl::hex(syscall::bf_tls_ppid_impl())    // --
-                                     << bsl::rst << bsl::endl;                               // --
+                        bsl::debug() << bsl::rst << "root OS had been"             // --
+                                     << bsl::grn << " demoted "                    // --
+                                     << bsl::rst << "to vm "                       // --
+                                     << bsl::cyn << bsl::hex(sys.bf_tls_vmid())    // --
+                                     << bsl::rst << " on pp "                      // --
+                                     << bsl::cyn << bsl::hex(sys.bf_tls_ppid())    // --
+                                     << bsl::rst << bsl::endl;                     // --
 
                         break;
                     }
@@ -250,7 +284,7 @@ namespace example
             ///   returning the results.
             ///
 
-            intrinsic.cpuid(gs, tls, rax, rbx, rcx, rdx);
+            intrinsic.cpuid(rax, rbx, rcx, rdx);
 
             /// NOTE:
             /// - Write the results of CPUID to the VP's registers. Note that
@@ -303,7 +337,7 @@ namespace example
             ///   support. At a minimum, we need to handle CPUID on AMD.
             ///
 
-            constexpr bsl::safe_uintmax exit_reason_cpuid{bsl::to_umax(0x72U)};
+            constexpr auto exit_reason_cpuid{bsl::to_umax(0x72U)};
 
             /// NOTE:
             /// - Dispatch and handle each VMExit.

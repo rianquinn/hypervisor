@@ -287,8 +287,8 @@ namespace example
             ///   VPSs are assigned to VPs).
             ///
 
-            constexpr bsl::safe_uint64 guest_asid_idx{bsl::to_u64(0x0058U)};
-            constexpr bsl::safe_uint32 guest_asid_val{bsl::to_u32(0x1U)};
+            constexpr auto guest_asid_idx{bsl::to_u64(0x0058U)};
+            constexpr auto guest_asid_val{bsl::to_u32(0x1U)};
 
             ret = sys.bf_vps_op_write32(m_id, guest_asid_idx, guest_asid_val);
             if (bsl::unlikely_assert(!ret)) {
@@ -301,10 +301,10 @@ namespace example
             ///   VMRun, and CPUID if we plan to support reporting and stopping.
             ///
 
-            constexpr bsl::safe_uint64 intercept_instr1_idx{bsl::to_u64(0x000CU)};
-            constexpr bsl::safe_uint32 intercept_instr1_val{bsl::to_u32(0x00040000U)};
-            constexpr bsl::safe_uint64 intercept_instr2_idx{bsl::to_u64(0x0010U)};
-            constexpr bsl::safe_uint32 intercept_instr2_val{bsl::to_u32(0x00000001U)};
+            constexpr auto intercept_instr1_idx{bsl::to_u64(0x000CU)};
+            constexpr auto intercept_instr1_val{bsl::to_u32(0x00040000U)};
+            constexpr auto intercept_instr2_idx{bsl::to_u64(0x0010U)};
+            constexpr auto intercept_instr2_val{bsl::to_u32(0x00000001U)};
 
             ret = sys.bf_vps_op_write32(m_id, intercept_instr1_idx, intercept_instr1_val);
             if (bsl::unlikely_assert(!ret)) {
