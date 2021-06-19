@@ -26,8 +26,8 @@
 #define DISPATCH_SYSCALL_CALLBACK_OP_HPP
 
 #include <bf_constants.hpp>
-#include <tls_t.hpp>
 #include <ext_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -106,10 +106,10 @@ namespace mk
         }
 
         if (bsl::unlikely(nullptr != tls.ext_vmexit)) {
-            bsl::error() << "ext "                                                        // --
+            bsl::error() << "ext "                                                  // --
                          << bsl::hex(static_cast<ext_t *>(tls.ext_vmexit)->id())    // --
-                         << " already registered a vmexit callback\n"                     // --
-                         << bsl::here();                                                  // --
+                         << " already registered a vmexit callback\n"               // --
+                         << bsl::here();                                            // --
 
             return bsl::errc_failure;
         }
@@ -153,10 +153,10 @@ namespace mk
         }
 
         if (bsl::unlikely(nullptr != tls.ext_fail)) {
-            bsl::error() << "ext "                                                      // --
+            bsl::error() << "ext "                                                // --
                          << bsl::hex(static_cast<ext_t *>(tls.ext_fail)->id())    // --
-                         << " already registered a fast fail callback\n"                // --
-                         << bsl::here();                                                // --
+                         << " already registered a fast fail callback\n"          // --
+                         << bsl::here();                                          // --
 
             return bsl::errc_failure;
         }

@@ -27,13 +27,12 @@
 
 #include <bf_constants.hpp>
 #include <bf_reg_t.hpp>
-#include <promote.hpp>
-#include <return_to_mk.hpp>
-#include <tls_t.hpp>
-
 #include <ext_t.hpp>
 #include <intrinsic_t.hpp>
 #include <page_pool_t.hpp>
+#include <promote.hpp>
+#include <return_to_mk.hpp>
+#include <tls_t.hpp>
 #include <vm_pool_t.hpp>
 #include <vp_pool_t.hpp>
 #include <vps_pool_t.hpp>
@@ -97,8 +96,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_destroy_vps(
-        tls_t &tls, page_pool_t &page_pool, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_destroy_vps(tls_t &tls, page_pool_t &page_pool, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.deallocate(tls, page_pool, bsl::to_u16_unsafe(tls.ext_reg1))};
@@ -122,8 +120,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_init_as_root(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_init_as_root(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.state_save_to_vps(
@@ -149,8 +146,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_read8(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_read8(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const val{vps_pool.template read<bsl::uint8>(
@@ -179,8 +175,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_read16(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_read16(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const val{vps_pool.template read<bsl::uint16>(
@@ -209,8 +204,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_read32(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_read32(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const val{vps_pool.template read<bsl::uint32>(
@@ -239,8 +233,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_read64(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_read64(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const val{vps_pool.template read<bsl::uint64>(
@@ -268,8 +261,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_write8(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_write8(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.template write<bsl::uint8>(
@@ -299,8 +291,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_write16(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_write16(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.template write<bsl::uint16>(
@@ -330,8 +321,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_write32(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_write32(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.template write<bsl::uint32>(
@@ -361,8 +351,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_write64(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_write64(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.template write<bsl::uint64>(
@@ -388,8 +377,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_read_reg(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_read_reg(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const val{vps_pool.read_reg(
@@ -420,8 +408,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_write_reg(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_write_reg(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.write_reg(
@@ -644,8 +631,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_advance_ip(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_advance_ip(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.advance_ip(tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1))};
@@ -670,8 +656,7 @@ namespace mk
     ///
     [[nodiscard]] constexpr auto
     syscall_vps_op_advance_ip_and_run_current(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
-        -> bsl::errc_type
+        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept -> bsl::errc_type
     {
         auto const ret{vps_pool.advance_ip(tls, intrinsic, tls.active_vpsid)};
         if (bsl::unlikely(!ret)) {
@@ -696,8 +681,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_promote(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_promote(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.vps_to_state_save(
@@ -725,8 +709,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_clear_vps(
-        tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+    syscall_vps_op_clear_vps(tls_t &tls, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
         -> bsl::errc_type
     {
         auto const ret{vps_pool.clear(tls, intrinsic, bsl::to_u16_unsafe(tls.ext_reg1))};

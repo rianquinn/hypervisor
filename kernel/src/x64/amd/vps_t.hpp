@@ -30,11 +30,10 @@
 #include <bf_constants.hpp>
 #include <bf_reg_t.hpp>
 #include <general_purpose_regs_t.hpp>
+#include <intrinsic_t.hpp>
+#include <page_pool_t.hpp>
 #include <tls_t.hpp>
 #include <vmcb_t.hpp>
-
-#include <page_pool_t.hpp>
-#include <intrinsic_t.hpp>
 #include <vmexit_log_t.hpp>
 
 #include <bsl/cstr_type.hpp>
@@ -1064,8 +1063,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        vps_to_state_save(
-            tls_t &tls, intrinsic_t &intrinsic, loader::state_save_t &state) &noexcept
+        vps_to_state_save(tls_t &tls, intrinsic_t &intrinsic, loader::state_save_t &state) &noexcept
             -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
@@ -2263,8 +2261,7 @@ namespace mk
         ///     bsl::safe_uintmax::zero(true) on failure.
         ///
         [[nodiscard]] constexpr auto
-        run(tls_t &tls, intrinsic_t &intrinsic, vmexit_log_t &log) &noexcept
-            -> bsl::safe_uintmax
+        run(tls_t &tls, intrinsic_t &intrinsic, vmexit_log_t &log) &noexcept -> bsl::safe_uintmax
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();

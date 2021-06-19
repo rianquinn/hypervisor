@@ -26,8 +26,8 @@
 #define DISPATCH_SYSCALL_VM_OP_FAILURE_HPP
 
 #include <bf_constants.hpp>
-#include <tls_t.hpp>
 #include <ext_pool_t.hpp>
+#include <tls_t.hpp>
 #include <vm_pool_t.hpp>
 #include <vp_pool_t.hpp>
 
@@ -52,10 +52,8 @@ namespace mk
     ///
     [[nodiscard]] constexpr auto
     syscall_vm_op_create_vm_failure(
-        tls_t &tls,
-        ext_pool_t &ext_pool,
-        vm_pool_t &vm_pool,
-        vp_pool_t &vp_pool) noexcept -> bsl::errc_type
+        tls_t &tls, ext_pool_t &ext_pool, vm_pool_t &vm_pool, vp_pool_t &vp_pool) noexcept
+        -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -87,8 +85,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vm_op_destroy_vm_failure(tls_t &tls, vm_pool_t &vm_pool) noexcept
-        -> bsl::errc_type
+    syscall_vm_op_destroy_vm_failure(tls_t &tls, vm_pool_t &vm_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -118,10 +115,8 @@ namespace mk
     ///
     [[nodiscard]] constexpr auto
     dispatch_syscall_vm_op_failure(
-        tls_t &tls,
-        ext_pool_t &ext_pool,
-        vm_pool_t &vm_pool,
-        vp_pool_t &vp_pool) noexcept -> bsl::errc_type
+        tls_t &tls, ext_pool_t &ext_pool, vm_pool_t &vm_pool, vp_pool_t &vp_pool) noexcept
+        -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

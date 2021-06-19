@@ -26,11 +26,11 @@
 #define DISPATCH_SYSCALL_VM_OP_HPP
 
 #include <bf_constants.hpp>
-#include <tls_t.hpp>
 #include <ext_pool_t.hpp>
+#include <ext_t.hpp>
+#include <tls_t.hpp>
 #include <vm_pool_t.hpp>
 #include <vp_pool_t.hpp>
-#include <ext_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -51,8 +51,8 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vm_op_create_vm(
-        tls_t &tls, ext_pool_t &ext_pool, vm_pool_t &vm_pool) noexcept -> bsl::errc_type
+    syscall_vm_op_create_vm(tls_t &tls, ext_pool_t &ext_pool, vm_pool_t &vm_pool) noexcept
+        -> bsl::errc_type
     {
         auto const vmid{vm_pool.allocate(tls, ext_pool)};
         if (bsl::unlikely(!vmid)) {
@@ -80,10 +80,8 @@ namespace mk
     ///
     [[nodiscard]] constexpr auto
     syscall_vm_op_destroy_vm(
-        tls_t &tls,
-        ext_pool_t &ext_pool,
-        vm_pool_t &vm_pool,
-        vp_pool_t &vp_pool) noexcept -> bsl::errc_type
+        tls_t &tls, ext_pool_t &ext_pool, vm_pool_t &vm_pool, vp_pool_t &vp_pool) noexcept
+        -> bsl::errc_type
     {
         auto const vmid{bsl::to_u16_unsafe(tls.ext_reg1)};
         auto const ret{vm_pool.deallocate(tls, ext_pool, vp_pool, vmid)};
@@ -110,11 +108,8 @@ namespace mk
     ///
     [[nodiscard]] constexpr auto
     dispatch_syscall_vm_op(
-        tls_t &tls,
-        ext_pool_t &ext_pool,
-        ext_t const &ext,
-        vm_pool_t &vm_pool,
-        vp_pool_t &vp_pool) -> bsl::errc_type
+        tls_t &tls, ext_pool_t &ext_pool, ext_t const &ext, vm_pool_t &vm_pool, vp_pool_t &vp_pool)
+        -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

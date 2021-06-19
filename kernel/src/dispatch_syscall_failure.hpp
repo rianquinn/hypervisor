@@ -35,15 +35,15 @@
 #include <dispatch_syscall_vm_op_failure.hpp>
 #include <dispatch_syscall_vp_op_failure.hpp>
 #include <dispatch_syscall_vps_op_failure.hpp>
-#include <tls_t.hpp>
 #include <ext_pool_t.hpp>
 #include <ext_t.hpp>
+#include <huge_pool_t.hpp>
 #include <intrinsic_t.hpp>
 #include <page_pool_t.hpp>
-#include <huge_pool_t.hpp>
-#include <vps_pool_t.hpp>
-#include <vp_pool_t.hpp>
+#include <tls_t.hpp>
 #include <vm_pool_t.hpp>
+#include <vp_pool_t.hpp>
+#include <vps_pool_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>

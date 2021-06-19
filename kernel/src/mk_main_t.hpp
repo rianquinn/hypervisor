@@ -26,16 +26,16 @@
 #define MK_MAIN_HPP
 
 #include <bf_constants.hpp>
-#include <tls_t.hpp>
-#include <vmexit_loop_entry.hpp>
+#include <ext_pool_t.hpp>
+#include <huge_pool_t.hpp>
 #include <intrinsic_t.hpp>
 #include <page_pool_t.hpp>
-#include <huge_pool_t.hpp>
 #include <root_page_table_t.hpp>
-#include <vps_pool_t.hpp>
-#include <vp_pool_t.hpp>
+#include <tls_t.hpp>
 #include <vm_pool_t.hpp>
-#include <ext_pool_t.hpp>
+#include <vmexit_loop_entry.hpp>
+#include <vp_pool_t.hpp>
+#include <vps_pool_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
@@ -60,29 +60,12 @@ namespace mk
     ///
     class mk_main_t final
     {
-        /// @brief stores a reference to the intrinsics to use
-        intrinsic_t &m_intrinsic;
-        /// @brief stores a reference to the page pool to use
-        page_pool_t &m_page_pool;
-        /// @brief stores a reference to the huge pool to use
-        huge_pool_t &m_huge_pool;
-        /// @brief stores system RPT provided by the loader
-        root_page_table_t &m_system_rpt;
-        /// @brief stores a reference to the VPS pool to use
-        vps_pool_t &m_vps_pool;
-        /// @brief stores a reference to the VP pool to use
-        vp_pool_t &m_vp_pool;
-        /// @brief stores a reference to the VM pool to use
-        vm_pool_t &m_vm_pool;
-        /// @brief stores a reference to the extension pool to use
-        ext_pool_t &m_ext_pool;
-
         /// @brief stores the root VMID
-        bsl::safe_uint16 m_root_vmid;
+        bsl::safe_uint16 m_root_vmid{};
         /// @brief stores the registered VMExit handler
-        void *m_ext_vmexit;
+        void *m_ext_vmexit{};
         /// @brief stores the registered fast fail handler
-        void *m_ext_fail;
+        void *m_ext_fail{};
 
         /// <!-- description -->
         ///   @brief Verifies that the args and the resulting TLS block
@@ -170,7 +153,7 @@ namespace mk
                 bsl::error() << "tls.online_pps ["                            // --
                              << bsl::hex(tls.online_pps)                      // --
                              << "] is not less or equal to than the max ["    // --
-                             << bsl::hex(HYPERVISOR_MAX_PPS)                             // --
+                             << bsl::hex(HYPERVISOR_MAX_PPS)                  // --
                              << "]"                                           // --
                              << bsl::endl                                     // --
                              << bsl::here();                                  // --
@@ -254,7 +237,8 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(!(args->ext_elf_files.front().size() < HYPERVISOR_MK_CODE_SIZE))) {
+            if (bsl::unlikely_assert(
+                    !(args->ext_elf_files.front().size() < HYPERVISOR_MK_CODE_SIZE))) {
                 bsl::error() << "args->ext_elf_files.front()'s size is too big"    // --
                              << bsl::endl                                          // --
                              << bsl::here();                                       // --
@@ -467,42 +451,6 @@ namespace mk
         }
 
     public:
-        /// <!-- description -->
-        ///   @brief Creates the microkernel's main class given the global
-        ///     resources that the microkernel will rely on.
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param intrinsic the intrinsics to use
-        ///   @param page_pool the page pool to use
-        ///   @param huge_pool the huge pool to use
-        ///   @param system_rpt the system RPT provided by the loader
-        ///   @param vps_pool the vps pool to use
-        ///   @param vp_pool the vp pool to use
-        ///   @param vm_pool the vm pool to use
-        ///   @param ext_pool the extension pool to use
-        ///
-        constexpr mk_main_t(
-            intrinsic_t &intrinsic,
-            page_pool_t &page_pool,
-            huge_pool_t &huge_pool,
-            root_page_table_t &system_rpt,
-            vps_pool_t &vps_pool,
-            vp_pool_t &vp_pool,
-            vm_pool_t &vm_pool,
-            ext_pool_t &ext_pool) noexcept
-            : m_intrinsic{intrinsic}
-            , m_page_pool{page_pool}
-            , m_huge_pool{huge_pool}
-            , m_system_rpt{system_rpt}
-            , m_vps_pool{vps_pool}
-            , m_vp_pool{vp_pool}
-            , m_vm_pool{vm_pool}
-            , m_ext_pool{ext_pool}
-            , m_root_vmid{bsl::safe_uint16::zero(true)}
-            , m_ext_vmexit{}
-            , m_ext_fail{}
-        {}
-
         /// <!-- description -->
         ///   @brief Process the mk_args_t provided by the loader.
         ///     If the user provided command succeeds, this function

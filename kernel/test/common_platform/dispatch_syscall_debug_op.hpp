@@ -49,10 +49,8 @@ namespace mk
     ///
     [[nodiscard]] constexpr auto
     dispatch_syscall_debug_op(
-        tls_t &tls,
-        vm_pool_t &vm_pool,
-        vp_pool_t &vp_pool,
-        vps_pool_t &vps_pool) noexcept -> bsl::errc_type
+        tls_t &tls, vm_pool_t &vm_pool, vp_pool_t &vp_pool, vps_pool_t &vps_pool) noexcept
+        -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(vm_pool);

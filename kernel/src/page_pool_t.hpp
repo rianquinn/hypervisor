@@ -266,9 +266,9 @@ namespace mk
 
             void *const ptr{m_head};
             m_head = *static_cast<void **>(m_head);
-            record->usd += HYPERVISOR_PAGE_SIZE;
+            record->usd += bsl::to_umax(HYPERVISOR_PAGE_SIZE);
 
-            bsl::builtin_memset(ptr, '\0', HYPERVISOR_PAGE_SIZE);
+            bsl::builtin_memset(ptr, '\0', bsl::to_umax(HYPERVISOR_PAGE_SIZE));
 
             if constexpr (!bsl::is_void<T>::value) {
                 static_assert(bsl::is_standard_layout<T>::value, "T must be a standard layout");
@@ -301,7 +301,7 @@ namespace mk
                 return;
             }
 
-            if (bsl::to_umax(ptr) < HYPERVISOR_MK_PAGE_POOL_ADDR) {
+            if (bsl::to_umax(ptr) < bsl::to_umax(HYPERVISOR_MK_PAGE_POOL_ADDR)) {
                 bsl::error() << "invalid ptr"    // --
                              << ptr              // --
                              << bsl::endl        // --
@@ -339,7 +339,7 @@ namespace mk
 
             *static_cast<void **>(ptr) = m_head;
             m_head = ptr;
-            record->usd -= HYPERVISOR_PAGE_SIZE;
+            record->usd -= bsl::to_umax(HYPERVISOR_PAGE_SIZE);
         }
 
         /// <!-- description -->
@@ -361,7 +361,7 @@ namespace mk
         virt_to_phys(T const *const virt) const &noexcept -> bsl::safe_uintmax
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_umax(virt) - HYPERVISOR_MK_PAGE_POOL_ADDR;
+            return bsl::to_umax(virt) - bsl::to_umax(HYPERVISOR_MK_PAGE_POOL_ADDR);
         }
 
         /// <!-- description -->
@@ -383,7 +383,7 @@ namespace mk
         phys_to_virt(bsl::safe_uintmax const &phys) const &noexcept -> T *
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_ptr<T *>(phys + HYPERVISOR_MK_PAGE_POOL_ADDR);
+            return bsl::to_ptr<T *>(phys + bsl::to_umax(HYPERVISOR_MK_PAGE_POOL_ADDR));
         }
 
         /// <!-- description -->

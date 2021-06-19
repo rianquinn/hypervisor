@@ -29,9 +29,9 @@
 #include "spinlock_t.hpp"
 
 #include <bf_constants.hpp>
+#include <ext_pool_t.hpp>
 #include <tls_t.hpp>
 #include <vm_t.hpp>
-#include <ext_pool_t.hpp>
 #include <vp_pool_t.hpp>
 
 #include <bsl/array.hpp>
@@ -70,8 +70,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
-            -> bsl::errc_type
+        initialize(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
         {
             bsl::finally_assert release_on_error{
                 [this, &tls, &ext_pool, &vp_pool]() noexcept -> void {
@@ -109,8 +108,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
-            -> bsl::errc_type
+        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
         {
             for (auto const vm : m_pool) {
                 auto const ret{vm.data->release(tls, ext_pool, vp_pool)};
@@ -177,12 +175,13 @@ namespace mk
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                                                   // --
-                             << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vmid "                                                              // --
+                    << bsl::hex(vmid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -204,12 +203,13 @@ namespace mk
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                                                   // --
-                             << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vmid "                                                              // --
+                    << bsl::hex(vmid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -237,12 +237,13 @@ namespace mk
 
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                                                   // --
-                             << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vmid "                                                              // --
+                    << bsl::hex(vmid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return false;
             }
@@ -269,12 +270,13 @@ namespace mk
 
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                                                   // --
-                             << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vmid "                                                              // --
+                    << bsl::hex(vmid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return false;
             }
@@ -301,12 +303,13 @@ namespace mk
 
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                                                   // --
-                             << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vmid "                                                              // --
+                    << bsl::hex(vmid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return false;
             }
@@ -328,12 +331,13 @@ namespace mk
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                                                   // --
-                             << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vmid "                                                              // --
+                    << bsl::hex(vmid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -355,12 +359,13 @@ namespace mk
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                                                   // --
-                             << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vmid "                                                              // --
+                    << bsl::hex(vmid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -385,12 +390,13 @@ namespace mk
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                                                   // --
-                             << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vmid "                                                              // --
+                    << bsl::hex(vmid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::safe_uint16::zero(true);
             }
@@ -415,12 +421,13 @@ namespace mk
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                                                   // --
-                             << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vmid "                                                              // --
+                    << bsl::hex(vmid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return false;
             }
@@ -444,12 +451,13 @@ namespace mk
 
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
             if (bsl::unlikely(nullptr == vm)) {
-                bsl::error() << "vmid "                                                   // --
-                             << bsl::hex(vmid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vmid "                                                              // --
+                    << bsl::hex(vmid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return;
             }

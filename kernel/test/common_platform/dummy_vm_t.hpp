@@ -86,8 +86,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
-            -> bsl::errc_type
+        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
         {
             bsl::discard(ext_pool);
             bsl::discard(vp_pool);
@@ -134,8 +133,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        deallocate(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
-            -> bsl::errc_type
+        deallocate(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
         {
             bsl::discard(ext_pool);
             bsl::discard(vp_pool);

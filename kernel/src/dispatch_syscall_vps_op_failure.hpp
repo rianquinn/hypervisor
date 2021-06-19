@@ -27,10 +27,10 @@
 
 #include <bf_constants.hpp>
 #include <bf_reg_t.hpp>
-#include <tls_t.hpp>
 #include <ext_t.hpp>
 #include <intrinsic_t.hpp>
 #include <page_pool_t.hpp>
+#include <tls_t.hpp>
 #include <vm_pool_t.hpp>
 #include <vp_pool_t.hpp>
 #include <vps_pool_t.hpp>
@@ -55,8 +55,7 @@ namespace mk
     ///
     [[nodiscard]] constexpr auto
     syscall_vps_op_create_vps_failure(
-        tls_t &tls, page_pool_t &page_pool, vps_pool_t &vps_pool) noexcept
-        -> bsl::errc_type
+        tls_t &tls, page_pool_t &page_pool, vps_pool_t &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -83,8 +82,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vps_op_destroy_vps_failure(tls_t &tls, vps_pool_t &vps_pool) noexcept
-        -> bsl::errc_type
+    syscall_vps_op_destroy_vps_failure(tls_t &tls, vps_pool_t &vps_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

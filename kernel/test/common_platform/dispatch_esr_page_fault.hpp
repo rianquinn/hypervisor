@@ -25,8 +25,8 @@
 #ifndef TEST_DISPATCH_ESR_PAGE_FAULT_HPP
 #define TEST_DISPATCH_ESR_PAGE_FAULT_HPP
 
-#include <tls_t.hpp>
 #include <ext_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>

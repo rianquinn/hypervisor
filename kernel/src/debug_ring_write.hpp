@@ -38,7 +38,10 @@
 namespace mk
 {
     /// @brief stores a pointer to the debug ring provided by the loader
-    extern "C" constinit inline loader::debug_ring_t *g_debug_ring{};
+    extern "C"
+    {
+        extern loader::debug_ring_t *g_debug_ring;
+    }
 
     /// <!-- description -->
     ///   @brief Outputs a character to the serial port.

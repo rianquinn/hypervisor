@@ -74,8 +74,7 @@ namespace mk
     constinit inline root_page_table_t g_system_rpt{};
 
     /// @brief stores the ext pool used by the microkernel
-    constinit inline ext_pool_t g_ext_pool{
-        g_intrinsic, g_page_pool, g_huge_pool, g_system_rpt};
+    constinit inline ext_pool_t g_ext_pool{g_intrinsic, g_page_pool, g_huge_pool, g_system_rpt};
 
     /// @brief stores the microkernel's main class
     constinit inline mk_main_t g_mk_main{

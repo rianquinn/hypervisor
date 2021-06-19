@@ -26,8 +26,8 @@
 #define DISPATCH_SYSCALL_VP_OP_HPP
 
 #include <bf_constants.hpp>
-#include <tls_t.hpp>
 #include <ext_t.hpp>
+#include <tls_t.hpp>
 #include <vm_pool_t.hpp>
 #include <vp_pool_t.hpp>
 #include <vps_pool_t.hpp>
@@ -79,8 +79,8 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vp_op_destroy_vp(
-        tls_t &tls, vp_pool_t &vp_pool, vps_pool_t &vps_pool) noexcept -> bsl::errc_type
+    syscall_vp_op_destroy_vp(tls_t &tls, vp_pool_t &vp_pool, vps_pool_t &vps_pool) noexcept
+        -> bsl::errc_type
     {
         auto const ret{vp_pool.deallocate(tls, vps_pool, bsl::to_u16_unsafe(tls.ext_reg1))};
         if (bsl::unlikely(!ret)) {

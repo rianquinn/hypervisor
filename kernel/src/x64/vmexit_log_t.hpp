@@ -47,7 +47,7 @@ namespace mk
     class vmexit_log_t final
     {
         /// @brief stores the VMExit log
-        bsl::array<vmexit_log_pp_t<HYPERVISOR_VMEXIT_LOG_SIZE>, HYPERVISOR_MAX_PPS> m_vmexit_logs{};
+        bsl::array<vmexit_log_pp_t, bsl::to_umax(HYPERVISOR_MAX_PPS).get()> m_vmexit_logs{};
 
         /// <!-- description -->
         ///   @brief Dumps the contents of the VMExit log for the requested PP

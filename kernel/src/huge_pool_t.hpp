@@ -191,21 +191,23 @@ namespace mk
                 return nullptr;
             }
 
-            auto pages{size / HYPERVISOR_PAGE_SIZE};
-            if ((size % HYPERVISOR_PAGE_SIZE) != bsl::ZERO_UMAX) {
+            auto pages{size / bsl::to_umax(HYPERVISOR_PAGE_SIZE)};
+            if ((size % bsl::to_umax(HYPERVISOR_PAGE_SIZE)) != bsl::ZERO_UMAX) {
                 ++pages;
             }
             else {
                 bsl::touch();
             }
 
-            if (bsl::unlikely(m_pool.at_if(m_crsr + (pages * HYPERVISOR_PAGE_SIZE)) == nullptr)) {
+            if (bsl::unlikely(
+                    m_pool.at_if(m_crsr + (pages * bsl::to_umax(HYPERVISOR_PAGE_SIZE))) ==
+                    nullptr)) {
                 bsl::error() << "huge pool out of memory\n" << bsl::here();
                 return nullptr;
             }
 
             void *const ptr{m_pool.at_if(m_crsr)};
-            m_crsr += (pages * HYPERVISOR_PAGE_SIZE);
+            m_crsr += (pages * bsl::to_umax(HYPERVISOR_PAGE_SIZE));
 
             bsl::builtin_memset(ptr, '\0', size);
 
@@ -268,7 +270,7 @@ namespace mk
         virt_to_phys(T const *const virt) const &noexcept -> bsl::safe_uintmax
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_umax(virt) - HYPERVISOR_MK_HUGE_POOL_ADDR;
+            return bsl::to_umax(virt) - bsl::to_umax(HYPERVISOR_MK_HUGE_POOL_ADDR);
         }
 
         /// <!-- description -->
@@ -290,7 +292,7 @@ namespace mk
         phys_to_virt(bsl::safe_uintmax const &phys) const &noexcept -> T *
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_ptr<T *>(phys + HYPERVISOR_MK_HUGE_POOL_ADDR);
+            return bsl::to_ptr<T *>(phys + bsl::to_umax(HYPERVISOR_MK_HUGE_POOL_ADDR));
         }
 
         /// <!-- description -->

@@ -26,8 +26,8 @@
 #define DISPATCH_SYSCALL_CALLBACK_OP_FAILURE_HPP
 
 #include <bf_constants.hpp>
-#include <tls_t.hpp>
 #include <ext_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>

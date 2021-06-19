@@ -29,7 +29,10 @@
 #include "../spinlock_t.hpp"
 
 #include <allocate_tags.hpp>
+#include <huge_pool_t.hpp>
+#include <intrinsic_t.hpp>
 #include <map_page_flags.hpp>
+#include <page_pool_t.hpp>
 #include <pdpt_t.hpp>
 #include <pdpte_t.hpp>
 #include <pdt_t.hpp>
@@ -39,10 +42,6 @@
 #include <pt_t.hpp>
 #include <pte_t.hpp>
 #include <tls_t.hpp>
-
-#include <page_pool_t.hpp>
-#include <intrinsic_t.hpp>
-#include <huge_pool_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
@@ -64,18 +63,8 @@ namespace mk
     ///
     class root_page_table_t final
     {
-        /// @brief stores true if initialized() has been executed
-        bool m_initialized{};
-        /// @brief stores a reference to the intrinsics to use
-        intrinsic_t *m_intrinsic{};
-        /// @brief stores a reference to the page pool to use
-        page_pool_t *m_page_pool{};
-        /// @brief stores a reference to the huge pool to use
-        huge_pool_t *m_huge_pool{};
         /// @brief stores a pointer to the pml4t
         pml4t_t *m_pml4t{};
-        /// @brief stores the physical address of the pml4t
-        bsl::safe_uintmax m_pml4t_phys{bsl::safe_uintmax::zero(true)};
         /// @brief safe guards operations on the RPT.
         mutable spinlock_t m_lock{};
 
@@ -357,7 +346,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            pml4te->phys = (table_phys >> HYPERVISOR_PAGE_SHIFT).get();
+            pml4te->phys = (table_phys >> bsl::to_umax(HYPERVISOR_PAGE_SHIFT)).get();
             pml4te->p = bsl::ONE_UMAX.get();
             pml4te->rw = bsl::ONE_UMAX.get();
             pml4te->us = bsl::ONE_UMAX.get();
@@ -399,7 +388,7 @@ namespace mk
         get_pdpt(loader::pml4te_t *const pml4te) noexcept -> pdpt_t *
         {
             bsl::safe_uintmax entry_phys{pml4te->phys};
-            entry_phys <<= HYPERVISOR_PAGE_SHIFT;
+            entry_phys <<= bsl::to_umax(HYPERVISOR_PAGE_SHIFT);
 
             return m_page_pool->template phys_to_virt<pdpt_t>(entry_phys);
         }
@@ -416,7 +405,7 @@ namespace mk
         get_pdpt(loader::pml4te_t const *const pml4te) const noexcept -> pdpt_t const *
         {
             bsl::safe_uintmax entry_phys{pml4te->phys};
-            entry_phys <<= HYPERVISOR_PAGE_SHIFT;
+            entry_phys <<= bsl::to_umax(HYPERVISOR_PAGE_SHIFT);
 
             return m_page_pool->template phys_to_virt<pdpt_t const>(entry_phys);
         }
@@ -490,7 +479,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            pdpte->phys = (table_phys >> HYPERVISOR_PAGE_SHIFT).get();
+            pdpte->phys = (table_phys >> bsl::to_umax(HYPERVISOR_PAGE_SHIFT)).get();
             pdpte->p = bsl::ONE_UMAX.get();
             pdpte->rw = bsl::ONE_UMAX.get();
             pdpte->us = bsl::ONE_UMAX.get();
@@ -532,7 +521,7 @@ namespace mk
         get_pdt(loader::pdpte_t *const pdpte) noexcept -> pdt_t *
         {
             bsl::safe_uintmax entry_phys{pdpte->phys};
-            entry_phys <<= HYPERVISOR_PAGE_SHIFT;
+            entry_phys <<= bsl::to_umax(HYPERVISOR_PAGE_SHIFT);
 
             return m_page_pool->template phys_to_virt<pdt_t>(entry_phys);
         }
@@ -549,7 +538,7 @@ namespace mk
         get_pdt(loader::pdpte_t const *const pdpte) const noexcept -> pdt_t const *
         {
             bsl::safe_uintmax entry_phys{pdpte->phys};
-            entry_phys <<= HYPERVISOR_PAGE_SHIFT;
+            entry_phys <<= bsl::to_umax(HYPERVISOR_PAGE_SHIFT);
 
             return m_page_pool->template phys_to_virt<pdt_t const>(entry_phys);
         }
@@ -630,7 +619,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            pdte->phys = (table_phys >> HYPERVISOR_PAGE_SHIFT).get();
+            pdte->phys = (table_phys >> bsl::to_umax(HYPERVISOR_PAGE_SHIFT)).get();
             pdte->p = bsl::ONE_UMAX.get();
             pdte->rw = bsl::ONE_UMAX.get();
             pdte->us = bsl::ONE_UMAX.get();
@@ -726,7 +715,7 @@ namespace mk
         get_pt(loader::pdte_t *const pdte) noexcept -> pt_t *
         {
             bsl::safe_uintmax entry_phys{pdte->phys};
-            entry_phys <<= HYPERVISOR_PAGE_SHIFT;
+            entry_phys <<= bsl::to_umax(HYPERVISOR_PAGE_SHIFT);
 
             return m_page_pool->template phys_to_virt<pt_t>(entry_phys);
         }
@@ -743,7 +732,7 @@ namespace mk
         get_pt(loader::pdte_t const *const pdte) const noexcept -> pt_t const *
         {
             bsl::safe_uintmax entry_phys{pdte->phys};
-            entry_phys <<= HYPERVISOR_PAGE_SHIFT;
+            entry_phys <<= bsl::to_umax(HYPERVISOR_PAGE_SHIFT);
 
             return m_page_pool->template phys_to_virt<pt_t const>(entry_phys);
         }
@@ -813,7 +802,7 @@ namespace mk
         pte_from_page_pool_to_virt(loader::pte_t *const pte) noexcept -> void *
         {
             bsl::safe_uintmax entry_phys{pte->phys};
-            entry_phys <<= HYPERVISOR_PAGE_SHIFT;
+            entry_phys <<= bsl::to_umax(HYPERVISOR_PAGE_SHIFT);
 
             return m_page_pool->phys_to_virt(entry_phys);
         }
@@ -831,7 +820,7 @@ namespace mk
         pte_from_huge_pool_to_virt(loader::pte_t *const pte) noexcept -> void *
         {
             bsl::safe_uintmax entry_phys{pte->phys};
-            entry_phys <<= HYPERVISOR_PAGE_SHIFT;
+            entry_phys <<= bsl::to_umax(HYPERVISOR_PAGE_SHIFT);
 
             return m_huge_pool->phys_to_virt(entry_phys);
         }
@@ -846,7 +835,7 @@ namespace mk
         [[nodiscard]] static constexpr auto
         page_aligned(bsl::safe_uintmax const &addr) noexcept -> bsl::safe_uintmax
         {
-            return (addr & ~(HYPERVISOR_PAGE_SIZE - bsl::ONE_UMAX));
+            return (addr & ~(bsl::to_umax(HYPERVISOR_PAGE_SIZE) - bsl::ONE_UMAX));
         }
 
         /// <!-- description -->
@@ -859,7 +848,7 @@ namespace mk
         [[nodiscard]] static constexpr auto
         is_page_aligned(bsl::safe_uintmax const &addr) noexcept -> bool
         {
-            return (addr & (HYPERVISOR_PAGE_SIZE - bsl::ONE_UMAX)) == bsl::ZERO_UMAX;
+            return (addr & (bsl::to_umax(HYPERVISOR_PAGE_SIZE) - bsl::ONE_UMAX)) == bsl::ZERO_UMAX;
         }
 
         /// <!-- description -->
@@ -1331,7 +1320,7 @@ namespace mk
                 return bsl::errc_already_exists;
             }
 
-            pte->phys = (page_phys >> HYPERVISOR_PAGE_SHIFT).get();
+            pte->phys = (page_phys >> bsl::to_umax(HYPERVISOR_PAGE_SHIFT)).get();
             pte->p = bsl::ONE_UMAX.get();
             pte->us = bsl::ONE_UMAX.get();
             pte->auto_release = auto_release.get();

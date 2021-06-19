@@ -30,7 +30,6 @@
 
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
-
 #include <vp_t.hpp>
 #include <vps_pool_t.hpp>
 
@@ -175,12 +174,13 @@ namespace mk
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -202,12 +202,13 @@ namespace mk
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -235,12 +236,13 @@ namespace mk
 
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return false;
             }
@@ -267,12 +269,13 @@ namespace mk
 
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return false;
             }
@@ -299,12 +302,13 @@ namespace mk
 
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return false;
             }
@@ -365,12 +369,13 @@ namespace mk
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -392,12 +397,13 @@ namespace mk
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -422,12 +428,13 @@ namespace mk
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::safe_uint16::zero(true);
             }
@@ -452,12 +459,13 @@ namespace mk
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return false;
             }
@@ -481,12 +489,13 @@ namespace mk
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -506,12 +515,13 @@ namespace mk
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::safe_uint16::zero(true);
             }
@@ -531,12 +541,13 @@ namespace mk
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return bsl::safe_uint16::zero(true);
             }
@@ -560,12 +571,13 @@ namespace mk
 
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
-                bsl::error() << "vpid "                                                   // --
-                             << bsl::hex(vpid)                                            // --
-                             << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
-                             << bsl::endl                                                 // --
-                             << bsl::here();                                              // --
+                bsl::error()
+                    << "vpid "                                                              // --
+                    << bsl::hex(vpid)                                                       // --
+                    << " is invalid or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
+                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                            // --
+                    << bsl::endl                                                            // --
+                    << bsl::here();                                                         // --
 
                 return;
             }

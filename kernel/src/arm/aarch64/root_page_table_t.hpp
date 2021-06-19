@@ -29,6 +29,8 @@
 #include "../../spinlock_t.hpp"
 
 #include <allocate_tags.hpp>
+#include <huge_pool_t.hpp>
+#include <intrinsic_t.hpp>
 #include <l0t_t.hpp>
 #include <l0te_t.hpp>
 #include <l1t_t.hpp>
@@ -38,11 +40,8 @@
 #include <l3t_t.hpp>
 #include <l3te_t.hpp>
 #include <map_page_flags.hpp>
-#include <tls_t.hpp>
-
 #include <page_pool_t.hpp>
-#include <intrinsic_t.hpp>
-#include <huge_pool_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>

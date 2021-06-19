@@ -30,8 +30,8 @@
 
 #include <allocated_status_t.hpp>
 #include <bf_constants.hpp>
-#include <tls_t.hpp>
 #include <ext_pool_t.hpp>
+#include <tls_t.hpp>
 #include <vp_pool_t.hpp>
 
 #include <bsl/array.hpp>
@@ -134,8 +134,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
-            -> bsl::errc_type
+        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
             lock_guard_t lock{tls, m_lock};
@@ -271,8 +270,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        deallocate(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept
-            -> bsl::errc_type
+        deallocate(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
             lock_guard_t lock{tls, m_lock};
@@ -467,12 +465,12 @@ namespace mk
 
             auto *const active{m_active.at_if(bsl::to_umax(tls.ppid))};
             if (bsl::unlikely_assert(nullptr == active)) {
-                bsl::error() << "tls.ppid "                        // --
-                             << bsl::hex(m_id)                     // --
+                bsl::error() << "tls.ppid "                                   // --
+                             << bsl::hex(m_id)                                // --
                              << " is greater than the HYPERVISOR_MAX_PPS "    // --
                              << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_PPS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -546,12 +544,12 @@ namespace mk
 
             auto *const active{m_active.at_if(bsl::to_umax(tls.ppid))};
             if (bsl::unlikely_assert(nullptr == active)) {
-                bsl::error() << "tls.ppid "                        // --
-                             << bsl::hex(m_id)                     // --
+                bsl::error() << "tls.ppid "                                   // --
+                             << bsl::hex(m_id)                                // --
                              << " is greater than the HYPERVISOR_MAX_PPS "    // --
                              << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_PPS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return bsl::errc_index_out_of_bounds;
             }
@@ -614,12 +612,12 @@ namespace mk
         {
             auto *const active{m_active.at_if(bsl::to_umax(tls.ppid))};
             if (bsl::unlikely(nullptr == active)) {
-                bsl::error() << "tls.ppid "                        // --
-                             << bsl::hex(m_id)                     // --
+                bsl::error() << "tls.ppid "                                   // --
+                             << bsl::hex(m_id)                                // --
                              << " is greater than the HYPERVISOR_MAX_PPS "    // --
                              << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_PPS))     // --
-                             << bsl::endl                          // --
-                             << bsl::here();                       // --
+                             << bsl::endl                                     // --
+                             << bsl::here();                                  // --
 
                 return false;
             }

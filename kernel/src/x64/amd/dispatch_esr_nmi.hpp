@@ -25,8 +25,8 @@
 #ifndef DISPATCH_ESR_NMI_HPP
 #define DISPATCH_ESR_NMI_HPP
 
-#include <tls_t.hpp>
 #include <intrinsic_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>

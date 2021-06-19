@@ -25,9 +25,9 @@
 #ifndef FAST_FAIL_HPP
 #define FAST_FAIL_HPP
 
+#include <ext_t.hpp>
 #include <return_to_vmexit_loop.hpp>
 #include <tls_t.hpp>
-#include <ext_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>

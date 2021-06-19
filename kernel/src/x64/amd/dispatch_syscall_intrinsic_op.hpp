@@ -26,9 +26,9 @@
 #define DISPATCH_SYSCALL_INTRINSIC_OP_HPP
 
 #include <bf_constants.hpp>
-#include <tls_t.hpp>
-#include <intrinsic_t.hpp>
 #include <ext_t.hpp>
+#include <intrinsic_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/convert.hpp>
 #include <bsl/debug.hpp>

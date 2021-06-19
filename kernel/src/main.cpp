@@ -22,25 +22,22 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include <global_resources.hpp>
 #include <mk_args_t.hpp>
 #include <tls_t.hpp>
 
-#include <bsl/cstdint.hpp>
-#include <bsl/cstdio.hpp>
-#include <bsl/cstring.hpp>
 #include <bsl/exit_code.hpp>
-#include <bsl/touch.hpp>
-
-extern "C"
-{
-    /// @brief stores the TLS blocks used by the microkernel.
-    alignas(HYPERVISOR_PAGE_SIZE) constinit bsl::
-        array<mk::tls_t, bsl::to_umax(HYPERVISOR_MAX_PPS).get()> g_tls_blocks{};
-}
+#include <bsl/convert.hpp>
+#include <bsl/array.hpp>
+#include <bsl/debug.hpp>
 
 namespace mk
 {
+    /// @brief stores the TLS blocks used by the microkernel.
+    extern "C" constinit bsl::array<tls_t, HYPERVISOR_MAX_PPS> g_tls_blocks{};
+
+    /// @brief stores a pointer to the debug ring provided by the loader
+    extern "C" constinit loader::debug_ring_t *g_debug_ring{};
+
     /// <!-- description -->
     ///   @brief Provides the main entry point of the microkernel. This
     ///     function is called by the loader and is responsible for starting
@@ -53,8 +50,8 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] extern "C" auto
-    mk_main_trampoline(loader::mk_args_t *const args, tls_t *const tls) noexcept -> bsl::exit_code
+    mk_main(loader::mk_args_t *const args, tls_t *const tls) noexcept -> bsl::exit_code
     {
-        return g_mk_main.process(args, *tls);
+        return 0; //g_mk_main.process(args, *tls);
     }
 }

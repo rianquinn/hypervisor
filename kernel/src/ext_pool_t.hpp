@@ -25,14 +25,12 @@
 #ifndef EXT_POOL_T_HPP
 #define EXT_POOL_T_HPP
 
-#include <tls_t.hpp>
-
 #include <ext_t.hpp>
+#include <huge_pool_t.hpp>
 #include <intrinsic_t.hpp>
 #include <page_pool_t.hpp>
-#include <huge_pool_t.hpp>
 #include <root_page_table_t.hpp>
-
+#include <tls_t.hpp>
 
 #include <bsl/array.hpp>
 #include <bsl/as_const.hpp>
@@ -52,51 +50,32 @@ namespace mk
     ///
     class ext_pool_t final
     {
-        /// @brief stores a reference to the intrinsics to use
-        intrinsic_t &m_intrinsic;
-        /// @brief stores a reference to the page pool to use
-        page_pool_t &m_page_pool;
-        /// @brief stores a reference to the huge pool to use
-        huge_pool_t &m_huge_pool;
-        /// @brief stores system RPT provided by the loader
-        root_page_table_t &m_system_rpt;
         /// @brief stores all of the extensions.
-        bsl::array<ext_t, HYPERVISOR_MAX_EXTENSIONS> m_pool;
+        bsl::array<ext_t, HYPERVISOR_MAX_EXTENSIONS> m_pool{};
 
     public:
-        /// <!-- description -->
-        ///   @brief Creates a ext_pool_t
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param intrinsic the intrinsics to use
-        ///   @param page_pool the page pool to use
-        ///   @param huge_pool the huge pool to use
-        ///   @param system_rpt the system RPT provided by the loader
-        ///
-        explicit constexpr ext_pool_t(
-            intrinsic_t &intrinsic,
-            page_pool_t &page_pool,
-            huge_pool_t &huge_pool,
-            root_page_table_t &system_rpt) noexcept
-            : m_intrinsic{intrinsic}
-            , m_page_pool{page_pool}
-            , m_huge_pool{huge_pool}
-            , m_system_rpt{system_rpt}
-            , m_pool{}
-        {}
-
         /// <!-- description -->
         ///   @brief Initializes this ext_pool_t
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param intrinsic the intrinsics to use
+        ///   @param page_pool the page pool to use
+        ///   @param huge_pool the huge pool to use
+        ///   @param system_rpt the system RPT provided by the loader
         ///   @param ext_elf_files the ext_elf_files provided by the loader
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(tls_t &tls, bsl::array<bsl::span<bsl::byte const>, HYPERVISOR_MAX_EXTENSIONS> const &ext_elf_files) &noexcept
-            -> bsl::errc_type
+        initialize(
+            tls_t &tls,
+            intrinsic_t &intrinsic,
+            page_pool_t &page_pool,
+            huge_pool_t &huge_pool,
+            root_page_table_t &system_rpt,
+            bsl::array<bsl::span<bsl::byte const>, HYPERVISOR_MAX_EXTENSIONS> const &ext_elf_files)
+            &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 

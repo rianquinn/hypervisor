@@ -48,8 +48,8 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vp_op_create_vp_failure(
-        tls_t &tls, vp_pool_t &vp_pool, vps_pool_t &vps_pool) noexcept -> bsl::errc_type
+    syscall_vp_op_create_vp_failure(tls_t &tls, vp_pool_t &vp_pool, vps_pool_t &vps_pool) noexcept
+        -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -76,8 +76,7 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vp_op_destroy_vp_failure(tls_t &tls, vp_pool_t &vp_pool) noexcept
-        -> bsl::errc_type
+    syscall_vp_op_destroy_vp_failure(tls_t &tls, vp_pool_t &vp_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -105,8 +104,8 @@ namespace mk
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    dispatch_syscall_vp_op_failure(
-        tls_t &tls, vp_pool_t &vp_pool, vps_pool_t &vps_pool) noexcept -> bsl::errc_type
+    dispatch_syscall_vp_op_failure(tls_t &tls, vp_pool_t &vp_pool, vps_pool_t &vps_pool) noexcept
+        -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

@@ -26,9 +26,9 @@
 #define DISPATCH_SYSCALL_CONTROL_OP_HPP
 
 #include <bf_constants.hpp>
+#include <ext_t.hpp>
 #include <return_to_mk.hpp>
 #include <tls_t.hpp>
-#include <ext_t.hpp>
 
 #include <bsl/debug.hpp>
 

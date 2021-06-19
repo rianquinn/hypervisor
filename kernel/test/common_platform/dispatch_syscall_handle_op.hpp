@@ -26,8 +26,8 @@
 #define TEST_DISPATCH_SYSCALL_HANDLE_OP_HPP
 
 #include <bf_constants.hpp>
-#include <tls_t.hpp>
 #include <ext_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>

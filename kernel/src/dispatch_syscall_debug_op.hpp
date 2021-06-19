@@ -26,15 +26,15 @@
 #define DISPATCH_SYSCALL_DEBUG_OP_HPP
 
 #include <bf_constants.hpp>
-#include <tls_t.hpp>
 #include <ext_pool_t.hpp>
+#include <huge_pool_t.hpp>
 #include <intrinsic_t.hpp>
 #include <page_pool_t.hpp>
-#include <huge_pool_t.hpp>
-#include <vps_pool_t.hpp>
-#include <vp_pool_t.hpp>
+#include <tls_t.hpp>
 #include <vm_pool_t.hpp>
 #include <vmexit_log_t.hpp>
+#include <vp_pool_t.hpp>
+#include <vps_pool_t.hpp>
 
 #include <bsl/char_type.hpp>
 #include <bsl/cstr_type.hpp>

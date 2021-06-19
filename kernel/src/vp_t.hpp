@@ -28,7 +28,6 @@
 #include <allocated_status_t.hpp>
 #include <bf_constants.hpp>
 #include <tls_t.hpp>
-
 #include <vps_pool_t.hpp>
 
 #include <bsl/debug.hpp>

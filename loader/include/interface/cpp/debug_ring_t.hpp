@@ -48,7 +48,7 @@ namespace loader
         bsl::uint64 spos;
 
         /// @brief stores the characters in the debug ring
-        bsl::details::carray<bsl::char_type, bsl::to_umax(HYPERVISOR_DEBUG_RING_SIZE).get()> buf;
+        bsl::details::carray<bsl::char_type, HYPERVISOR_DEBUG_RING_SIZE.get()> buf;
     };
 }
 

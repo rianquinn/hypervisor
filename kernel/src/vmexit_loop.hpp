@@ -27,8 +27,8 @@
 
 #include <ext_t.hpp>
 #include <intrinsic_t.hpp>
-#include <vps_pool_t.hpp>
 #include <vmexit_log_t.hpp>
+#include <vps_pool_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>

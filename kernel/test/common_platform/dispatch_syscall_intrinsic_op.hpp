@@ -26,9 +26,9 @@
 #define TEST_DISPATCH_SYSCALL_INTRINSIC_OP_HPP
 
 #include <bf_constants.hpp>
-#include <tls_t.hpp>
 #include <ext_t.hpp>
 #include <intrinsic_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
@@ -46,8 +46,8 @@ namespace mk
     ///     code on failure.
     ///
     [[nodiscard]] constexpr auto
-    dispatch_syscall_intrinsic_op(
-        tls_t &tls, ext_t const &ext, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
+    dispatch_syscall_intrinsic_op(tls_t &tls, ext_t const &ext, intrinsic_t &intrinsic) noexcept
+        -> bsl::errc_type
     {
         bsl::discard(tls);
         bsl::discard(ext);

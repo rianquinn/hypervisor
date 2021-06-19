@@ -26,9 +26,9 @@
 #define DISPATCH_ESR_HPP
 
 #include <dispatch_esr_page_fault.hpp>
-#include <tls_t.hpp>
 #include <ext_t.hpp>
 #include <intrinsic_t.hpp>
+#include <tls_t.hpp>
 
 #include <bsl/debug.hpp>
 #include <bsl/exit_code.hpp>
@@ -51,8 +51,7 @@ namespace mk
     ///     bsl::exit_failure otherwise
     ///
     [[nodiscard]] constexpr auto
-    dispatch_esr(tls_t &tls, ext_t *const ext, intrinsic_t &intrinsic) noexcept
-        -> bsl::exit_code
+    dispatch_esr(tls_t &tls, ext_t *const ext, intrinsic_t &intrinsic) noexcept -> bsl::exit_code
     {
         bsl::discard(tls);
         bsl::discard(ext);

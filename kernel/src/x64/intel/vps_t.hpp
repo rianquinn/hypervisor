@@ -30,15 +30,12 @@
 #include <bf_constants.hpp>
 #include <bf_reg_t.hpp>
 #include <general_purpose_regs_t.hpp>
+#include <intrinsic_t.hpp>
+#include <page_pool_t.hpp>
 #include <tls_t.hpp>
 #include <vmcs_missing_registers_t.hpp>
 #include <vmcs_t.hpp>
-
-#include <intrinsic_t.hpp>
-#include <page_pool_t.hpp>
 #include <vmexit_log_t.hpp>
-
-
 
 #include <bsl/array.hpp>
 #include <bsl/debug.hpp>
@@ -120,8 +117,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         set_es_segment_descriptor(
-            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept
-            -> bsl::errc_type
+            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -195,8 +191,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         set_cs_segment_descriptor(
-            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept
-            -> bsl::errc_type
+            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -270,8 +265,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         set_ss_segment_descriptor(
-            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept
-            -> bsl::errc_type
+            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -345,8 +339,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         set_ds_segment_descriptor(
-            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept
-            -> bsl::errc_type
+            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -420,8 +413,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         set_fs_segment_descriptor(
-            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept
-            -> bsl::errc_type
+            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -495,8 +487,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         set_gs_segment_descriptor(
-            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept
-            -> bsl::errc_type
+            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -570,8 +561,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         set_ldtr_segment_descriptor(
-            intrinsic_t &intrinsic, loader::state_save_t const &state) &noexcept
-            -> bsl::errc_type
+            intrinsic_t &intrinsic, loader::state_save_t const &state) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -645,8 +635,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         set_tr_segment_descriptor(
-            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept
-            -> bsl::errc_type
+            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -1080,8 +1069,8 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        get_ldtr_segment_descriptor(
-            intrinsic_t &intrinsic, loader::state_save_t &state) noexcept -> bsl::errc_type
+        get_ldtr_segment_descriptor(intrinsic_t &intrinsic, loader::state_save_t &state) noexcept
+            -> bsl::errc_type
         {
             bsl::errc_type ret{};
             bsl::safe_uint16 selector{};
@@ -1199,8 +1188,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        ensure_this_vps_is_loaded(tls_t &tls, intrinsic_t &intrinsic) noexcept
-            -> bsl::errc_type
+        ensure_this_vps_is_loaded(tls_t &tls, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -2442,8 +2430,7 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         [[nodiscard]] constexpr auto
-        vps_to_state_save(
-            tls_t &tls, intrinsic_t &intrinsic, loader::state_save_t &state) &noexcept
+        vps_to_state_save(tls_t &tls, intrinsic_t &intrinsic, loader::state_save_t &state) &noexcept
             -> bsl::errc_type
         {
             bsl::errc_type ret{};
@@ -3944,8 +3931,7 @@ namespace mk
         ///   @return Returns the VMExit reason on success, or
         ///
         [[nodiscard]] constexpr auto
-        run(tls_t &tls, intrinsic_t &intrinsic, vmexit_log_t &log) &noexcept
-            -> bsl::safe_uintmax
+        run(tls_t &tls, intrinsic_t &intrinsic, vmexit_log_t &log) &noexcept -> bsl::safe_uintmax
         {
             bsl::errc_type ret{};
             constexpr bsl::safe_uintmax invalid_exit_reason{bsl::to_umax(0xFFFFFFFF00000000U)};
