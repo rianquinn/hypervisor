@@ -33,7 +33,7 @@
 namespace mk
 {
     /// @brief stores the TLS blocks used by the microkernel.
-    extern "C" constinit bsl::array<tls_t, HYPERVISOR_MAX_PPS> g_tls_blocks{};
+    extern "C" constinit bsl::array<tls_t, HYPERVISOR_MAX_PPS.get()> g_tls_blocks{};
 
     /// @brief stores a pointer to the debug ring provided by the loader
     extern "C" constinit loader::debug_ring_t *g_debug_ring{};
