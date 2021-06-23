@@ -26,6 +26,8 @@
 #define VMMCTL_MAIN_HPP
 
 #include <dump_vmm_args_t.hpp>
+#include <ifmap.hpp>
+#include <ioctl.hpp>
 #include <loader_platform_interface.hpp>
 #include <start_vmm_args_t.hpp>
 #include <stop_vmm_args_t.hpp>
@@ -46,6 +48,9 @@
 
 namespace vmmctl
 {
+    /// @brief defines the IOCTL version this code supports.
+    constexpr auto IOCTL_VERSION{1_umax};
+
     /// @class vmmctl::vmmctl_main
     ///
     /// <!-- description -->
@@ -54,29 +59,22 @@ namespace vmmctl
     ///     to dump the contents of the VMM's internal debug ring to the
     ///     console for debugging.
     ///
-    /// <!-- template parameters -->
-    ///   @tparam IOCTL_CONCEPT the ioctl implementation to use. Normally this is just
-    ///     bsl::ioctl, but during testing this might be a mock.
-    ///   @tparam IFMAP_CONCEPT the ifmap implementation to use. Normally this is just
-    ///     bsl::ifmap, but during testing this might be a mock.
-    ///
-    template<typename IOCTL_CONCEPT, typename IFMAP_CONCEPT>
     class vmmctl_main final
     {
         /// @brief stores the mapped ELF file for the microkernel
-        IFMAP_CONCEPT m_mapped_mk_elf_file{};
+        ifmap m_mapped_mk_elf_file{};
         /// @brief stores the mapped ELF files for each extension
-        bsl::array<IFMAP_CONCEPT, HYPERVISOR_MAX_EXTENSIONS> m_mapped_ext_elf_files{};
+        bsl::array<ifmap, HYPERVISOR_MAX_EXTENSIONS.get()> m_mapped_ext_elf_files{};
         /// @brief stores the arguments for stopping the VMM.
-        loader::stop_vmm_args_t m_stop_vmm_ctl_args{bsl::ONE_UMAX.get()};
+        loader::stop_vmm_args_t m_stop_vmm_ctl_args{IOCTL_VERSION.get()};
         /// @brief stores the arguments for dumping the VMM.
-        loader::dump_vmm_args_t m_dump_vmm_ctl_args{bsl::ONE_UMAX.get(), {}};
+        loader::dump_vmm_args_t m_dump_vmm_ctl_args{IOCTL_VERSION.get(), {}};
 
         /// <!-- description -->
         ///   @brief Displays the help menu for vmmctl
         ///
-        constexpr void
-        help() const noexcept
+        constexpr static void
+        help() noexcept
         {
             bsl::print() << "Usage: vmmctl start microkernel ext1 <ext2> ..." << bsl::endl;
             bsl::print() << "  or:  vmmctl stop" << bsl::endl;
@@ -87,24 +85,24 @@ namespace vmmctl
         }
 
         /// <!-- description -->
-        ///   @brief Writes a provided request to the loader given an IOCTL_CONCEPT
+        ///   @brief Writes a provided request to the loader given an ioctl
         ///     to the loader as well as the arguments to send to the loader.
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam R the type that defines the request to give the loader
         ///   @tparam A the type that defines the arguments to give the loader
         ///   @param request the request to give the loader
-        ///   @param ctl the IOCTL_CONCEPT to the loader
+        ///   @param ctl the ioctl to the loader
         ///   @param ctl_args the arguments to give the loader
         ///   @return Returns bsl::exit_success on success, bsl::exit_failure
         ///     otherwise
         ///
         template<typename R, typename A>
         [[nodiscard]] constexpr auto
-        write(R const &request, IOCTL_CONCEPT const &ctl, A const *const ctl_args) const noexcept
+        write_data(R const &request, ioctl const &ctl, A const *const ctl_args) const noexcept
             -> bsl::exit_code
         {
-            if (!ctl.write(request, ctl_args, bsl::size_of<A>())) {
+            if (!ctl.write_data(request, ctl_args, bsl::size_of<A>())) {
                 bsl::error() << "vmmctl failed. check kernel logs details\n";
                 return bsl::exit_failure;
             }
@@ -113,25 +111,25 @@ namespace vmmctl
         }
 
         /// <!-- description -->
-        ///   @brief Writes a provided request to the loader given an IOCTL_CONCEPT
+        ///   @brief Writes a provided request to the loader given an ioctl
         ///     to the loader as well as the arguments to send to the loader.
-        ///     The results of the IOCTL_CONCEPT are returned in the provided args.
+        ///     The results of the ioctl are returned in the provided args.
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam R the type that defines the request to give the loader
         ///   @tparam A the type that defines the arguments to give the loader
         ///   @param request the request to give the loader
-        ///   @param ctl the IOCTL_CONCEPT to the loader
+        ///   @param ctl the ioctl to the loader
         ///   @param ctl_args the arguments to give the loader
         ///   @return Returns bsl::exit_success on success, bsl::exit_failure
         ///     otherwise
         ///
         template<typename R, typename A>
         [[nodiscard]] constexpr auto
-        read_write(R const &request, IOCTL_CONCEPT const &ctl, A *const ctl_args) const noexcept
+        read_write_data(R const &request, ioctl const &ctl, A *const ctl_args) const noexcept
             -> bsl::exit_code
         {
-            if (!ctl.read_write(request, ctl_args, bsl::size_of<A>())) {
+            if (!ctl.read_write_data(request, ctl_args, bsl::size_of<A>())) {
                 bsl::error() << "vmmctl failed. check kernel logs details\n";
                 return bsl::exit_failure;
             }
@@ -140,7 +138,7 @@ namespace vmmctl
         }
 
         /// <!-- description -->
-        ///   @brief Starts the VMM given a set of IOCTL_CONCEPT arguments to send
+        ///   @brief Starts the VMM given a set of ioctl arguments to send
         ///     to the loader.
         ///
         /// <!-- inputs/outputs -->
@@ -151,16 +149,16 @@ namespace vmmctl
         [[nodiscard]] constexpr auto
         start_vmm(loader::start_vmm_args_t const *const ctl_args) const noexcept -> bsl::exit_code
         {
-            IOCTL_CONCEPT ctl{loader::DEVICE_NAME};
+            ioctl ctl{loader::DEVICE_NAME};
             if (ctl) {
-                return this->write(loader::START_VMM, ctl, ctl_args);
+                return this->write_data(loader::START_VMM, ctl, ctl_args);
             }
 
             return bsl::exit_failure;
         }
 
         /// <!-- description -->
-        ///   @brief Stops the VMM given a set of IOCTL_CONCEPT arguments to send
+        ///   @brief Stops the VMM given a set of ioctl arguments to send
         ///     to the loader.
         ///
         /// <!-- inputs/outputs -->
@@ -171,16 +169,16 @@ namespace vmmctl
         [[nodiscard]] constexpr auto
         stop_vmm(loader::stop_vmm_args_t const *const ctl_args) const noexcept -> bsl::exit_code
         {
-            IOCTL_CONCEPT ctl{loader::DEVICE_NAME};
+            ioctl ctl{loader::DEVICE_NAME};
             if (ctl) {
-                return this->write(loader::STOP_VMM, ctl, ctl_args);
+                return this->write_data(loader::STOP_VMM, ctl, ctl_args);
             }
 
             return bsl::exit_failure;
         }
 
         /// <!-- description -->
-        ///   @brief Dumps the VMM given a set of IOCTL_CONCEPT arguments to send
+        ///   @brief Dumps the VMM given a set of ioctl arguments to send
         ///     to the loader.
         ///
         /// <!-- inputs/outputs -->
@@ -191,9 +189,9 @@ namespace vmmctl
         [[nodiscard]] constexpr auto
         dump_vmm(loader::dump_vmm_args_t *const ctl_args) const noexcept -> bsl::exit_code
         {
-            IOCTL_CONCEPT ctl{loader::DEVICE_NAME};
+            ioctl ctl{loader::DEVICE_NAME};
             if (ctl) {
-                if (bsl::exit_success != this->read_write(loader::DUMP_VMM, ctl, ctl_args)) {
+                if (bsl::exit_success != this->read_write_data(loader::DUMP_VMM, ctl, ctl_args)) {
                     return bsl::exit_failure;
                 }
 
@@ -251,11 +249,10 @@ namespace vmmctl
         ///     arguments if the ELF file was successfully mapped, otherwise
         ///     this function returns bsl::errc_failure.
         ///
-        [[nodiscard]] constexpr auto
-        map_elf_file(bsl::arguments &args, IFMAP_CONCEPT *const map) const noexcept
-            -> bsl::errc_type
+        [[nodiscard]] constexpr static auto
+        map_elf_file(bsl::arguments &args, ifmap *const map) noexcept -> bsl::errc_type
         {
-            if ((*map = IFMAP_CONCEPT{args.front<bsl::string_view>()})) {
+            if ((*map = ifmap{args.front<bsl::string_view>()})) {
                 ++args;
                 return bsl::errc_success;
             }
@@ -296,7 +293,7 @@ namespace vmmctl
         [[nodiscard]] constexpr auto
         map_ext_elf_files_from_user(bsl::arguments &args) noexcept -> bsl::errc_type
         {
-            for (auto const &elem : m_mapped_ext_elf_files) {
+            for (auto const elem : m_mapped_ext_elf_files) {
                 if (!args) {
                     break;
                 }
@@ -312,7 +309,7 @@ namespace vmmctl
         }
 
         /// <!-- description -->
-        ///   @brief Converts the extension ELF files from an array of IFMAP_CONCEPTs
+        ///   @brief Converts the extension ELF files from an array of ifmaps
         ///     to an array of buffer_t structs so that the ELF files can be
         ///     passed to the loader.
         ///
@@ -321,10 +318,10 @@ namespace vmmctl
         ///
         [[nodiscard]] constexpr auto
         convert_mapped_ext_elf_files_to_array_of_spans() const noexcept
-            -> bsl::array<bsl::span<bsl::byte const>, HYPERVISOR_MAX_EXTENSIONS>
+            -> bsl::array<bsl::span<bsl::byte const>, HYPERVISOR_MAX_EXTENSIONS.get()>
         {
-            bsl::array<bsl::span<bsl::byte const>, HYPERVISOR_MAX_EXTENSIONS> files{};
-            for (auto const &elem : m_mapped_ext_elf_files) {
+            bsl::array<bsl::span<bsl::byte const>, HYPERVISOR_MAX_EXTENSIONS.get()> files{};
+            for (auto const elem : m_mapped_ext_elf_files) {
                 if (nullptr != elem.data) {
                     *files.at_if(elem.index) = elem.data->view();
                 }
@@ -338,24 +335,27 @@ namespace vmmctl
 
         /// <!-- description -->
         ///   @brief Given arguments from the user, this function creates the
-        ///     IOCTL_CONCEPT equivalent arguments that the loader expects for
+        ///     ioctl equivalent arguments that the loader expects for
         ///     starting the VMM
         ///
         /// <!-- inputs/outputs -->
         ///   @param args the user provided arguments
-        ///   @return The resulting IOCTL_CONCEPT arguments
+        ///   @return The resulting ioctl arguments
         ///
         [[nodiscard]] constexpr auto
         make_start_vmm_args(bsl::arguments &args) noexcept -> bsl::result<loader::start_vmm_args_t>
         {
+            constexpr auto missing_microkernel{0_umax};
+            constexpr auto missing_extensions{1_umax};
+
             auto remaining{args.remaining()};
 
-            if (bsl::to_umax(0) == remaining) {
+            if (missing_microkernel == remaining) {
                 bsl::error() << "missing the microkernel elf file\n";
                 return {bsl::errc_failure};
             }
 
-            if (bsl::to_umax(1) == remaining) {
+            if (missing_extensions == remaining) {
                 bsl::error() << "at least one extension is required\n";
                 return {bsl::errc_failure};
             }
@@ -369,7 +369,7 @@ namespace vmmctl
             }
 
             return {loader::start_vmm_args_t{
-                bsl::ONE_UMAX.get(),
+                IOCTL_VERSION.get(),
                 0U,
                 0U,
                 m_mapped_mk_elf_file.view(),
@@ -383,7 +383,7 @@ namespace vmmctl
         /// <!-- inputs/outputs -->
         ///   @param cmd the user provided command
         ///
-        constexpr void
+        constexpr static void
         process_cmd_output_error(bsl::string_view const &cmd) noexcept
         {
             if (cmd.empty()) {
@@ -417,7 +417,7 @@ namespace vmmctl
 
             if (cmd == "start") {
                 auto ctl_args{this->make_start_vmm_args(args)};
-                if (auto ptr{ctl_args.get_if()}) {
+                if (auto const *const ptr{ctl_args.get_if()}) {
                     return this->start_vmm(ptr);
                 }
 

@@ -36,7 +36,7 @@
 namespace mk
 {
     /// @brief defines total number of entries in the L1T
-    constexpr bsl::safe_uintmax NUM_L1T_ENTRIES{bsl::to_umax(512)};
+    constexpr auto NUM_L1T_ENTRIES{512_umax};
 
     /// @struct mk::l1t_t
     ///
@@ -46,7 +46,7 @@ namespace mk
     struct l1t_t final
     {
         /** @brief stores the entries for this page table */
-        bsl::array<loader::l1te_t, NUM_L1T_ENTRIES.get()> entries;
+        bsl::array<l1te_t, NUM_L1T_ENTRIES.get()> entries;
     };
 }
 

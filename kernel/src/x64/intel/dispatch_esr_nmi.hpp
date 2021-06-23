@@ -51,8 +51,8 @@ namespace mk
         bsl::errc_type ret{};
         bsl::safe_uint32 val{};
 
-        constexpr bsl::safe_uintmax vmcs_procbased_ctls_idx{bsl::to_umax(0x4002U)};
-        constexpr bsl::safe_uint32 vmcs_set_nmi_window_exiting{bsl::to_u32(0x400000U)};
+        constexpr auto vmcs_procbased_ctls_idx{0x4002_umax};
+        constexpr auto vmcs_set_nmi_window_exiting{0x400000_u32};
 
         if (bsl::ZERO_UMAX != tls.nmi_lock) {
             tls.nmi_pending = bsl::ONE_UMAX.get();

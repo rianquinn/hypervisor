@@ -300,7 +300,7 @@ namespace example
             ///   VPSs are assigned to VPs).
             ///
 
-            constexpr auto guest_asid_idx{0x0058U_u64};
+            constexpr auto guest_asid_idx{0x0058_u64};
             constexpr auto guest_asid_val{0x1_u32};
 
             ret = sys.bf_vps_op_write32(m_id, guest_asid_idx, guest_asid_val);

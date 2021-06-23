@@ -45,22 +45,28 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
-    ///   @param ext_pool the extension pool to use
+    ///   @param page_pool the page pool to use
+    ///   @param huge_pool the huge pool to use
     ///   @param vm_pool the VM pool to use
+    ///   @param ext_pool the extension pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_vm_op_create_vm(tls_t &tls, ext_pool_t &ext_pool, vm_pool_t &vm_pool) noexcept
-        -> bsl::errc_type
+    syscall_vm_op_create_vm(
+        tls_t &tls,
+        page_pool_t &page_pool,
+        huge_pool_t &huge_pool,
+        vm_pool_t &vm_pool,
+        ext_pool_t &ext_pool) noexcept -> bsl::errc_type
     {
-        auto const vmid{vm_pool.allocate(tls, ext_pool)};
+        auto const vmid{vm_pool.allocate(tls, page_pool, huge_pool, ext_pool)};
         if (bsl::unlikely(!vmid)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
         }
 
-        constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
+        constexpr auto mask{0xFFFFFFFFFFFF0000_umax};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vmid)).get();
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
@@ -72,19 +78,25 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
-    ///   @param ext_pool the extension pool to use
+    ///   @param page_pool the page pool to use
+    ///   @param huge_pool the huge pool to use
     ///   @param vm_pool the VM pool to use
     ///   @param vp_pool the VP pool to use
+    ///   @param ext_pool the extension pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
     syscall_vm_op_destroy_vm(
-        tls_t &tls, ext_pool_t &ext_pool, vm_pool_t &vm_pool, vp_pool_t &vp_pool) noexcept
-        -> bsl::errc_type
+        tls_t &tls,
+        page_pool_t &page_pool,
+        huge_pool_t &huge_pool,
+        vm_pool_t &vm_pool,
+        vp_pool_t &vp_pool,
+        ext_pool_t &ext_pool) noexcept -> bsl::errc_type
     {
         auto const vmid{bsl::to_u16_unsafe(tls.ext_reg1)};
-        auto const ret{vm_pool.deallocate(tls, ext_pool, vp_pool, vmid)};
+        auto const ret{vm_pool.deallocate(tls, page_pool, huge_pool, vp_pool, ext_pool, vmid)};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
@@ -99,17 +111,24 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
-    ///   @param ext_pool the extension pool to use
-    ///   @param ext the extension that made the syscall
+    ///   @param page_pool the page pool to use
+    ///   @param huge_pool the huge pool to use
     ///   @param vm_pool the VM pool to use
     ///   @param vp_pool the VM pool to use
+    ///   @param ext_pool the extension pool to use
+    ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
     dispatch_syscall_vm_op(
-        tls_t &tls, ext_pool_t &ext_pool, ext_t const &ext, vm_pool_t &vm_pool, vp_pool_t &vp_pool)
-        -> bsl::errc_type
+        tls_t &tls,
+        page_pool_t &page_pool,
+        huge_pool_t &huge_pool,
+        vm_pool_t &vm_pool,
+        vp_pool_t &vp_pool,
+        ext_pool_t &ext_pool,
+        ext_t &ext) -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -136,7 +155,7 @@ namespace mk
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_VM_OP_CREATE_VM_IDX_VAL.get(): {
-                ret = syscall_vm_op_create_vm(tls, ext_pool, vm_pool);
+                ret = syscall_vm_op_create_vm(tls, page_pool, huge_pool, vm_pool, ext_pool);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -146,7 +165,8 @@ namespace mk
             }
 
             case syscall::BF_VM_OP_DESTROY_VM_IDX_VAL.get(): {
-                ret = syscall_vm_op_destroy_vm(tls, ext_pool, vm_pool, vp_pool);
+                ret =
+                    syscall_vm_op_destroy_vm(tls, page_pool, huge_pool, vm_pool, vp_pool, ext_pool);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

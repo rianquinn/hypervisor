@@ -30,6 +30,7 @@ Checks:
       -bsl-name-prefixes,
       -bsl-name-case,
       -bsl-using-ident-unique-namespace,
+      -bsl-literals-user-defined,
     bugprone-*,
       -bugprone-branch-clone,
     cert-*,

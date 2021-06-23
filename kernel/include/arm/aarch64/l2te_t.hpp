@@ -29,9 +29,9 @@
 
 #pragma pack(push, 1)
 
-namespace loader
+namespace mk
 {
-    /// @struct loader::l2te_t
+    /// @struct mk::l2te_t
     ///
     /// <!-- description -->
     ///   @brief Defines the layout of a level-2 table entry (L2TE).

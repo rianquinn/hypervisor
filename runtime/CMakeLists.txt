@@ -65,11 +65,10 @@ target_compile_definitions(runtime PUBLIC
 # Sources
 # ------------------------------------------------------------------------------
 
-hypervisor_target_source(runtime src/msg_stack_chk_fail.cpp ${HEADERS})
+hypervisor_target_source(runtime src/__stack_chk_fail.cpp ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
     hypervisor_target_source(runtime src/x64/_start.S ${HEADERS})
-    hypervisor_target_source(runtime src/x64/__stack_chk_fail.S ${HEADERS})
     hypervisor_target_source(runtime src/x64/__stack_chk_guard.S ${HEADERS})
     hypervisor_target_source(runtime src/x64/memcpy.S ${HEADERS})
     hypervisor_target_source(runtime src/x64/memset.S ${HEADERS})
@@ -77,7 +76,6 @@ endif()
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
     hypervisor_target_source(runtime src/arm/aarch64/_start.S ${HEADERS})
-    hypervisor_target_source(runtime src/arm/aarch64/__stack_chk_fail.S ${HEADERS})
     hypervisor_target_source(runtime src/arm/aarch64/__stack_chk_guard.S ${HEADERS})
     hypervisor_target_source(runtime src/arm/aarch64/memcpy.S ${HEADERS})
     hypervisor_target_source(runtime src/arm/aarch64/memset.S ${HEADERS})

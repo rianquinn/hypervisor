@@ -88,7 +88,8 @@ namespace integration
         ///   automatically for the extension as it cannot be deleted.
         ///
 
-        auto const max_vms{bsl::to_umax(HYPERVISOR_MAX_VMS) - bsl::ONE_UMAX};
+        constexpr auto one{1_umax};
+        auto const max_vms{HYPERVISOR_MAX_VMS - one};
 
         // create with invalid handle
         ret = syscall::bf_vm_op_create_vm({}, vmid);

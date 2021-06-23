@@ -37,9 +37,10 @@
 
 namespace mk
 {
-    /// @brief stores a pointer to the debug ring provided by the loader
     extern "C"
     {
+        /// @brief stores a pointer to the debug ring provided by the loader
+        // NOLINTNEXTLINE(bsl-var-braced-init)
         extern loader::debug_ring_t *g_debug_ring;
     }
 

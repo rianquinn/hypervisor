@@ -24,6 +24,7 @@
 
 #include "../../../../../src/x64/intel/intrinsic_t.hpp"
 
+#include <bsl/convert.hpp>
 #include <bsl/ut.hpp>
 
 namespace example

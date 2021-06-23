@@ -128,14 +128,13 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
-    ///   @param ext the extension that made the syscall
     ///   @param intrinsic the intrinsics to use
+    ///   @param ext the extension that made the syscall
     ///   @return Returns syscall::BF_STATUS_SUCCESS on success or an error
     ///     code on failure.
     ///
     [[nodiscard]] constexpr auto
-    dispatch_syscall_intrinsic_op(tls_t &tls, ext_t const &ext, intrinsic_t &intrinsic)
-        -> bsl::errc_type
+    dispatch_syscall_intrinsic_op(tls_t &tls, intrinsic_t &intrinsic, ext_t &ext) -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

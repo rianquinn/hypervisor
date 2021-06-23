@@ -36,13 +36,13 @@ namespace syscall
     // -------------------------------------------------------------------------
 
     /// @brief stores the answer to all things (in 8 bits)
-    constexpr auto g_answer8{bsl::to_u8(42)};
+    constexpr auto g_answer8{42_u8};
     /// @brief stores the answer to all things (in 16 bits)
-    constexpr auto g_answer16{bsl::to_u16(42)};
+    constexpr auto g_answer16{42_u16};
     /// @brief stores the answer to all things (in 32 bits)
-    constexpr auto g_answer32{bsl::to_u32(42)};
+    constexpr auto g_answer32{42_u32};
     /// @brief stores the answer to all things (in 64 bits)
-    constexpr auto g_answer64{bsl::to_u64(42)};
+    constexpr auto g_answer64{42_u64};
 
     // -------------------------------------------------------------------------
     // tests

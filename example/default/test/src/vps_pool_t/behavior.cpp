@@ -116,7 +116,7 @@ namespace example
         };
 
         bsl::ut_scenario{"allocate bf_vps_op_create_vps returns invalid id"} = []() {
-            bsl::ut_given{} = []() {
+            bsl::ut_given_at_runtime{} = []() {
                 vps_pool_t vps_pool{};
                 gs_t gs{};
                 tls_t tls{};

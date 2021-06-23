@@ -58,14 +58,14 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
-    ///   @param ext_pool the extension pool to use
-    ///   @param ext the extension that made the syscall
-    ///   @param intrinsic the intrinsics to use
     ///   @param page_pool the page pool to use
     ///   @param huge_pool the huge pool to use
-    ///   @param vps_pool the VPS pool to use
-    ///   @param vp_pool the VP pool to use
+    ///   @param intrinsic the intrinsics to use
     ///   @param vm_pool the VM pool to use
+    ///   @param vp_pool the VP pool to use
+    ///   @param vps_pool the VPS pool to use
+    ///   @param ext_pool the extension pool to use
+    ///   @param ext the extension that made the syscall
     ///   @param log the VMExit log to use
     ///   @return Returns bsl::exit_success on success, bsl::exit_failure
     ///     otherwise
@@ -73,14 +73,14 @@ namespace mk
     [[nodiscard]] constexpr auto
     dispatch_syscall(
         tls_t &tls,
-        ext_pool_t &ext_pool,
-        ext_t &ext,
-        intrinsic_t &intrinsic,
         page_pool_t &page_pool,
         huge_pool_t &huge_pool,
-        vps_pool_t &vps_pool,
-        vp_pool_t &vp_pool,
+        intrinsic_t &intrinsic,
         vm_pool_t &vm_pool,
+        vp_pool_t &vp_pool,
+        vps_pool_t &vps_pool,
+        ext_pool_t &ext_pool,
+        ext_t &ext,
         vmexit_log_t &log) noexcept -> bsl::exit_code
     {
         bsl::errc_type ret{};
@@ -109,13 +109,13 @@ namespace mk
             case syscall::BF_DEBUG_OP_VAL.get(): {
                 ret = dispatch_syscall_debug_op(
                     tls,
-                    ext_pool,
-                    intrinsic,
                     page_pool,
                     huge_pool,
-                    vps_pool,
-                    vp_pool,
+                    intrinsic,
                     vm_pool,
+                    vp_pool,
+                    vps_pool,
+                    ext_pool,
                     log);
 
                 if (bsl::unlikely(!ret)) {
@@ -137,7 +137,8 @@ namespace mk
             }
 
             case syscall::BF_VM_OP_VAL.get(): {
-                ret = dispatch_syscall_vm_op(tls, ext_pool, ext, vm_pool, vp_pool);
+                ret = dispatch_syscall_vm_op(
+                    tls, page_pool, huge_pool, vm_pool, vp_pool, ext_pool, ext);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::exit_failure;
@@ -147,7 +148,7 @@ namespace mk
             }
 
             case syscall::BF_VP_OP_VAL.get(): {
-                ret = dispatch_syscall_vp_op(tls, ext, vm_pool, vp_pool, vps_pool);
+                ret = dispatch_syscall_vp_op(tls, vp_pool, vps_pool, ext);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::exit_failure;
@@ -158,7 +159,7 @@ namespace mk
 
             case syscall::BF_VPS_OP_VAL.get(): {
                 ret = dispatch_syscall_vps_op(
-                    tls, ext, intrinsic, page_pool, vm_pool, vp_pool, vps_pool);
+                    tls, page_pool, intrinsic, vm_pool, vp_pool, vps_pool, ext);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::exit_failure;
@@ -168,7 +169,7 @@ namespace mk
             }
 
             case syscall::BF_INTRINSIC_OP_VAL.get(): {
-                ret = dispatch_syscall_intrinsic_op(tls, ext, intrinsic);
+                ret = dispatch_syscall_intrinsic_op(tls, intrinsic, ext);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::exit_failure;
@@ -178,7 +179,7 @@ namespace mk
             }
 
             case syscall::BF_MEM_OP_VAL.get(): {
-                ret = dispatch_syscall_mem_op(tls, ext);
+                ret = dispatch_syscall_mem_op(tls, page_pool, huge_pool, ext);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::exit_failure;

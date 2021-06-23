@@ -19,16 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-    list(APPEND SOURCES
-        ../../../src/x64/__stack_chk_fail.S
-    )
-endif()
-
-if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
-    list(APPEND SOURCES
-        ../../../src/arm/aarch64/__stack_chk_fail.S
-    )
-endif()
+list(APPEND SOURCES
+    ../../../src/__stack_chk_fail.cpp
+)
 
 bf_add_test(behavior INCLUDES ${INCLUDES} SYSTEM_INCLUDES ${SYSTEM_INCLUDES} DEFINES ${DEFINES} SOURCES ${SOURCES})

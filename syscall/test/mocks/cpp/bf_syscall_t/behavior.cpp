@@ -34,18 +34,18 @@ namespace syscall
     // -------------------------------------------------------------------------
 
     /// @brief stores the answer to all things (in 8 bits)
-    constexpr auto g_answer8{bsl::to_u8(42)};
+    constexpr auto g_answer8{42_u8};
     /// @brief stores the answer to all things (in 16 bits)
-    constexpr auto g_answer16{bsl::to_u16(42)};
+    constexpr auto g_answer16{42_u16};
     /// @brief stores the answer to all things (in 32 bits)
-    constexpr auto g_answer32{bsl::to_u32(42)};
+    constexpr auto g_answer32{42_u32};
     /// @brief stores the answer to all things (in 64 bits)
-    constexpr auto g_answer64{bsl::to_u64(42)};
+    constexpr auto g_answer64{42_u64};
 
     /// @brief stores a bad address
-    constexpr auto g_bad_addr{bsl::to_u64(0xFFFFFFFFFFFFFFFFU)};
+    constexpr auto g_bad_addr{0xFFFFFFFFFFFFFFFF_u64};
     /// @brief stores a bad version
-    constexpr auto g_bad_version{bsl::to_u32(0x80000000U)};
+    constexpr auto g_bad_version{0x80000000_u32};
 
     // -------------------------------------------------------------------------
     // tests
@@ -68,7 +68,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bsl::ut_then{} = [&sys]() {
                     bsl::ut_check(!sys.initialize(    // --
-                        bf_uint32_t::failure(),      // --
+                        bf_uint32_t::failure(),       // --
                         &dummy_bootstrap_entry,       // --
                         &dummy_vmexit_entry,          // --
                         &dummy_fail_entry));          // --

@@ -33,52 +33,52 @@ namespace mk
     /// @brief Defines the "fail initialize" case
     // We want our implementation to mimic C++ here.
     // NOLINTNEXTLINE(bsl-name-case)
-    constexpr bsl::errc_type errc_fail_initialize{bsl::to_i32(0x00FF0001)};
+    constexpr bsl::errc_type errc_fail_initialize{0x00FF0001_i32};
 
     /// @brief Defines the "fail initialize and release" case
     // We want our implementation to mimic C++ here.
     // NOLINTNEXTLINE(bsl-name-case)
-    constexpr bsl::errc_type errc_fail_initialize_and_release{bsl::to_i32(0x00FF0002)};
+    constexpr bsl::errc_type errc_fail_initialize_and_release{0x00FF0002_i32};
 
     /// @brief Defines the "fail release" case
     // We want our implementation to mimic C++ here.
     // NOLINTNEXTLINE(bsl-name-case)
-    constexpr bsl::errc_type errc_fail_release{bsl::to_i32(0x00FF0003)};
+    constexpr bsl::errc_type errc_fail_release{0x00FF0003_i32};
 
     /// @brief Defines the "vm pool failure" case
     // We want our implementation to mimic C++ here.
     // NOLINTNEXTLINE(bsl-name-case)
-    constexpr bsl::errc_type errc_vm_pool_failure{bsl::to_i32(0x00FF0004)};
+    constexpr bsl::errc_type errc_vm_pool_failure{0x00FF0004_i32};
 
     /// @brief Defines the "vp pool failure" case
     // We want our implementation to mimic C++ here.
     // NOLINTNEXTLINE(bsl-name-case)
-    constexpr bsl::errc_type errc_vp_pool_failure{bsl::to_i32(0x00FF0005)};
+    constexpr bsl::errc_type errc_vp_pool_failure{0x00FF0005_i32};
 
     /// @brief Defines the "vps pool failure" case
     // We want our implementation to mimic C++ here.
     // NOLINTNEXTLINE(bsl-name-case)
-    constexpr bsl::errc_type errc_vps_pool_failure{bsl::to_i32(0x00FF0006)};
+    constexpr bsl::errc_type errc_vps_pool_failure{0x00FF0006_i32};
 
     /// @brief Defines the "ext pool failure" case
     // We want our implementation to mimic C++ here.
     // NOLINTNEXTLINE(bsl-name-case)
-    constexpr bsl::errc_type errc_ext_pool_failure{bsl::to_i32(0x00FF0007)};
+    constexpr bsl::errc_type errc_ext_pool_failure{0x00FF0007_i32};
 
     /// @brief Defines the "vm is deallocated failure" case
     // We want our implementation to mimic C++ here.
     // NOLINTNEXTLINE(bsl-name-case)
-    constexpr bsl::errc_type errc_vm_is_deallocated_failure{bsl::to_i32(0x00FF0008)};
+    constexpr bsl::errc_type errc_vm_is_deallocated_failure{0x00FF0008_i32};
 
     /// @brief Defines the "vm is allocated failure" case
     // We want our implementation to mimic C++ here.
     // NOLINTNEXTLINE(bsl-name-case)
-    constexpr bsl::errc_type errc_vm_is_allocated_failure{bsl::to_i32(0x00FF0009)};
+    constexpr bsl::errc_type errc_vm_is_allocated_failure{0x00FF0009_i32};
 
     /// @brief Defines the "vm is zombie failure" case
     // We want our implementation to mimic C++ here.
     // NOLINTNEXTLINE(bsl-name-case)
-    constexpr bsl::errc_type errc_vm_is_zombie_failure{bsl::to_i32(0x00FF000A)};
+    constexpr bsl::errc_type errc_vm_is_zombie_failure{0x00FF000A_i32};
 }
 
 #endif

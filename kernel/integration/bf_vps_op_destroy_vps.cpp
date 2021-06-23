@@ -131,7 +131,8 @@ namespace integration
         integration::verify(bsl::errc_failure == ret);
 
         // destroy with VP that has not been created
-        ret = syscall::bf_vp_op_destroy_vp(g_handle, bsl::to_u16(0x2));
+        constexpr auto invalid_vpid{2_u16};
+        ret = syscall::bf_vp_op_destroy_vp(g_handle, invalid_vpid);
         integration::verify(bsl::errc_failure == ret);
 
         // destroy success
@@ -143,19 +144,19 @@ namespace integration
         integration::verify(bsl::errc_failure == ret);
 
         // create all, then destroy all, prove that we can still create
-        for (bsl::safe_uintmax i{}; i < bsl::to_umax(HYPERVISOR_MAX_VPS); ++i) {
+        for (bsl::safe_uintmax i{}; i < HYPERVISOR_MAX_VPS; ++i) {
             ret = syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, ppid, vpid);
             integration::require_success(ret);
         }
 
-        for (bsl::safe_uintmax i{}; i < bsl::to_umax(HYPERVISOR_MAX_VPS); ++i) {
+        for (bsl::safe_uintmax i{}; i < HYPERVISOR_MAX_VPS; ++i) {
             ret = syscall::bf_vp_op_destroy_vp(g_handle, bsl::to_u16(i));
             integration::verify(bsl::errc_success == ret);
         }
 
         ret = syscall::bf_vp_op_create_vp(g_handle, syscall::BF_ROOT_VMID, ppid, vpid);
         integration::require_success(ret);
-        integration::require(vpid == bsl::to_u16(0));
+        integration::require(vpid.is_zero());
 
         // ---------------------------------------------------------------------
         // The following is needed to setup the remaining tests

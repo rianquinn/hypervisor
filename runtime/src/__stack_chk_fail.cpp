@@ -22,30 +22,22 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include <global_resources.hpp>
-#include <tls_t.hpp>
-#include <vmexit_loop.hpp>
+#include <bf_control_ops.hpp>
 
-#include <bsl/exit_code.hpp>
+#include <bsl/debug.hpp>
 
 namespace mk
 {
     /// <!-- description -->
-    ///   @brief remove me
+    ///   @brief Called when a stack overflow occurs
     ///
-    /// <!-- inputs/outputs -->
-    ///   @param tls the current TLS block
-    ///   @return Returns bsl::exit_success on success, bsl::exit_failure
-    ///     otherwise
-    ///
-    extern "C" [[nodiscard]] auto
-    vmexit_loop_trampoline(tls_t *const tls) noexcept -> bsl::exit_code
+    extern "C" void
+    // NOLINTNEXTLINE(bsl-documentation)
+    HYPERVISOR_STACK_CHK_FAIL_NAME() noexcept
     {
-        return vmexit_loop(
-            *tls,
-            *static_cast<mk_ext_type *>(tls->ext_vmexit),
-            g_intrinsic,
-            g_vps_pool,
-            g_vmexit_log);
+        bsl::print() << bsl::red << "...<FAULT>\n\n" << bsl::rst;
+        bsl::error() << "Stack Overflow Detected!!!\n";
+
+        syscall::bf_control_op_exit_impl();
     }
 }

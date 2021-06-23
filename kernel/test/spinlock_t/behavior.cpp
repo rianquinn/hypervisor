@@ -34,7 +34,7 @@
 namespace mk
 {
     /// @brief defines the max number of wait threads
-    constexpr bsl::safe_uintmax MAX_WAIT_THREADS{bsl::to_umax(1024)};
+    constexpr auto MAX_WAIT_THREADS{1024_umax};
     /// @brief defines the global spin lock used for the thread tests
     constinit spinlock_t g_spinlock{};
     /// @brief defines the dummy TLS block for the block thread

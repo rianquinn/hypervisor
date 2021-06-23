@@ -188,10 +188,9 @@ namespace syscall
             sys.set_bf_mem_op_alloc_page({});
             bsl::discard(sys.bf_mem_op_free_page({}));
             sys.set_bf_mem_op_free_page({});
-            bsl::discard(sys.bf_mem_op_free_huge(
-                sys.bf_mem_op_alloc_huge(bsl::to_umax(HYPERVISOR_PAGE_SIZE), phys)));
-            bsl::discard(sys.bf_mem_op_free_huge(
-                sys.bf_mem_op_alloc_huge(bsl::to_umax(HYPERVISOR_PAGE_SIZE))));
+            bsl::discard(
+                sys.bf_mem_op_free_huge(sys.bf_mem_op_alloc_huge(HYPERVISOR_PAGE_SIZE, phys)));
+            bsl::discard(sys.bf_mem_op_free_huge(sys.bf_mem_op_alloc_huge(HYPERVISOR_PAGE_SIZE)));
             sys.set_bf_mem_op_alloc_huge({});
             bsl::discard(sys.bf_mem_op_free_huge({}));
             sys.set_bf_mem_op_free_huge({});

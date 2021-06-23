@@ -369,7 +369,7 @@ namespace example
             ///   support. At a minimum, we need to handle CPUID on AMD.
             ///
 
-            constexpr auto exit_reason_cpuid{0x72_umax};
+            constexpr auto exit_reason_cpuid{0x72_u64};
 
             /// NOTE:
             /// - Dispatch and handle each VMExit.

@@ -165,8 +165,8 @@ namespace example
                 bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, sys, intrinsic, {}));
                     bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vp.allocate(
-                            gs, tls, sys, intrinsic, bsl::safe_uint16::failure(), {}));
+                        bsl::ut_check(
+                            !vp.allocate(gs, tls, sys, intrinsic, bsl::safe_uint16::failure(), {}));
                     };
                 };
             };
@@ -199,8 +199,8 @@ namespace example
                 bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, sys, intrinsic, {}));
                     bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vp.allocate(
-                            gs, tls, sys, intrinsic, {}, bsl::safe_uint16::failure()));
+                        bsl::ut_check(
+                            !vp.allocate(gs, tls, sys, intrinsic, {}, bsl::safe_uint16::failure()));
                     };
                 };
             };

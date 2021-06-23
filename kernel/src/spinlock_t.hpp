@@ -29,6 +29,7 @@
 #include <tls_t.hpp>
 #include <yield.hpp>
 
+#include <bsl/convert.hpp>
 #include <bsl/debug.hpp>
 #include <bsl/is_constant_evaluated.hpp>
 #include <bsl/safe_integral.hpp>
@@ -37,6 +38,9 @@
 
 namespace mk
 {
+    /// @brief defines when an esr has not executed
+    constexpr auto SPINLOCK_ESR_NOT_EXECUTED{0_umax};
+
     /// @class mk::spinlock_t
     ///
     /// <!-- description -->
@@ -133,7 +137,7 @@ namespace mk
             ///
 
             if (tls.ppid == m_std_ppid) {
-                if (tls.esr_ip != bsl::ZERO_UMAX) {
+                if (tls.esr_ip != SPINLOCK_ESR_NOT_EXECUTED) {
                     if (!m_esr_ppid) {
                         m_esr_ppid = tls.ppid;
                         return;
@@ -154,7 +158,7 @@ namespace mk
             }
 
             if (tls.ppid == m_esr_ppid) {
-                if (tls.esr_ip == bsl::ZERO_UMAX) {
+                if (tls.esr_ip == SPINLOCK_ESR_NOT_EXECUTED) {
                     m_std_ppid = tls.ppid;
                     return;
                 }
@@ -200,7 +204,7 @@ namespace mk
                 }
             }
 
-            if (tls.esr_ip == bsl::ZERO_UMAX) {
+            if (tls.esr_ip == SPINLOCK_ESR_NOT_EXECUTED) {
                 m_std_ppid = tls.ppid;
             }
             else {
@@ -228,7 +232,7 @@ namespace mk
             ///   to release the lock.
             ///
 
-            if (tls.esr_ip == bsl::ZERO_UMAX) {
+            if (tls.esr_ip == SPINLOCK_ESR_NOT_EXECUTED) {
                 m_std_ppid = bsl::safe_uint16::failure();
             }
             else {

@@ -29,9 +29,9 @@
 
 #pragma pack(push, 1)
 
-namespace loader
+namespace mk
 {
-    /// @struct loader::l1te_t
+    /// @struct mk::l1te_t
     ///
     /// <!-- description -->
     ///   @brief Defines the layout of a level-1 table entry (L1TE).

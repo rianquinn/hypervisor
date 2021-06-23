@@ -29,9 +29,9 @@
 
 #pragma pack(push, 1)
 
-namespace loader
+namespace mk
 {
-    /// @struct loader::l0te_t
+    /// @struct mk::l0te_t
     ///
     /// <!-- description -->
     ///   @brief Defines the layout of a level-0 table entry (L0TE).

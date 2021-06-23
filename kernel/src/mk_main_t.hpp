@@ -254,7 +254,8 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(bsl::ZERO_UMAX == args->rpt_phys)) {
+            constexpr auto null_address{0_umax};
+            if (bsl::unlikely_assert(null_address == args->rpt_phys)) {
                 bsl::error() << "args->rpt_phys is 0"    // --
                              << bsl::endl                // --
                              << bsl::here();             // --
@@ -323,8 +324,8 @@ namespace mk
         constexpr void
         set_extension_sp(tls_t &tls) noexcept
         {
-            constexpr bsl::safe_uintmax stack_addr{HYPERVISOR_EXT_STACK_ADDR};
-            constexpr bsl::safe_uintmax stack_size{HYPERVISOR_EXT_STACK_SIZE};
+            constexpr auto stack_addr{HYPERVISOR_EXT_STACK_ADDR};
+            constexpr auto stack_size{HYPERVISOR_EXT_STACK_SIZE};
 
             auto const offs{(stack_size + HYPERVISOR_PAGE_SIZE) * bsl::to_umax(tls.ppid)};
             tls.sp = (stack_addr + offs + stack_size).get();
@@ -336,17 +337,18 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param intrinsic the intrinsic_t to use
         ///
         constexpr void
-        set_extension_tp(tls_t &tls) noexcept
+        set_extension_tp(tls_t &tls, intrinsic_t &intrinsic) noexcept
         {
-            constexpr bsl::safe_uintmax tls_addr{HYPERVISOR_EXT_TLS_ADDR};
-            constexpr bsl::safe_uintmax tls_size{HYPERVISOR_EXT_TLS_SIZE};
+            constexpr auto tls_addr{HYPERVISOR_EXT_TLS_ADDR};
+            constexpr auto tls_size{HYPERVISOR_EXT_TLS_SIZE};
 
             auto const offs{(tls_size + HYPERVISOR_PAGE_SIZE) * bsl::to_umax(tls.ppid)};
             tls.tp = (tls_addr + offs + HYPERVISOR_PAGE_SIZE).get();
 
-            m_intrinsic.set_tp(tls.tp);
+            intrinsic.set_tp(tls.tp);
         }
 
         /// <!-- description -->
@@ -354,13 +356,31 @@ namespace mk
         ///     depends on.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param args the loader provided arguments to the microkernel.
         ///   @param tls the current TLS block
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
+        ///   @param intrinsic the intrinsic_t to use
+        ///   @param vm_pool the vm_pool_t to use
+        ///   @param vp_pool the vp_pool_t to use
+        ///   @param vps_pool the vps_pool_t to use
+        ///   @param ext_pool the ext_pool_t to use
+        ///   @param system_rpt the system RPT provided by the loader
+        ///   @param args the loader provided arguments to the microkernel.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(loader::mk_args_t *const args, tls_t &tls) noexcept -> bsl::errc_type
+        initialize(
+            tls_t &tls,
+            page_pool_t &page_pool,
+            huge_pool_t &huge_pool,
+            intrinsic_t &intrinsic,
+            vm_pool_t &vm_pool,
+            vp_pool_t &vp_pool,
+            vps_pool_t &vps_pool,
+            ext_pool_t &ext_pool,
+            root_page_table_t &system_rpt,
+            loader::mk_args_t *const args) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -381,67 +401,67 @@ namespace mk
             bsl::print() << bsl::rst << bsl::endl;
             bsl::print() << bsl::rst << bsl::endl;
 
-            ret = m_page_pool.initialize(args->page_pool);
+            ret = page_pool.initialize(args->page_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_huge_pool.initialize(args->huge_pool);
+            ret = huge_pool.initialize(args->huge_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_system_rpt.initialize(tls, &m_intrinsic, &m_page_pool, &m_huge_pool);
+            ret = system_rpt.initialize(tls, page_pool, huge_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_system_rpt.add_tables(tls, args->rpt);
+            ret = system_rpt.add_tables(tls, args->rpt);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_vps_pool.initialize(tls, m_page_pool);
+            ret = vps_pool.initialize(tls, page_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_vp_pool.initialize(tls, m_vps_pool);
+            ret = vp_pool.initialize(tls, vps_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_ext_pool.initialize(tls, args->ext_elf_files);
+            ret = ext_pool.initialize(tls, page_pool, huge_pool, system_rpt, args->ext_elf_files);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_vm_pool.initialize(tls, m_ext_pool, m_vp_pool);
+            ret = vm_pool.initialize(tls, page_pool, huge_pool, ext_pool, vp_pool);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            m_root_vmid = m_vm_pool.allocate(tls, m_ext_pool);
+            m_root_vmid = vm_pool.allocate(tls, page_pool, huge_pool, ext_pool);
             if (bsl::unlikely(!m_root_vmid)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_vm_pool.set_active(tls, m_root_vmid);
+            ret = vm_pool.set_active(tls, m_root_vmid);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
 
-            ret = m_ext_pool.start(tls);
+            ret = ext_pool.start(tls, intrinsic);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -458,14 +478,32 @@ namespace mk
         ///     will return bsl::exit_failure.
         ///
         /// <!-- inputs/outputs -->
-        ///   @param args the loader provided arguments to the microkernel.
         ///   @param tls the current TLS block
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
+        ///   @param intrinsic the intrinsic_t to use
+        ///   @param vm_pool the vm_pool_t to use
+        ///   @param vp_pool the vp_pool_t to use
+        ///   @param vps_pool the vps_pool_t to use
+        ///   @param ext_pool the ext_pool_t to use
+        ///   @param system_rpt the system RPT provided by the loader
+        ///   @param args the loader provided arguments to the microkernel.
         ///   @return If the user provided command succeeds, this function
         ///     will return bsl::exit_success, otherwise this function
         ///     will return bsl::exit_failure.
         ///
         [[nodiscard]] constexpr auto
-        process(loader::mk_args_t *const args, tls_t &tls) &noexcept -> bsl::exit_code
+        process(
+            tls_t &tls,
+            page_pool_t &page_pool,
+            huge_pool_t &huge_pool,
+            intrinsic_t &intrinsic,
+            vm_pool_t &vm_pool,
+            vp_pool_t &vp_pool,
+            vps_pool_t &vps_pool,
+            ext_pool_t &ext_pool,
+            root_page_table_t &system_rpt,
+            loader::mk_args_t *const args) &noexcept -> bsl::exit_code
         {
             bsl::errc_type ret{};
 
@@ -480,10 +518,21 @@ namespace mk
             }
 
             this->set_extension_sp(tls);
-            this->set_extension_tp(tls);
+            this->set_extension_tp(tls, intrinsic);
 
             if (args->ppid == syscall::BF_BS_PPID) {
-                ret = this->initialize(args, tls);
+                ret = this->initialize(
+                    tls,
+                    page_pool,
+                    huge_pool,
+                    intrinsic,
+                    vm_pool,
+                    vp_pool,
+                    vps_pool,
+                    ext_pool,
+                    system_rpt,
+                    args);
+
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::exit_failure;
@@ -510,7 +559,7 @@ namespace mk
                 bsl::touch();
             }
             else {
-                ret = m_vm_pool.set_active(tls, m_root_vmid);
+                ret = vm_pool.set_active(tls, m_root_vmid);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::exit_failure;
@@ -520,7 +569,7 @@ namespace mk
                 tls.ext_fail = m_ext_fail;
             }
 
-            ret = m_ext_pool.bootstrap(tls);
+            ret = ext_pool.bootstrap(tls, intrinsic);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::exit_failure;

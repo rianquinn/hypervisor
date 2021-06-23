@@ -198,7 +198,7 @@ namespace example
                              << bsl::hex(vpsid)                                            // --
                              << " provided by the microkernel is invalid"                  // --
                              << " or greater than or equal to the HYPERVISOR_MAX_VPSS "    // --
-                             << bsl::hex(HYPERVISOR_MAX_VPSS)            // --
+                             << bsl::hex(HYPERVISOR_MAX_VPSS)                              // --
                              << bsl::endl                                                  // --
                              << bsl::here();                                               // --
 

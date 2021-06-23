@@ -418,7 +418,7 @@ namespace example
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.bf_tls_set_rax(bsl::to_u64(loader::CPUID_COMMAND_EAX));
                     sys.bf_tls_set_rcx(bsl::to_u64(loader::CPUID_COMMAND_ECX_STOP));
-                    sys.bf_tls_set_ppid(online_pps - bsl::ONE_U16);
+                    sys.bf_tls_set_ppid(online_pps - 1_u16);
                     sys.bf_tls_set_online_pps(online_pps);
                     bsl::ut_then{} = [&vmexit,
                                       &gs,

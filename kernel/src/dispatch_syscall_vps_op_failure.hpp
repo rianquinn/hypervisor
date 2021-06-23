@@ -743,12 +743,12 @@ namespace mk
     [[nodiscard]] constexpr auto
     dispatch_syscall_vps_op_failure(
         tls_t &tls,
-        ext_t &ext,
-        intrinsic_t &intrinsic,
         page_pool_t &page_pool,
+        intrinsic_t &intrinsic,
         vm_pool_t &vm_pool,
         vp_pool_t &vp_pool,
-        vps_pool_t &vps_pool) noexcept -> bsl::errc_type
+        vps_pool_t &vps_pool,
+        ext_t &ext) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 

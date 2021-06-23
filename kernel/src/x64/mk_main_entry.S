@@ -155,6 +155,7 @@ mk_main_entry:
      * - Next we set some of the fast fail entry points in the TLS block.
      *   These will be used when an error or exception occurs so that
      *   we can gracefully handle issues.
+     */
 
     lea rax, [rip + mk_main_fast_fail_entry]
     mov gs:[TLS_OFFSET_MK_MAIN_FAST_FAIL_IP], rax
@@ -162,7 +163,6 @@ mk_main_entry:
     mov gs:[TLS_OFFSET_CALL_EXT_FAST_FAIL_IP], rax
     lea rax, [rip + dispatch_syscall_fast_fail_entry]
     mov gs:[TLS_OFFSET_DISPATCH_SYSCALL_FAST_FAIL_IP], rax
-     */
 
     /**
      * NOTE:
@@ -230,6 +230,7 @@ mk_main_entry:
      *   event that an error occurs).
      * - Once we install the new ESRs, we can transfer the NMI bit from the
      *   root state to the TLS.
+     */
 
     mov rax, 0x1
     mov gs:[TLS_OFFSET_NMI_LOCK], rax
@@ -305,19 +306,18 @@ mk_main_entry:
     mov rdi, 19
     lea rsi, [rip + dispatch_esr_entry_19]
     call set_esr
-     */
 
     /**
      * NOTE:
      * - Next, we need to store the syscall handler location. This will be
      *   used by extensions to make syscalls.
+     */
 
     mov ecx, MSR_IA32_LSTAR
     lea rax, [rip + dispatch_syscall_entry]
     mov rdx, rax
     shr rdx, 32
     wrmsr
-     */
 
     /**
      * NOTE:
@@ -365,9 +365,9 @@ mk_main_entry:
      * NOTE:
      * - If we get here, it is because an error occurred and we need to
      *   fast fail.
+     */
 
     jmp return_to_current_fast_fail
-     */
 
     .size mk_main_entry, .-mk_main_entry
 
@@ -390,11 +390,11 @@ mk_main_fast_fail_entry:
     /**
      * NOTE:
      * - Promote back to the root OS on failure.
+     */
 
     mov rdi, [rdi + ARGS_OFFSET_ROOT_VP_STATE]
     mov rsi, 1
     jmp promote
-     */
 
     .size mk_main_fast_fail_entry, .-mk_main_fast_fail_entry
 

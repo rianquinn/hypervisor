@@ -25,8 +25,8 @@
 #ifndef BF_REG_T_HPP
 #define BF_REG_T_HPP
 
-#include <bsl/cstdint.hpp>
 #include <bsl/convert.hpp>
+#include <bsl/cstdint.hpp>
 
 namespace syscall
 {

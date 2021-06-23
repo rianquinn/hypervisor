@@ -37,18 +37,18 @@ namespace syscall
     // -------------------------------------------------------------------------
 
     /// @brief stores the answer to all things (in 8 bits)
-    constexpr auto g_answer8{bsl::to_u8(42)};
+    constexpr auto g_answer8{42_u8};
     /// @brief stores the answer to all things (in 16 bits)
-    constexpr auto g_answer16{bsl::to_u16(42)};
+    constexpr auto g_answer16{42_u16};
     /// @brief stores the answer to all things (in 32 bits)
-    constexpr auto g_answer32{bsl::to_u32(42)};
+    constexpr auto g_answer32{42_u32};
     /// @brief stores the answer to all things (in 64 bits)
-    constexpr auto g_answer64{bsl::to_u64(42)};
+    constexpr auto g_answer64{42_u64};
 
     /// @brief stores a bad address
-    constexpr auto g_bad_addr{bsl::to_u64(0xFFFFFFFFFFFFFFFFU)};
+    constexpr auto g_bad_addr{0xFFFFFFFFFFFFFFFF_u64};
     /// @brief stores a bad version
-    constexpr auto g_bad_version{bsl::to_u32(0x80000000U)};
+    constexpr auto g_bad_version{0x80000000_u32};
 
     // -------------------------------------------------------------------------
     // tests
@@ -73,7 +73,7 @@ namespace syscall
                     g_errc.clear();
                     bsl::ut_then{} = [&sys]() {
                         bsl::ut_check(!sys.initialize(    // --
-                            bf_uint32_t::failure(),      // --
+                            bf_uint32_t::failure(),       // --
                             &dummy_bootstrap_entry,       // --
                             &dummy_vmexit_entry,          // --
                             &dummy_fail_entry));          // --
@@ -2691,7 +2691,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint8_t val{};
-                bf_uint64_t phys{bsl::to_umax(&val) - bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+                bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
                 bsl::ut_when{} = [&sys, &phys]() {
                     bsl::ut_required_step(sys.bf_write_phys<bsl::uint8>(phys, g_answer8));
                     bsl::ut_then{} = [&sys, &phys]() {
@@ -2735,7 +2735,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t val{};
-                bf_uint64_t phys{bsl::to_umax(&val) - bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+                bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
                 bsl::ut_when{} = [&sys, &phys]() {
                     bsl::ut_required_step(sys.bf_write_phys<bsl::uint16>(phys, g_answer16));
                     bsl::ut_then{} = [&sys, &phys]() {
@@ -2779,7 +2779,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint32_t val{};
-                bf_uint64_t phys{bsl::to_umax(&val) - bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+                bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
                 bsl::ut_when{} = [&sys, &phys]() {
                     bsl::ut_required_step(sys.bf_write_phys<bsl::uint32>(phys, g_answer32));
                     bsl::ut_then{} = [&sys, &phys]() {
@@ -2823,7 +2823,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t val{};
-                bf_uint64_t phys{bsl::to_umax(&val) - bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+                bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
                 bsl::ut_when{} = [&sys, &phys]() {
                     bsl::ut_required_step(sys.bf_write_phys<bsl::uint64>(phys, g_answer64));
                     bsl::ut_then{} = [&sys, &phys]() {
@@ -2881,7 +2881,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint8_t val{g_answer8};
-                bf_uint64_t phys{bsl::to_umax(&val) - bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+                bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
                 bsl::ut_then{} = [&sys, &phys, &val]() {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint8>(phys, val));
                     bsl::ut_check(sys.bf_read_phys<bsl::uint8>(phys) == g_answer8);
@@ -2937,7 +2937,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t val{g_answer16};
-                bf_uint64_t phys{bsl::to_umax(&val) - bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+                bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
                 bsl::ut_then{} = [&sys, &phys, &val]() {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint16>(phys, val));
                     bsl::ut_check(sys.bf_read_phys<bsl::uint16>(phys) == g_answer16);
@@ -2993,7 +2993,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint32_t val{g_answer32};
-                bf_uint64_t phys{bsl::to_umax(&val) - bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+                bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
                 bsl::ut_then{} = [&sys, &phys, &val]() {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint32>(phys, val));
                     bsl::ut_check(sys.bf_read_phys<bsl::uint32>(phys) == g_answer32);
@@ -3049,7 +3049,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t val{g_answer64};
-                bf_uint64_t phys{bsl::to_umax(&val) - bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+                bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
                 bsl::ut_then{} = [&sys, &phys, &val]() {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint64>(phys, val));
                     bsl::ut_check(sys.bf_read_phys<bsl::uint64>(phys) == g_answer64);
@@ -3081,8 +3081,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 void *virt{};
-                bf_uint64_t phys{
-                    bsl::to_umax(&virt) - bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+                bf_uint64_t phys{bsl::to_umax(&virt) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
                 bsl::ut_then{} = [&sys, &virt, &phys]() {
                     bsl::ut_check(sys.bf_virt_to_phys(&virt) == phys);
                 };
@@ -3123,8 +3122,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 void *virt{};
-                bf_uint64_t phys{
-                    bsl::to_umax(&virt) - bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR)};
+                bf_uint64_t phys{bsl::to_umax(&virt) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
                 bsl::ut_then{} = [&sys, &virt, &phys]() {
                     bsl::ut_check(sys.bf_phys_to_virt(phys) == &virt);
                 };

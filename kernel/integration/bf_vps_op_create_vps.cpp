@@ -103,7 +103,8 @@ namespace integration
         integration::verify(bsl::errc_failure == ret);
 
         // create with vmid that has not been created
-        ret = syscall::bf_vps_op_create_vps(g_handle, bsl::to_u16(2), ppid, vpsid);
+        constexpr auto invalid_vpsid{2_u16};
+        ret = syscall::bf_vps_op_create_vps(g_handle, invalid_vpsid, ppid, vpsid);
         integration::verify(bsl::errc_failure == ret);
 
         // create with invalid ppid
@@ -116,7 +117,7 @@ namespace integration
         integration::verify(bsl::errc_failure == ret);
 
         // create all and prove that creating one more will fail
-        for (bsl::safe_uintmax i{}; i < bsl::to_umax(HYPERVISOR_MAX_VPSS); ++i) {
+        for (bsl::safe_uintmax i{}; i < HYPERVISOR_MAX_VPSS; ++i) {
             ret = syscall::bf_vps_op_create_vps(g_handle, vpid, ppid, vpsid);
             integration::verify(bsl::errc_success == ret);
         }

@@ -50,26 +50,21 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
-    ///   @param intrinsic the intrinsics to use
     ///   @param page_pool the page pool to use
-    ///   @param vp_pool the VP pool to use
+    ///   @param intrinsic the intrinsics to use
     ///   @param vps_pool the VPS pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
     syscall_vps_op_create_vps(
-        tls_t &tls,
-        intrinsic_t &intrinsic,
-        page_pool_t &page_pool,
-        vp_pool_t &vp_pool,
-        vps_pool_t &vps_pool) noexcept -> bsl::errc_type
+        tls_t &tls, page_pool_t &page_pool, intrinsic_t &intrinsic, vps_pool_t &vps_pool) noexcept
+        -> bsl::errc_type
     {
         auto const vpsid{vps_pool.allocate(
             tls,
-            intrinsic,
             page_pool,
-            vp_pool,
+            intrinsic,
             bsl::to_u16_unsafe(tls.ext_reg1),
             bsl::to_u16_unsafe(tls.ext_reg2))};
 
@@ -78,7 +73,7 @@ namespace mk
             return bsl::errc_failure;
         }
 
-        constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
+        constexpr auto mask{0xFFFFFFFFFFFF0000_umax};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(vpsid)).get();
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
@@ -157,7 +152,7 @@ namespace mk
             return bsl::errc_failure;
         }
 
-        constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFFFF00U};
+        constexpr auto mask{0xFFFFFFFFFFFFFF00_umax};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(val)).get();
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
@@ -186,7 +181,7 @@ namespace mk
             return bsl::errc_failure;
         }
 
-        constexpr bsl::safe_uintmax mask{0xFFFFFFFFFFFF0000U};
+        constexpr auto mask{0xFFFFFFFFFFFF0000_umax};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(val)).get();
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
@@ -215,7 +210,7 @@ namespace mk
             return bsl::errc_failure;
         }
 
-        constexpr bsl::safe_uintmax mask{0xFFFFFFFF00000000U};
+        constexpr auto mask{0xFFFFFFFFFFFFFF00_umax};
         tls.ext_reg0 = ((tls.ext_reg0 & mask) | bsl::to_umax(val)).get();
 
         tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
@@ -739,12 +734,12 @@ namespace mk
     [[nodiscard]] constexpr auto
     dispatch_syscall_vps_op(
         tls_t &tls,
-        ext_t &ext,
-        intrinsic_t &intrinsic,
         page_pool_t &page_pool,
+        intrinsic_t &intrinsic,
         vm_pool_t &vm_pool,
         vp_pool_t &vp_pool,
-        vps_pool_t &vps_pool) noexcept -> bsl::errc_type
+        vps_pool_t &vps_pool,
+        ext_t &ext) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -771,7 +766,7 @@ namespace mk
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_VPS_OP_CREATE_VPS_IDX_VAL.get(): {
-                ret = syscall_vps_op_create_vps(tls, intrinsic, page_pool, vp_pool, vps_pool);
+                ret = syscall_vps_op_create_vps(tls, page_pool, intrinsic, vps_pool);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

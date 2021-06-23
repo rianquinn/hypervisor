@@ -41,18 +41,20 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
+    ///   @param page_pool the page pool to use
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_page(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
+    syscall_mem_op_alloc_page(tls_t &tls, page_pool_t &page_pool, ext_t &ext) noexcept
+        -> bsl::errc_type
     {
         /// NOTE:
         /// - ext.alloc_page is assumped to be exception UNSAFE
         ///
 
-        auto const page{ext.alloc_page(tls)};
+        auto const page{ext.alloc_page(tls, page_pool)};
         if (bsl::unlikely(!page.virt)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
@@ -96,14 +98,18 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
+    ///   @param page_pool the page pool to use
+    ///   @param huge_pool the huge pool to use
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_huge(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
+    syscall_mem_op_alloc_huge(
+        tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool, ext_t &ext) noexcept
+        -> bsl::errc_type
     {
-        auto const huge{ext.alloc_huge(tls, bsl::to_umax(tls.ext_reg1))};
+        auto const huge{ext.alloc_huge(tls, page_pool, huge_pool, bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!huge.virt)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
@@ -143,14 +149,16 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
+    ///   @param page_pool the page pool to use
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    syscall_mem_op_alloc_heap(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
+    syscall_mem_op_alloc_heap(tls_t &tls, page_pool_t &page_pool, ext_t &ext) noexcept
+        -> bsl::errc_type
     {
-        auto const previous_heap_virt{ext.alloc_heap(tls, bsl::to_umax(tls.ext_reg1))};
+        auto const previous_heap_virt{ext.alloc_heap(tls, page_pool, bsl::to_umax(tls.ext_reg1))};
         if (bsl::unlikely(!previous_heap_virt)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::errc_failure;
@@ -167,12 +175,16 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
+    ///   @param page_pool the page pool to use
+    ///   @param huge_pool the huge pool to use
     ///   @param ext the extension that made the syscall
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
-    dispatch_syscall_mem_op(tls_t &tls, ext_t &ext) noexcept -> bsl::errc_type
+    dispatch_syscall_mem_op(
+        tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool, ext_t &ext) noexcept
+        -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -188,7 +200,7 @@ namespace mk
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_MEM_OP_ALLOC_PAGE_IDX_VAL.get(): {
-                ret = syscall_mem_op_alloc_page(tls, ext);
+                ret = syscall_mem_op_alloc_page(tls, page_pool, ext);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -208,7 +220,7 @@ namespace mk
             }
 
             case syscall::BF_MEM_OP_ALLOC_HUGE_IDX_VAL.get(): {
-                ret = syscall_mem_op_alloc_huge(tls, ext);
+                ret = syscall_mem_op_alloc_huge(tls, page_pool, huge_pool, ext);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -228,7 +240,7 @@ namespace mk
             }
 
             case syscall::BF_MEM_OP_ALLOC_HEAP_IDX_VAL.get(): {
-                ret = syscall_mem_op_alloc_heap(tls, ext);
+                ret = syscall_mem_op_alloc_heap(tls, page_pool, ext);
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;

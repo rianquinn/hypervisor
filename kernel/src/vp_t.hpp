@@ -174,18 +174,14 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
-        ///   @param vm_pool the VM pool to use
         ///   @param vmid The ID of the VM to assign the newly created VP to
         ///   @param ppid The ID of the PP to assign the newly created VP to
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        allocate(
-            tls_t &tls,
-            vm_pool_t &vm_pool,
-            bsl::safe_uint16 const &vmid,
-            bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
+        allocate(tls_t &tls, bsl::safe_uint16 const &vmid, bsl::safe_uint16 const &ppid) &noexcept
+            -> bsl::safe_uint16
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vp_t not initialized\n" << bsl::here();
@@ -207,25 +203,25 @@ namespace mk
                 return bsl::safe_uint16::failure();
             }
 
-            if (bsl::unlikely(vm_pool.is_zombie(tls, vmid))) {
-                bsl::error() << "vm "                                               // --
-                             << bsl::hex(vmid)                                      // --
-                             << " is a zombie and a vp cannot be assigned to it"    // --
-                             << bsl::endl                                           // --
-                             << bsl::here();                                        // --
+            // if (bsl::unlikely(vm_pool.is_zombie(tls, vmid))) {
+            //     bsl::error() << "vm "                                               // --
+            //                  << bsl::hex(vmid)                                      // --
+            //                  << " is a zombie and a vp cannot be assigned to it"    // --
+            //                  << bsl::endl                                           // --
+            //                  << bsl::here();                                        // --
 
-                return bsl::safe_uint16::failure();
-            }
+            //     return bsl::safe_uint16::failure();
+            // }
 
-            if (bsl::unlikely(vm_pool.is_deallocated(tls, vmid))) {
-                bsl::error() << "vm "                                                        // --
-                             << bsl::hex(vmid)                                               // --
-                             << " has not been created and a vp cannot be assigned to it"    // --
-                             << bsl::endl                                                    // --
-                             << bsl::here();                                                 // --
+            // if (bsl::unlikely(vm_pool.is_deallocated(tls, vmid))) {
+            //     bsl::error() << "vm "                                                        // --
+            //                  << bsl::hex(vmid)                                               // --
+            //                  << " has not been created and a vp cannot be assigned to it"    // --
+            //                  << bsl::endl                                                    // --
+            //                  << bsl::here();                                                 // --
 
-                return bsl::safe_uint16::failure();
-            }
+            //     return bsl::safe_uint16::failure();
+            // }
 
             if (bsl::unlikely_assert(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();

@@ -31,6 +31,7 @@ Checks:
       -bsl-name-case,
       -bsl-using-ident-unique-namespace,
       -bsl-non-pod-static,
+      -bsl-literals-user-defined,
     bugprone-*,
       -bugprone-branch-clone,
     cert-*,

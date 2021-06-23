@@ -116,7 +116,7 @@ namespace example
         };
 
         bsl::ut_scenario{"allocate bf_vp_op_create_vp returns invalid id"} = []() {
-            bsl::ut_given{} = []() {
+            bsl::ut_given_at_runtime{} = []() {
                 vp_pool_t vp_pool{};
                 gs_t gs{};
                 tls_t tls{};

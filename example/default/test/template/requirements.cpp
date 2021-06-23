@@ -24,6 +24,7 @@
 
 // #include "../../src/<name>.hpp"
 
+#include <bsl/convert.hpp>
 #include <bsl/discard.hpp>
 #include <bsl/ut.hpp>
 

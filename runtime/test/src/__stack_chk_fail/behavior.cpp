@@ -22,37 +22,16 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
+#include <bf_syscall_impl.hpp>
+
 #include <bsl/ut.hpp>
 
 namespace mk
 {
-    /// @brief stores when msg_stack_chk_fail have been executed
-    constinit bool g_msg_stack_chk_fail_executed{};
-    /// @brief stores when bf_control_op_exit_impl have been executed
-    constinit bool g_bf_control_op_exit_impl_executed{};
-
     /// <!-- description -->
     ///   @brief Defines a prototype for the __stack_chk_fail function
     ///
     extern "C" void ut_stack_chk_fail() noexcept;
-
-    /// <!-- description -->
-    ///   @brief Defines a mock of the msg_stack_chk_fail function
-    ///
-    extern "C" void
-    msg_stack_chk_fail() noexcept
-    {
-        g_msg_stack_chk_fail_executed = true;
-    }
-
-    /// <!-- description -->
-    ///   @brief Defines a mock of the bf_control_op_exit_impl function
-    ///
-    extern "C" void
-    bf_control_op_exit_impl() noexcept
-    {
-        g_bf_control_op_exit_impl_executed = true;
-    }
 
     /// <!-- description -->
     ///   @brief Used to execute the actual checks. We put the checks in this
@@ -71,8 +50,7 @@ namespace mk
                 bsl::ut_when{} = []() {
                     ut_stack_chk_fail();
                     bsl::ut_then{} = []() {
-                        bsl::ut_check(g_msg_stack_chk_fail_executed);
-                        bsl::ut_check(g_bf_control_op_exit_impl_executed);
+                        bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                     };
                 };
             };

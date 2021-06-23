@@ -40,7 +40,7 @@ namespace mk
     struct vmexit_log_pp_t final
     {
         /// @brief stores the VMExit log
-        bsl::array<vmexit_log_record_t, HYPERVISOR_VMEXIT_LOG_SIZE> log;
+        bsl::array<vmexit_log_record_t, HYPERVISOR_VMEXIT_LOG_SIZE.get()> log;
         /// @brief stores the VMExit log circular cursor
         bsl::safe_uintmax crsr;
     };

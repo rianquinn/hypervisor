@@ -31,6 +31,7 @@
 #include <bf_types.hpp>
 #include <tuple>
 
+#include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/is_unsigned.hpp>
 #include <bsl/safe_integral.hpp>

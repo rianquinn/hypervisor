@@ -99,7 +99,7 @@ namespace vmmctl
         /// <!-- description -->
         ///   @brief Creates a default ifmap that has not yet been mapped.
         ///
-        ifmap() noexcept = default;
+        constexpr ifmap() noexcept = default;
 
         /// <!-- description -->
         ///   @brief Creates a vmmctl::ifmap given a the filename and path of
@@ -108,7 +108,7 @@ namespace vmmctl
         /// <!-- inputs/outputs -->
         ///   @param filename the filename and path of the file to map
         ///
-        explicit ifmap(bsl::string_view const &filename) noexcept
+        explicit constexpr ifmap(bsl::string_view const &filename) noexcept
         {
             m_file = CreateFileA(
                 filename.data(),
@@ -163,19 +163,19 @@ namespace vmmctl
         /// <!-- description -->
         ///   @brief Destructor unmaps a previously mapped file.
         ///
-        ~ifmap() noexcept = default;
-        // {
-        //     if (nullptr != m_file) {
-        //         bsl::discard(UnmapViewOfFile(m_data.data()));
-        //         bsl::discard(CloseHandle(m_view));
-        //         bsl::discard(CloseHandle(m_file));
-        //         m_file = nullptr;
-        //         m_view = nullptr;
-        //     }
-        //     else {
-        //         bsl::touch();
-        //     }
-        // }
+        constexpr ~ifmap() noexcept
+        {
+            if (nullptr != m_file) {
+                bsl::discard(UnmapViewOfFile(m_data.data()));
+                bsl::discard(CloseHandle(m_view));
+                bsl::discard(CloseHandle(m_file));
+                m_file = nullptr;
+                m_view = nullptr;
+            }
+            else {
+                bsl::touch();
+            }
+        }
 
         /// <!-- description -->
         ///   @brief copy constructor

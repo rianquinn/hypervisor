@@ -29,9 +29,9 @@
 
 #pragma pack(push, 1)
 
-namespace loader
+namespace mk
 {
-    /// @struct loader::l3te_t
+    /// @struct mk::l3te_t
     ///
     /// <!-- description -->
     ///   @brief Defines the layout of a level-3 table entry (L3TE).

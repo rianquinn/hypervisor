@@ -30,6 +30,7 @@
 #include <intrinsic_t.hpp>
 #include <page_pool_t.hpp>
 #include <root_page_table_t.hpp>
+#include <start_vmm_args_t.hpp>
 #include <tls_t.hpp>
 
 #include <bsl/array.hpp>
@@ -51,7 +52,7 @@ namespace mk
     class ext_pool_t final
     {
         /// @brief stores all of the extensions.
-        bsl::array<ext_t, HYPERVISOR_MAX_EXTENSIONS> m_pool{};
+        bsl::array<ext_t, HYPERVISOR_MAX_EXTENSIONS.get()> m_pool{};
 
     public:
         /// <!-- description -->
@@ -59,9 +60,8 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
-        ///   @param intrinsic the intrinsics to use
-        ///   @param page_pool the page pool to use
-        ///   @param huge_pool the huge pool to use
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
         ///   @param system_rpt the system RPT provided by the loader
         ///   @param ext_elf_files the ext_elf_files provided by the loader
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
@@ -70,12 +70,10 @@ namespace mk
         [[nodiscard]] constexpr auto
         initialize(
             tls_t &tls,
-            intrinsic_t &intrinsic,
             page_pool_t &page_pool,
             huge_pool_t &huge_pool,
             root_page_table_t &system_rpt,
-            bsl::array<bsl::span<bsl::byte const>, HYPERVISOR_MAX_EXTENSIONS> const &ext_elf_files)
-            &noexcept -> bsl::errc_type
+            loader::ext_elf_files_type const &ext_elf_files) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -84,8 +82,8 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            bsl::finally release_on_error{[this, &tls]() noexcept -> void {
-                this->release(tls);
+            bsl::finally release_on_error{[this, &tls, &page_pool, &huge_pool]() noexcept -> void {
+                this->release(tls, page_pool, huge_pool);
             }};
 
             for (auto const ext : m_pool) {
@@ -95,12 +93,11 @@ namespace mk
 
                 ret = ext.data->initialize(
                     tls,
-                    &m_intrinsic,
-                    &m_page_pool,
-                    &m_huge_pool,
+                    page_pool,
+                    huge_pool,
                     bsl::to_u16(ext.index),
                     *ext_elf_files.at_if(ext.index),
-                    &m_system_rpt);
+                    system_rpt);
 
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
@@ -119,55 +116,16 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
         ///
         constexpr void
-        release(tls_t &tls) &noexcept
+        release(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool) &noexcept
         {
             for (auto const ext : m_pool) {
-                ext.data->release(tls);
+                ext.data->release(tls, page_pool, huge_pool);
             }
         }
-
-        /// <!-- description -->
-        ///   @brief Destroyes a previously created ext_pool_t
-        ///
-        constexpr ~ext_pool_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr ext_pool_t(ext_pool_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr ext_pool_t(ext_pool_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(ext_pool_t const &o) &noexcept
-            -> ext_pool_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(ext_pool_t &&o) &noexcept
-            -> ext_pool_t & = default;
 
         /// <!-- description -->
         ///   @brief Tells each extension that a VM was created so that it
@@ -175,15 +133,21 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
         ///   @param vmid the VMID of the VM that was created.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        signal_vm_created(tls_t &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+        signal_vm_created(
+            tls_t &tls,
+            page_pool_t &page_pool,
+            huge_pool_t &huge_pool,
+            bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
-                if (bsl::unlikely(!ext.data->signal_vm_created(tls, vmid))) {
+                if (bsl::unlikely(!ext.data->signal_vm_created(tls, page_pool, huge_pool, vmid))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -200,15 +164,22 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
         ///   @param vmid the VMID of the VM that was destroyed.
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        signal_vm_destroyed(tls_t &tls, bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+        signal_vm_destroyed(
+            tls_t &tls,
+            page_pool_t &page_pool,
+            huge_pool_t &huge_pool,
+            bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
-                if (bsl::unlikely(!ext.data->signal_vm_destroyed(tls, vmid))) {
+                if (bsl::unlikely(
+                        !ext.data->signal_vm_destroyed(tls, page_pool, huge_pool, vmid))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -225,14 +196,15 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param intrinsic the intrinsic_t to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        start(tls_t &tls) &noexcept -> bsl::errc_type
+        start(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
-                if (bsl::unlikely(!ext.data->start(tls))) {
+                if (bsl::unlikely(!ext.data->start(tls, intrinsic))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -249,14 +221,15 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param intrinsic the intrinsic_t to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        bootstrap(tls_t &tls) &noexcept -> bsl::errc_type
+        bootstrap(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
-                if (bsl::unlikely(!ext.data->bootstrap(tls))) {
+                if (bsl::unlikely(!ext.data->bootstrap(tls, intrinsic))) {
                     bsl::print<bsl::V>() << bsl::here();
                     return bsl::errc_failure;
                 }
@@ -272,10 +245,11 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param page_pool the page_pool_t to use
         ///   @param extid the ID of the extension to dump
         ///
         constexpr void
-        dump(tls_t &tls, bsl::safe_uint16 const &extid) &noexcept
+        dump(tls_t &tls, page_pool_t &page_pool, bsl::safe_uint16 const &extid) &noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;
@@ -291,7 +265,7 @@ namespace mk
                 return;
             }
 
-            ext->dump(tls);
+            ext->dump(tls, page_pool);
         }
     };
 }

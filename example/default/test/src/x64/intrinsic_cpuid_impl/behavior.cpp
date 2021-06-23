@@ -24,6 +24,7 @@
 
 #include "../../../../src/x64/intrinsic_cpuid_impl.hpp"
 
+#include <bsl/convert.hpp>
 #include <bsl/ut.hpp>
 
 namespace example

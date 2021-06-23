@@ -40,70 +40,70 @@
 namespace bfelf
 {
     /// @brief e_ident[EI_MAG0] contains 0x7FU for file identification
-    constexpr bsl::safe_uint64 EI_MAG0{bsl::to_u64(0)};
+    constexpr auto EI_MAG0{0_umax};
     /// @brief e_ident[EI_MAG1] contains 0x45U for file identification
-    constexpr bsl::safe_uint64 EI_MAG1{bsl::to_u64(1)};
+    constexpr auto EI_MAG1{1_umax};
     /// @brief e_ident[EI_MAG2] contains 0x4CU for file identification
-    constexpr bsl::safe_uint64 EI_MAG2{bsl::to_u64(2)};
+    constexpr auto EI_MAG2{2_umax};
     /// @brief e_ident[EI_MAG3] contains 0x46U for file identification
-    constexpr bsl::safe_uint64 EI_MAG3{bsl::to_u64(3)};
+    constexpr auto EI_MAG3{3_umax};
     /// @brief e_ident[EI_CLASS] identifies if the file is 32bit or 64 bit
-    constexpr bsl::safe_uint64 EI_CLASS{bsl::to_u64(4)};
+    constexpr auto EI_CLASS{4_umax};
     /// @brief e_ident[EI_DATA] specifies the data bit encoding of the file
-    constexpr bsl::safe_uint64 EI_DATA{bsl::to_u64(5)};
+    constexpr auto EI_DATA{5_umax};
     /// @brief e_ident[EI_VERSION] identifies the version of the file
-    constexpr bsl::safe_uint64 EI_VERSION{bsl::to_u64(6)};
+    constexpr auto EI_VERSION{6_umax};
     /// @brief e_ident[EI_OSABI] identifies file's ABI scheme
-    constexpr bsl::safe_uint64 EI_OSABI{bsl::to_u64(7)};
+    constexpr auto EI_OSABI{7_umax};
     /// @brief e_ident[EI_ABIVERSION] identifies file's ABI version
-    constexpr bsl::safe_uint64 EI_ABIVERSION{bsl::to_u64(8)};
+    constexpr auto EI_ABIVERSION{8_umax};
     /// @brief defines the size of e_ident
-    constexpr bsl::safe_uint64 EI_NIDENT{bsl::to_u64(16)};
+    constexpr auto EI_NIDENT{16_umax};
 
     /// @brief defines the expected e_ident[EI_MAG0] value
-    constexpr bsl::safe_uint8 ELFMAG0{bsl::to_u8(0x7F)};
+    constexpr auto ELFMAG0{0x7F_u8};
     /// @brief defines the expected e_ident[EI_MAG1] value
-    constexpr bsl::safe_uint8 ELFMAG1{bsl::to_u8(0x45)};
+    constexpr auto ELFMAG1{0x45_u8};
     /// @brief defines the expected e_ident[EI_MAG2] value
-    constexpr bsl::safe_uint8 ELFMAG2{bsl::to_u8(0x4C)};
+    constexpr auto ELFMAG2{0x4C_u8};
     /// @brief defines the expected e_ident[EI_MAG3] value
-    constexpr bsl::safe_uint8 ELFMAG3{bsl::to_u8(0x46)};
+    constexpr auto ELFMAG3{0x46_u8};
 
     /// @brief defines e_ident[EI_CLASS] for 32bit objects
-    constexpr bsl::safe_uint8 ELFCLASS32{bsl::to_u8(1)};
+    constexpr auto ELFCLASS32{1_u8};
     /// @brief defines e_ident[EI_CLASS] for 64bit objects
-    constexpr bsl::safe_uint8 ELFCLASS64{bsl::to_u8(2)};
+    constexpr auto ELFCLASS64{2_u8};
 
     /// @brief defines e_ident[EI_DATA] for little endian
-    constexpr bsl::safe_uint8 ELFDATA2LSB{bsl::to_u8(1)};
+    constexpr auto ELFDATA2LSB{1_u8};
     /// @brief defines e_ident[EI_DATA] for big endian
-    constexpr bsl::safe_uint8 ELFDATA2MSB{bsl::to_u8(2)};
+    constexpr auto ELFDATA2MSB{2_u8};
 
     /// @brief defines e_ident[EI_OSABI] for system v abi
-    constexpr bsl::safe_uint8 ELFOSABI_SYSV{bsl::to_u8(0)};
+    constexpr auto ELFOSABI_SYSV{0_u8};
     /// @brief defines e_ident[EI_OSABI] for hp-ux operating system
-    constexpr bsl::safe_uint8 ELFOSABI_HPUX{bsl::to_u8(1)};
+    constexpr auto ELFOSABI_HPUX{1_u8};
     /// @brief defines e_ident[EI_OSABI] for standalone applications
-    constexpr bsl::safe_uint8 ELFOSABI_STANDALONE{bsl::to_u8(255)};
+    constexpr auto ELFOSABI_STANDALONE{255_u8};
 
     /// @brief defines e_type for no file type
-    constexpr bsl::safe_uint16 ET_NONE{bsl::to_u16(0)};
+    constexpr auto ET_NONE{0_u16};
     /// @brief defines e_type for an relocatable object file
-    constexpr bsl::safe_uint16 ET_REL{bsl::to_u16(1)};
+    constexpr auto ET_REL{1_u16};
     /// @brief defines e_type for an executable file
-    constexpr bsl::safe_uint16 ET_EXEC{bsl::to_u16(2)};
+    constexpr auto ET_EXEC{2_u16};
     /// @brief defines e_type for an shared object file
-    constexpr bsl::safe_uint16 ET_DYN{bsl::to_u16(3)};
+    constexpr auto ET_DYN{3_u16};
     /// @brief defines e_type for an core file
-    constexpr bsl::safe_uint16 ET_CORE{bsl::to_u16(4)};
+    constexpr auto ET_CORE{4_u16};
     /// @brief defines e_type for an environment-specific use (lo)
-    constexpr bsl::safe_uint16 ET_LOOS{bsl::to_u16(0xFE00)};
+    constexpr auto ET_LOOS{0xFE00_u16};
     /// @brief defines e_type for an environment-specific use (hi)
-    constexpr bsl::safe_uint16 ET_HIOS{bsl::to_u16(0xFEFF)};
+    constexpr auto ET_HIOS{0xFEFF_u16};
     /// @brief defines e_type for an processor-specific use (lo)
-    constexpr bsl::safe_uint16 ET_LOPROC{bsl::to_u16(0xFF00)};
+    constexpr auto ET_LOPROC{0xFF00_u16};
     /// @brief defines e_type for an processor-specific use (hi)
-    constexpr bsl::safe_uint16 ET_HIPROC{bsl::to_u16(0xFFFF)};
+    constexpr auto ET_HIPROC{0xFFFF_u16};
 
     /// @struct elf64_ehdr_t
     ///
@@ -183,32 +183,32 @@ namespace bfelf
             return bsl::errc_failure;
         }
 
-        if (*ehdr->e_ident.at_if(bsl::to_umax(EI_MAG0)) != ELFMAG0) {
+        if (*ehdr->e_ident.at_if(EI_MAG0) != ELFMAG0) {
             bsl::error() << "invalid ELF magic number\n" << bsl::here();
             return bsl::errc_failure;
         }
 
-        if (*ehdr->e_ident.at_if(bsl::to_umax(EI_MAG1)) != ELFMAG1) {
+        if (*ehdr->e_ident.at_if(EI_MAG1) != ELFMAG1) {
             bsl::error() << "invalid ELF magic number\n" << bsl::here();
             return bsl::errc_failure;
         }
 
-        if (*ehdr->e_ident.at_if(bsl::to_umax(EI_MAG2)) != ELFMAG2) {
+        if (*ehdr->e_ident.at_if(EI_MAG2) != ELFMAG2) {
             bsl::error() << "invalid ELF magic number\n" << bsl::here();
             return bsl::errc_failure;
         }
 
-        if (*ehdr->e_ident.at_if(bsl::to_umax(EI_MAG3)) != ELFMAG3) {
+        if (*ehdr->e_ident.at_if(EI_MAG3) != ELFMAG3) {
             bsl::error() << "invalid ELF magic number\n" << bsl::here();
             return bsl::errc_failure;
         }
 
-        if (*ehdr->e_ident.at_if(bsl::to_umax(EI_CLASS)) != ELFCLASS64) {
+        if (*ehdr->e_ident.at_if(EI_CLASS) != ELFCLASS64) {
             bsl::error() << "invalid ELF class\n" << bsl::here();
             return bsl::errc_failure;
         }
 
-        if (*ehdr->e_ident.at_if(bsl::to_umax(EI_OSABI)) != ELFOSABI_SYSV) {
+        if (*ehdr->e_ident.at_if(EI_OSABI) != ELFOSABI_SYSV) {
             bsl::error() << "invalid ELF OSABI\n" << bsl::here();
             return bsl::errc_failure;
         }

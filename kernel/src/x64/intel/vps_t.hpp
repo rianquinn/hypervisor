@@ -53,31 +53,31 @@ namespace mk
     extern "C" void intrinsic_vmexit(void) noexcept;
 
     /// @brief defines the IA32_VMX_BASIC MSR
-    constexpr bsl::safe_uint32 IA32_VMX_BASIC{bsl::to_u32(0x480U)};
+    constexpr auto IA32_VMX_BASIC{0x480_u32};
     /// @brief defines the IA32_PAT MSR
-    constexpr bsl::safe_uint32 IA32_PAT{bsl::to_u32(0x277U)};
+    constexpr auto IA32_PAT{0x277_u32};
     /// @brief defines the IA32_SYSENTER_CS MSR
-    constexpr bsl::safe_uint32 IA32_SYSENTER_CS{bsl::to_u32(0x174U)};
+    constexpr auto IA32_SYSENTER_CS{0x174_u32};
     /// @brief defines the IA32_SYSENTER_ESP MSR
-    constexpr bsl::safe_uint32 IA32_SYSENTER_ESP{bsl::to_u32(0x175U)};
+    constexpr auto IA32_SYSENTER_ESP{0x175_u32};
     /// @brief defines the IA32_SYSENTER_EIP MSR
-    constexpr bsl::safe_uint32 IA32_SYSENTER_EIP{bsl::to_u32(0x176U)};
+    constexpr auto IA32_SYSENTER_EIP{0x176_u32};
     /// @brief defines the IA32_EFER MSR
-    constexpr bsl::safe_uint32 IA32_EFER{bsl::to_u32(0xC0000080U)};
+    constexpr auto IA32_EFER{0xC0000080_u32};
     /// @brief defines the IA32_STAR MSR
-    constexpr bsl::safe_uint32 IA32_STAR{bsl::to_u32(0xC0000081U)};
+    constexpr auto IA32_STAR{0xC0000081_u32};
     /// @brief defines the IA32_LSTAR MSR
-    constexpr bsl::safe_uint32 IA32_LSTAR{bsl::to_u32(0xC0000082U)};
+    constexpr auto IA32_LSTAR{0xC0000082_u32};
     /// @brief defines the IA32_CSTAR MSR
-    constexpr bsl::safe_uint32 IA32_CSTAR{bsl::to_u32(0xC0000083U)};
+    constexpr auto IA32_CSTAR{0xC0000083_u32};
     /// @brief defines the IA32_FMASK MSR
-    constexpr bsl::safe_uint32 IA32_FMASK{bsl::to_u32(0xC0000084U)};
+    constexpr auto IA32_FMASK{0xC0000084_u32};
     /// @brief defines the IA32_FS_BASE MSR
-    constexpr bsl::safe_uint32 IA32_FS_BASE{bsl::to_u32(0xC0000100U)};
+    constexpr auto IA32_FS_BASE{0xC0000100_u32};
     /// @brief defines the IA32_GS_BASE MSR
-    constexpr bsl::safe_uint32 IA32_GS_BASE{bsl::to_u32(0xC0000101U)};
+    constexpr auto IA32_GS_BASE{0xC0000101_u32};
     /// @brief defines the IA32_KERNEL_GS_BASE MSR
-    constexpr bsl::safe_uint32 IA32_KERNEL_GS_BASE{bsl::to_u32(0xC0000102U)};
+    constexpr auto IA32_KERNEL_GS_BASE{0xC0000102_u32};
 
     /// @class mk::vps_t
     ///
@@ -2847,28 +2847,28 @@ namespace mk
                 return ret;
             }
 
-            constexpr auto vmcs_pinbased_ctls_idx{bsl::to_umax(0x4000U)};
-            constexpr auto vmcs_exit_ctls_idx{bsl::to_umax(0x400CU)};
-            constexpr auto vmcs_entry_ctls_idx{bsl::to_umax(0x4012U)};
+            constexpr auto vmcs_pinbased_ctls_idx{0x4000_umax};
+            constexpr auto vmcs_exit_ctls_idx{0x400C_umax};
+            constexpr auto vmcs_entry_ctls_idx{0x4012_umax};
 
             bsl::safe_integral<FIELD_TYPE> sanitized{val};
 
             if constexpr (bsl::is_same<FIELD_TYPE, bsl::uint32>::value) {
                 switch (index.get()) {
                     case vmcs_pinbased_ctls_idx.get(): {
-                        constexpr auto vmcs_pinbased_ctls_mask{bsl::to_u32(0x28U)};
+                        constexpr auto vmcs_pinbased_ctls_mask{0x28_u32};
                         sanitized |= vmcs_pinbased_ctls_mask;
                         break;
                     }
 
                     case vmcs_exit_ctls_idx.get(): {
-                        constexpr auto vmcs_exit_ctls_mask{bsl::to_u32(0x3C0204U)};
+                        constexpr auto vmcs_exit_ctls_mask{0x3C0204_u32};
                         sanitized |= vmcs_exit_ctls_mask;
                         break;
                     }
 
                     case vmcs_entry_ctls_idx.get(): {
-                        constexpr auto vmcs_entry_ctls_mask{bsl::to_u32(0xC204U)};
+                        constexpr auto vmcs_entry_ctls_mask{0xC204_u32};
                         sanitized |= vmcs_entry_ctls_mask;
                         break;
                     }
@@ -3934,7 +3934,7 @@ namespace mk
         run(tls_t &tls, intrinsic_t &intrinsic, vmexit_log_t &log) &noexcept -> bsl::safe_uintmax
         {
             bsl::errc_type ret{};
-            constexpr bsl::safe_uintmax invalid_exit_reason{bsl::to_umax(0xFFFFFFFF00000000U)};
+            constexpr auto invalid_exit_reason{0xFFFFFFFF00000000_umax};
 
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();

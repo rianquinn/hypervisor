@@ -51,7 +51,7 @@ namespace mk
     class vm_pool_t final
     {
         /// @brief stores the pool of vm_ts
-        bsl::array<vm_t, HYPERVISOR_MAX_VMS> m_pool{};
+        bsl::array<vm_t, HYPERVISOR_MAX_VMS.get()> m_pool{};
         /// @brief safe guards operations on the pool.
         mutable spinlock_t m_lock{};
 
@@ -64,17 +64,24 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
         ///   @param ext_pool the extension pool to use
         ///   @param vp_pool the VP pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
+        initialize(
+            tls_t &tls,
+            page_pool_t &page_pool,
+            huge_pool_t &huge_pool,
+            ext_pool_t &ext_pool,
+            vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
         {
             bsl::finally_assert release_on_error{
-                [this, &tls, &ext_pool, &vp_pool]() noexcept -> void {
-                    auto const ret{this->release(tls, ext_pool, vp_pool)};
+                [this, &tls, &page_pool, &huge_pool, &ext_pool, &vp_pool]() noexcept -> void {
+                    auto const ret{this->release(tls, page_pool, huge_pool, ext_pool, vp_pool)};
                     if (bsl::unlikely(!ret)) {
                         bsl::print<bsl::V>() << bsl::here();
                         return;
@@ -102,16 +109,23 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
         ///   @param ext_pool the extension pool to use
         ///   @param vp_pool the VP pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
+        release(
+            tls_t &tls,
+            page_pool_t &page_pool,
+            huge_pool_t &huge_pool,
+            ext_pool_t &ext_pool,
+            vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
         {
             for (auto const vm : m_pool) {
-                auto const ret{vm.data->release(tls, ext_pool, vp_pool)};
+                auto const ret{vm.data->release(tls, page_pool, huge_pool, ext_pool, vp_pool)};
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -128,11 +142,14 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
         ///   @param ext_pool the extension pool to use
         ///   @return Returns ID of the newly allocated vm
         ///
         [[nodiscard]] constexpr auto
-        allocate(tls_t &tls, ext_pool_t &ext_pool) &noexcept -> bsl::safe_uint16
+        allocate(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool, ext_pool_t &ext_pool)
+            &noexcept -> bsl::safe_uint16
         {
             lock_guard_t lock{tls, m_lock};
 
@@ -151,7 +168,7 @@ namespace mk
                 return bsl::safe_uint16::failure();
             }
 
-            return vm->allocate(tls, ext_pool);
+            return vm->allocate(tls, page_pool, huge_pool, ext_pool);
         }
 
         /// <!-- description -->
@@ -160,8 +177,10 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
-        ///   @param ext_pool the extension pool to use
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
         ///   @param vp_pool the VP pool to use
+        ///   @param ext_pool the extension pool to use
         ///   @param vmid the ID of the vm to deallocate
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
@@ -169,8 +188,10 @@ namespace mk
         [[nodiscard]] constexpr auto
         deallocate(
             tls_t &tls,
+            page_pool_t &page_pool,
+            huge_pool_t &huge_pool,
+            vp_pool_t &vp_pool,
             ext_pool_t &ext_pool,
-            vp_pool_t const &vp_pool,
             bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
         {
             auto *const vm{m_pool.at_if(bsl::to_umax(vmid))};
@@ -179,14 +200,14 @@ namespace mk
                     << "vmid "                                                              // --
                     << bsl::hex(vmid)                                                       // --
                     << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::hex(HYPERVISOR_MAX_VMS)                                         // --
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
                 return bsl::errc_index_out_of_bounds;
             }
 
-            return vm->deallocate(tls, ext_pool, vp_pool);
+            return vm->deallocate(tls, page_pool, huge_pool, vp_pool, ext_pool);
         }
 
         /// <!-- description -->
@@ -207,7 +228,7 @@ namespace mk
                     << "vmid "                                                              // --
                     << bsl::hex(vmid)                                                       // --
                     << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::hex(HYPERVISOR_MAX_VMS)                                         // --
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
@@ -241,7 +262,7 @@ namespace mk
                     << "vmid "                                                              // --
                     << bsl::hex(vmid)                                                       // --
                     << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::hex(HYPERVISOR_MAX_VMS)                                         // --
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
@@ -274,7 +295,7 @@ namespace mk
                     << "vmid "                                                              // --
                     << bsl::hex(vmid)                                                       // --
                     << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::hex(HYPERVISOR_MAX_VMS)                                         // --
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
@@ -307,7 +328,7 @@ namespace mk
                     << "vmid "                                                              // --
                     << bsl::hex(vmid)                                                       // --
                     << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::hex(HYPERVISOR_MAX_VMS)                                         // --
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
@@ -335,7 +356,7 @@ namespace mk
                     << "vmid "                                                              // --
                     << bsl::hex(vmid)                                                       // --
                     << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::hex(HYPERVISOR_MAX_VMS)                                         // --
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
@@ -363,7 +384,7 @@ namespace mk
                     << "vmid "                                                              // --
                     << bsl::hex(vmid)                                                       // --
                     << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::hex(HYPERVISOR_MAX_VMS)                                         // --
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
@@ -394,7 +415,7 @@ namespace mk
                     << "vmid "                                                              // --
                     << bsl::hex(vmid)                                                       // --
                     << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::hex(HYPERVISOR_MAX_VMS)                                         // --
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
@@ -425,7 +446,7 @@ namespace mk
                     << "vmid "                                                              // --
                     << bsl::hex(vmid)                                                       // --
                     << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::hex(HYPERVISOR_MAX_VMS)                                         // --
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
@@ -455,7 +476,7 @@ namespace mk
                     << "vmid "                                                              // --
                     << bsl::hex(vmid)                                                       // --
                     << " is invalid or greater than or equal to the HYPERVISOR_MAX_VMS "    // --
-                    << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VMS))                            // --
+                    << bsl::hex(HYPERVISOR_MAX_VMS)                                         // --
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 

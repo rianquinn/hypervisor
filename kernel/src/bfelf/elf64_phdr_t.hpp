@@ -41,42 +41,42 @@
 namespace bfelf
 {
     /// @brief defines p_type for unused entry
-    constexpr bsl::safe_uint32 PT_NULL{bsl::to_u32(0U)};
+    constexpr auto PT_NULL{0_u32};
     /// @brief defines p_type for a loadable segment
-    constexpr bsl::safe_uint32 PT_LOAD{bsl::to_u32(1U)};
+    constexpr auto PT_LOAD{1_u32};
     /// @brief defines p_type for dynamic linking tables
-    constexpr bsl::safe_uint32 PT_DYNAMIC{bsl::to_u32(2U)};
+    constexpr auto PT_DYNAMIC{2_u32};
     /// @brief defines p_type for the program interpreter path
-    constexpr bsl::safe_uint32 PT_INTERP{bsl::to_u32(3U)};
+    constexpr auto PT_INTERP{3_u32};
     /// @brief defines p_type for note sections
-    constexpr bsl::safe_uint32 PT_NOTE{bsl::to_u32(4U)};
+    constexpr auto PT_NOTE{4_u32};
     /// @brief defines p_type for reserved
-    constexpr bsl::safe_uint32 PT_SHLIB{bsl::to_u32(5U)};
+    constexpr auto PT_SHLIB{5_u32};
     /// @brief defines p_type for the program header table
-    constexpr bsl::safe_uint32 PT_PHDR{bsl::to_u32(6U)};
+    constexpr auto PT_PHDR{6_u32};
     /// @brief defines p_type for the tls segment
-    constexpr bsl::safe_uint32 PT_TLS{bsl::to_u32(7U)};
+    constexpr auto PT_TLS{7_u32};
     /// @brief defines p_type for environment-specific use (lo)
-    constexpr bsl::safe_uint32 PT_LOOS{bsl::to_u32(0x60000000U)};
+    constexpr auto PT_LOOS{0x60000000_u32};
     /// @brief defines p_type for the GNU stack segment
-    constexpr bsl::safe_uint32 PT_GNU_STACK{bsl::to_u32(0x6474e551U)};
+    constexpr auto PT_GNU_STACK{0x6474e551_u32};
     /// @brief defines p_type for environment-specific use (hi)
-    constexpr bsl::safe_uint32 PT_HIOS{bsl::to_u32(0x6FFFFFFFU)};
+    constexpr auto PT_HIOS{0x6FFFFFFF_u32};
     /// @brief defines p_type for processor-specific use (lo)
-    constexpr bsl::safe_uint32 PT_LOPROC{bsl::to_u32(0x70000000U)};
+    constexpr auto PT_LOPROC{0x70000000_u32};
     /// @brief defines p_type for processor-specific use (hi)
-    constexpr bsl::safe_uint32 PT_HIPROC{bsl::to_u32(0x7FFFFFFFU)};
+    constexpr auto PT_HIPROC{0x7FFFFFFF_u32};
 
     /// @brief defines p_flags for execute permissions
-    constexpr bsl::safe_uint32 PF_X{bsl::to_u32(1U)};
+    constexpr auto PF_X{1_u32};
     /// @brief defines p_flags for write permissions
-    constexpr bsl::safe_uint32 PF_W{bsl::to_u32(2U)};
+    constexpr auto PF_W{2_u32};
     /// @brief defines p_flags for read permissions
-    constexpr bsl::safe_uint32 PF_R{bsl::to_u32(4U)};
+    constexpr auto PF_R{4_u32};
     /// @brief defines p_flags for environment-specific use
-    constexpr bsl::safe_uint32 PF_MASKOS{bsl::to_u32(0x00FF0000U)};
+    constexpr auto PF_MASKOS{0x00FF0000_u32};
     /// @brief defines p_flags for environment-specific use
-    constexpr bsl::safe_uint32 PF_MASKPROC{bsl::to_u32(0xFF000000U)};
+    constexpr auto PF_MASKPROC{0xFF000000_u32};
 
     /// @struct elf64_phdr_t
     ///

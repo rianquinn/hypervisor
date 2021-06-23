@@ -59,9 +59,9 @@ namespace mk
     [[nodiscard]] constexpr auto
     compress_attrib(bsl::safe_uint16 const &attrib) noexcept -> bsl::safe_uint16
     {
-        constexpr bsl::safe_uint16 mask1{bsl::to_u16(0x00FFU)};
-        constexpr bsl::safe_uint16 mask2{bsl::to_u16(0xF000U)};
-        constexpr bsl::safe_uint16 shift{bsl::to_u16(4)};
+        constexpr auto mask1{0x00FF_u16};
+        constexpr auto mask2{0xF000_u16};
+        constexpr auto shift{4_u16};
 
         return (attrib & mask1) | ((attrib & mask2) >> shift);
     }
@@ -77,9 +77,9 @@ namespace mk
     [[nodiscard]] constexpr auto
     decompress_attrib(bsl::safe_uint16 const &attrib) noexcept -> bsl::safe_uint16
     {
-        constexpr bsl::safe_uint16 mask1{bsl::to_u16(0x00FFU)};
-        constexpr bsl::safe_uint16 mask2{bsl::to_u16(0x0F00U)};
-        constexpr bsl::safe_uint16 shift{bsl::to_u16(4)};
+        constexpr auto mask1{0x00FF_u16};
+        constexpr auto mask2{0x0F00_u16};
+        constexpr auto shift{4_u16};
 
         return (attrib & mask1) | ((attrib & mask2) << shift);
     }
@@ -273,7 +273,6 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param page_pool the page pool to use
-        ///   @param vp_pool the VP pool to use
         ///   @param vpid The ID of the VP to assign the newly created VP to
         ///   @param ppid The ID of the PP to assign the newly created VP to
         ///   @return Returns ID of the newly allocated vps
@@ -283,7 +282,6 @@ namespace mk
             tls_t &tls,
             intrinsic_t &intrinsic,
             page_pool_t &page_pool,
-            vp_pool_t &vp_pool,
             bsl::safe_uint16 const &vpid,
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
         {
@@ -309,25 +307,25 @@ namespace mk
                 return bsl::safe_uint16::failure();
             }
 
-            if (bsl::unlikely(vp_pool.is_zombie(tls, vpid))) {
-                bsl::error() << "vp "                                                // --
-                             << bsl::hex(vpid)                                       // --
-                             << " is a zombie and a vps cannot be assigned to it"    // --
-                             << bsl::endl                                            // --
-                             << bsl::here();                                         // --
+            // if (bsl::unlikely(vp_pool.is_zombie(tls, vpid))) {
+            //     bsl::error() << "vp "                                                // --
+            //                  << bsl::hex(vpid)                                       // --
+            //                  << " is a zombie and a vps cannot be assigned to it"    // --
+            //                  << bsl::endl                                            // --
+            //                  << bsl::here();                                         // --
 
-                return bsl::safe_uint16::failure();
-            }
+            //     return bsl::safe_uint16::failure();
+            // }
 
-            if (bsl::unlikely(vp_pool.is_deallocated(tls, vpid))) {
-                bsl::error() << "vp "                                                         // --
-                             << bsl::hex(vpid)                                                // --
-                             << " has not been created and a vps cannot be assigned to it"    // --
-                             << bsl::endl                                                     // --
-                             << bsl::here();                                                  // --
+            // if (bsl::unlikely(vp_pool.is_deallocated(tls, vpid))) {
+            //     bsl::error() << "vp "                                                         // --
+            //                  << bsl::hex(vpid)                                                // --
+            //                  << " has not been created and a vps cannot be assigned to it"    // --
+            //                  << bsl::endl                                                     // --
+            //                  << bsl::here();                                                  // --
 
-                return bsl::safe_uint16::failure();
-            }
+            //     return bsl::safe_uint16::failure();
+            // }
 
             if (bsl::unlikely_assert(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();
@@ -2421,7 +2419,8 @@ namespace mk
                 return bsl::errc_precondition;
             }
 
-            m_guest_vmcb->vmcb_clean_bits = bsl::ZERO_U32.get();
+            constexpr auto reset{0_u32};
+            m_guest_vmcb->vmcb_clean_bits = reset.get();
             return bsl::errc_success;
         }
 
@@ -2441,22 +2440,22 @@ namespace mk
 
             // clang-format off
 
-            constexpr auto guest_instruction_bytes_0{bsl::to_umax(0x0U)};
-            constexpr auto guest_instruction_bytes_1{bsl::to_umax(0x1U)};
-            constexpr auto guest_instruction_bytes_2{bsl::to_umax(0x2U)};
-            constexpr auto guest_instruction_bytes_3{bsl::to_umax(0x3U)};
-            constexpr auto guest_instruction_bytes_4{bsl::to_umax(0x4U)};
-            constexpr auto guest_instruction_bytes_5{bsl::to_umax(0x5U)};
-            constexpr auto guest_instruction_bytes_6{bsl::to_umax(0x6U)};
-            constexpr auto guest_instruction_bytes_7{bsl::to_umax(0x7U)};
-            constexpr auto guest_instruction_bytes_8{bsl::to_umax(0x8U)};
-            constexpr auto guest_instruction_bytes_9{bsl::to_umax(0x9U)};
-            constexpr auto guest_instruction_bytes_a{bsl::to_umax(0xAU)};
+            constexpr auto guest_instruction_bytes_0{0x0_umax};
+            constexpr auto guest_instruction_bytes_1{0x1_umax};
+            constexpr auto guest_instruction_bytes_2{0x2_umax};
+            constexpr auto guest_instruction_bytes_3{0x3_umax};
+            constexpr auto guest_instruction_bytes_4{0x4_umax};
+            constexpr auto guest_instruction_bytes_5{0x5_umax};
+            constexpr auto guest_instruction_bytes_6{0x6_umax};
+            constexpr auto guest_instruction_bytes_7{0x7_umax};
+            constexpr auto guest_instruction_bytes_8{0x8_umax};
+            constexpr auto guest_instruction_bytes_9{0x9_umax};
+            constexpr auto guest_instruction_bytes_a{0xA_umax};
             /// NOLINTNEXTLINE(bsl-identifier-typographically-unambiguous)
-            constexpr auto guest_instruction_bytes_b{bsl::to_umax(0xBU)};
-            constexpr auto guest_instruction_bytes_c{bsl::to_umax(0xCU)};
-            constexpr auto guest_instruction_bytes_d{bsl::to_umax(0xDU)};
-            constexpr auto guest_instruction_bytes_e{bsl::to_umax(0xEU)};
+            constexpr auto guest_instruction_bytes_b{0xB_umax};
+            constexpr auto guest_instruction_bytes_c{0xC_umax};
+            constexpr auto guest_instruction_bytes_d{0xD_umax};
+            constexpr auto guest_instruction_bytes_e{0xE_umax};
 
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::print() << "[error]" << bsl::endl;

@@ -36,7 +36,7 @@
 namespace mk
 {
     /// @brief defines total number of entries in the pml4t
-    constexpr bsl::safe_uintmax NUM_PML4T_ENTRIES{bsl::to_umax(512)};
+    constexpr auto NUM_PML4T_ENTRIES{512_umax};
 
     /// @struct mk::pml4t_t
     ///
@@ -46,7 +46,7 @@ namespace mk
     struct pml4t_t final
     {
         /// @brief stores the entries for this page table
-        bsl::array<loader::pml4te_t, NUM_PML4T_ENTRIES.get()> entries;
+        bsl::array<pml4te_t, NUM_PML4T_ENTRIES.get()> entries;
     };
 }
 

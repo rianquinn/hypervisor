@@ -48,13 +48,13 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
-    ///   @param ext_pool the extension pool to use
-    ///   @param intrinsic the intrinsics to use
     ///   @param page_pool the page pool to use
     ///   @param huge_pool the huge pool to use
-    ///   @param vps_pool the VPS pool to use
-    ///   @param vp_pool the VP pool to use
+    ///   @param intrinsic the intrinsics to use
     ///   @param vm_pool the VM pool to use
+    ///   @param vp_pool the VP pool to use
+    ///   @param vps_pool the VPS pool to use
+    ///   @param ext_pool the extension pool to use
     ///   @param log the VMExit log to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
@@ -62,13 +62,13 @@ namespace mk
     [[nodiscard]] constexpr auto
     dispatch_syscall_debug_op(
         tls_t &tls,
-        ext_ppol_t &ext_pool,
-        intrinsic_t &intrinsic,
         page_pool_t &page_pool,
         huge_pool_t &huge_pool,
-        vps_pool_t &vps_pool,
-        vp_pool_t &vp_pool,
+        intrinsic_t &intrinsic,
         vm_pool_t &vm_pool,
+        vp_pool_t &vp_pool,
+        vps_pool_t &vps_pool,
+        ext_pool_t &ext_pool,
         vmexit_log_t &log) noexcept -> bsl::errc_type
     {
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
@@ -136,7 +136,7 @@ namespace mk
             }
 
             case syscall::BF_DEBUG_OP_DUMP_EXT_IDX_VAL.get(): {
-                ext_pool.dump(tls, bsl::to_u16_unsafe(tls.ext_reg0));
+                ext_pool.dump(tls, page_pool, bsl::to_u16_unsafe(tls.ext_reg0));
 
                 tls.syscall_ret_status = syscall::BF_STATUS_SUCCESS.get();
                 return bsl::errc_success;

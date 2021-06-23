@@ -80,7 +80,7 @@ namespace mk
         /// @brief stores whether or not this vm_t is allocated.
         allocated_status_t m_allocated{allocated_status_t::deallocated};
         /// @brief stores whether or not this vm_t is active.
-        bsl::array<bool, HYPERVISOR_MAX_PPS> m_active{};
+        bsl::array<bool, HYPERVISOR_MAX_PPS.get()> m_active{};
         /// @brief safe guards operations on the pool.
         mutable spinlock_t m_lock;
 
@@ -128,13 +128,20 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
         ///   @param ext_pool the extension pool to use
         ///   @param vp_pool the VP pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
+        release(
+            tls_t &tls,
+            page_pool_t &page_pool,
+            huge_pool_t &huge_pool,
+            ext_pool_t &ext_pool,
+            vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
             lock_guard_t lock{tls, m_lock};
@@ -182,7 +189,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = ext_pool.signal_vm_destroyed(tls, m_id);
+            ret = ext_pool.signal_vm_destroyed(tls, page_pool, huge_pool, m_id);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -212,11 +219,14 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
         ///   @param ext_pool the extension pool to use
         ///   @return Returns ID of the newly allocated vm
         ///
         [[nodiscard]] constexpr auto
-        allocate(tls_t &tls, ext_pool_t &ext_pool) &noexcept -> bsl::safe_uint16
+        allocate(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool, ext_pool_t &ext_pool)
+            &noexcept -> bsl::safe_uint16
         {
             bsl::errc_type ret{};
             lock_guard_t lock{tls, m_lock};
@@ -249,7 +259,7 @@ namespace mk
             tls.state_reversal_required = true;
             tls.log_vmid = m_id.get();
 
-            ret = ext_pool.signal_vm_created(tls, m_id);
+            ret = ext_pool.signal_vm_created(tls, page_pool, huge_pool, m_id);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::safe_uint16::failure();
@@ -264,13 +274,20 @@ namespace mk
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
-        ///   @param ext_pool the extension pool to use
+        ///   @param page_pool the page_pool_t to use
+        ///   @param huge_pool the huge_pool_t to use
         ///   @param vp_pool the VP pool to use
+        ///   @param ext_pool the extension pool to use
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        deallocate(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
+        deallocate(
+            tls_t &tls,
+            page_pool_t &page_pool,
+            huge_pool_t &huge_pool,
+            vp_pool_t &vp_pool,
+            ext_pool_t &ext_pool) &noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
             lock_guard_t lock{tls, m_lock};
@@ -345,7 +362,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            ret = ext_pool.signal_vm_destroyed(tls, m_id);
+            ret = ext_pool.signal_vm_destroyed(tls, page_pool, huge_pool, m_id);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
@@ -468,7 +485,7 @@ namespace mk
                 bsl::error() << "tls.ppid "                                   // --
                              << bsl::hex(m_id)                                // --
                              << " is greater than the HYPERVISOR_MAX_PPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_PPS))     // --
+                             << bsl::hex(HYPERVISOR_MAX_PPS)                  // --
                              << bsl::endl                                     // --
                              << bsl::here();                                  // --
 
@@ -547,7 +564,7 @@ namespace mk
                 bsl::error() << "tls.ppid "                                   // --
                              << bsl::hex(m_id)                                // --
                              << " is greater than the HYPERVISOR_MAX_PPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_PPS))     // --
+                             << bsl::hex(HYPERVISOR_MAX_PPS)                  // --
                              << bsl::endl                                     // --
                              << bsl::here();                                  // --
 
@@ -615,7 +632,7 @@ namespace mk
                 bsl::error() << "tls.ppid "                                   // --
                              << bsl::hex(m_id)                                // --
                              << " is greater than the HYPERVISOR_MAX_PPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_PPS))     // --
+                             << bsl::hex(HYPERVISOR_MAX_PPS)                  // --
                              << bsl::endl                                     // --
                              << bsl::here();                                  // --
 

@@ -25,8 +25,8 @@
 #ifndef PAGE_POOL_RECORD_T_HPP
 #define PAGE_POOL_RECORD_T_HPP
 
+#include <bsl/cstr_type.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/string_view.hpp>
 
 namespace mk
 {
@@ -38,7 +38,7 @@ namespace mk
     struct page_pool_record_t final
     {
         /// @brief stores the tag associated with this record
-        bsl::string_view tag;
+        bsl::cstr_type tag;
         /// @brief stores the number of bytes allocated with this record
         bsl::safe_uintmax usd;
     };

@@ -93,7 +93,7 @@ namespace vmmctl
         /// <!-- description -->
         ///   @brief Creates a default ifmap that has not yet been mapped.
         ///
-        ifmap() noexcept = default;
+        constexpr ifmap() noexcept = default;
 
         /// <!-- description -->
         ///   @brief Creates a bsl::ifmap given a the filename and path of
@@ -102,7 +102,7 @@ namespace vmmctl
         /// <!-- inputs/outputs -->
         ///   @param filename the filename and path of the file to map
         ///
-        explicit ifmap(bsl::string_view const &filename) noexcept
+        explicit constexpr ifmap(bsl::string_view const &filename) noexcept
         {
             using stat_t = struct stat;
 
@@ -157,19 +157,19 @@ namespace vmmctl
         /// <!-- description -->
         ///   @brief Destructor unmaps a previously mapped file.
         ///
-        ~ifmap() noexcept = default;
-        // {
-        //     // if (IFMAP_INVALID_FILE.get() != m_file) {
-        //     //     // Not given a choice here due to the APIs provided by Linux
-        //     //     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast,-warnings-as-errors)
-        //     //     bsl::discard(munmap(const_cast<byte *>(m_data.data()), m_data.size().get()));
-        //     //     bsl::discard(close(m_file));
-        //     //     m_file = IFMAP_INVALID_FILE.get();
-        //     // }
-        //     // else {
-        //     //     bsl::touch();
-        //     // }
-        // }
+        constexpr ~ifmap() noexcept
+        {
+            if (IFMAP_INVALID_FILE.get() != m_file) {
+                // Not given a choice here due to the APIs provided by Linux
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast,-warnings-as-errors)
+                bsl::discard(munmap(const_cast<bsl::byte *>(m_data.data()), m_data.size().get()));
+                bsl::discard(close(m_file));
+                m_file = IFMAP_INVALID_FILE.get();
+            }
+            else {
+                bsl::touch();
+            }
+        }
 
         /// <!-- description -->
         ///   @brief copy constructor

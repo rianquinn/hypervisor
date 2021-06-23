@@ -35,33 +35,33 @@
 namespace mk
 {
     /// @brief defines the size of the reserved1 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED1_SIZE{bsl::to_umax(0x24U)};
+    constexpr auto VMCB_RESERVED1_SIZE{0x24_umax};
     /// @brief defines the size of the reserved2 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED2_SIZE{bsl::to_umax(0x3U)};
+    constexpr auto VMCB_RESERVED2_SIZE{0x3_umax};
     /// @brief defines the size of the reserved3 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED3_SIZE{bsl::to_umax(0x4U)};
+    constexpr auto VMCB_RESERVED3_SIZE{0x4_umax};
     /// @brief defines the size of the reserved4 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED4_SIZE{bsl::to_umax(0x8U)};
+    constexpr auto VMCB_RESERVED4_SIZE{0x8_umax};
     /// @brief defines the size of the reserved5 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED5_SIZE{bsl::to_umax(0x8U)};
+    constexpr auto VMCB_RESERVED5_SIZE{0x8_umax};
     /// @brief defines the size of the reserved6 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED6_SIZE{bsl::to_umax(0x2F0U)};
+    constexpr auto VMCB_RESERVED6_SIZE{0x2F0_umax};
     /// @brief defines the size of the reserved7 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED7_SIZE{bsl::to_umax(0x2BU)};
+    constexpr auto VMCB_RESERVED7_SIZE{0x2B_umax};
     /// @brief defines the size of the reserved8 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED8_SIZE{bsl::to_umax(0x4U)};
+    constexpr auto VMCB_RESERVED8_SIZE{0x4_umax};
     /// @brief defines the size of the reserved9 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED9_SIZE{bsl::to_umax(0x70U)};
+    constexpr auto VMCB_RESERVED9_SIZE{0x70_umax};
     /// @brief defines the size of the reserved10 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED10_SIZE{bsl::to_umax(0x58U)};
+    constexpr auto VMCB_RESERVED10_SIZE{0x58_umax};
     /// @brief defines the size of the reserved11 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED11_SIZE{bsl::to_umax(0x18U)};
+    constexpr auto VMCB_RESERVED11_SIZE{0x18_umax};
     /// @brief defines the size of the reserved12 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED12_SIZE{bsl::to_umax(0x20U)};
+    constexpr auto VMCB_RESERVED12_SIZE{0x20_umax};
     /// @brief defines the size of the reserved13 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_RESERVED13_SIZE{bsl::to_umax(0x968U)};
+    constexpr auto VMCB_RESERVED13_SIZE{0x968_umax};
     /// @brief defines the size of the reserved13 field in the VMCB
-    constexpr bsl::safe_uintmax VMCB_GIB_SIZE{bsl::to_umax(0xF)};
+    constexpr auto VMCB_GIB_SIZE{0xF_umax};
 
     /// @struct mk::vmcb_t
     ///

@@ -29,9 +29,9 @@
 
 #pragma pack(push, 1)
 
-namespace loader
+namespace mk
 {
-    /// @struct loader::pdte_t
+    /// @struct mk::pdte_t
     ///
     /// <!-- description -->
     ///   @brief Defines the layout of a page-directory table entry (PDTE).

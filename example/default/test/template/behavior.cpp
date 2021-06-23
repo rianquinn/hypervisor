@@ -24,6 +24,7 @@
 
 // #include "../../src/<name>.hpp"
 
+#include <bsl/convert.hpp>
 #include <bsl/ut.hpp>
 
 namespace example
@@ -61,7 +62,7 @@ namespace example
         ///   is to group tests under the same scenario as follows:
         ///
 
-        bsl::ut_scenario{"verify +=/-="} = []() {
+        bsl::ut_scenario{"verify +="} = []() {
             bsl::ut_given{} = []() {
                 constexpr auto data1{42_umax};
                 bsl::safe_uintmax data2{};
@@ -73,7 +74,7 @@ namespace example
                 };
             };
 
-            bsl::ut_given{} = []() {
+            bsl::ut_given_at_runtime{} = []() {
                 constexpr auto data1{42_umax};
                 auto data2{bsl::safe_uintmax::failure()};
                 bsl::ut_when{} = [&data1, &data2]() {
@@ -109,7 +110,7 @@ namespace example
         };
 
         bsl::ut_scenario{"verify += preserves the error flag"} = []() {
-            bsl::ut_given{} = []() {
+            bsl::ut_given_at_runtime{} = []() {
                 constexpr auto data1{42_umax};
                 auto data2{bsl::safe_uintmax::failure()};
                 bsl::ut_when{} = [&data1, &data2]() {
@@ -142,6 +143,47 @@ namespace example
                 constexpr auto val{23_umax};
                 bsl::ut_then{} = [&val]() {
                     bsl::ut_check(!runtime_only_function_that_knows_all(val));
+                };
+            };
+        };
+
+        /// NOTE:
+        /// - There are also times when you need to set up a test and ensure
+        ///   that specific steps in the test's set up succeed. Otherwise, the
+        ///   test itself might not be valid, could cause a crach, etc. When
+        ///   this is needed, you can use the bsl::ut_required_step() function.
+        /// - This function is identical to bsl::ut_check(). It just has a
+        ///   different name and is intended to be used in the bsl::ut_when()
+        ///   block, and has a different name just to help with readability.
+        ///
+
+        bsl::ut_scenario{"verify += preserves the error flag"} = []() {
+            bsl::ut_given{} = []() {
+                constexpr auto data1{42_umax};
+                auto data2{42_umax};
+                bsl::ut_when{} = [&data1, &data2]() {
+                    data2 += data1;
+                    bsl::ut_required_step(data2 == 84_umax);
+                    bsl::ut_then{} = [&data2]() {
+                        bsl::ut_check(data2 - 42_umax == 42_umax);
+                    };
+                };
+            };
+        };
+
+        /// NOTE:
+        /// - All of the lambda functions accept a description, so if you
+        ///   want to be more descriptive about what you are testing, you
+        ///   can.
+        ///
+
+        bsl::ut_scenario{"this is what I am testing"} = []() {
+            bsl::ut_given{"given the following variables"} = []() {
+                bsl::ut_when{"when we do the following"} = []() mutable {
+                    bsl::ut_required_step(true);
+                    bsl::ut_then{"we expect the following"} = []() {
+                        bsl::ut_check(true);
+                    };
                 };
             };
         };
@@ -193,6 +235,7 @@ namespace example
         bsl::ut_scenario{"description"} = []() {
             bsl::ut_given{} = []() {
                 bsl::ut_when{} = []() mutable {
+                    bsl::ut_required_step(true);
                     bsl::ut_then{} = []() {
                         bsl::ut_check(true);
                     };

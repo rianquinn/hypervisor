@@ -25,8 +25,6 @@
 #ifndef START_VMM_ARGS_T_HPP
 #define START_VMM_ARGS_T_HPP
 
-#include <constants.h>
-
 #include <bsl/array.hpp>
 #include <bsl/byte.hpp>
 #include <bsl/convert.hpp>
@@ -40,6 +38,12 @@ namespace loader
 {
     /// @brief defines the IOCTL index for starting the VMM
     constexpr bsl::safe_uint32 START_VMM_CMD{bsl::to_u32(0xBF01)};
+
+    /// @brief defines the type used for passing the ext ELF files
+    using ext_elf_file_type = bsl::span<bsl::byte const>;
+
+    /// @brief defines the type used for passing the ext ELF files
+    using ext_elf_files_type = bsl::array<ext_elf_file_type, HYPERVISOR_MAX_EXTENSIONS.get()>;
 
     /// @struct loader::start_vmm_args_t
     ///
@@ -63,7 +67,7 @@ namespace loader
         /// @brief stores the ELF file associated with the microkernel
         bsl::span<bsl::byte const> mk_elf_file;
         /// @brief stores the ELF files associated with the extensions
-        bsl::array<bsl::span<bsl::byte const>, HYPERVISOR_MAX_EXTENSIONS> ext_elf_files;
+        ext_elf_files_type ext_elf_files;
     };
 }
 

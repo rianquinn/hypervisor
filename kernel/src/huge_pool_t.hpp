@@ -70,11 +70,6 @@ namespace mk
 
     public:
         /// <!-- description -->
-        ///   @brief Default constructor
-        ///
-        constexpr huge_pool_t() noexcept = default;
-
-        /// <!-- description -->
         ///   @brief Creates the huge pool given a mutable_buffer_t to
         ///     the huge pool as well as the virtual address base of the
         ///     huge pool which is used for virt to phys translations.
@@ -122,47 +117,6 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Destroyes a previously created huge_pool_t
-        ///
-        constexpr ~huge_pool_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr huge_pool_t(huge_pool_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr huge_pool_t(huge_pool_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(huge_pool_t const &o) &noexcept
-            -> huge_pool_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(huge_pool_t &&o) &noexcept
-            -> huge_pool_t & = default;
-
-        /// <!-- description -->
         ///   @brief Allocates memory from the huge pool.
         ///
         /// <!-- inputs/outputs -->
@@ -191,23 +145,23 @@ namespace mk
                 return nullptr;
             }
 
-            auto pages{size / bsl::to_umax(HYPERVISOR_PAGE_SIZE)};
-            if ((size % bsl::to_umax(HYPERVISOR_PAGE_SIZE)) != bsl::ZERO_UMAX) {
+            constexpr auto aligned{0_umax};
+            auto pages{size / HYPERVISOR_PAGE_SIZE};
+
+            if ((size % HYPERVISOR_PAGE_SIZE) != aligned) {
                 ++pages;
             }
             else {
                 bsl::touch();
             }
 
-            if (bsl::unlikely(
-                    m_pool.at_if(m_crsr + (pages * bsl::to_umax(HYPERVISOR_PAGE_SIZE))) ==
-                    nullptr)) {
+            if (bsl::unlikely(m_pool.at_if(m_crsr + (pages * HYPERVISOR_PAGE_SIZE)) == nullptr)) {
                 bsl::error() << "huge pool out of memory\n" << bsl::here();
                 return nullptr;
             }
 
             void *const ptr{m_pool.at_if(m_crsr)};
-            m_crsr += (pages * bsl::to_umax(HYPERVISOR_PAGE_SIZE));
+            m_crsr += (pages * HYPERVISOR_PAGE_SIZE);
 
             bsl::builtin_memset(ptr, '\0', size);
 
@@ -270,7 +224,7 @@ namespace mk
         virt_to_phys(T const *const virt) const &noexcept -> bsl::safe_uintmax
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_umax(virt) - bsl::to_umax(HYPERVISOR_MK_HUGE_POOL_ADDR);
+            return bsl::to_umax(virt) - HYPERVISOR_MK_HUGE_POOL_ADDR;
         }
 
         /// <!-- description -->
@@ -292,7 +246,7 @@ namespace mk
         phys_to_virt(bsl::safe_uintmax const &phys) const &noexcept -> T *
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_ptr<T *>(phys + bsl::to_umax(HYPERVISOR_MK_HUGE_POOL_ADDR));
+            return bsl::to_ptr<T *>(phys + HYPERVISOR_MK_HUGE_POOL_ADDR);
         }
 
         /// <!-- description -->
@@ -301,8 +255,8 @@ namespace mk
         constexpr void
         dump() const &noexcept
         {
-            constexpr auto kb{bsl::to_umax(1024)};
-            constexpr auto mb{bsl::to_umax(1024) * bsl::to_umax(1024)};
+            constexpr auto kb{1024_umax};
+            constexpr auto mb{kb * kb};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::print() << "[error]" << bsl::endl;

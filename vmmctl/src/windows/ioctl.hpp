@@ -80,7 +80,7 @@ namespace vmmctl
         ///   @param name the name of the device driver to IOCTL.
         ///
         template<typename GUID>
-        explicit ioctl(GUID name) noexcept
+        explicit constexpr ioctl(GUID name) noexcept
         {
             BOOL ret{};
             HANDLE info{};
@@ -165,7 +165,7 @@ namespace vmmctl
         /// <!-- description -->
         ///   @brief Destructor
         ///
-        ~ioctl() noexcept
+        constexpr ~ioctl() noexcept
         {
             if (bsl::unlikely(nullptr != m_hndl)) {
                 bsl::discard(CloseHandle(m_hndl));
@@ -291,7 +291,7 @@ namespace vmmctl
         ///
         template<typename REQUEST>
         [[nodiscard]] constexpr auto
-        read(
+        read_data(
             bsl::safe_integral<REQUEST> const &req,
             void *const data,
             bsl::safe_uintmax const &size) const noexcept -> bool
@@ -342,7 +342,7 @@ namespace vmmctl
         ///
         template<typename REQUEST>
         [[nodiscard]] constexpr auto
-        write(
+        write_data(
             bsl::safe_integral<REQUEST> const &req,
             void const *const data,
             bsl::safe_uintmax const &size) const noexcept -> bool
@@ -395,7 +395,7 @@ namespace vmmctl
         ///
         template<typename REQUEST>
         [[nodiscard]] constexpr auto
-        read_write(
+        read_write_data(
             bsl::safe_integral<REQUEST> const &req,
             void *const data,
             bsl::safe_uintmax const &size) const noexcept -> bool

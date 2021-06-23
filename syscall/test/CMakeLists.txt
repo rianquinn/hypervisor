@@ -35,8 +35,8 @@ list(APPEND INCLUDES
 # ------------------------------------------------------------------------------
 
 list(APPEND DEFINES
-    HYPERVISOR_PAGE_SIZE=0x1000
-    HYPERVISOR_EXT_DIRECT_MAP_ADDR=0x1000
+    HYPERVISOR_PAGE_SIZE=0x1000_umax
+    HYPERVISOR_EXT_DIRECT_MAP_ADDR=0x1000_umax
 )
 
 # ------------------------------------------------------------------------------

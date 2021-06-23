@@ -31,26 +31,26 @@
 namespace mk
 {
     /// @brief Map a page with read permmissions (has no effect)
-    constexpr bsl::safe_uintmax MAP_PAGE_READ{bsl::to_umax(0x0000000000000001U)};
+    constexpr auto MAP_PAGE_READ{0x0000000000000001_umax};
     /// @brief Map a page with write permmissions
-    constexpr bsl::safe_uintmax MAP_PAGE_WRITE{bsl::to_umax(0x0000000000000002U)};
+    constexpr auto MAP_PAGE_WRITE{0x0000000000000002_umax};
     /// @brief Map a page with execute permmissions
-    constexpr bsl::safe_uintmax MAP_PAGE_EXECUTE{bsl::to_umax(0x0000000000000004U)};
+    constexpr auto MAP_PAGE_EXECUTE{0x0000000000000004_umax};
 
     /// @brief Defines the auto release tag for no auto release
-    constexpr bsl::safe_int32 MAP_PAGE_NO_AUTO_RELEASE{bsl::to_i32(0)};
+    constexpr auto MAP_PAGE_NO_AUTO_RELEASE{0_i32};
     /// @brief Defines the auto release tag for alloc_page allocations
-    constexpr bsl::safe_int32 MAP_PAGE_AUTO_RELEASE_ALLOC_PAGE{bsl::to_i32(1)};
+    constexpr auto MAP_PAGE_AUTO_RELEASE_ALLOC_PAGE{1_i32};
     /// @brief Defines the auto release tag for alloc_huge allocations
-    constexpr bsl::safe_int32 MAP_PAGE_AUTO_RELEASE_ALLOC_HUGE{bsl::to_i32(2)};
+    constexpr auto MAP_PAGE_AUTO_RELEASE_ALLOC_HUGE{2_i32};
     /// @brief Defines the auto release tag for alloc_heap allocations
-    constexpr bsl::safe_int32 MAP_PAGE_AUTO_RELEASE_ALLOC_HEAP{bsl::to_i32(3)};
+    constexpr auto MAP_PAGE_AUTO_RELEASE_ALLOC_HEAP{3_i32};
     /// @brief Defines the auto release tag for stack allocations
-    constexpr bsl::safe_int32 MAP_PAGE_AUTO_RELEASE_STACK{bsl::to_i32(4)};
+    constexpr auto MAP_PAGE_AUTO_RELEASE_STACK{4_i32};
     /// @brief Defines the auto release tag for tls allocations
-    constexpr bsl::safe_int32 MAP_PAGE_AUTO_RELEASE_TLS{bsl::to_i32(5)};
+    constexpr auto MAP_PAGE_AUTO_RELEASE_TLS{5_i32};
     /// @brief Defines the auto release tag for ELF allocations
-    constexpr bsl::safe_int32 MAP_PAGE_AUTO_RELEASE_ELF{bsl::to_i32(6)};
+    constexpr auto MAP_PAGE_AUTO_RELEASE_ELF{6_i32};
 }
 
 #endif

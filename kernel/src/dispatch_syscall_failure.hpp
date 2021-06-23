@@ -95,33 +95,33 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
-    ///   @param ext_pool the extension pool to use
-    ///   @param ext the extension that made the syscall
-    ///   @param intrinsic the intrinsics to use
     ///   @param page_pool the page pool to use
     ///   @param huge_pool the huge pool to use
-    ///   @param vps_pool the VPS pool to use
-    ///   @param vp_pool the VP pool to use
+    ///   @param intrinsic the intrinsics to use
     ///   @param vm_pool the VM pool to use
+    ///   @param vp_pool the VP pool to use
+    ///   @param vps_pool the VPS pool to use
+    ///   @param ext_pool the extension pool to use
+    ///   @param ext the extension that made the syscall
+    ///   @param log the VMExit log to use
     ///   @return Returns bsl::exit_success on success, bsl::exit_failure
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
     dispatch_syscall_failure(
         tls_t &tls,
-        ext_pool_t &ext_pool,
-        ext_t &ext,
-        intrinsic_t &intrinsic,
         page_pool_t &page_pool,
         huge_pool_t &huge_pool,
-        vps_pool_t &vps_pool,
+        intrinsic_t &intrinsic,
+        vm_pool_t &vm_pool,
         vp_pool_t &vp_pool,
-        vm_pool_t &vm_pool) noexcept -> bsl::exit_code
+        vps_pool_t &vps_pool,
+        ext_pool_t &ext_pool,
+        ext_t &ext,
+        vmexit_log_t &log) noexcept -> bsl::exit_code
     {
+        bsl::discard(log);
         bsl::errc_type ret{bsl::errc_success};
-
-        bsl::discard(page_pool);
-        bsl::discard(huge_pool);
 
         switch (syscall::bf_syscall_opcode(tls.ext_syscall).get()) {
             case syscall::BF_CONTROL_OP_VAL.get(): {
@@ -145,7 +145,8 @@ namespace mk
             }
 
             case syscall::BF_VM_OP_VAL.get(): {
-                ret = dispatch_syscall_vm_op_failure(tls, ext_pool, vm_pool, vp_pool);
+                ret = dispatch_syscall_vm_op_failure(
+                    tls, page_pool, huge_pool, vm_pool, vp_pool, ext_pool);
                 break;
             }
 
@@ -156,7 +157,7 @@ namespace mk
 
             case syscall::BF_VPS_OP_VAL.get(): {
                 ret = dispatch_syscall_vps_op_failure(
-                    tls, ext, intrinsic, page_pool, vm_pool, vp_pool, vps_pool);
+                    tls, page_pool, intrinsic, vm_pool, vp_pool, vps_pool, ext);
                 break;
             }
 

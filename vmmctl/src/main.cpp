@@ -36,12 +36,6 @@
 #include <bsl/exit_code.hpp>
 #include <bsl/move.hpp>
 
-namespace vmmctl
-{
-    /// @brief stores the main app for the VMCTL
-    constinit vmmctl_main<ioctl, ifmap> g_app{};
-}
-
 /// <!-- description -->
 ///   @brief Provides the main entry point for this application.
 ///
@@ -58,5 +52,6 @@ main(bsl::int32 const argc, bsl::cstr_type const argv[]) noexcept -> bsl::exit_c
     bsl::arguments args{bsl::to_umax(argc), argv};
     ++args;
 
-    return vmmctl::g_app.process(bsl::move(args));
+    vmmctl::vmmctl_main app{};
+    return app.process(bsl::move(args));
 }

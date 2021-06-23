@@ -31,6 +31,7 @@
 #include <intrinsic_t.hpp>
 #include <tls_t.hpp>
 
+#include <bsl/convert.hpp>
 #include <bsl/discard.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>

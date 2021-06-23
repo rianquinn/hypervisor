@@ -61,7 +61,7 @@ add_subdirectory(src/bsl/details/putc_stderr)
 add_subdirectory(src/bsl/details/putc_stdout)
 add_subdirectory(src/bsl/details/puts_stderr)
 add_subdirectory(src/bsl/details/puts_stdout)
-add_subdirectory(src/msg_stack_chk_fail)
+add_subdirectory(src/__stack_chk_fail)
 
 # NOTE:
 # - We want to make sure that memcpy and memset are working properly as these
@@ -77,7 +77,6 @@ add_subdirectory(src/msg_stack_chk_fail)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_subdirectory(src/_start)
-    add_subdirectory(src/__stack_chk_fail)
     add_subdirectory(src/__stack_chk_guard)
     add_subdirectory(src/memcpy)
     add_subdirectory(src/memset)

@@ -123,40 +123,6 @@ namespace integration
         ret = syscall::bf_vps_op_init_as_root({}, syscall::BF_INVALID_ID);
         integration::require_success(ret);
 
-        // ret = syscall::bf_vps_op_destroy_vps(g_handle, syscall::BF_INVALID_ID);
-        // integration::verify(bsl::errc_failure == ret);
-
-        // // destroy with ID that is greater than or equal to MAX_VPS
-        // ret = syscall::bf_vps_op_destroy_vps(g_handle, bsl::to_u16(HYPERVISOR_MAX_VPS));
-        // integration::verify(bsl::errc_failure == ret);
-
-        // // destroy with VP that has not been created
-        // ret = syscall::bf_vps_op_destroy_vps(g_handle, bsl::to_u16(0x2));
-        // integration::verify(bsl::errc_failure == ret);
-
-        // // destroy success
-        // ret = syscall::bf_vps_op_destroy_vps(g_handle, vpid);
-        // integration::verify(bsl::errc_success == ret);
-
-        // // destroy same VP twice (double free bug)
-        // ret = syscall::bf_vps_op_destroy_vps(g_handle, vpid);
-        // integration::verify(bsl::errc_failure == ret);
-
-        // // create all, then destroy all, prove that we can still create
-        // for (bsl::safe_uintmax i{}; i < bsl::to_umax(HYPERVISOR_MAX_VPS); ++i) {
-        //     ret = syscall::bf_vps_op_create_vps(g_handle, vpid, ppid, vpsid);
-        //     integration::require_success(ret);
-        // }
-
-        // for (bsl::safe_uintmax i{}; i < bsl::to_umax(HYPERVISOR_MAX_VPS); ++i) {
-        //     ret = syscall::bf_vps_op_destroy_vps(g_handle, bsl::to_u16(i));
-        //     integration::verify(bsl::errc_success == ret);
-        // }
-
-        // ret = syscall::bf_vps_op_create_vps(g_handle, vpid, ppid, vpsid);
-        // integration::require_success(ret);
-        // integration::require(vpid == bsl::to_u16(0));
-
         // ---------------------------------------------------------------------
         // The following is needed to setup the remaining tests
         // ---------------------------------------------------------------------

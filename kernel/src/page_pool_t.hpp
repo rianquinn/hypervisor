@@ -50,7 +50,7 @@
 namespace mk
 {
     /// @brief stores the max number of records the page pool can store
-    constexpr bsl::safe_uintmax PAGE_POOL_MAX_RECORDS{bsl::to_umax(10)};
+    constexpr auto PAGE_POOL_MAX_RECORDS{10_umax};
 
     /// @class mk::page_pool_t
     ///
@@ -104,11 +104,6 @@ namespace mk
 
     public:
         /// <!-- description -->
-        ///   @brief Default constructor
-        ///
-        constexpr page_pool_t() noexcept = default;
-
-        /// <!-- description -->
         ///   @brief Creates the page pool given a mutable_buffer_t to
         ///     the page pool as well as the virtual address base of the
         ///     page pool which is used for virt to phys translations.
@@ -161,47 +156,6 @@ namespace mk
         }
 
         /// <!-- description -->
-        ///   @brief Destroyes a previously created page_pool_t
-        ///
-        constexpr ~page_pool_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr page_pool_t(page_pool_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr page_pool_t(page_pool_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(page_pool_t const &o) &noexcept
-            -> page_pool_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(page_pool_t &&o) &noexcept
-            -> page_pool_t & = default;
-
-        /// <!-- description -->
         ///   @brief Allocates a page from the page pool.
         ///
         /// <!-- inputs/outputs -->
@@ -236,7 +190,7 @@ namespace mk
 
             page_pool_record_t *record{};
             for (auto const elem : m_rcds) {
-                if (elem.data->tag.data() == tag.data()) {
+                if (elem.data->tag == tag) {
                     record = elem.data;
                     break;
                 }
@@ -246,9 +200,9 @@ namespace mk
 
             if (nullptr == record) {
                 for (auto const elem : m_rcds) {
-                    if (elem.data->tag.empty()) {
+                    if (nullptr == elem.data->tag) {
                         record = elem.data;
-                        record->tag = tag;
+                        record->tag = tag.data();
                         break;
                     }
 
@@ -266,9 +220,9 @@ namespace mk
 
             void *const ptr{m_head};
             m_head = *static_cast<void **>(m_head);
-            record->usd += bsl::to_umax(HYPERVISOR_PAGE_SIZE);
+            record->usd += HYPERVISOR_PAGE_SIZE;
 
-            bsl::builtin_memset(ptr, '\0', bsl::to_umax(HYPERVISOR_PAGE_SIZE));
+            bsl::builtin_memset(ptr, '\0', HYPERVISOR_PAGE_SIZE);
 
             if constexpr (!bsl::is_void<T>::value) {
                 static_assert(bsl::is_standard_layout<T>::value, "T must be a standard layout");
@@ -301,7 +255,7 @@ namespace mk
                 return;
             }
 
-            if (bsl::to_umax(ptr) < bsl::to_umax(HYPERVISOR_MK_PAGE_POOL_ADDR)) {
+            if (bsl::to_umax(ptr) < HYPERVISOR_MK_PAGE_POOL_ADDR) {
                 bsl::error() << "invalid ptr"    // --
                              << ptr              // --
                              << bsl::endl        // --
@@ -320,7 +274,7 @@ namespace mk
 
             page_pool_record_t *record{};
             for (auto const elem : m_rcds) {
-                if (elem.data->tag.data() == tag.data()) {
+                if (elem.data->tag == tag) {
                     record = elem.data;
                     break;
                 }
@@ -339,7 +293,7 @@ namespace mk
 
             *static_cast<void **>(ptr) = m_head;
             m_head = ptr;
-            record->usd -= bsl::to_umax(HYPERVISOR_PAGE_SIZE);
+            record->usd -= HYPERVISOR_PAGE_SIZE;
         }
 
         /// <!-- description -->
@@ -361,7 +315,7 @@ namespace mk
         virt_to_phys(T const *const virt) const &noexcept -> bsl::safe_uintmax
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_umax(virt) - bsl::to_umax(HYPERVISOR_MK_PAGE_POOL_ADDR);
+            return bsl::to_umax(virt) - HYPERVISOR_MK_PAGE_POOL_ADDR;
         }
 
         /// <!-- description -->
@@ -383,7 +337,7 @@ namespace mk
         phys_to_virt(bsl::safe_uintmax const &phys) const &noexcept -> T *
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
-            return bsl::to_ptr<T *>(phys + bsl::to_umax(HYPERVISOR_MK_PAGE_POOL_ADDR));
+            return bsl::to_ptr<T *>(phys + HYPERVISOR_MK_PAGE_POOL_ADDR);
         }
 
         /// <!-- description -->
@@ -392,8 +346,8 @@ namespace mk
         constexpr void
         dump() const &noexcept
         {
-            constexpr auto kb{bsl::to_umax(1024)};
-            constexpr auto mb{bsl::to_umax(1024) * bsl::to_umax(1024)};
+            constexpr auto kb{1024_umax};
+            constexpr auto mb{kb * kb};
 
             if (bsl::unlikely(!m_initialized)) {
                 bsl::print() << "[error]" << bsl::endl;
@@ -506,7 +460,7 @@ namespace mk
             bsl::print() << bsl::rst << bsl::endl;
 
             for (auto const elem : m_rcds) {
-                if (elem.data->tag.empty()) {
+                if (nullptr == elem.data->tag) {
                     continue;
                 }
 

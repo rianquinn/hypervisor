@@ -103,7 +103,6 @@ list(APPEND HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/src/ext_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ext_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/fast_fail.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/global_resources.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/huge_pool_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/lock_guard_t.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/mk_main_t.hpp
@@ -196,41 +195,36 @@ endif()
 # Sources
 # ------------------------------------------------------------------------------
 
-# hypervisor_target_source(kernel src/dispatch_esr_trampoline.cpp ${HEADERS})
-# hypervisor_target_source(kernel src/dispatch_syscall_trampoline_failure.cpp ${HEADERS})
-# hypervisor_target_source(kernel src/dispatch_syscall_trampoline.cpp ${HEADERS})
-# hypervisor_target_source(kernel src/fast_fail_trampoline.cpp ${HEADERS})
 hypervisor_target_source(kernel src/main.cpp ${HEADERS})
-# hypervisor_target_source(kernel src/msg_halt.cpp ${HEADERS})
-# hypervisor_target_source(kernel src/msg_stack_chk_fail.cpp ${HEADERS})
-# hypervisor_target_source(kernel src/vmexit_loop_trampoline.cpp ${HEADERS})
+hypervisor_target_source(kernel src/msg_halt.cpp ${HEADERS})
+hypervisor_target_source(kernel src/msg_stack_chk_fail.cpp ${HEADERS})
 
 if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD" OR HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-#     hypervisor_target_source(kernel src/x64/__stack_chk_fail.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/call_ext.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/dispatch_esr_entry.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/dispatch_syscall_entry.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/fast_fail_entry.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/get_current_tls.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/__stack_chk_fail.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/call_ext.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/dispatch_esr_entry.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/dispatch_syscall_entry.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/fast_fail_entry.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/get_current_tls.S ${HEADERS})
     hypervisor_target_source(kernel src/x64/mk_main_entry.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/return_to_current_fast_fail.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/return_to_mk.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/return_to_vmexit_loop.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/serial_write_c.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/serial_write_hex.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/set_esr.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/vmexit_loop_entry.S ${HEADERS})
-#     hypervisor_target_source(kernel src/x64/yield.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/return_to_current_fast_fail.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/return_to_mk.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/return_to_vmexit_loop.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/serial_write_c.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/serial_write_hex.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/set_esr.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/vmexit_loop_entry.S ${HEADERS})
+    hypervisor_target_source(kernel src/x64/yield.S ${HEADERS})
 
-#     if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
-#         hypervisor_target_source(kernel src/x64/amd/intrinsic_t.S ${HEADERS})
-#         hypervisor_target_source(kernel src/x64/amd/promote.S ${HEADERS})
-#     endif()
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
+        hypervisor_target_source(kernel src/x64/amd/intrinsic_t.S ${HEADERS})
+        hypervisor_target_source(kernel src/x64/amd/promote.S ${HEADERS})
+    endif()
 
-#     if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
-#         hypervisor_target_source(kernel src/x64/intel/intrinsic_t.S ${HEADERS})
-#         hypervisor_target_source(kernel src/x64/intel/promote.S ${HEADERS})
-#     endif()
+    if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
+        hypervisor_target_source(kernel src/x64/intel/intrinsic_t.S ${HEADERS})
+        hypervisor_target_source(kernel src/x64/intel/promote.S ${HEADERS})
+    endif()
 endif()
 
 # if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")

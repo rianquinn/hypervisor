@@ -44,16 +44,22 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
-    ///   @param ext_pool the extension pool to use
+    ///   @param page_pool the page pool to use
+    ///   @param huge_pool the huge pool to use
     ///   @param vm_pool the VM pool to use
     ///   @param vp_pool the VP pool to use
+    ///   @param ext_pool the extension pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
     syscall_vm_op_create_vm_failure(
-        tls_t &tls, ext_pool_t &ext_pool, vm_pool_t &vm_pool, vp_pool_t &vp_pool) noexcept
-        -> bsl::errc_type
+        tls_t &tls,
+        page_pool_t &page_pool,
+        huge_pool_t &huge_pool,
+        vm_pool_t &vm_pool,
+        vp_pool_t &vp_pool,
+        ext_pool_t &ext_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
@@ -61,13 +67,13 @@ namespace mk
             return bsl::errc_success;
         }
 
-        ret = vm_pool.deallocate(tls, ext_pool, vp_pool, tls.log_vmid);
+        ret = vm_pool.deallocate(tls, page_pool, huge_pool, vp_pool, ext_pool, tls.log_vmid);
         if (bsl::unlikely(!bsl::success_or_precondition(ret))) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
         }
 
-        ret = ext_pool.signal_vm_destroyed(tls, tls.log_vmid);
+        ret = ext_pool.signal_vm_destroyed(tls, page_pool, huge_pool, tls.log_vmid);
         if (bsl::unlikely(!bsl::success_or_precondition(ret))) {
             bsl::print<bsl::V>() << bsl::here();
             return ret;
@@ -80,6 +86,7 @@ namespace mk
     ///   @brief Implements the bf_vm_op_destroy_vm syscall
     ///
     /// <!-- inputs/outputs -->
+    ///   @param tls the current TLS block
     ///   @param vm_pool the VM pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
@@ -107,22 +114,29 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
-    ///   @param ext_pool the extension pool to use
+    ///   @param page_pool the page pool to use
+    ///   @param huge_pool the huge pool to use
     ///   @param vm_pool the VM pool to use
     ///   @param vp_pool the VM pool to use
+    ///   @param ext_pool the extension pool to use
     ///   @return Returns bsl::errc_success on success, bsl::errc_failure
     ///     otherwise
     ///
     [[nodiscard]] constexpr auto
     dispatch_syscall_vm_op_failure(
-        tls_t &tls, ext_pool_t &ext_pool, vm_pool_t &vm_pool, vp_pool_t &vp_pool) noexcept
-        -> bsl::errc_type
+        tls_t &tls,
+        page_pool_t &page_pool,
+        huge_pool_t &huge_pool,
+        vm_pool_t &vm_pool,
+        vp_pool_t &vp_pool,
+        ext_pool_t &ext_pool) noexcept -> bsl::errc_type
     {
         bsl::errc_type ret{};
 
         switch (syscall::bf_syscall_index(tls.ext_syscall).get()) {
             case syscall::BF_VM_OP_CREATE_VM_IDX_VAL.get(): {
-                ret = syscall_vm_op_create_vm_failure(tls, ext_pool, vm_pool, vp_pool);
+                ret = syscall_vm_op_create_vm_failure(
+                    tls, page_pool, huge_pool, vm_pool, vp_pool, ext_pool);
                 return ret;
             }
 

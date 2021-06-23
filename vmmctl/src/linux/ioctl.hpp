@@ -78,7 +78,7 @@ namespace vmmctl
         ///   @param name the name of the device driver to IOCTL.
         ///
         template<typename CSTR>
-        explicit ioctl(CSTR name) noexcept
+        explicit constexpr ioctl(CSTR name) noexcept
         {
             // We don't have a choice here
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
@@ -94,7 +94,7 @@ namespace vmmctl
         /// <!-- description -->
         ///   @brief Destructor
         ///
-        ~ioctl() noexcept
+        constexpr ~ioctl() noexcept
         {
             if (bsl::unlikely(IOCTL_INVALID_HNDL.get() != m_hndl)) {
                 bsl::discard(close(m_hndl));
@@ -219,7 +219,7 @@ namespace vmmctl
         [[nodiscard]] constexpr auto
         // This conflicts with read() from unistd.h when it is included.
         // NOLINTNEXTLINE(bsl-using-ident-unique-namespace)
-        read(
+        read_data(
             bsl::safe_integral<REQUEST> const &req,
             void *const data,
             bsl::safe_uintmax const &size) const noexcept -> bool
@@ -263,7 +263,7 @@ namespace vmmctl
         ///
         template<typename REQUEST>
         [[nodiscard]] constexpr auto
-        write(
+        write_data(
             bsl::safe_integral<REQUEST> const &req,
             void const *const data,
             bsl::safe_uintmax const &size) const noexcept -> bool
@@ -307,7 +307,7 @@ namespace vmmctl
         ///
         template<typename REQUEST>
         [[nodiscard]] constexpr auto
-        read_write(
+        read_write_data(
             bsl::safe_integral<REQUEST> const &req,
             void *const data,
             bsl::safe_uintmax const &size) const noexcept -> bool

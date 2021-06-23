@@ -29,9 +29,9 @@
 
 #pragma pack(push, 1)
 
-namespace loader
+namespace mk
 {
-    /// @struct loader::pte_t
+    /// @struct mk::pte_t
     /// <!-- description -->
     ///   @brief Defines the layout of a page table entry (PTE).
     ///

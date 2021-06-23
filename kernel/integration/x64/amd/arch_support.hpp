@@ -54,8 +54,8 @@ namespace integration
         /// - Set up ASID
         ///
 
-        constexpr bsl::safe_uint64 guest_asid_idx{bsl::to_u64(0x0058U)};
-        constexpr bsl::safe_uint32 guest_asid_val{bsl::to_u32(0x1U)};
+        constexpr auto guest_asid_idx{0x0058_u64};
+        constexpr auto guest_asid_val{0x1_u32};
 
         ret = syscall::bf_vps_op_write32(handle, vpsid, guest_asid_idx, guest_asid_val);
         if (bsl::unlikely(!ret)) {
@@ -68,10 +68,10 @@ namespace integration
         ///   VMRun, and CPUID if we plan to support reporting and stopping.
         ///
 
-        constexpr bsl::safe_uint64 intercept_instruction1_idx{bsl::to_u64(0x000CU)};
-        constexpr bsl::safe_uint32 intercept_instruction1_val{bsl::to_u32(0x00040000U)};
-        constexpr bsl::safe_uint64 intercept_instruction2_idx{bsl::to_u64(0x0010U)};
-        constexpr bsl::safe_uint32 intercept_instruction2_val{bsl::to_u32(0x00000001U)};
+        constexpr auto intercept_instruction1_idx{0x000C_u64};
+        constexpr auto intercept_instruction1_val{0x00040000_u32};
+        constexpr auto intercept_instruction2_idx{0x0010_u64};
+        constexpr auto intercept_instruction2_val{0x00000001_u32};
 
         ret = syscall::bf_vps_op_write32(
             handle, vpsid, intercept_instruction1_idx, intercept_instruction1_val);

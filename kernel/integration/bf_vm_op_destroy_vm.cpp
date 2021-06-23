@@ -136,7 +136,8 @@ namespace integration
         integration::verify(bsl::errc_failure == ret);
 
         // destroy with VM that has not been created
-        ret = syscall::bf_vm_op_destroy_vm(g_handle, bsl::to_u16(0x2));
+        constexpr auto invalid_vmid{2_u16};
+        ret = syscall::bf_vm_op_destroy_vm(g_handle, invalid_vmid);
         integration::verify(bsl::errc_failure == ret);
 
         // destroy success
@@ -148,19 +149,20 @@ namespace integration
         integration::verify(bsl::errc_failure == ret);
 
         // create all, then destroy all, prove that we can still create
-        for (bsl::safe_uintmax i{bsl::ONE_UMAX}; i < bsl::to_umax(HYPERVISOR_MAX_VMS); ++i) {
+        constexpr auto one{1_umax};
+        for (bsl::safe_uintmax i{one}; i < HYPERVISOR_MAX_VMS; ++i) {
             ret = syscall::bf_vm_op_create_vm(g_handle, vmid);
             integration::require_success(ret);
         }
 
-        for (bsl::safe_uintmax i{bsl::to_umax(HYPERVISOR_MAX_VMS)}; i > bsl::ONE_UMAX; --i) {
-            ret = syscall::bf_vm_op_destroy_vm(g_handle, bsl::to_u16(i - bsl::ONE_UMAX));
+        for (bsl::safe_uintmax i{HYPERVISOR_MAX_VMS}; i > one; --i) {
+            ret = syscall::bf_vm_op_destroy_vm(g_handle, bsl::to_u16(i - one));
             integration::verify(bsl::errc_success == ret);
         }
 
         ret = syscall::bf_vm_op_create_vm(g_handle, vmid);
         integration::require_success(ret);
-        integration::require(vmid == bsl::to_u16(1));
+        integration::require(vmid == bsl::to_u16(one));
 
         // ---------------------------------------------------------------------
         // The following is needed to setup the remaining tests

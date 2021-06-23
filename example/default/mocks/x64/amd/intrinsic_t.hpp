@@ -118,12 +118,12 @@ namespace example
             bsl::safe_uint64 &rcx,
             bsl::safe_uint64 &rdx) noexcept
         {
-            constexpr auto mask{0xFFFFFFFF00000000_umax};
+            constexpr auto mask{0xFFFFFFFF00000000_u64};
 
-            rax = ((rax & mask) | bsl::to_umax(m_eax));
-            rbx = ((rbx & mask) | bsl::to_umax(m_ebx));
-            rcx = ((rcx & mask) | bsl::to_umax(m_ecx));
-            rdx = ((rdx & mask) | bsl::to_umax(m_edx));
+            rax = ((rax & mask) | bsl::to_u64(m_eax));
+            rbx = ((rbx & mask) | bsl::to_u64(m_ebx));
+            rcx = ((rcx & mask) | bsl::to_u64(m_ecx));
+            rdx = ((rdx & mask) | bsl::to_u64(m_edx));
         }
 
         /// <!-- description -->

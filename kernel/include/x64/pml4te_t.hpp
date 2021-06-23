@@ -29,9 +29,9 @@
 
 #pragma pack(push, 1)
 
-namespace loader
+namespace mk
 {
-    /// @struct loader::pml4te_t
+    /// @struct mk::pml4te_t
     ///
     /// <!-- description -->
     ///   @brief Defines the layout of a page-map level-4 table entry (PML4TE).

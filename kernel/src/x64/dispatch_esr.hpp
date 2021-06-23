@@ -41,41 +41,41 @@
 namespace mk
 {
     /// @brief defines a constant for the exception vector #0
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_0{bsl::to_umax(0)};
+    constexpr auto EXCEPTION_VECTOR_0{0_umax};
     /// @brief defines a constant for the exception vector #1
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_1{bsl::to_umax(1)};
+    constexpr auto EXCEPTION_VECTOR_1{1_umax};
     /// @brief defines a constant for the exception vector #2
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_2{bsl::to_umax(2)};
+    constexpr auto EXCEPTION_VECTOR_2{2_umax};
     /// @brief defines a constant for the exception vector #3
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_3{bsl::to_umax(3)};
+    constexpr auto EXCEPTION_VECTOR_3{3_umax};
     /// @brief defines a constant for the exception vector #4
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_4{bsl::to_umax(4)};
+    constexpr auto EXCEPTION_VECTOR_4{4_umax};
     /// @brief defines a constant for the exception vector #5
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_5{bsl::to_umax(5)};
+    constexpr auto EXCEPTION_VECTOR_5{5_umax};
     /// @brief defines a constant for the exception vector #6
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_6{bsl::to_umax(6)};
+    constexpr auto EXCEPTION_VECTOR_6{6_umax};
     /// @brief defines a constant for the exception vector #7
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_7{bsl::to_umax(7)};
+    constexpr auto EXCEPTION_VECTOR_7{7_umax};
     /// @brief defines a constant for the exception vector #8
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_8{bsl::to_umax(8)};
+    constexpr auto EXCEPTION_VECTOR_8{8_umax};
     /// @brief defines a constant for the exception vector #10
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_10{bsl::to_umax(10)};
+    constexpr auto EXCEPTION_VECTOR_10{10_umax};
     /// @brief defines a constant for the exception vector #11
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_11{bsl::to_umax(11)};
+    constexpr auto EXCEPTION_VECTOR_11{11_umax};
     /// @brief defines a constant for the exception vector #12
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_12{bsl::to_umax(12)};
+    constexpr auto EXCEPTION_VECTOR_12{12_umax};
     /// @brief defines a constant for the exception vector #13
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_13{bsl::to_umax(13)};
+    constexpr auto EXCEPTION_VECTOR_13{13_umax};
     /// @brief defines a constant for the exception vector #14
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_14{bsl::to_umax(14)};
+    constexpr auto EXCEPTION_VECTOR_14{14_umax};
     /// @brief defines a constant for the exception vector #16
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_16{bsl::to_umax(16)};
+    constexpr auto EXCEPTION_VECTOR_16{16_umax};
     /// @brief defines a constant for the exception vector #17
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_17{bsl::to_umax(17)};
+    constexpr auto EXCEPTION_VECTOR_17{17_umax};
     /// @brief defines a constant for the exception vector #18
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_18{bsl::to_umax(18)};
+    constexpr auto EXCEPTION_VECTOR_18{18_umax};
     /// @brief defines a constant for the exception vector #19
-    constexpr bsl::safe_uintmax EXCEPTION_VECTOR_19{bsl::to_umax(19)};
+    constexpr auto EXCEPTION_VECTOR_19{19_umax};
 
     /// <!-- description -->
     ///   @brief Returns the name of an ESR given it's vector
@@ -234,13 +234,16 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
+    ///   @param page_pool the page_pool_t to use
     ///   @param ext the extension that made the syscall
     ///   @param intrinsic the intrinsics to use
     ///   @return Returns bsl::exit_success if the exception was handled,
     ///     bsl::exit_failure otherwise
     ///
     [[nodiscard]] constexpr auto
-    dispatch_esr(tls_t &tls, ext_t *const ext, intrinsic_t &intrinsic) noexcept -> bsl::exit_code
+    dispatch_esr(
+        tls_t &tls, page_pool_t &page_pool, intrinsic_t &intrinsic, ext_t *const ext) noexcept
+        -> bsl::exit_code
     {
         bsl::finally reset_on_exit{[&tls]() noexcept -> void {
             /// NOTE:
@@ -262,7 +265,7 @@ namespace mk
             }
 
             case EXCEPTION_VECTOR_14.get(): {
-                if (bsl::likely(dispatch_esr_page_fault(tls, ext))) {
+                if (bsl::likely(dispatch_esr_page_fault(tls, page_pool, ext))) {
                     return bsl::exit_success;
                 }
 

@@ -38,13 +38,13 @@
 namespace mk
 {
     /// @brief defines the size of the reserved1 field in the tls_t
-    constexpr bsl::safe_uintmax TLS_T_RESERVED1_SIZE{bsl::to_umax(0x030)};
+    constexpr auto TLS_T_RESERVED1_SIZE{0x030_umax};
     /// @brief defines the size of the reserved2 field in the tls_t
-    constexpr bsl::safe_uintmax TLS_T_RESERVED2_SIZE{bsl::to_umax(0x008)};
+    constexpr auto TLS_T_RESERVED2_SIZE{0x008_umax};
     /// @brief defines the size of the reserved3 field in the tls_t
-    constexpr bsl::safe_uintmax TLS_T_RESERVED3_SIZE{bsl::to_umax(0x007)};
+    constexpr auto TLS_T_RESERVED3_SIZE{0x007_umax};
     /// @brief defines the size of the reserved4 field in the tls_t
-    constexpr bsl::safe_uintmax TLS_T_RESERVED4_SIZE{bsl::to_umax(0x040)};
+    constexpr auto TLS_T_RESERVED4_SIZE{0x040_umax};
 
     /// IMPORTANT:
     /// - If the size of the TLS is changed, the mk_main_entry will need to
@@ -54,7 +54,7 @@ namespace mk
     ///
 
     /// @brief defines the the total size of the TLS block
-    constexpr bsl::safe_uintmax TLS_T_SIZE{bsl::to_umax(0x300)};
+    constexpr auto TLS_T_SIZE{0x300_umax};
 
     /// @struct mk::tls_t
     ///

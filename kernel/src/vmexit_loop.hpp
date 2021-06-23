@@ -42,9 +42,9 @@ namespace mk
     ///
     /// <!-- inputs/outputs -->
     ///   @param tls the current TLS block
-    ///   @param ext the ext_t to handle the VMExit
     ///   @param intrinsic the intrinsics to use
     ///   @param vps_pool the VPS pool to use
+    ///   @param ext the ext_t to handle the VMExit
     ///   @param log the VMExit log to use
     ///   @return Returns bsl::exit_success on success, bsl::exit_failure
     ///     otherwise
@@ -52,9 +52,9 @@ namespace mk
     [[nodiscard]] constexpr auto
     vmexit_loop(
         tls_t &tls,
-        ext_t &ext,
         intrinsic_t &intrinsic,
         vps_pool_t &vps_pool,
+        ext_t &ext,
         vmexit_log_t &log) noexcept -> bsl::exit_code
     {
         auto const exit_reason{vps_pool.run(tls, intrinsic, tls.active_vpsid, log)};
@@ -63,7 +63,7 @@ namespace mk
             return bsl::exit_failure;
         }
 
-        auto const ret{ext.vmexit(tls, exit_reason)};
+        auto const ret{ext.vmexit(tls, intrinsic, exit_reason)};
         if (bsl::unlikely(!ret)) {
             bsl::print<bsl::V>() << bsl::here();
             return bsl::exit_failure;
