@@ -87,7 +87,7 @@ namespace mk
     class vps_t final
     {
         /// @brief stores the ID associated with this vp_t
-        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
+        bsl::safe_uint16 m_id{bsl::safe_uint16::failure()};
         /// @brief stores whether or not this vp_t is allocated.
         allocated_status_t m_allocated{allocated_status_t::deallocated};
         /// @brief stores the ID of the VP this vps_t is assigned to
@@ -95,12 +95,12 @@ namespace mk
         /// @brief stores the ID of the PP this vp_t is assigned to
         bsl::safe_uint16 m_assigned_ppid{syscall::BF_INVALID_ID};
         /// @brief stores the ID of the PP this vp_t is active on
-        bsl::safe_uint16 m_active_ppid{bsl::safe_uint16::zero(true)};
+        bsl::safe_uint16 m_active_ppid{bsl::safe_uint16::failure()};
 
         /// @brief stores a pointer to the guest vmcs being managed by this VPS
         vmcs_t *m_vmcs{};
         /// @brief stores the physical address of the guest vmcs
-        bsl::safe_uintmax m_vmcs_phys{bsl::safe_uintmax::zero(true)};
+        bsl::safe_uintmax m_vmcs_phys{bsl::safe_uintmax::failure()};
         /// @brief stores the rest of the state the vmcs doesn't
         vmcs_missing_registers_t m_vmcs_missing_registers{};
         /// @brief stores the general purpose registers
@@ -1508,14 +1508,14 @@ namespace mk
             m_gprs = {};
             m_vmcs_missing_registers = {};
 
-            m_vmcs_phys = bsl::safe_uintmax::zero(true);
+            m_vmcs_phys = bsl::safe_uintmax::failure();
             page_pool.deallocate(tls, m_vmcs, ALLOCATE_TAG_VMCS);
             m_vmcs = {};
 
             m_assigned_ppid = syscall::BF_INVALID_ID;
             m_assigned_vpid = syscall::BF_INVALID_ID;
             m_allocated = allocated_status_t::deallocated;
-            m_id = bsl::safe_uint16::zero(true);
+            m_id = bsl::safe_uint16::failure();
 
             zombify_on_error.ignore();
             return bsl::errc_success;
@@ -1558,12 +1558,12 @@ namespace mk
 
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             if (bsl::unlikely_assert(!vpid)) {
                 bsl::error() << "invalid vpid\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID == vpid)) {
@@ -1573,7 +1573,7 @@ namespace mk
                              << bsl::endl                                           // --
                              << bsl::here();                                        // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             if (bsl::unlikely(vp_pool.is_zombie(tls, vpid))) {
@@ -1583,7 +1583,7 @@ namespace mk
                              << bsl::endl                                            // --
                              << bsl::here();                                         // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             if (bsl::unlikely(vp_pool.is_deallocated(tls, vpid))) {
@@ -1593,12 +1593,12 @@ namespace mk
                              << bsl::endl                                                     // --
                              << bsl::here();                                                  // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             if (bsl::unlikely_assert(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID == ppid)) {
@@ -1608,7 +1608,7 @@ namespace mk
                              << bsl::endl                                           // --
                              << bsl::here();                                        // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             if (bsl::unlikely(!(ppid < tls.online_pps))) {
@@ -1620,7 +1620,7 @@ namespace mk
                              << bsl::endl                                              // --
                              << bsl::here();                                           // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             if (bsl::unlikely_assert(m_allocated == allocated_status_t::zombie)) {
@@ -1630,7 +1630,7 @@ namespace mk
                              << bsl::endl                                 // --
                              << bsl::here();                              // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             if (bsl::unlikely_assert(m_allocated == allocated_status_t::allocated)) {
@@ -1640,14 +1640,14 @@ namespace mk
                              << bsl::endl                                        // --
                              << bsl::here();                                     // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             tls.state_reversal_required = true;
             tls.log_vpsid = m_id.get();
 
             bsl::finally cleanup_on_error{[this, &tls, &page_pool]() noexcept -> void {
-                m_vmcs_phys = bsl::safe_uintmax::zero(true);
+                m_vmcs_phys = bsl::safe_uintmax::failure();
                 page_pool.deallocate(tls, m_vmcs, ALLOCATE_TAG_VMCS);
                 m_vmcs = {};
             }};
@@ -1655,19 +1655,19 @@ namespace mk
             m_vmcs = page_pool.template allocate<vmcs_t>(tls, ALLOCATE_TAG_VMCS);
             if (bsl::unlikely(nullptr == m_vmcs)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             m_vmcs_phys = page_pool.virt_to_phys(m_vmcs);
             if (bsl::unlikely_assert(!m_vmcs_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             ret = this->init_vmcs(tls, intrinsic);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             m_assigned_vpid = vpid;
@@ -1737,7 +1737,7 @@ namespace mk
             m_gprs = {};
             m_vmcs_missing_registers = {};
 
-            m_vmcs_phys = bsl::safe_uintmax::zero(true);
+            m_vmcs_phys = bsl::safe_uintmax::failure();
             page_pool.deallocate(tls, m_vmcs, ALLOCATE_TAG_VMCS);
             m_vmcs = {};
 
@@ -1992,7 +1992,7 @@ namespace mk
             m_gprs.r15 = intrinsic.tls_reg(syscall::TLS_OFFSET_R15).get();
 
             tls.active_vpsid = syscall::BF_INVALID_ID.get();
-            m_active_ppid = bsl::safe_uint16::zero(true);
+            m_active_ppid = bsl::safe_uint16::failure();
 
             return bsl::errc_success;
         }
@@ -2000,13 +2000,13 @@ namespace mk
         /// <!-- description -->
         ///   @brief Returns the ID of the PP that this vps_t is still active
         ///     on. If the vps_t is inactive, this function returns
-        ///     bsl::safe_uint16::zero(true)
+        ///     bsl::safe_uint16::failure()
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
         ///   @return Returns the ID of the PP that this vps_t is still active
         ///     on. If the vps_t is inactive, this function returns
-        ///     bsl::safe_uint16::zero(true)
+        ///     bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
         is_active(tls_t &tls) const &noexcept -> bsl::safe_uint16
@@ -2133,7 +2133,7 @@ namespace mk
         assigned_vp() const &noexcept -> bsl::safe_uint16
         {
             if (bsl::unlikely(syscall::BF_INVALID_ID == m_assigned_vpid)) {
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return m_assigned_vpid;
@@ -2149,7 +2149,7 @@ namespace mk
         assigned_pp() const &noexcept -> bsl::safe_uint16
         {
             if (bsl::unlikely(syscall::BF_INVALID_ID == m_assigned_ppid)) {
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return m_assigned_ppid;
@@ -2696,7 +2696,7 @@ namespace mk
         ///   @param intrinsic the intrinsics to use
         ///   @param index the index of the field to read from the VPS
         ///   @return Returns the value of the requested field from the
-        ///     VPS or bsl::safe_integral<FIELD_TYPE>::zero(true)
+        ///     VPS or bsl::safe_integral<FIELD_TYPE>::failure()
         ///
         template<typename FIELD_TYPE>
         [[nodiscard]] constexpr auto
@@ -2714,7 +2714,7 @@ namespace mk
 
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::safe_integral<FIELD_TYPE>::zero(true);
+                return bsl::safe_integral<FIELD_TYPE>::failure();
             }
 
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
@@ -2724,7 +2724,7 @@ namespace mk
                              << bsl::endl                                          // --
                              << bsl::here();                                       // --
 
-                return bsl::safe_integral<FIELD_TYPE>::zero(true);
+                return bsl::safe_integral<FIELD_TYPE>::failure();
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
@@ -2737,13 +2737,13 @@ namespace mk
                              << bsl::endl                              // --
                              << bsl::here();                           // --
 
-                return bsl::safe_integral<FIELD_TYPE>::zero(true);
+                return bsl::safe_integral<FIELD_TYPE>::failure();
             }
 
             ret = this->ensure_this_vps_is_loaded(tls, intrinsic);
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::safe_integral<FIELD_TYPE>::zero(true);
+                return bsl::safe_integral<FIELD_TYPE>::failure();
             }
 
             if constexpr (bsl::is_same<FIELD_TYPE, bsl::uint16>::value) {
@@ -2777,7 +2777,7 @@ namespace mk
             }
 
             bsl::error() << "unsupported field type\n" << bsl::here();
-            return bsl::safe_integral<FIELD_TYPE>::zero(true);
+            return bsl::safe_integral<FIELD_TYPE>::failure();
         }
 
         /// <!-- description -->
@@ -2956,16 +2956,16 @@ namespace mk
         ///   @param intrinsic the intrinsics to use
         ///   @param reg a bf_reg_t defining the field to read from the VPS
         ///   @return Returns the value of the requested field from the
-        ///     VPS or bsl::safe_uintmax::zero(true) on failure.
+        ///     VPS or bsl::safe_uintmax::failure() on failure.
         [[nodiscard]] constexpr auto
         read_reg(tls_t &tls, intrinsic_t &intrinsic, syscall::bf_reg_t const reg) &noexcept
             -> bsl::safe_uintmax
         {
-            bsl::safe_uint64 index{bsl::safe_uint64::zero(true)};
+            bsl::safe_uint64 index{bsl::safe_uint64::failure()};
 
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             if (bsl::unlikely(m_allocated != allocated_status_t::allocated)) {
@@ -2975,7 +2975,7 @@ namespace mk
                              << bsl::endl                                          // --
                              << bsl::here();                                       // --
 
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             if (bsl::unlikely(tls.ppid != m_assigned_ppid)) {
@@ -2988,7 +2988,7 @@ namespace mk
                              << bsl::endl                              // --
                              << bsl::here();                           // --
 
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             switch (reg) {
@@ -3428,7 +3428,7 @@ namespace mk
             syscall::bf_reg_t const reg,
             bsl::safe_uintmax const &val) &noexcept -> bsl::errc_type
         {
-            bsl::safe_uint64 index{bsl::safe_uint64::zero(true)};
+            bsl::safe_uint64 index{bsl::safe_uint64::failure()};
 
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
@@ -3938,7 +3938,7 @@ namespace mk
 
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             if (bsl::unlikely_assert(m_allocated != allocated_status_t::allocated)) {
@@ -3948,7 +3948,7 @@ namespace mk
                              << bsl::endl                                          // --
                              << bsl::here();                                       // --
 
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             if (bsl::unlikely_assert(tls.ppid != m_assigned_ppid)) {
@@ -3961,13 +3961,13 @@ namespace mk
                              << bsl::endl                    // --
                              << bsl::here();                 // --
 
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             ret = this->ensure_this_vps_is_loaded(tls, intrinsic);
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             bsl::safe_uintmax const exit_reason{intrinsic_vmrun(&m_vmcs_missing_registers)};
@@ -3977,7 +3977,7 @@ namespace mk
                              << bsl::endl                                      // --
                              << bsl::here();                                   // --
 
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             if constexpr (!(BSL_DEBUG_LEVEL < bsl::VV)) {

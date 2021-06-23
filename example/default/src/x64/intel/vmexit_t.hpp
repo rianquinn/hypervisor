@@ -160,8 +160,8 @@ namespace example
             ///   from there, inject the NMI into the appropriate VPS.
             ///
 
-            constexpr auto vmcs_procbased_ctls_idx{bsl::to_umax(0x4002U)};
-            constexpr auto vmcs_set_nmi_window_exiting{bsl::to_u32(0x400000U)};
+            constexpr auto vmcs_procbased_ctls_idx{0x4002_u64};
+            constexpr auto vmcs_set_nmi_window_exiting{0x400000_u32};
 
             bsl::safe_uint32 val{};
             bsl::errc_type ret{};
@@ -223,8 +223,8 @@ namespace example
             ///   on what hardware you are using (e.g., a laptop).
             ///
 
-            constexpr auto vmcs_procbased_ctls_idx{bsl::to_umax(0x4002U)};
-            constexpr auto vmcs_clear_nmi_window_exiting{bsl::to_u32(0xFFBFFFFFU)};
+            constexpr auto vmcs_procbased_ctls_idx{0x4002_u64};
+            constexpr auto vmcs_clear_nmi_window_exiting{0xFFBFFFFF_u32};
 
             bsl::safe_uint32 val{};
             bsl::errc_type ret{};
@@ -250,8 +250,8 @@ namespace example
             ///   so we are required to implement it on Intel.
             ///
 
-            constexpr auto vmcs_entry_interrupt_info_idx{bsl::to_umax(0x4016U)};
-            constexpr auto vmcs_entry_interrupt_info_val{bsl::to_u32(0x80000202U)};
+            constexpr auto vmcs_entry_interrupt_info_idx{0x4016_u64};
+            constexpr auto vmcs_entry_interrupt_info_val{0x80000202_u32};
 
             ret = sys.bf_vps_op_write32(
                 vpsid, vmcs_entry_interrupt_info_idx, vmcs_entry_interrupt_info_val);
@@ -326,7 +326,7 @@ namespace example
                         ///   being over used.
                         ///
 
-                        if (sys.bf_tls_ppid() == (sys.bf_tls_online_pps() - bsl::ONE_U16)) {
+                        if (sys.bf_tls_ppid() == (sys.bf_tls_online_pps() - 1_u16)) {
                             bsl::print() << bsl::endl;
                             syscall::bf_debug_op_dump_page_pool();
                             bsl::print() << bsl::endl;
@@ -513,9 +513,9 @@ namespace example
             ///   on Intel (as there is no way to disable NMIs on Intel).
             ///
 
-            constexpr auto exit_reason_nmi{bsl::to_umax(0x0)};
-            constexpr auto exit_reason_nmi_window{bsl::to_umax(0x8)};
-            constexpr auto exit_reason_cpuid{bsl::to_umax(0xA)};
+            constexpr auto exit_reason_nmi{0x0_u64};
+            constexpr auto exit_reason_nmi_window{0x8_u64};
+            constexpr auto exit_reason_cpuid{0xA_u64};
 
             /// NOTE:
             /// - Dispatch and handle each VMExit.

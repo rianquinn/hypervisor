@@ -67,7 +67,7 @@ namespace mk
                 vp_t vp{};
                 tls_t tls{};
                 bsl::ut_then{} = [&vp, &tls]() {
-                    bsl::ut_check(!vp.initialize(tls, bsl::safe_uint16::zero(true)));
+                    bsl::ut_check(!vp.initialize(tls, bsl::safe_uint16::failure()));
                 };
             };
         };
@@ -217,7 +217,7 @@ namespace mk
                     bsl::ut_required_step(vp.initialize(tls, VPID1));
                     bsl::ut_then{} = [&vp, &tls, &vm_pool]() {
                         bsl::ut_check(
-                            !vp.allocate(tls, vm_pool, bsl::safe_uint16::zero(true), PPID0));
+                            !vp.allocate(tls, vm_pool, bsl::safe_uint16::failure(), PPID0));
                     };
                 };
             };
@@ -280,7 +280,7 @@ namespace mk
                     bsl::ut_required_step(vp.initialize(tls, VPID1));
                     bsl::ut_then{} = [&vp, &tls, &vm_pool]() {
                         bsl::ut_check(
-                            !vp.allocate(tls, vm_pool, VMID0, bsl::safe_uint16::zero(true)));
+                            !vp.allocate(tls, vm_pool, VMID0, bsl::safe_uint16::failure()));
                     };
                 };
             };
@@ -1040,7 +1040,7 @@ namespace mk
                     bsl::ut_required_step(vp.initialize(tls, VPID1));
                     bsl::ut_required_step(vp.allocate(tls, vm_pool, VMID0, PPID0));
                     bsl::ut_then{} = [&tls, &vp]() {
-                        bsl::ut_check(!vp.migrate(tls, bsl::safe_uint16::zero(true)));
+                        bsl::ut_check(!vp.migrate(tls, bsl::safe_uint16::failure()));
                     };
                 };
             };

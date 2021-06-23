@@ -47,10 +47,10 @@ namespace example
     ///   @return The masked version of the control fields.
     ///
     [[nodiscard]] constexpr auto
-    ctls_mask(bsl::safe_uintmax const &val) noexcept -> bsl::safe_uint32
+    ctls_mask(bsl::safe_uint64 const &val) noexcept -> bsl::safe_uint32
     {
-        constexpr auto mask{bsl::to_umax(0x00000000FFFFFFFFU)};
-        constexpr auto shift{bsl::to_umax(32)};
+        constexpr auto mask{0x00000000FFFFFFFF_u64};
+        constexpr auto shift{32_u64};
         return bsl::to_u32_unsafe((val & mask) & (val >> shift));
     };
 
@@ -67,7 +67,7 @@ namespace example
         bsl::safe_uintmax m_msr_bitmap_phys{};
 
         /// @brief stores the ID associated with this vps_t
-        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
+        bsl::safe_uint16 m_id{bsl::safe_uint16::failure()};
         /// @brief stores the ID of the VP this vps_t is assigned to
         bsl::safe_uint16 m_assigned_vpid{syscall::BF_INVALID_ID};
         /// @brief stores the ID of the PP this vps_t is assigned to
@@ -185,7 +185,7 @@ namespace example
 
             m_assigned_ppid = syscall::BF_INVALID_ID;
             m_assigned_vpid = syscall::BF_INVALID_ID;
-            m_id = bsl::safe_uint16::zero(true);
+            m_id = bsl::safe_uint16::failure();
         }
 
         /// <!-- description -->
@@ -330,8 +330,8 @@ namespace example
             /// - Set up VPID
             ///
 
-            constexpr auto vmcs_vpid_idx{bsl::to_umax(0x0000U)};
-            constexpr auto vmcs_vpid_val{bsl::to_u16(0x1)};
+            constexpr auto vmcs_vpid_idx{0x0000_u64};
+            constexpr auto vmcs_vpid_val{0x1_u16};
 
             ret = sys.bf_vps_op_write16(m_id, vmcs_vpid_idx, vmcs_vpid_val);
             if (bsl::unlikely_assert(!ret)) {
@@ -343,8 +343,8 @@ namespace example
             /// - Set up the VMCS link pointer
             ///
 
-            constexpr auto vmcs_link_ptr_idx{bsl::to_umax(0x2800U)};
-            constexpr auto vmcs_link_ptr_val{bsl::to_umax(0xFFFFFFFFFFFFFFFFU)};
+            constexpr auto vmcs_link_ptr_idx{0x2800_u64};
+            constexpr auto vmcs_link_ptr_val{0xFFFFFFFFFFFFFFFF_u64};
 
             ret = sys.bf_vps_op_write64(m_id, vmcs_link_ptr_idx, vmcs_link_ptr_val);
             if (bsl::unlikely_assert(!ret)) {
@@ -375,17 +375,17 @@ namespace example
             ///   project.
             ///
 
-            constexpr auto vmcs_pinbased_ctls_idx{bsl::to_umax(0x4000U)};
-            constexpr auto vmcs_procbased_ctls_idx{bsl::to_umax(0x4002U)};
-            constexpr auto vmcs_exit_ctls_idx{bsl::to_umax(0x400CU)};
-            constexpr auto vmcs_entry_ctls_idx{bsl::to_umax(0x4012U)};
-            constexpr auto vmcs_procbased_ctls2_idx{bsl::to_umax(0x401EU)};
+            constexpr auto vmcs_pinbased_ctls_idx{0x4000_u64};
+            constexpr auto vmcs_procbased_ctls_idx{0x4002_u64};
+            constexpr auto vmcs_exit_ctls_idx{0x400C_u64};
+            constexpr auto vmcs_entry_ctls_idx{0x4012_u64};
+            constexpr auto vmcs_procbased_ctls2_idx{0x401E_u64};
 
-            constexpr auto ia32_vmx_true_pinbased_ctls{bsl::to_u32(0x48DU)};
-            constexpr auto ia32_vmx_true_procbased_ctls{bsl::to_u32(0x48EU)};
-            constexpr auto ia32_vmx_true_exit_ctls{bsl::to_u32(0x48FU)};
-            constexpr auto ia32_vmx_true_entry_ctls{bsl::to_u32(0x490U)};
-            constexpr auto ia32_vmx_true_procbased_ctls2{bsl::to_u32(0x48BU)};
+            constexpr auto ia32_vmx_true_pinbased_ctls{0x48D_u32};
+            constexpr auto ia32_vmx_true_procbased_ctls{0x48E_u32};
+            constexpr auto ia32_vmx_true_exit_ctls{0x48F_u32};
+            constexpr auto ia32_vmx_true_entry_ctls{0x490_u32};
+            constexpr auto ia32_vmx_true_procbased_ctls2{0x48B_u32};
 
             bsl::safe_uintmax ctls{};
 
@@ -409,8 +409,8 @@ namespace example
             /// - Configure the proc based controls
             ///
 
-            constexpr auto enable_msr_bitmaps{bsl::to_umax(0x10000000U)};
-            constexpr auto enable_procbased_ctls2{bsl::to_umax(0x80000000U)};
+            constexpr auto enable_msr_bitmaps{0x10000000_u64};
+            constexpr auto enable_procbased_ctls2{0x80000000_u64};
 
             ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_procbased_ctls);
             if (bsl::unlikely_assert(!ctls)) {
@@ -463,11 +463,11 @@ namespace example
             /// - Configure the secondary proc controls.
             ///
 
-            constexpr auto enable_vpid{bsl::to_umax(0x00000020U)};
-            constexpr auto enable_rdtscp{bsl::to_umax(0x00000008U)};
-            constexpr auto enable_invpcid{bsl::to_umax(0x00001000U)};
-            constexpr auto enable_xsave{bsl::to_umax(0x00100000U)};
-            constexpr auto enable_uwait{bsl::to_umax(0x04000000U)};
+            constexpr auto enable_vpid{0x00000020_u64};
+            constexpr auto enable_rdtscp{0x00000008_u64};
+            constexpr auto enable_invpcid{0x00001000_u64};
+            constexpr auto enable_xsave{0x00100000_u64};
+            constexpr auto enable_uwait{0x04000000_u64};
 
             ctls = sys.bf_intrinsic_op_rdmsr(ia32_vmx_true_procbased_ctls2);
             if (bsl::unlikely_assert(!ctls)) {
@@ -494,7 +494,7 @@ namespace example
             ///   CPUs you are running on.
             ///
 
-            constexpr auto vmcs_msr_bitmaps{bsl::to_umax(0x2004U)};
+            constexpr auto vmcs_msr_bitmaps{0x2004_u64};
 
             ret = sys.bf_vps_op_write64(m_id, vmcs_msr_bitmaps, m_msr_bitmap_phys);
             if (bsl::unlikely_assert(!ret)) {

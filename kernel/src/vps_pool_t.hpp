@@ -161,7 +161,7 @@ namespace mk
 
             if (bsl::unlikely(nullptr == vps)) {
                 bsl::error() << "vps pool out of vpss\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return vps->allocate(tls, intrinsic, page_pool, vp_pool, vpid, ppid);
@@ -329,14 +329,14 @@ namespace mk
         /// <!-- description -->
         ///   @brief If a vps_t in the pool is assigned to the requested VP,
         ///     the ID of the first vps_t found is returned. Otherwise, this
-        ///     function will return bsl::safe_uint16::zero(true)
+        ///     function will return bsl::safe_uint16::failure()
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
         ///   @param vpid the ID fo the VP to query
         ///   @return If a vps_t in the pool is assigned to the requested VP,
         ///     the ID of the first vps_t found is returned. Otherwise, this
-        ///     function will return bsl::safe_uint16::zero(true)
+        ///     function will return bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
         is_assigned_to_vp(tls_t &tls, bsl::safe_uint16 const &vpid) const &noexcept
@@ -346,12 +346,12 @@ namespace mk
 
             if (bsl::unlikely(!vpid)) {
                 bsl::error() << "invalid vpid\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             if (bsl::unlikely(syscall::BF_INVALID_ID == vpid)) {
                 bsl::error() << "invalid vpid\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             for (auto const elem : m_pool) {
@@ -362,7 +362,7 @@ namespace mk
                 bsl::touch();
             }
 
-            return bsl::safe_uint16::zero(true);
+            return bsl::safe_uint16::failure();
         }
 
         /// <!-- description -->
@@ -536,7 +536,7 @@ namespace mk
                     << bsl::endl                                                             // --
                     << bsl::here();                                                          // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return vps->assigned_vp();
@@ -562,7 +562,7 @@ namespace mk
                     << bsl::endl                                                             // --
                     << bsl::here();                                                          // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return vps->assigned_pp();
@@ -647,7 +647,7 @@ namespace mk
         ///   @param vpsid the ID of the VPS to read from
         ///   @param index the index of the field to read from the VPS
         ///   @return Returns the value of the requested field from the
-        ///     requested VPS or bsl::safe_integral<FIELD_TYPE>::zero(true)
+        ///     requested VPS or bsl::safe_integral<FIELD_TYPE>::failure()
         ///     on failure.
         ///
         template<typename FIELD_TYPE>
@@ -668,7 +668,7 @@ namespace mk
                     << bsl::endl                                                             // --
                     << bsl::here();                                                          // --
 
-                return bsl::safe_integral<FIELD_TYPE>::zero(true);
+                return bsl::safe_integral<FIELD_TYPE>::failure();
             }
 
             return vps->template read<FIELD_TYPE>(tls, intrinsic, index);
@@ -723,7 +723,7 @@ namespace mk
         ///   @param vpsid the ID of the VPS to read from
         ///   @param reg a bf_reg_t defining the field to read from the VPS
         ///   @return Returns the value of the requested field from the
-        ///     requested VPS or bsl::safe_uintmax::zero(true) on failure.
+        ///     requested VPS or bsl::safe_uintmax::failure() on failure.
         ///
         [[nodiscard]] constexpr auto
         read_reg(
@@ -742,7 +742,7 @@ namespace mk
                     << bsl::endl                                                             // --
                     << bsl::here();                                                          // --
 
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             return vps->read_reg(tls, intrinsic, reg);
@@ -796,7 +796,7 @@ namespace mk
         ///   @param log the VMExit log to use
         ///   @param vpsid the ID of the VPS to run
         ///   @return Returns the VMExit reason on success, or
-        ///     bsl::safe_uintmax::zero(true) on failure.
+        ///     bsl::safe_uintmax::failure() on failure.
         ///
         [[nodiscard]] constexpr auto
         run(tls_t &tls,
@@ -814,7 +814,7 @@ namespace mk
                     << bsl::endl                                                             // --
                     << bsl::here();                                                          // --
 
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             return vps->run(tls, intrinsic, log);

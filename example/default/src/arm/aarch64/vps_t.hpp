@@ -47,7 +47,7 @@ namespace example
     class vps_t final
     {
         /// @brief stores the ID associated with this vps_t
-        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
+        bsl::safe_uint16 m_id{bsl::safe_uint16::failure()};
         /// @brief stores the ID of the VP this vps_t is assigned to
         bsl::safe_uint16 m_assigned_vpid{syscall::BF_INVALID_ID};
         /// @brief stores the ID of the PP this vps_t is assigned to
@@ -151,7 +151,7 @@ namespace example
 
             m_assigned_ppid = syscall::BF_INVALID_ID;
             m_assigned_vpid = syscall::BF_INVALID_ID;
-            m_id = bsl::safe_uint16::zero(true);
+            m_id = bsl::safe_uint16::failure();
         }
 
         /// <!-- description -->

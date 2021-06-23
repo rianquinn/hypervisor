@@ -44,7 +44,7 @@ namespace mk
     class dummy_vm_t final
     {
         /// @brief stores the ID associated with this vm_t
-        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
+        bsl::safe_uint16 m_id{bsl::safe_uint16::failure()};
         /// @brief stores whether or not this vm_t is allocated.
         allocated_status_t m_allocated{allocated_status_t::deallocated};
         /// @brief stores whether or not this vm_t is active.
@@ -115,7 +115,7 @@ namespace mk
             bsl::discard(ext_pool);
 
             if (!tls.test_ret) {
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             m_allocated = allocated_status_t::allocated;
@@ -221,13 +221,13 @@ namespace mk
         /// <!-- description -->
         ///   @brief Returns the ID of the first PP identified that this VM
         ///     is still active on. If the VM is inactive, this function
-        ///     returns bsl::safe_uint16::zero(true)
+        ///     returns bsl::safe_uint16::failure()
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
         ///   @return Returns the ID of the first PP identified that this VM
         ///     is still active on. If the VM is inactive, this function
-        ///     returns bsl::safe_uint16::zero(true)
+        ///     returns bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
         is_active(tls_t &tls) const &noexcept -> bsl::safe_uint16
@@ -238,7 +238,7 @@ namespace mk
                 return bsl::ZERO_U16;
             }
 
-            return bsl::safe_uint16::zero(true);
+            return bsl::safe_uint16::failure();
         }
 
         /// <!-- description -->

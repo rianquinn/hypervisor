@@ -359,7 +359,7 @@ namespace mk
                              << bsl::endl         // --
                              << bsl::here();      // --
 
-                return bsl::safe_uint64::zero(true);
+                return bsl::safe_uint64::failure();
             }
 
             ret = intrinsic_rdmsr(msr.get(), val.data());
@@ -369,7 +369,7 @@ namespace mk
                              << bsl::endl                  // --
                              << bsl::here();               // --
 
-                return bsl::safe_uint64::zero(true);
+                return bsl::safe_uint64::failure();
             }
 
             return val;

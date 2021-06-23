@@ -65,7 +65,7 @@ namespace example
         /// @brief stores a pointer to the npml4t
         npml4t_t *m_npml4t{};
         /// @brief stores the physical address of the npml4t
-        bsl::safe_uintmax m_npml4t_phys{bsl::safe_uintmax::zero(true)};
+        bsl::safe_uintmax m_npml4t_phys{bsl::safe_uintmax::failure()};
         /// @brief safe guards operations on the NPT.
         mutable spinlock m_npt_lock{};
 
@@ -419,7 +419,7 @@ namespace example
 
             m_page_pool->deallocate(m_npml4t);
             m_npml4t = {};
-            m_npml4t_phys = bsl::safe_uintmax::zero(true);
+            m_npml4t_phys = bsl::safe_uintmax::failure();
         }
 
     public:

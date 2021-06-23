@@ -326,7 +326,7 @@ namespace mk
                 vp_pool_t<dummy_vp_t, INTEGRATION_MAX_VPS.get()> pool{};
                 tls_t tls{};
                 bsl::ut_then{} = [&pool, &tls]() {
-                    bsl::ut_check(!pool.is_assigned_to_vm(tls, bsl::safe_uint16::zero(true)));
+                    bsl::ut_check(!pool.is_assigned_to_vm(tls, bsl::safe_uint16::failure()));
                 };
             };
         };

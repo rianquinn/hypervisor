@@ -44,7 +44,7 @@ namespace mk
     class dummy_vp_t final
     {
         /// @brief stores the ID associated with this vp_t
-        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
+        bsl::safe_uint16 m_id{bsl::safe_uint16::failure()};
         /// @brief stores whether or not this vp_t is allocated.
         allocated_status_t m_allocated{allocated_status_t::deallocated};
         /// @brief stores the ID of the VM this vp_t is assigned to
@@ -137,7 +137,7 @@ namespace mk
             bsl::discard(vm_pool);
 
             if (!tls.test_ret) {
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             m_assigned_vmid = vmid;
@@ -247,13 +247,13 @@ namespace mk
         /// <!-- description -->
         ///   @brief Returns the ID of the first PP identified that this VP
         ///     is still active on. If the VP is inactive, this function
-        ///     returns bsl::safe_uint16::zero(true)
+        ///     returns bsl::safe_uint16::failure()
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
         ///   @return Returns the ID of the first PP identified that this VP
         ///     is still active on. If the VP is inactive, this function
-        ///     returns bsl::safe_uint16::zero(true)
+        ///     returns bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
         is_active(tls_t &tls) const &noexcept -> bsl::safe_uint16
@@ -264,7 +264,7 @@ namespace mk
                 return bsl::ZERO_U16;
             }
 
-            return bsl::safe_uint16::zero(true);
+            return bsl::safe_uint16::failure();
         }
 
         /// <!-- description -->
@@ -321,7 +321,7 @@ namespace mk
         assigned_vm() const &noexcept -> bsl::safe_uint16
         {
             if (bsl::unlikely(syscall::BF_INVALID_ID == m_assigned_vmid)) {
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return m_assigned_vmid;
@@ -337,7 +337,7 @@ namespace mk
         assigned_pp() const &noexcept -> bsl::safe_uint16
         {
             if (bsl::unlikely(syscall::BF_INVALID_ID == m_assigned_ppid)) {
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return m_assigned_ppid;

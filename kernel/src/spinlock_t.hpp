@@ -66,7 +66,7 @@ namespace mk
         // We cannot member initialize atomics so this is not possible
         // NOLINTNEXTLINE(bsl-class-member-init)
         constexpr spinlock_t() noexcept    // --
-            : m_std_ppid{bsl::safe_uint16::zero(true)}, m_esr_ppid{bsl::safe_uint16::zero(true)}
+            : m_std_ppid{bsl::safe_uint16::failure()}, m_esr_ppid{bsl::safe_uint16::failure()}
         {
             // This is the only way to initialize this
             // NOLINTNEXTLINE(bsl-implicit-conversions-forbidden)
@@ -229,10 +229,10 @@ namespace mk
             ///
 
             if (tls.esr_ip == bsl::ZERO_UMAX) {
-                m_std_ppid = bsl::safe_uint16::zero(true);
+                m_std_ppid = bsl::safe_uint16::failure();
             }
             else {
-                m_esr_ppid = bsl::safe_uint16::zero(true);
+                m_esr_ppid = bsl::safe_uint16::failure();
             }
 
             if (!!m_std_ppid) {

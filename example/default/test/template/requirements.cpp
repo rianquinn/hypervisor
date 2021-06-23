@@ -94,7 +94,7 @@ namespace
         [[nodiscard]] constexpr auto
         test_member_nonconst() noexcept -> bool
         {
-            constexpr auto the_answer{bsl::to_i32(42)};
+            constexpr auto the_answer{42_i32};
 
             bsl::discard(bsl::errc_type{});
             bsl::discard(bsl::errc_type{the_answer.get()});
@@ -152,7 +152,7 @@ main() noexcept -> bsl::exit_code
         bsl::ut_given{} = []() {
             bsl::errc_type errc1{};
             bsl::errc_type errc2{};
-            constexpr auto the_answer{bsl::to_i32(42)};
+            constexpr auto the_answer{42_i32};
             bsl::ut_then{} = []() {
                 static_assert(noexcept(bsl::errc_type{}));
                 static_assert(noexcept(bsl::errc_type{the_answer.get()}));

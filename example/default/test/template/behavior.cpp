@@ -38,7 +38,7 @@ namespace example
     [[nodiscard]] auto
     runtime_only_function_that_knows_all(bsl::safe_uintmax const &val) noexcept -> bool
     {
-        constexpr auto the_answer_to_everything{bsl::to_umax(42)};
+        constexpr auto the_answer_to_everything{42_umax};
         return val == the_answer_to_everything;
     }
 
@@ -63,7 +63,7 @@ namespace example
 
         bsl::ut_scenario{"verify +=/-="} = []() {
             bsl::ut_given{} = []() {
-                constexpr auto data1{bsl::to_umax(42)};
+                constexpr auto data1{42_umax};
                 bsl::safe_uintmax data2{};
                 bsl::ut_when{} = [&data1, &data2]() {
                     data2 += data1;
@@ -74,8 +74,8 @@ namespace example
             };
 
             bsl::ut_given{} = []() {
-                constexpr auto data1{bsl::to_umax(42)};
-                auto data2{bsl::safe_uintmax::zero(true)};
+                constexpr auto data1{42_umax};
+                auto data2{bsl::safe_uintmax::failure()};
                 bsl::ut_when{} = [&data1, &data2]() {
                     data2 += data1;
                     bsl::ut_then{} = [&data2]() {
@@ -97,7 +97,7 @@ namespace example
 
         bsl::ut_scenario{"verify += adds correctly"} = []() {
             bsl::ut_given{} = []() {
-                constexpr auto data1{bsl::to_umax(42)};
+                constexpr auto data1{42_umax};
                 bsl::safe_uintmax data2{};
                 bsl::ut_when{} = [&data1, &data2]() {
                     data2 += data1;
@@ -110,8 +110,8 @@ namespace example
 
         bsl::ut_scenario{"verify += preserves the error flag"} = []() {
             bsl::ut_given{} = []() {
-                constexpr auto data1{bsl::to_umax(42)};
-                auto data2{bsl::safe_uintmax::zero(true)};
+                constexpr auto data1{42_umax};
+                auto data2{bsl::safe_uintmax::failure()};
                 bsl::ut_when{} = [&data1, &data2]() {
                     data2 += data1;
                     bsl::ut_then{} = [&data2]() {
@@ -132,14 +132,14 @@ namespace example
 
         bsl::ut_scenario{"test something at runtime only"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                constexpr auto val{bsl::to_umax(42)};
+                constexpr auto val{42_umax};
                 bsl::ut_then{} = [&val]() {
                     bsl::ut_check(runtime_only_function_that_knows_all(val));
                 };
             };
 
             bsl::ut_given_at_runtime{} = []() {
-                constexpr auto val{bsl::to_umax(23)};
+                constexpr auto val{23_umax};
                 bsl::ut_then{} = [&val]() {
                     bsl::ut_check(!runtime_only_function_that_knows_all(val));
                 };
@@ -160,7 +160,7 @@ namespace example
 
         bsl::ut_scenario{"verify two different conditions"} = []() {
             bsl::ut_given{} = []() {
-                constexpr auto data1{bsl::to_umax(42)};
+                constexpr auto data1{42_umax};
                 bsl::safe_uintmax data2{};
                 bsl::ut_when{} = [&data1, data2]() mutable {
                     data2 += data1;

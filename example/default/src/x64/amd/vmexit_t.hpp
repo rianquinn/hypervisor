@@ -183,7 +183,7 @@ namespace example
                         ///   being over used.
                         ///
 
-                        if (sys.bf_tls_ppid() == (sys.bf_tls_online_pps() - bsl::ONE_U16)) {
+                        if (sys.bf_tls_ppid() == (sys.bf_tls_online_pps() - 1_u16)) {
                             bsl::print() << bsl::endl;
                             syscall::bf_debug_op_dump_page_pool();
                             bsl::print() << bsl::endl;
@@ -369,7 +369,7 @@ namespace example
             ///   support. At a minimum, we need to handle CPUID on AMD.
             ///
 
-            constexpr auto exit_reason_cpuid{bsl::to_umax(0x72U)};
+            constexpr auto exit_reason_cpuid{0x72_umax};
 
             /// NOTE:
             /// - Dispatch and handle each VMExit.

@@ -103,22 +103,22 @@ namespace mk
         /// @brief stores true if start() has been executed
         bool m_started{};
         /// @brief stores the ID associated with this ext_t
-        bsl::safe_uint16 m_id{bsl::safe_uint16::zero(true)};
+        bsl::safe_uint16 m_id{bsl::safe_uint16::failure()};
 
         /// @brief stores the main rpt
         root_page_table_t m_main_rpt{};
         /// @brief stores the direct map rpts
         bsl::array<root_page_table_t, bsl::to_umax(HYPERVISOR_MAX_VMS).get()> m_direct_map_rpts{};
         /// @brief stores the main IP registered by the extension
-        bsl::safe_uintmax m_entry_ip{bsl::safe_uintmax::zero(true)};
+        bsl::safe_uintmax m_entry_ip{bsl::safe_uintmax::failure()};
         /// @brief stores the bootstrap IP registered by the extension
-        bsl::safe_uintmax m_bootstrap_ip{bsl::safe_uintmax::zero(true)};
+        bsl::safe_uintmax m_bootstrap_ip{bsl::safe_uintmax::failure()};
         /// @brief stores the vmexit IP registered by the extension
-        bsl::safe_uintmax m_vmexit_ip{bsl::safe_uintmax::zero(true)};
+        bsl::safe_uintmax m_vmexit_ip{bsl::safe_uintmax::failure()};
         /// @brief stores the fail IP registered by the extension
-        bsl::safe_uintmax m_fail_ip{bsl::safe_uintmax::zero(true)};
+        bsl::safe_uintmax m_fail_ip{bsl::safe_uintmax::failure()};
         /// @brief stores the extension's handle
-        bsl::safe_uintmax m_handle{bsl::safe_uintmax::zero(true)};
+        bsl::safe_uintmax m_handle{bsl::safe_uintmax::failure()};
         /// @brief stores the extension's heap cursor
         bsl::safe_uintmax m_heap_crsr{};
 
@@ -956,11 +956,11 @@ namespace mk
         release(tls_t &tls) &noexcept
         {
             m_heap_crsr = {};
-            m_handle = bsl::safe_uintmax::zero(true);
-            m_fail_ip = bsl::safe_uintmax::zero(true);
-            m_vmexit_ip = bsl::safe_uintmax::zero(true);
-            m_bootstrap_ip = bsl::safe_uintmax::zero(true);
-            m_entry_ip = bsl::safe_uintmax::zero(true);
+            m_handle = bsl::safe_uintmax::failure();
+            m_fail_ip = bsl::safe_uintmax::failure();
+            m_vmexit_ip = bsl::safe_uintmax::failure();
+            m_bootstrap_ip = bsl::safe_uintmax::failure();
+            m_entry_ip = bsl::safe_uintmax::failure();
 
             for (auto const rpt : m_direct_map_rpts) {
                 rpt.data->release(tls);
@@ -968,7 +968,7 @@ namespace mk
 
             m_main_rpt.release(tls);
 
-            m_id = bsl::safe_uint16::zero(true);
+            m_id = bsl::safe_uint16::failure();
             m_started = {};
             m_huge_pool = {};
             m_page_pool = {};
@@ -1118,7 +1118,7 @@ namespace mk
         {
             if (bsl::unlikely(m_handle)) {
                 bsl::error() << "handle already opened\n" << bsl::here();
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             m_handle = bsl::to_umax(this->id()) + bsl::ONE_UMAX;
@@ -1131,7 +1131,7 @@ namespace mk
         constexpr void
         close_handle() &noexcept
         {
-            m_handle = bsl::safe_uintmax::zero(true);
+            m_handle = bsl::safe_uintmax::failure();
         }
 
         /// <!-- description -->
@@ -1190,25 +1190,25 @@ namespace mk
 
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
-                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                return {bsl::safe_uintmax::failure(), bsl::safe_uintmax::failure()};
             }
 
             auto const *const page{m_page_pool->allocate(tls, ALLOCATE_TAG_BF_MEM_OP_ALLOC_PAGE)};
             if (bsl::unlikely(nullptr == page)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                return {bsl::safe_uintmax::failure(), bsl::safe_uintmax::failure()};
             }
 
             auto const page_phys{m_page_pool->virt_to_phys(page)};
             if (bsl::unlikely_assert(!page_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                return {bsl::safe_uintmax::failure(), bsl::safe_uintmax::failure()};
             }
 
             auto const page_virt{bsl::to_umax(HYPERVISOR_EXT_PAGE_POOL_ADDR) + page_phys};
             if (bsl::unlikely_assert(!page_virt)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                return {bsl::safe_uintmax::failure(), bsl::safe_uintmax::failure()};
             }
 
             /// NOTE:
@@ -1233,7 +1233,7 @@ namespace mk
 
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                return {bsl::safe_uintmax::failure(), bsl::safe_uintmax::failure()};
             }
 
             return {page_virt, page_phys};
@@ -1275,7 +1275,7 @@ namespace mk
 
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
-                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                return {bsl::safe_uintmax::failure(), bsl::safe_uintmax::failure()};
             }
 
             if (bsl::unlikely((size % bsl::to_umax(HYPERVISOR_PAGE_SIZE)) != bsl::ZERO_UMAX)) {
@@ -1284,25 +1284,25 @@ namespace mk
                              << bsl::endl          // --
                              << bsl::here();       // --
 
-                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                return {bsl::safe_uintmax::failure(), bsl::safe_uintmax::failure()};
             }
 
             auto const *const huge{m_huge_pool->allocate(tls, size)};
             if (bsl::unlikely(nullptr == huge)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                return {bsl::safe_uintmax::failure(), bsl::safe_uintmax::failure()};
             }
 
             auto const huge_phys{m_huge_pool->virt_to_phys(huge)};
             if (bsl::unlikely_assert(!huge_phys)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                return {bsl::safe_uintmax::failure(), bsl::safe_uintmax::failure()};
             }
 
             auto const huge_virt{bsl::to_umax(HYPERVISOR_EXT_PAGE_POOL_ADDR) + huge_phys};
             if (bsl::unlikely_assert(!huge_virt)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                return {bsl::safe_uintmax::failure(), bsl::safe_uintmax::failure()};
             }
 
             /// NOTE:
@@ -1328,7 +1328,7 @@ namespace mk
 
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return {bsl::safe_uintmax::zero(true), bsl::safe_uintmax::zero(true)};
+                    return {bsl::safe_uintmax::failure(), bsl::safe_uintmax::failure()};
                 }
 
                 bsl::touch();
@@ -1365,7 +1365,7 @@ namespace mk
         ///     to the heap.
         ///   @return On success, alloc_heap returns the previous address
         ///     virtual address of the heap. If an error occurs, this
-        ///     function returns bsl::safe_uintmax::zero(true).
+        ///     function returns bsl::safe_uintmax::failure().
         ///
         [[nodiscard]] constexpr auto
         alloc_heap(tls_t &tls, bsl::safe_uintmax const &size) &noexcept -> bsl::safe_uintmax
@@ -1377,7 +1377,7 @@ namespace mk
 
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             if (bsl::unlikely(!size)) {
@@ -1386,7 +1386,7 @@ namespace mk
                              << bsl::endl          // --
                              << bsl::here();       // --
 
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             auto pages{size / bsl::to_umax(HYPERVISOR_PAGE_SIZE)};
@@ -1403,13 +1403,13 @@ namespace mk
                              << bsl::endl                                       // --
                              << bsl::here();                                    // --
 
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             auto const previous_heap_virt{m_heap_crsr + pool_addr};
             if (bsl::unlikely_assert(!previous_heap_virt)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             for (bsl::safe_uintmax i{}; i < pages; ++i) {
@@ -1417,19 +1417,19 @@ namespace mk
                     m_page_pool->allocate(tls, ALLOCATE_TAG_BF_MEM_OP_ALLOC_HEAP)};
                 if (bsl::unlikely(nullptr == page)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::safe_uintmax::zero(true);
+                    return bsl::safe_uintmax::failure();
                 }
 
                 auto const page_phys{m_page_pool->virt_to_phys(page)};
                 if (bsl::unlikely_assert(!page_phys)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::safe_uintmax::zero(true);
+                    return bsl::safe_uintmax::failure();
                 }
 
                 auto const page_virt{m_heap_crsr + pool_addr};
                 if (bsl::unlikely_assert(!page_virt)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::safe_uintmax::zero(true);
+                    return bsl::safe_uintmax::failure();
                 }
 
                 ret = m_main_rpt.map_page(
@@ -1441,7 +1441,7 @@ namespace mk
 
                 if (bsl::unlikely(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
-                    return bsl::safe_uintmax::zero(true);
+                    return bsl::safe_uintmax::failure();
                 }
 
                 m_heap_crsr += bsl::to_umax(HYPERVISOR_PAGE_SIZE);
@@ -1450,7 +1450,7 @@ namespace mk
             ret = this->update_direct_map_rpts(tls);
             if (bsl::unlikely(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             return previous_heap_virt;

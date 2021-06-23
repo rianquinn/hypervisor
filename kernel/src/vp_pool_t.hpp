@@ -151,7 +151,7 @@ namespace mk
 
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error() << "vp pool out of vps\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return vp->allocate(tls, vm_pool, vmid, ppid);
@@ -319,14 +319,14 @@ namespace mk
         /// <!-- description -->
         ///   @brief If a vp_t in the pool is assigned to the requested VM,
         ///     the ID of the first vp_t found is returned. Otherwise, this
-        ///     function will return bsl::safe_uint16::zero(true)
+        ///     function will return bsl::safe_uint16::failure()
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
         ///   @param vmid the ID fo the VM to query
         ///   @return If a vp_t in the pool is assigned to the requested VM,
         ///     the ID of the first vp_t found is returned. Otherwise, this
-        ///     function will return bsl::safe_uint16::zero(true)
+        ///     function will return bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
         is_assigned_to_vm(tls_t &tls, bsl::safe_uint16 const &vmid) const &noexcept
@@ -336,12 +336,12 @@ namespace mk
 
             if (bsl::unlikely_assert(!vmid)) {
                 bsl::error() << "invalid vmid\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             if (bsl::unlikely_assert(syscall::BF_INVALID_ID == vmid)) {
                 bsl::error() << "invalid vmid\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             for (auto const elem : m_pool) {
@@ -352,7 +352,7 @@ namespace mk
                 bsl::touch();
             }
 
-            return bsl::safe_uint16::zero(true);
+            return bsl::safe_uint16::failure();
         }
 
         /// <!-- description -->
@@ -436,7 +436,7 @@ namespace mk
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return vp->is_active(tls);
@@ -523,7 +523,7 @@ namespace mk
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return vp->assigned_vm();
@@ -549,7 +549,7 @@ namespace mk
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return vp->assigned_pp();

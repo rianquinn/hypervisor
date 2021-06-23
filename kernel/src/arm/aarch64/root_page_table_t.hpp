@@ -74,7 +74,7 @@ namespace mk
         /// @brief stores a pointer to the l0t
         l0t_t *m_l0t{};
         /// @brief stores the physical address of the l0t
-        bsl::safe_uintmax m_l0t_phys{bsl::safe_uintmax::zero(true)};
+        bsl::safe_uintmax m_l0t_phys{bsl::safe_uintmax::failure()};
         /// @brief safe guards operations on the RPT.
         mutable spinlock_t m_lock{};
 
@@ -974,7 +974,7 @@ namespace mk
 
         //     m_page_pool->deallocate(tls, m_l0t, ALLOCATE_TAG_PML4TS);
         //     m_l0t = {};
-        //     m_l0t_phys = bsl::safe_uintmax::zero(true);
+        //     m_l0t_phys = bsl::safe_uintmax::failure();
         // }
 
     public:

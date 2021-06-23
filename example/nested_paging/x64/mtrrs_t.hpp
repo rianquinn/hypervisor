@@ -490,9 +490,9 @@ namespace example
                         r1.size = r1_r - r2_r;
                     }
 
-                    r2->addr = bsl::safe_uintmax::zero(true);
-                    r2->size = bsl::safe_uintmax::zero(true);
-                    r2->type = bsl::safe_uintmax::zero(true);
+                    r2->addr = bsl::safe_uintmax::failure();
+                    r2->size = bsl::safe_uintmax::failure();
+                    r2->type = bsl::safe_uintmax::failure();
                     r2->dflt = false;
                     --m_ranges_count;
 
@@ -587,9 +587,9 @@ namespace example
                         r1.size = r1_r - r2_r;
                     }
 
-                    r2->addr = bsl::safe_uintmax::zero(true);
-                    r2->size = bsl::safe_uintmax::zero(true);
-                    r2->type = bsl::safe_uintmax::zero(true);
+                    r2->addr = bsl::safe_uintmax::failure();
+                    r2->size = bsl::safe_uintmax::failure();
+                    r2->type = bsl::safe_uintmax::failure();
                     r2->dflt = false;
                     --m_ranges_count;
 
@@ -627,9 +627,9 @@ namespace example
                 if (r1->type == r2->type) {
                     r1->size += r2->size;
 
-                    r2->addr = bsl::safe_uintmax::zero(true);
-                    r2->size = bsl::safe_uintmax::zero(true);
-                    r2->type = bsl::safe_uintmax::zero(true);
+                    r2->addr = bsl::safe_uintmax::failure();
+                    r2->size = bsl::safe_uintmax::failure();
+                    r2->type = bsl::safe_uintmax::failure();
                     r2->dflt = false;
                     --m_ranges_count;
 
@@ -1222,9 +1222,9 @@ namespace example
 
             for (auto const elem : m_ranges) {
                 *elem.data = {
-                    bsl::safe_uintmax::zero(true),
-                    bsl::safe_uintmax::zero(true),
-                    bsl::safe_uintmax::zero(true),
+                    bsl::safe_uintmax::failure(),
+                    bsl::safe_uintmax::failure(),
+                    bsl::safe_uintmax::failure(),
                     false};
             }
 
@@ -1632,18 +1632,18 @@ namespace example
 
         /// <!-- description -->
         ///   @brief Returns the max physical address in the MTRRs on success,
-        ///     or bsl::safe_uintmax::zero(true) on failure.
+        ///     or bsl::safe_uintmax::failure() on failure.
         ///
         /// <!-- inputs/outputs -->
         ///   @return Returns the max physical address in the MTRRs on success,
-        ///     or bsl::safe_uintmax::zero(true) on failure.
+        ///     or bsl::safe_uintmax::failure() on failure.
         ///
         [[nodiscard]] constexpr auto
         max_phys() &noexcept -> bsl::safe_uintmax
         {
             if (m_ranges_count.is_zero()) {
                 bsl::error() << "mtrrs has not been parsed yet\n" << bsl::here();
-                return bsl::safe_uintmax::zero(true);
+                return bsl::safe_uintmax::failure();
             }
 
             auto const *const range{m_ranges.at_if(m_ranges_count - bsl::ONE_UMAX)};

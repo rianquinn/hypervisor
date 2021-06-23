@@ -223,13 +223,13 @@ namespace bfelf
 
     /// <!-- description -->
     ///   @brief Returns the ELF entry point given an ELF file, or
-    ///     bsl::safe_uintmax::zero(true) if a entry point does not exist or
+    ///     bsl::safe_uintmax::failure() if a entry point does not exist or
     ///     a failure occurs.
     ///
     /// <!-- inputs/outputs -->
     ///   @param file the ELF file to get the ELF entry point from
     ///   @return Returns the ELF entry point given an ELF file, or
-    ///     bsl::safe_uintmax::zero(true) if a entry point does not exist or
+    ///     bsl::safe_uintmax::failure() if a entry point does not exist or
     ///     a failure occurs.
     ///
     [[nodiscard]] constexpr auto

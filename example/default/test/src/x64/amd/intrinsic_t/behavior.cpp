@@ -83,7 +83,7 @@ namespace example
                 bsl::safe_uintmax rbx{};
                 bsl::safe_uintmax rcx{};
                 bsl::safe_uintmax rdx{};
-                constexpr auto expected_result{bsl::to_umax(42)};
+                constexpr auto expected_result{42_u64};
                 bsl::ut_when{} = [&intrinsic, &rax, &rbx, &rcx, &rdx, &expected_result]() {
                     g_cpuid_val = expected_result;
                     intrinsic.cpuid(rax, rbx, rcx, rdx);

@@ -65,7 +65,7 @@ namespace mk
                 vm_t<bsl::to_umax(INTEGRATION_MAX_PPS).get()> vm{};
                 tls_t tls{};
                 bsl::ut_then{} = [&vm, &tls]() {
-                    bsl::ut_check(!vm.initialize(tls, bsl::safe_uint16::zero(true)));
+                    bsl::ut_check(!vm.initialize(tls, bsl::safe_uint16::failure()));
                 };
             };
         };

@@ -107,7 +107,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 bsl::ut_when{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
                     bsl::ut_required_step(vps_pool.initialize(gs, tls, sys, intrinsic));
-                    sys.set_bf_vps_op_create_vps({}, {}, bsl::safe_uint16::zero(true));
+                    sys.set_bf_vps_op_create_vps({}, {}, bsl::safe_uint16::failure());
                     bsl::ut_then{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
                         bsl::ut_check(!vps_pool.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };

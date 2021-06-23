@@ -57,7 +57,7 @@ namespace example
     };
 
     /// @brief defines the max size supported for the TLS block
-    constexpr auto MAX_TLS_SIZE{bsl::to_umax(HYPERVISOR_PAGE_SIZE)};
+    constexpr auto MAX_TLS_SIZE{HYPERVISOR_PAGE_SIZE};
 
     /// @brief ensure that the tls_t does not exceed the max supported size
     static_assert(!(sizeof(tls_t) > MAX_TLS_SIZE));

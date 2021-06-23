@@ -115,7 +115,7 @@ namespace mk
         constexpr void
         release() &noexcept
         {
-            m_crsr = bsl::safe_uintmax::zero(true);
+            m_crsr = bsl::safe_uintmax::failure();
             m_pool = {};
 
             m_initialized = {};

@@ -470,7 +470,7 @@ namespace mk
             bsl::errc_type ret{};
 
             bsl::finally_assert reset_root_vmid_on_error{[this]() noexcept -> void {
-                m_root_vmid = bsl::safe_uint16::zero(true);
+                m_root_vmid = bsl::safe_uint16::failure();
             }};
 
             ret = this->verify_args(args, tls);

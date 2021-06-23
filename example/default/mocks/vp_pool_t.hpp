@@ -116,7 +116,7 @@ namespace example
         ///   @param vmid the ID of the VM to assign the newly created VP to
         ///   @param ppid the ID of the PP to assign the newly created VP to
         ///   @return Returns the ID of the newly created VP on
-        ///     success, or bsl::safe_uint16::zero(true) on failure.
+        ///     success, or bsl::safe_uint16::failure() on failure.
         ///
         [[nodiscard]] constexpr auto
         allocate(

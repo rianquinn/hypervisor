@@ -45,14 +45,14 @@ namespace mk
         /// <!-- description -->
         ///   @brief If a vps_t is assigned to the requested VP, the ID of
         ///     the vps_t is returned. Otherwise, this function will return
-        ///     bsl::safe_uint16::zero(true)
+        ///     bsl::safe_uint16::failure()
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
         ///   @param vpid the ID fo the VP to query
         ///   @return If a vps_t is assigned to the requested VP, the ID of
         ///     the vps_t is returned. Otherwise, this function will return
-        ///     bsl::safe_uint16::zero(true)
+        ///     bsl::safe_uint16::failure()
         ///
         [[nodiscard]] static constexpr auto
         is_assigned_to_vp(tls_t &tls, bsl::safe_uint16 const &vpid) noexcept -> bsl::safe_uint16
@@ -61,7 +61,7 @@ namespace mk
                 return vpid;
             }
 
-            return bsl::safe_uint16::zero(true);
+            return bsl::safe_uint16::failure();
         }
     };
 }

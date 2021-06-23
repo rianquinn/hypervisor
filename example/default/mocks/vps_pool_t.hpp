@@ -116,7 +116,7 @@ namespace example
         ///   @param vpid the ID of the VP to assign the newly created VPS to
         ///   @param ppid the ID of the PP to assign the newly created VPS to
         ///   @return Returns the ID of the newly created VPS on
-        ///     success, or bsl::safe_uint16::zero(true) on failure.
+        ///     success, or bsl::safe_uint16::failure() on failure.
         ///
         [[nodiscard]] constexpr auto
         allocate(

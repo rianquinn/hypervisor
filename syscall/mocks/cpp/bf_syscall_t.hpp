@@ -877,12 +877,12 @@ namespace syscall
         {
             if (bsl::unlikely(!vmid)) {
                 bsl::error() << "invalid vmid\n" << bsl::here();
-                return bf_uint16_t::zero(true);
+                return bf_uint16_t::failure();
             }
 
             if (bsl::unlikely(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();
-                return bf_uint16_t::zero(true);
+                return bf_uint16_t::failure();
             }
 
             return m_bf_vp_op_create_vp.at({vmid, ppid});
@@ -1036,12 +1036,12 @@ namespace syscall
         {
             if (bsl::unlikely(!vpid)) {
                 bsl::error() << "invalid vpid\n" << bsl::here();
-                return bf_uint16_t::zero(true);
+                return bf_uint16_t::failure();
             }
 
             if (bsl::unlikely(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();
-                return bf_uint16_t::zero(true);
+                return bf_uint16_t::failure();
             }
 
             return m_bf_vps_op_create_vps.at({vpid, ppid});
@@ -1143,7 +1143,7 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param vpsid The VPSID of the VPS to read from
         ///   @param index The HVE specific index defining which field to read
-        ///   @return Returns the value read, or bf_uint8_t::zero(true)
+        ///   @return Returns the value read, or bf_uint8_t::failure()
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
@@ -1152,12 +1152,12 @@ namespace syscall
         {
             if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
-                return bf_uint8_t::zero(true);
+                return bf_uint8_t::failure();
             }
 
             if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
-                return bf_uint8_t::zero(true);
+                return bf_uint8_t::failure();
             }
 
             return m_bf_vps_op_read8.at({vpsid, index});
@@ -1189,7 +1189,7 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param vpsid The VPSID of the VPS to read from
         ///   @param index The HVE specific index defining which field to read
-        ///   @return Returns the value read, or bf_uint16_t::zero(true)
+        ///   @return Returns the value read, or bf_uint16_t::failure()
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
@@ -1198,12 +1198,12 @@ namespace syscall
         {
             if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
-                return bf_uint16_t::zero(true);
+                return bf_uint16_t::failure();
             }
 
             if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
-                return bf_uint16_t::zero(true);
+                return bf_uint16_t::failure();
             }
 
             return m_bf_vps_op_read16.at({vpsid, index});
@@ -1235,7 +1235,7 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param vpsid The VPSID of the VPS to read from
         ///   @param index The HVE specific index defining which field to read
-        ///   @return Returns the value read, or bf_uint32_t::zero(true)
+        ///   @return Returns the value read, or bf_uint32_t::failure()
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
@@ -1244,12 +1244,12 @@ namespace syscall
         {
             if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
-                return bf_uint32_t::zero(true);
+                return bf_uint32_t::failure();
             }
 
             if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
-                return bf_uint32_t::zero(true);
+                return bf_uint32_t::failure();
             }
 
             return m_bf_vps_op_read32.at({vpsid, index});
@@ -1281,7 +1281,7 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param vpsid The VPSID of the VPS to read from
         ///   @param index The HVE specific index defining which field to read
-        ///   @return Returns the value read, or bf_uint64_t::zero(true)
+        ///   @return Returns the value read, or bf_uint64_t::failure()
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
@@ -1290,12 +1290,12 @@ namespace syscall
         {
             if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
-                return bf_uint64_t::zero(true);
+                return bf_uint64_t::failure();
             }
 
             if (bsl::unlikely(!index)) {
                 bsl::error() << "invalid index\n" << bsl::here();
-                return bf_uint64_t::zero(true);
+                return bf_uint64_t::failure();
             }
 
             return m_bf_vps_op_read64.at({vpsid, index});
@@ -1581,7 +1581,7 @@ namespace syscall
         /// <!-- inputs/outputs -->
         ///   @param vpsid The VPSID of the VPS to read from
         ///   @param reg A bf_reg_t defining which register to read
-        ///   @return Returns the value read, or bf_uint64_t::zero(true)
+        ///   @return Returns the value read, or bf_uint64_t::failure()
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
@@ -1590,7 +1590,7 @@ namespace syscall
         {
             if (bsl::unlikely(!vpsid)) {
                 bsl::error() << "invalid vpsid\n" << bsl::here();
-                return bf_uint64_t::zero(true);
+                return bf_uint64_t::failure();
             }
 
             return m_bf_vps_op_read_reg.at({vpsid, reg});
@@ -1944,7 +1944,7 @@ namespace syscall
         ///
         /// <!-- inputs/outputs -->
         ///   @param msr The address of the MSR to read
-        ///   @return Returns the value read, or bf_uint64_t::zero(true)
+        ///   @return Returns the value read, or bf_uint64_t::failure()
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
@@ -1952,7 +1952,7 @@ namespace syscall
         {
             if (bsl::unlikely(!msr)) {
                 bsl::error() << "invalid msr\n" << bsl::here();
-                return bf_uint64_t::zero(true);
+                return bf_uint64_t::failure();
             }
 
             return m_bf_intrinsic_op_rdmsr.at(msr);
@@ -2198,10 +2198,10 @@ namespace syscall
                 return nullptr;
             }
 
-            auto *const virt{new bsl::uint8[bsl::to_umax(HYPERVISOR_PAGE_SIZE).get()]};
-            m_alloc_free_map.at(virt) = bsl::to_umax(HYPERVISOR_PAGE_SIZE);
+            auto *const virt{new bsl::uint8[HYPERVISOR_PAGE_SIZE.get()]};
+            m_alloc_free_map.at(virt) = HYPERVISOR_PAGE_SIZE;
 
-            phys = (m_alloc_free_map.size() * bsl::to_umax(HYPERVISOR_PAGE_SIZE));
+            phys = (m_alloc_free_map.size() * HYPERVISOR_PAGE_SIZE);
             m_virt_to_phys_map.at(virt) = phys;
             m_phys_to_virt_map.at(phys) = virt;
 
@@ -2339,7 +2339,7 @@ namespace syscall
             auto *const virt{new bsl::uint8[size.get()]};
             m_alloc_free_map.at(virt) = size;
 
-            phys = (m_alloc_free_map.size() * bsl::to_umax(HYPERVISOR_PAGE_SIZE));
+            phys = (m_alloc_free_map.size() * HYPERVISOR_PAGE_SIZE);
             m_virt_to_phys_map.at(virt) = phys;
             m_phys_to_virt_map.at(phys) = virt;
 
@@ -2503,14 +2503,14 @@ namespace syscall
 
         /// <!-- description -->
         ///   @brief Returns the value at the provided physical address
-        ///     on success, or returns bsl::safe_integral<T>::zero(true)
+        ///     on success, or returns bsl::safe_integral<T>::failure()
         ///     on failure.
         ///
         /// <!-- inputs/outputs -->
         ///   @tparam T the type of integral to read
         ///   @param phys the physical address to read
         ///   @return Returns the value at the provided physical address
-        ///     on success, or returns bsl::safe_integral<T>::zero(true)
+        ///     on success, or returns bsl::safe_integral<T>::failure()
         ///     on failure.
         ///
         template<typename T = bsl::uintmax>
@@ -2522,21 +2522,21 @@ namespace syscall
 
             if (bsl::unlikely(!phys)) {
                 bsl::error() << "invalid phys\n" << bsl::here();
-                return bsl::safe_integral<T>::zero(true);
+                return bsl::safe_integral<T>::failure();
             }
 
             if (bsl::unlikely(phys.is_zero())) {
                 bsl::error() << "phys is a nullptr\n" << bsl::here();
-                return bsl::safe_integral<T>::zero(true);
+                return bsl::safe_integral<T>::failure();
             }
 
-            virt = phys + bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR);
+            virt = phys + HYPERVISOR_EXT_DIRECT_MAP_ADDR;
             if (bsl::unlikely(!virt)) {
                 bsl::error() << "bf_read_phys failed due to invalid physical address "    // --
                              << bsl::hex(phys) << bsl::endl                               // --
                              << bsl::here();
 
-                return bsl::safe_integral<T>::zero(true);
+                return bsl::safe_integral<T>::failure();
             }
 
             return bsl::convert<T>(m_read_write_phys_map.at(phys));
@@ -2575,7 +2575,7 @@ namespace syscall
                 return bsl::errc_invalid_argument;
             }
 
-            virt = phys + bsl::to_umax(HYPERVISOR_EXT_DIRECT_MAP_ADDR);
+            virt = phys + HYPERVISOR_EXT_DIRECT_MAP_ADDR;
             if (bsl::unlikely(!virt)) {
                 bsl::error() << "bf_write_phys failed due to invalid physical address "    // --
                              << bsl::hex(phys) << bsl::endl                                // --
@@ -2603,7 +2603,7 @@ namespace syscall
         {
             if (bsl::unlikely(nullptr == virt)) {
                 bsl::error() << "invalid virt\n" << bsl::here();
-                return bf_uint64_t::zero(true);
+                return bf_uint64_t::failure();
             }
 
             /// NOTE:
@@ -2626,7 +2626,7 @@ namespace syscall
                              << bsl::endl                   // --
                              << bsl::here();
 
-                return bf_uint64_t::zero(true);
+                return bf_uint64_t::failure();
             }
 
             return m_virt_to_phys_map.at(virt);

@@ -148,7 +148,7 @@ namespace mk
 
             if (bsl::unlikely(nullptr == vm)) {
                 bsl::error() << "vm pool out of vms\n" << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return vm->allocate(tls, ext_pool);
@@ -376,14 +376,14 @@ namespace mk
         /// <!-- description -->
         ///   @brief  Returns the ID of the first PP identified that the
         ///     requested vm_t is still active on. If the vm_t is inactive, this
-        ///     function returns bsl::safe_uint16::zero(true)
+        ///     function returns bsl::safe_uint16::failure()
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
         ///   @param vmid the ID of the vm_t to query
         ///   @return Returns the ID of the first PP identified that the
         ///     requested vm_t is still active on. If the vm_t is inactive, this
-        ///     function returns bsl::safe_uint16::zero(true)
+        ///     function returns bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
         is_active(tls_t &tls, bsl::safe_uint16 const &vmid) const &noexcept -> bsl::safe_uint16
@@ -398,7 +398,7 @@ namespace mk
                     << bsl::endl                                                            // --
                     << bsl::here();                                                         // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return vm->is_active(tls);

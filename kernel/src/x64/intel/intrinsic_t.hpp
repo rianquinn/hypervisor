@@ -669,7 +669,7 @@ namespace mk
                              << bsl::endl         // --
                              << bsl::here();      // --
 
-                return bsl::safe_uint64::zero(true);
+                return bsl::safe_uint64::failure();
             }
 
             ret = intrinsic_rdmsr(msr.get(), val.data());
@@ -679,7 +679,7 @@ namespace mk
                              << bsl::endl                  // --
                              << bsl::here();               // --
 
-                return bsl::safe_uint64::zero(true);
+                return bsl::safe_uint64::failure();
             }
 
             return val;
@@ -1074,7 +1074,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param field the 16 bit VMCS field to read
         ///   @return Returns the value read from the VMS, or
-        ///     bsl::safe_uint16::zero(true) on failure.
+        ///     bsl::safe_uint16::failure() on failure.
         ///
         [[nodiscard]] static constexpr auto
         vmread16_quiet(bsl::safe_uint64 const &field) noexcept -> bsl::safe_uint16
@@ -1086,12 +1086,12 @@ namespace mk
             }
 
             if (bsl::unlikely(!field)) {
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             bsl::exit_code const ret{intrinsic_vmread16(field.get(), val.data())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             return val;
@@ -1104,7 +1104,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param field the 32 bit VMCS field to read
         ///   @return Returns the value read from the VMS, or
-        ///     bsl::safe_uint32::zero(true) on failure.
+        ///     bsl::safe_uint32::failure() on failure.
         ///
         [[nodiscard]] static constexpr auto
         vmread32_quiet(bsl::safe_uint64 const &field) noexcept -> bsl::safe_uint32
@@ -1116,12 +1116,12 @@ namespace mk
             }
 
             if (bsl::unlikely(!field)) {
-                return bsl::safe_uint32::zero(true);
+                return bsl::safe_uint32::failure();
             }
 
             bsl::exit_code const ret{intrinsic_vmread32(field.get(), val.data())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
-                return bsl::safe_uint32::zero(true);
+                return bsl::safe_uint32::failure();
             }
 
             return val;
@@ -1134,7 +1134,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param field the 64 bit VMCS field to read
         ///   @return Returns the value read from the VMS, or
-        ///     bsl::safe_uint64::zero(true) on failure.
+        ///     bsl::safe_uint64::failure() on failure.
         ///
         [[nodiscard]] static constexpr auto
         vmread64_quiet(bsl::safe_uint64 const &field) noexcept -> bsl::safe_uint64
@@ -1146,12 +1146,12 @@ namespace mk
             }
 
             if (bsl::unlikely(!field)) {
-                return bsl::safe_uint64::zero(true);
+                return bsl::safe_uint64::failure();
             }
 
             bsl::exit_code const ret{intrinsic_vmread64(field.get(), val.data())};
             if (bsl::unlikely(ret != bsl::exit_success)) {
-                return bsl::safe_uint64::zero(true);
+                return bsl::safe_uint64::failure();
             }
 
             return val;

@@ -90,7 +90,7 @@ namespace example
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
                 bsl::ut_when{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
-                    vps_pool.set_allocate(bsl::safe_uint16::zero(true));
+                    vps_pool.set_allocate(bsl::safe_uint16::failure());
                     bsl::ut_then{} = [&vps_pool, &gs, &tls, &sys, &intrinsic]() {
                         bsl::ut_check(!vps_pool.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };

@@ -42,8 +42,8 @@ namespace example
     {
         bsl::ut_scenario{"intrinsic_cpuid_impl"} = []() {
             bsl::ut_given_at_runtime{} = []() {
-                constexpr auto data{bsl::to_umax(0x1234567800000000)};
-                constexpr auto mask{bsl::to_umax(0xFFFFFFFF00000000)};
+                constexpr auto data{0x1234567800000000_u64};
+                constexpr auto mask{0xFFFFFFFF00000000_u64};
                 auto rax{data};
                 auto rbx{data};
                 auto rcx{data};

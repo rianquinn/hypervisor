@@ -52,7 +52,7 @@ namespace mk
             return;
         }
 
-        ext.set_bootstrap_ip(bsl::safe_uintmax::zero(true));
+        ext.set_bootstrap_ip(bsl::safe_uintmax::failure());
     }
 
     /// <!-- description -->
@@ -69,7 +69,7 @@ namespace mk
             return;
         }
 
-        ext.set_vmexit_ip(bsl::safe_uintmax::zero(true));
+        ext.set_vmexit_ip(bsl::safe_uintmax::failure());
         tls.ext_vmexit = nullptr;
     }
 
@@ -87,7 +87,7 @@ namespace mk
             return;
         }
 
-        ext.set_fail_ip(bsl::safe_uintmax::zero(true));
+        ext.set_fail_ip(bsl::safe_uintmax::failure());
         tls.ext_fail = nullptr;
     }
 

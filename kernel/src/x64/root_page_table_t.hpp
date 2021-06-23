@@ -959,7 +959,7 @@ namespace mk
 
             m_page_pool->deallocate(tls, m_pml4t, ALLOCATE_TAG_PML4TS);
             m_pml4t = {};
-            m_pml4t_phys = bsl::safe_uintmax::zero(true);
+            m_pml4t_phys = bsl::safe_uintmax::failure();
         }
 
     public:

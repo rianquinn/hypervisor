@@ -51,7 +51,7 @@ namespace example
     class vp_pool_t final
     {
         /// @brief stores the pool of VPs
-        bsl::array<vp_t, bsl::to_umax(HYPERVISOR_MAX_VPS).get()> m_pool{};
+        bsl::array<vp_t, HYPERVISOR_MAX_VPS.get()> m_pool{};
 
     public:
         /// <!-- description -->
@@ -145,7 +145,7 @@ namespace example
         ///   @param vmid the ID of the VM to assign the newly created VP to
         ///   @param ppid the ID of the PP to assign the newly created VP to
         ///   @return Returns the ID of the newly created VP on
-        ///     success, or bsl::safe_uint16::zero(true) on failure.
+        ///     success, or bsl::safe_uint16::failure() on failure.
         ///
         [[nodiscard]] constexpr auto
         allocate(
@@ -171,7 +171,7 @@ namespace example
             vpid = sys.bf_vp_op_create_vp(vmid, ppid);
             if (bsl::unlikely_assert(!vpid)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             /// NOTE:
@@ -198,11 +198,11 @@ namespace example
                              << bsl::hex(vpid)                                            // --
                              << " provided by the microkernel is invalid"                 // --
                              << " or greater than or equal to the HYPERVISOR_MAX_VPS "    // --
-                             << bsl::hex(bsl::to_u16(HYPERVISOR_MAX_VPS))                 // --
+                             << bsl::hex(HYPERVISOR_MAX_VPS)                 // --
                              << bsl::endl                                                 // --
                              << bsl::here();                                              // --
 
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             /// NOTE:
@@ -216,7 +216,7 @@ namespace example
             ret = vp->allocate(gs, tls, sys, intrinsic, vmid, ppid);
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
-                return bsl::safe_uint16::zero(true);
+                return bsl::safe_uint16::failure();
             }
 
             destroy_vp_on_error.ignore();

@@ -26,6 +26,7 @@
 #define BF_REG_T_HPP
 
 #include <bsl/cstdint.hpp>
+#include <bsl/convert.hpp>
 
 namespace syscall
 {
@@ -37,155 +38,155 @@ namespace syscall
     enum class bf_reg_t : bsl::uint64
     {
         /// @brief defines the rax register
-        bf_reg_t_rax = static_cast<bsl::uint64>(0),
+        bf_reg_t_rax = (0_u64).get(),
         /// @brief defines the rbx register
-        bf_reg_t_rbx = static_cast<bsl::uint64>(1),
+        bf_reg_t_rbx = (1_u64).get(),
         /// @brief defines the rcx register
-        bf_reg_t_rcx = static_cast<bsl::uint64>(2),
+        bf_reg_t_rcx = (2_u64).get(),
         /// @brief defines the rdx register
-        bf_reg_t_rdx = static_cast<bsl::uint64>(3),
+        bf_reg_t_rdx = (3_u64).get(),
         /// @brief defines the rbp register
-        bf_reg_t_rbp = static_cast<bsl::uint64>(4),
+        bf_reg_t_rbp = (4_u64).get(),
         /// @brief defines the rsi register
-        bf_reg_t_rsi = static_cast<bsl::uint64>(5),
+        bf_reg_t_rsi = (5_u64).get(),
         /// @brief defines the rdi register
-        bf_reg_t_rdi = static_cast<bsl::uint64>(6),
+        bf_reg_t_rdi = (6_u64).get(),
         /// @brief defines the r8 register
-        bf_reg_t_r8 = static_cast<bsl::uint64>(7),
+        bf_reg_t_r8 = (7_u64).get(),
         /// @brief defines the r9 register
-        bf_reg_t_r9 = static_cast<bsl::uint64>(8),
+        bf_reg_t_r9 = (8_u64).get(),
         /// @brief defines the r10 register
-        bf_reg_t_r10 = static_cast<bsl::uint64>(9),
+        bf_reg_t_r10 = (9_u64).get(),
         /// @brief defines the r11 register
-        bf_reg_t_r11 = static_cast<bsl::uint64>(10),
+        bf_reg_t_r11 = (10_u64).get(),
         /// @brief defines the r12 register
-        bf_reg_t_r12 = static_cast<bsl::uint64>(11),
+        bf_reg_t_r12 = (11_u64).get(),
         /// @brief defines the r13 register
-        bf_reg_t_r13 = static_cast<bsl::uint64>(12),
+        bf_reg_t_r13 = (12_u64).get(),
         /// @brief defines the r14 register
-        bf_reg_t_r14 = static_cast<bsl::uint64>(13),
+        bf_reg_t_r14 = (13_u64).get(),
         /// @brief defines the r15 register
-        bf_reg_t_r15 = static_cast<bsl::uint64>(14),
+        bf_reg_t_r15 = (14_u64).get(),
         /// @brief defines the rip register
-        bf_reg_t_rip = static_cast<bsl::uint64>(15),
+        bf_reg_t_rip = (15_u64).get(),
         /// @brief defines the rsp register
-        bf_reg_t_rsp = static_cast<bsl::uint64>(16),
+        bf_reg_t_rsp = (16_u64).get(),
         /// @brief defines the rflags register
-        bf_reg_t_rflags = static_cast<bsl::uint64>(17),
+        bf_reg_t_rflags = (17_u64).get(),
         /// @brief defines the gdtr_base_addr register
-        bf_reg_t_gdtr_base_addr = static_cast<bsl::uint64>(18),
+        bf_reg_t_gdtr_base_addr = (18_u64).get(),
         /// @brief defines the gdtr_limit register
-        bf_reg_t_gdtr_limit = static_cast<bsl::uint64>(19),
+        bf_reg_t_gdtr_limit = (19_u64).get(),
         /// @brief defines the idtr_base_addr register
-        bf_reg_t_idtr_base_addr = static_cast<bsl::uint64>(20),
+        bf_reg_t_idtr_base_addr = (20_u64).get(),
         /// @brief defines the idtr_limit register
-        bf_reg_t_idtr_limit = static_cast<bsl::uint64>(21),
+        bf_reg_t_idtr_limit = (21_u64).get(),
         /// @brief defines the es register
-        bf_reg_t_es = static_cast<bsl::uint64>(22),
+        bf_reg_t_es = (22_u64).get(),
         /// @brief defines the es_base_addr register
-        bf_reg_t_es_base_addr = static_cast<bsl::uint64>(23),
+        bf_reg_t_es_base_addr = (23_u64).get(),
         /// @brief defines the es_limit register
-        bf_reg_t_es_limit = static_cast<bsl::uint64>(24),
+        bf_reg_t_es_limit = (24_u64).get(),
         /// @brief defines the es_attributes register
-        bf_reg_t_es_attributes = static_cast<bsl::uint64>(25),
+        bf_reg_t_es_attributes = (25_u64).get(),
         /// @brief defines the cs register
-        bf_reg_t_cs = static_cast<bsl::uint64>(26),
+        bf_reg_t_cs = (26_u64).get(),
         /// @brief defines the cs_base_addr register
-        bf_reg_t_cs_base_addr = static_cast<bsl::uint64>(27),
+        bf_reg_t_cs_base_addr = (27_u64).get(),
         /// @brief defines the cs_limit register
-        bf_reg_t_cs_limit = static_cast<bsl::uint64>(28),
+        bf_reg_t_cs_limit = (28_u64).get(),
         /// @brief defines the cs_attributes register
-        bf_reg_t_cs_attributes = static_cast<bsl::uint64>(29),
+        bf_reg_t_cs_attributes = (29_u64).get(),
         /// @brief defines the ss register
-        bf_reg_t_ss = static_cast<bsl::uint64>(30),
+        bf_reg_t_ss = (30_u64).get(),
         /// @brief defines the ss_base_addr register
-        bf_reg_t_ss_base_addr = static_cast<bsl::uint64>(31),
+        bf_reg_t_ss_base_addr = (31_u64).get(),
         /// @brief defines the ss_limit register
-        bf_reg_t_ss_limit = static_cast<bsl::uint64>(32),
+        bf_reg_t_ss_limit = (32_u64).get(),
         /// @brief defines the ss_attributes register
-        bf_reg_t_ss_attributes = static_cast<bsl::uint64>(33),
+        bf_reg_t_ss_attributes = (33_u64).get(),
         /// @brief defines the ds register
-        bf_reg_t_ds = static_cast<bsl::uint64>(34),
+        bf_reg_t_ds = (34_u64).get(),
         /// @brief defines the ds_base_addr register
-        bf_reg_t_ds_base_addr = static_cast<bsl::uint64>(35),
+        bf_reg_t_ds_base_addr = (35_u64).get(),
         /// @brief defines the ds_limit register
-        bf_reg_t_ds_limit = static_cast<bsl::uint64>(36),
+        bf_reg_t_ds_limit = (36_u64).get(),
         /// @brief defines the ds_attributes register
-        bf_reg_t_ds_attributes = static_cast<bsl::uint64>(37),
+        bf_reg_t_ds_attributes = (37_u64).get(),
         /// @brief defines the fs register
-        bf_reg_t_fs = static_cast<bsl::uint64>(38),
+        bf_reg_t_fs = (38_u64).get(),
         /// @brief defines the fs_base_addr register
-        bf_reg_t_fs_base_addr = static_cast<bsl::uint64>(39),
+        bf_reg_t_fs_base_addr = (39_u64).get(),
         /// @brief defines the fs_limit register
-        bf_reg_t_fs_limit = static_cast<bsl::uint64>(40),
+        bf_reg_t_fs_limit = (40_u64).get(),
         /// @brief defines the fs_attributes register
-        bf_reg_t_fs_attributes = static_cast<bsl::uint64>(41),
+        bf_reg_t_fs_attributes = (41_u64).get(),
         /// @brief defines the gs register
-        bf_reg_t_gs = static_cast<bsl::uint64>(42),
+        bf_reg_t_gs = (42_u64).get(),
         /// @brief defines the gs_base_addr register
-        bf_reg_t_gs_base_addr = static_cast<bsl::uint64>(43),
+        bf_reg_t_gs_base_addr = (43_u64).get(),
         /// @brief defines the gs_limit register
-        bf_reg_t_gs_limit = static_cast<bsl::uint64>(44),
+        bf_reg_t_gs_limit = (44_u64).get(),
         /// @brief defines the gs_attributes register
-        bf_reg_t_gs_attributes = static_cast<bsl::uint64>(45),
+        bf_reg_t_gs_attributes = (45_u64).get(),
         /// @brief defines the ldtr register
-        bf_reg_t_ldtr = static_cast<bsl::uint64>(46),
+        bf_reg_t_ldtr = (46_u64).get(),
         /// @brief defines the ldtr_base_addr register
         // We don't have a choice in the naming here
         // NOLINTNEXTLINE(bsl-identifier-typographically-unambiguous)
-        bf_reg_t_ldtr_base_addr = static_cast<bsl::uint64>(47),
+        bf_reg_t_ldtr_base_addr = (47_u64).get(),
         /// @brief defines the ldtr_limit register
         // We don't have a choice in the naming here
         // NOLINTNEXTLINE(bsl-identifier-typographically-unambiguous)
-        bf_reg_t_ldtr_limit = static_cast<bsl::uint64>(48),
+        bf_reg_t_ldtr_limit = (48_u64).get(),
         /// @brief defines the ldtr_attributes register
-        bf_reg_t_ldtr_attributes = static_cast<bsl::uint64>(49),
+        bf_reg_t_ldtr_attributes = (49_u64).get(),
         /// @brief defines the tr register
-        bf_reg_t_tr = static_cast<bsl::uint64>(50),
+        bf_reg_t_tr = (50_u64).get(),
         /// @brief defines the tr_base_addr register
-        bf_reg_t_tr_base_addr = static_cast<bsl::uint64>(51),
+        bf_reg_t_tr_base_addr = (51_u64).get(),
         /// @brief defines the tr_limit register
-        bf_reg_t_tr_limit = static_cast<bsl::uint64>(52),
+        bf_reg_t_tr_limit = (52_u64).get(),
         /// @brief defines the tr_attributes register
-        bf_reg_t_tr_attributes = static_cast<bsl::uint64>(53),
+        bf_reg_t_tr_attributes = (53_u64).get(),
         /// @brief defines the cr0 register
-        bf_reg_t_cr0 = static_cast<bsl::uint64>(54),
+        bf_reg_t_cr0 = (54_u64).get(),
         /// @brief defines the cr2 register
-        bf_reg_t_cr2 = static_cast<bsl::uint64>(55),
+        bf_reg_t_cr2 = (55_u64).get(),
         /// @brief defines the cr3 register
-        bf_reg_t_cr3 = static_cast<bsl::uint64>(56),
+        bf_reg_t_cr3 = (56_u64).get(),
         /// @brief defines the cr4 register
-        bf_reg_t_cr4 = static_cast<bsl::uint64>(57),
+        bf_reg_t_cr4 = (57_u64).get(),
         /// @brief defines the dr6 register
-        bf_reg_t_dr6 = static_cast<bsl::uint64>(58),
+        bf_reg_t_dr6 = (58_u64).get(),
         /// @brief defines the dr7 register
-        bf_reg_t_dr7 = static_cast<bsl::uint64>(59),
+        bf_reg_t_dr7 = (59_u64).get(),
         /// @brief defines the ia32_efer register
-        bf_reg_t_ia32_efer = static_cast<bsl::uint64>(60),
+        bf_reg_t_ia32_efer = (60_u64).get(),
         /// @brief defines the ia32_star register
-        bf_reg_t_ia32_star = static_cast<bsl::uint64>(61),
+        bf_reg_t_ia32_star = (61_u64).get(),
         /// @brief defines the ia32_lstar register
-        bf_reg_t_ia32_lstar = static_cast<bsl::uint64>(62),
+        bf_reg_t_ia32_lstar = (62_u64).get(),
         /// @brief defines the ia32_cstar register
-        bf_reg_t_ia32_cstar = static_cast<bsl::uint64>(63),
+        bf_reg_t_ia32_cstar = (63_u64).get(),
         /// @brief defines the ia32_fmask register
-        bf_reg_t_ia32_fmask = static_cast<bsl::uint64>(64),
+        bf_reg_t_ia32_fmask = (64_u64).get(),
         /// @brief defines the ia32_fs_base register
-        bf_reg_t_ia32_fs_base = static_cast<bsl::uint64>(65),
+        bf_reg_t_ia32_fs_base = (65_u64).get(),
         /// @brief defines the ia32_gs_base register
-        bf_reg_t_ia32_gs_base = static_cast<bsl::uint64>(66),
+        bf_reg_t_ia32_gs_base = (66_u64).get(),
         /// @brief defines the ia32_kernel_gs_base register
-        bf_reg_t_ia32_kernel_gs_base = static_cast<bsl::uint64>(67),
+        bf_reg_t_ia32_kernel_gs_base = (67_u64).get(),
         /// @brief defines the ia32_sysenter_cs register
-        bf_reg_t_ia32_sysenter_cs = static_cast<bsl::uint64>(68),
+        bf_reg_t_ia32_sysenter_cs = (68_u64).get(),
         /// @brief defines the ia32_sysenter_esp register
-        bf_reg_t_ia32_sysenter_esp = static_cast<bsl::uint64>(69),
+        bf_reg_t_ia32_sysenter_esp = (69_u64).get(),
         /// @brief defines the ia32_sysenter_eip register
-        bf_reg_t_ia32_sysenter_eip = static_cast<bsl::uint64>(70),
+        bf_reg_t_ia32_sysenter_eip = (70_u64).get(),
         /// @brief defines the ia32_pat register
-        bf_reg_t_ia32_pat = static_cast<bsl::uint64>(71),
+        bf_reg_t_ia32_pat = (71_u64).get(),
         /// @brief defines the ia32_debugctl register
-        bf_reg_t_ia32_debugctl = static_cast<bsl::uint64>(72),
+        bf_reg_t_ia32_debugctl = (72_u64).get(),
     };
 }
 

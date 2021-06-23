@@ -36,59 +36,59 @@ namespace syscall
     // -------------------------------------------------------------------------
 
     /// @brief Defines an invalid ID for an extension, VM, VP and VPS
-    constexpr auto BF_INVALID_ID{bsl::to_u16(0xFFFFU)};
+    constexpr auto BF_INVALID_ID{0xFFFF_u16};
 
     /// @brief Defines the bootstrap physical processor ID
-    constexpr auto BF_BS_PPID{bsl::to_u16(0x0U)};
+    constexpr auto BF_BS_PPID{0x0_u16};
 
     /// @brief Defines the root virtual machine ID
-    constexpr auto BF_ROOT_VMID{bsl::to_u16(0x0U)};
+    constexpr auto BF_ROOT_VMID{0x0_u16};
 
     // -------------------------------------------------------------------------
     // Syscall Status Codes
     // -------------------------------------------------------------------------
 
     /// @brief Used to indicated that the syscall returned successfully
-    constexpr auto BF_STATUS_SUCCESS{bsl::to_u64(0x0000000000000000U)};
+    constexpr auto BF_STATUS_SUCCESS{0x0000000000000000_u64};
     /// @brief Indicates an unknown error occurred
-    constexpr auto BF_STATUS_FAILURE_UNKNOWN{bsl::to_u64(0xDEAD000000010001U)};
+    constexpr auto BF_STATUS_FAILURE_UNKNOWN{0xDEAD000000010001_u64};
     /// @brief Indicates the syscall is unsupported
-    constexpr auto BF_STATUS_FAILURE_INVALID_HANDLE{bsl::to_u64(0xDEAD000000020001U)};
+    constexpr auto BF_STATUS_FAILURE_INVALID_HANDLE{0xDEAD000000020001_u64};
     /// @brief Indicates the provided handle is invalid
-    constexpr auto BF_STATUS_FAILURE_UNSUPPORTED{bsl::to_u64(0xDEAD000000040001U)};
+    constexpr auto BF_STATUS_FAILURE_UNSUPPORTED{0xDEAD000000040001_u64};
     /// @brief Indicates the extension is not allowed to execute this syscall
-    constexpr auto BF_STATUS_INVALID_PERM_EXT{bsl::to_u64(0xDEAD000000010002U)};
+    constexpr auto BF_STATUS_INVALID_PERM_EXT{0xDEAD000000010002_u64};
     /// @brief Indicates the policy engine denied the syscall
-    constexpr auto BF_STATUS_INVALID_PERM_DENIED{bsl::to_u64(0xDEAD000000020002U)};
+    constexpr auto BF_STATUS_INVALID_PERM_DENIED{0xDEAD000000020002_u64};
     /// @brief Indicates param 0 is invalid
-    constexpr auto BF_STATUS_INVALID_PARAMS0{bsl::to_u64(0xDEAD000000010003U)};
+    constexpr auto BF_STATUS_INVALID_PARAMS0{0xDEAD000000010003_u64};
     /// @brief Indicates param 1 is invalid
-    constexpr auto BF_STATUS_INVALID_PARAMS1{bsl::to_u64(0xDEAD000000020003U)};
+    constexpr auto BF_STATUS_INVALID_PARAMS1{0xDEAD000000020003_u64};
     /// @brief Indicates param 2 is invalid
-    constexpr auto BF_STATUS_INVALID_PARAMS2{bsl::to_u64(0xDEAD000000040003U)};
+    constexpr auto BF_STATUS_INVALID_PARAMS2{0xDEAD000000040003_u64};
     /// @brief Indicates param 3 is invalid
-    constexpr auto BF_STATUS_INVALID_PARAMS3{bsl::to_u64(0xDEAD000000080003U)};
+    constexpr auto BF_STATUS_INVALID_PARAMS3{0xDEAD000000080003_u64};
     /// @brief Indicates param 4 is invalid
-    constexpr auto BF_STATUS_INVALID_PARAMS4{bsl::to_u64(0xDEAD000000100003U)};
+    constexpr auto BF_STATUS_INVALID_PARAMS4{0xDEAD000000100003_u64};
     /// @brief Indicates param 5 is invalid
-    constexpr auto BF_STATUS_INVALID_PARAMS5{bsl::to_u64(0xDEAD000000200003U)};
+    constexpr auto BF_STATUS_INVALID_PARAMS5{0xDEAD000000200003_u64};
 
     // -------------------------------------------------------------------------
     // Syscall Inputs
     // -------------------------------------------------------------------------
 
     /// @brief Defines the BF_SYSCALL_SIG field for RAX
-    constexpr auto BF_HYPERCALL_SIG_VAL{bsl::to_u64(0x6642000000000000U)};
+    constexpr auto BF_HYPERCALL_SIG_VAL{0x6642000000000000_u64};
     /// @brief Defines a mask for BF_SYSCALL_SIG
-    constexpr auto BF_HYPERCALL_SIG_MASK{bsl::to_u64(0xFFFF000000000000U)};
+    constexpr auto BF_HYPERCALL_SIG_MASK{0xFFFF000000000000_u64};
     /// @brief Defines a mask for BF_SYSCALL_FLAGS
-    constexpr auto BF_HYPERCALL_FLAGS_MASK{bsl::to_u64(0x0000FFFF00000000U)};
+    constexpr auto BF_HYPERCALL_FLAGS_MASK{0x0000FFFF00000000_u64};
     /// @brief Defines a mask for BF_SYSCALL_OP
-    constexpr auto BF_HYPERCALL_OPCODE_MASK{bsl::to_u64(0xFFFF0000FFFF0000U)};
+    constexpr auto BF_HYPERCALL_OPCODE_MASK{0xFFFF0000FFFF0000_u64};
     /// @brief Defines a mask for BF_SYSCALL_OP (with no signature added)
-    constexpr auto BF_HYPERCALL_OPCODE_NOSIG_MASK{bsl::to_u64(0x00000000FFFF0000U)};
+    constexpr auto BF_HYPERCALL_OPCODE_NOSIG_MASK{0x00000000FFFF0000_u64};
     /// @brief Defines a mask for BF_SYSCALL_IDX
-    constexpr auto BF_HYPERCALL_INDEX_MASK{bsl::to_u64(0x000000000000FFFFU)};
+    constexpr auto BF_HYPERCALL_INDEX_MASK{0x000000000000FFFF_u64};
 
     /// <!-- description -->
     ///   @brief n/a
@@ -160,13 +160,13 @@ namespace syscall
     // -------------------------------------------------------------------------
 
     /// @brief Defines the ID for version #1 of this spec
-    constexpr auto BF_SPEC_ID1_VAL{bsl::to_u32(0x31236642)};
+    constexpr auto BF_SPEC_ID1_VAL{0x31236642_u32};
 
     /// @brief Defines the mask for checking support for version #1 of this spec
-    constexpr auto BF_SPEC_ID1_MASK{bsl::to_u32(0x2)};
+    constexpr auto BF_SPEC_ID1_MASK{0x2_u32};
 
     /// @brief Defines the value likely returned by bf_handle_op_version
-    constexpr auto BF_ALL_SPECS_SUPPORTED_VAL{bsl::to_u32(0x2)};
+    constexpr auto BF_ALL_SPECS_SUPPORTED_VAL{0x2_u32};
 
     /// <!-- description -->
     ///   @brief n/a
@@ -178,7 +178,7 @@ namespace syscall
     [[nodiscard]] constexpr auto
     bf_is_spec1_supported(bf_uint32_t const &version) noexcept -> bool
     {
-        return ((version & BF_SPEC_ID1_MASK) != bsl::ZERO_U32);
+        return (!(version & BF_SPEC_ID1_MASK).is_zero());
     }
 
     // -------------------------------------------------------------------------
@@ -186,128 +186,128 @@ namespace syscall
     // -------------------------------------------------------------------------
 
     /// @brief Defines the syscall opcode for bf_control_op
-    constexpr auto BF_CONTROL_OP_VAL{bsl::to_u64(0x6642000000000000U)};
+    constexpr auto BF_CONTROL_OP_VAL{0x6642000000000000_u64};
     /// @brief Defines the syscall opcode for bf_control_op (nosig)
-    constexpr auto BF_CONTROL_OP_NOSIG_VAL{bsl::to_u64(0x0000000000000000U)};
+    constexpr auto BF_CONTROL_OP_NOSIG_VAL{0x0000000000000000_u64};
 
     // -------------------------------------------------------------------------
     // Syscall Opcodes - Handle Support
     // -------------------------------------------------------------------------
 
     /// @brief Defines the syscall opcode for bf_handle_op
-    constexpr auto BF_HANDLE_OP_VAL{bsl::to_u64(0x6642000000010000U)};
+    constexpr auto BF_HANDLE_OP_VAL{0x6642000000010000_u64};
     /// @brief Defines the syscall opcode for bf_handle_op (nosig)
-    constexpr auto BF_HANDLE_OP_NOSIG_VAL{bsl::to_u64(0x0000000000010000U)};
+    constexpr auto BF_HANDLE_OP_NOSIG_VAL{0x0000000000010000_u64};
 
     // -------------------------------------------------------------------------
     // Syscall Opcodes - Debug Support
     // -------------------------------------------------------------------------
 
     /// @brief Defines the syscall opcode for bf_debug_op
-    constexpr auto BF_DEBUG_OP_VAL{bsl::to_u64(0x6642000000020000U)};
+    constexpr auto BF_DEBUG_OP_VAL{0x6642000000020000_u64};
     /// @brief Defines the syscall opcode for bf_debug_op (nosig)
-    constexpr auto BF_DEBUG_OP_NOSIG_VAL{bsl::to_u64(0x00000000000020000U)};
+    constexpr auto BF_DEBUG_OP_NOSIG_VAL{0x00000000000020000_u64};
 
     // -------------------------------------------------------------------------
     // Syscall Opcodes - Callback Support
     // -------------------------------------------------------------------------
 
     /// @brief Defines the syscall opcode for bf_callback_op
-    constexpr auto BF_CALLBACK_OP_VAL{bsl::to_u64(0x6642000000030000U)};
+    constexpr auto BF_CALLBACK_OP_VAL{0x6642000000030000_u64};
     /// @brief Defines the syscall opcode for bf_callback_op (nosig)
-    constexpr auto BF_CALLBACK_OP_NOSIG_VAL{bsl::to_u64(0x0000000000030000U)};
+    constexpr auto BF_CALLBACK_OP_NOSIG_VAL{0x0000000000030000_u64};
 
     // -------------------------------------------------------------------------
     // Syscall Opcodes - VM Support
     // -------------------------------------------------------------------------
 
     /// @brief Defines the syscall opcode for bf_vm_op
-    constexpr auto BF_VM_OP_VAL{bsl::to_u64(0x6642000000040000U)};
+    constexpr auto BF_VM_OP_VAL{0x6642000000040000_u64};
     /// @brief Defines the syscall opcode for bf_vm_op (nosig)
-    constexpr auto BF_VM_OP_NOSIG_VAL{bsl::to_u64(0x0000000000040000U)};
+    constexpr auto BF_VM_OP_NOSIG_VAL{0x0000000000040000_u64};
 
     // -------------------------------------------------------------------------
     // Syscall Opcodes - VP Support
     // -------------------------------------------------------------------------
 
     /// @brief Defines the syscall opcode for bf_vp_op
-    constexpr auto BF_VP_OP_VAL{bsl::to_u64(0x6642000000050000U)};
+    constexpr auto BF_VP_OP_VAL{0x6642000000050000_u64};
     /// @brief Defines the syscall opcode for bf_vp_op (nosig)
-    constexpr auto BF_VP_OP_NOSIG_VAL{bsl::to_u64(0x0000000000050000U)};
+    constexpr auto BF_VP_OP_NOSIG_VAL{0x0000000000050000_u64};
 
     // -------------------------------------------------------------------------
     // Syscall Opcodes - VPS Support
     // -------------------------------------------------------------------------
 
     /// @brief Defines the syscall opcode for bf_vps_op
-    constexpr auto BF_VPS_OP_VAL{bsl::to_u64(0x6642000000060000U)};
+    constexpr auto BF_VPS_OP_VAL{0x6642000000060000_u64};
     /// @brief Defines the syscall opcode for bf_vps_op (nosig)
-    constexpr auto BF_VPS_OP_NOSIG_VAL{bsl::to_u64(0x0000000000060000U)};
+    constexpr auto BF_VPS_OP_NOSIG_VAL{0x0000000000060000_u64};
 
     // -------------------------------------------------------------------------
     // Syscall Opcodes - Intrinsic Support
     // -------------------------------------------------------------------------
 
     /// @brief Defines the syscall opcode for bf_intrinsic_op
-    constexpr auto BF_INTRINSIC_OP_VAL{bsl::to_u64(0x6642000000070000U)};
+    constexpr auto BF_INTRINSIC_OP_VAL{0x6642000000070000_u64};
     /// @brief Defines the syscall opcode for bf_intrinsic_op (nosig)
-    constexpr auto BF_INTRINSIC_OP_NOSIG_VAL{bsl::to_u64(0x0000000000070000U)};
+    constexpr auto BF_INTRINSIC_OP_NOSIG_VAL{0x0000000000070000_u64};
 
     // -------------------------------------------------------------------------
     // Syscall Opcodes - Mem Support
     // -------------------------------------------------------------------------
 
     /// @brief Defines the syscall opcode for bf_mem_op
-    constexpr auto BF_MEM_OP_VAL{bsl::to_u64(0x6642000000080000U)};
+    constexpr auto BF_MEM_OP_VAL{0x6642000000080000_u64};
     /// @brief Defines the syscall opcode for bf_mem_op (nosig)
-    constexpr auto BF_MEM_OP_NOSIG_VAL{bsl::to_u64(0x0000000000080000U)};
+    constexpr auto BF_MEM_OP_NOSIG_VAL{0x0000000000080000_u64};
 
     // -------------------------------------------------------------------------
     // TLS Offsets
     // -------------------------------------------------------------------------
 
     /// @brief stores the offset for rax
-    constexpr auto TLS_OFFSET_RAX{bsl::to_u64(0x800U)};
+    constexpr auto TLS_OFFSET_RAX{0x800_u64};
     /// @brief stores the offset for rbx
-    constexpr auto TLS_OFFSET_RBX{bsl::to_u64(0x808U)};
+    constexpr auto TLS_OFFSET_RBX{0x808_u64};
     /// @brief stores the offset for rcx
-    constexpr auto TLS_OFFSET_RCX{bsl::to_u64(0x810U)};
+    constexpr auto TLS_OFFSET_RCX{0x810_u64};
     /// @brief stores the offset for rdx
-    constexpr auto TLS_OFFSET_RDX{bsl::to_u64(0x818U)};
+    constexpr auto TLS_OFFSET_RDX{0x818_u64};
     /// @brief stores the offset for rbp
-    constexpr auto TLS_OFFSET_RBP{bsl::to_u64(0x820U)};
+    constexpr auto TLS_OFFSET_RBP{0x820_u64};
     /// @brief stores the offset for rsi
-    constexpr auto TLS_OFFSET_RSI{bsl::to_u64(0x828U)};
+    constexpr auto TLS_OFFSET_RSI{0x828_u64};
     /// @brief stores the offset for rdi
-    constexpr auto TLS_OFFSET_RDI{bsl::to_u64(0x830U)};
+    constexpr auto TLS_OFFSET_RDI{0x830_u64};
     /// @brief stores the offset for r8
-    constexpr auto TLS_OFFSET_R8{bsl::to_u64(0x838U)};
+    constexpr auto TLS_OFFSET_R8{0x838_u64};
     /// @brief stores the offset for r9
-    constexpr auto TLS_OFFSET_R9{bsl::to_u64(0x840U)};
+    constexpr auto TLS_OFFSET_R9{0x840_u64};
     /// @brief stores the offset for r10
-    constexpr auto TLS_OFFSET_R10{bsl::to_u64(0x848U)};
+    constexpr auto TLS_OFFSET_R10{0x848_u64};
     /// @brief stores the offset for r11
-    constexpr auto TLS_OFFSET_R11{bsl::to_u64(0x850U)};
+    constexpr auto TLS_OFFSET_R11{0x850_u64};
     /// @brief stores the offset for r12
-    constexpr auto TLS_OFFSET_R12{bsl::to_u64(0x858U)};
+    constexpr auto TLS_OFFSET_R12{0x858_u64};
     /// @brief stores the offset for r13
-    constexpr auto TLS_OFFSET_R13{bsl::to_u64(0x860U)};
+    constexpr auto TLS_OFFSET_R13{0x860_u64};
     /// @brief stores the offset for r14
-    constexpr auto TLS_OFFSET_R14{bsl::to_u64(0x868U)};
+    constexpr auto TLS_OFFSET_R14{0x868_u64};
     /// @brief stores the offset for r15
-    constexpr auto TLS_OFFSET_R15{bsl::to_u64(0x870U)};
+    constexpr auto TLS_OFFSET_R15{0x870_u64};
     /// @brief stores the offset of the active extid
-    constexpr auto TLS_OFFSET_ACTIVE_EXTID{bsl::to_u64(0xFF0U)};
+    constexpr auto TLS_OFFSET_ACTIVE_EXTID{0xFF0_u64};
     /// @brief stores the offset of the active vmid
-    constexpr auto TLS_OFFSET_ACTIVE_VMID{bsl::to_u64(0xFF2U)};
+    constexpr auto TLS_OFFSET_ACTIVE_VMID{0xFF2_u64};
     /// @brief stores the offset of the active vpid
-    constexpr auto TLS_OFFSET_ACTIVE_VPID{bsl::to_u64(0xFF4U)};
+    constexpr auto TLS_OFFSET_ACTIVE_VPID{0xFF4_u64};
     /// @brief stores the offset of the active vpsid
-    constexpr auto TLS_OFFSET_ACTIVE_VPSID{bsl::to_u64(0xFF6U)};
+    constexpr auto TLS_OFFSET_ACTIVE_VPSID{0xFF6_u64};
     /// @brief stores the offset of the active ppid
-    constexpr auto TLS_OFFSET_ACTIVE_PPID{bsl::to_u64(0xFF8U)};
+    constexpr auto TLS_OFFSET_ACTIVE_PPID{0xFF8_u64};
     /// @brief stores the number of PPs that are online
-    constexpr auto TLS_OFFSET_ONLINE_PPS{bsl::to_u64(0xFFAU)};
+    constexpr auto TLS_OFFSET_ONLINE_PPS{0xFFA_u64};
 
     // -------------------------------------------------------------------------
     // Syscall Indexes
@@ -316,115 +316,115 @@ namespace syscall
     // clang-format off
 
     /// @brief Defines the syscall index for bf_control_op_exit
-    constexpr auto BF_CONTROL_OP_EXIT_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+    constexpr auto BF_CONTROL_OP_EXIT_IDX_VAL{0x0000000000000000_u64};
     /// @brief Defines the syscall index for bf_control_op_wait
-    constexpr auto BF_CONTROL_OP_WAIT_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+    constexpr auto BF_CONTROL_OP_WAIT_IDX_VAL{0x0000000000000001_u64};
 
     /// @brief Defines the syscall index for bf_handle_op_open_handle
-    constexpr auto BF_HANDLE_OP_OPEN_HANDLE_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+    constexpr auto BF_HANDLE_OP_OPEN_HANDLE_IDX_VAL{0x0000000000000000_u64};
     /// @brief Defines the syscall index for bf_handle_op_close_handle
-    constexpr auto BF_HANDLE_OP_CLOSE_HANDLE_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+    constexpr auto BF_HANDLE_OP_CLOSE_HANDLE_IDX_VAL{0x0000000000000001_u64};
 
     /// @brief Defines the syscall index for bf_debug_op_out
-    constexpr auto BF_DEBUG_OP_OUT_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+    constexpr auto BF_DEBUG_OP_OUT_IDX_VAL{0x0000000000000000_u64};
     /// @brief Defines the syscall index for bf_debug_op_dump_vm
-    constexpr auto BF_DEBUG_OP_DUMP_VM_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+    constexpr auto BF_DEBUG_OP_DUMP_VM_IDX_VAL{0x0000000000000001_u64};
     /// @brief Defines the syscall index for bf_debug_op_dump_vp
-    constexpr auto BF_DEBUG_OP_DUMP_VP_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+    constexpr auto BF_DEBUG_OP_DUMP_VP_IDX_VAL{0x0000000000000002_u64};
     /// @brief Defines the syscall index for bf_debug_op_dump_vps
-    constexpr auto BF_DEBUG_OP_DUMP_VPS_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
+    constexpr auto BF_DEBUG_OP_DUMP_VPS_IDX_VAL{0x0000000000000003_u64};
     /// @brief Defines the syscall index for bf_debug_op_dump_vmexit_log
-    constexpr auto BF_DEBUG_OP_DUMP_VMEXIT_LOG_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
+    constexpr auto BF_DEBUG_OP_DUMP_VMEXIT_LOG_IDX_VAL{0x0000000000000004_u64};
     /// @brief Defines the syscall index for bf_debug_op_write_c
-    constexpr auto BF_DEBUG_OP_WRITE_C_IDX_VAL{bsl::to_u64(0x0000000000000005U)};
+    constexpr auto BF_DEBUG_OP_WRITE_C_IDX_VAL{0x0000000000000005_u64};
     /// @brief Defines the syscall index for bf_debug_op_write_str
-    constexpr auto BF_DEBUG_OP_WRITE_STR_IDX_VAL{bsl::to_u64(0x0000000000000006U)};
+    constexpr auto BF_DEBUG_OP_WRITE_STR_IDX_VAL{0x0000000000000006_u64};
     /// @brief Defines the syscall index for bf_debug_op_dump_ext
-    constexpr auto BF_DEBUG_OP_DUMP_EXT_IDX_VAL{bsl::to_u64(0x0000000000000007U)};
+    constexpr auto BF_DEBUG_OP_DUMP_EXT_IDX_VAL{0x0000000000000007_u64};
     /// @brief Defines the syscall index for bf_debug_op_dump_page_pool
-    constexpr auto BF_DEBUG_OP_DUMP_PAGE_POOL_IDX_VAL{bsl::to_u64(0x0000000000000008U)};
+    constexpr auto BF_DEBUG_OP_DUMP_PAGE_POOL_IDX_VAL{0x0000000000000008_u64};
     /// @brief Defines the syscall index for bf_debug_op_dump_huge_pool
-    constexpr auto BF_DEBUG_OP_DUMP_HUGE_POOL_IDX_VAL{bsl::to_u64(0x0000000000000009U)};
+    constexpr auto BF_DEBUG_OP_DUMP_HUGE_POOL_IDX_VAL{0x0000000000000009_u64};
 
     /// @brief Defines the syscall index for bf_callback_op_register_bootstrap
-    constexpr auto BF_CALLBACK_OP_REGISTER_BOOTSTRAP_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+    constexpr auto BF_CALLBACK_OP_REGISTER_BOOTSTRAP_IDX_VAL{0x0000000000000002_u64};
     /// @brief Defines the syscall index for bf_callback_op_register_vmexit
-    constexpr auto BF_CALLBACK_OP_REGISTER_VMEXIT_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
+    constexpr auto BF_CALLBACK_OP_REGISTER_VMEXIT_IDX_VAL{0x0000000000000003_u64};
     /// @brief Defines the syscall index for bf_callback_op_register_fail
-    constexpr auto BF_CALLBACK_OP_REGISTER_FAIL_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
+    constexpr auto BF_CALLBACK_OP_REGISTER_FAIL_IDX_VAL{0x0000000000000004_u64};
 
     /// @brief Defines the syscall index for bf_vm_op_create_vm
-    constexpr auto BF_VM_OP_CREATE_VM_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+    constexpr auto BF_VM_OP_CREATE_VM_IDX_VAL{0x0000000000000000_u64};
     /// @brief Defines the syscall index for bf_vm_op_destroy_vm
-    constexpr auto BF_VM_OP_DESTROY_VM_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+    constexpr auto BF_VM_OP_DESTROY_VM_IDX_VAL{0x0000000000000001_u64};
 
     /// @brief Defines the syscall index for bf_vp_op_create_vp
-    constexpr auto BF_VP_OP_CREATE_VP_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+    constexpr auto BF_VP_OP_CREATE_VP_IDX_VAL{0x0000000000000000_u64};
     /// @brief Defines the syscall index for bf_vp_op_destroy_vp
-    constexpr auto BF_VP_OP_DESTROY_VP_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+    constexpr auto BF_VP_OP_DESTROY_VP_IDX_VAL{0x0000000000000001_u64};
     /// @brief Defines the syscall index for bf_vp_op_migrate
-    constexpr auto BF_VP_OP_MIGRATE_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+    constexpr auto BF_VP_OP_MIGRATE_IDX_VAL{0x0000000000000002_u64};
 
     /// @brief Defines the syscall index for bf_vps_op_create_vps
-    constexpr auto BF_VPS_OP_CREATE_VPS_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+    constexpr auto BF_VPS_OP_CREATE_VPS_IDX_VAL{0x0000000000000000_u64};
     /// @brief Defines the syscall index for bf_vps_op_destroy_vps
-    constexpr auto BF_VPS_OP_DESTROY_VPS_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+    constexpr auto BF_VPS_OP_DESTROY_VPS_IDX_VAL{0x0000000000000001_u64};
     /// @brief Defines the syscall index for bf_vps_op_init_as_root
-    constexpr auto BF_VPS_OP_INIT_AS_ROOT_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+    constexpr auto BF_VPS_OP_INIT_AS_ROOT_IDX_VAL{0x0000000000000002_u64};
     /// @brief Defines the syscall index for bf_vps_op_read8
-    constexpr auto BF_VPS_OP_READ8_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
+    constexpr auto BF_VPS_OP_READ8_IDX_VAL{0x0000000000000003_u64};
     /// @brief Defines the syscall index for bf_vps_op_read16
-    constexpr auto BF_VPS_OP_READ16_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
+    constexpr auto BF_VPS_OP_READ16_IDX_VAL{0x0000000000000004_u64};
     /// @brief Defines the syscall index for bf_vps_op_read32
-    constexpr auto BF_VPS_OP_READ32_IDX_VAL{bsl::to_u64(0x0000000000000005U)};
+    constexpr auto BF_VPS_OP_READ32_IDX_VAL{0x0000000000000005_u64};
     /// @brief Defines the syscall index for bf_vps_op_read64
-    constexpr auto BF_VPS_OP_READ64_IDX_VAL{bsl::to_u64(0x0000000000000006U)};
+    constexpr auto BF_VPS_OP_READ64_IDX_VAL{0x0000000000000006_u64};
     /// @brief Defines the syscall index for bf_vps_op_write
-    constexpr auto BF_VPS_OP_WRITE8_IDX_VAL{bsl::to_u64(0x0000000000000007U)};
+    constexpr auto BF_VPS_OP_WRITE8_IDX_VAL{0x0000000000000007_u64};
     /// @brief Defines the syscall index for bf_vps_op_write
-    constexpr auto BF_VPS_OP_WRITE16_IDX_VAL{bsl::to_u64(0x0000000000000008U)};
+    constexpr auto BF_VPS_OP_WRITE16_IDX_VAL{0x0000000000000008_u64};
     /// @brief Defines the syscall index for bf_vps_op_write
-    constexpr auto BF_VPS_OP_WRITE32_IDX_VAL{bsl::to_u64(0x0000000000000009U)};
+    constexpr auto BF_VPS_OP_WRITE32_IDX_VAL{0x0000000000000009_u64};
     /// @brief Defines the syscall index for bf_vps_op_write
-    constexpr auto BF_VPS_OP_WRITE64_IDX_VAL{bsl::to_u64(0x000000000000000AU)};
+    constexpr auto BF_VPS_OP_WRITE64_IDX_VAL{0x000000000000000A_u64};
     /// @brief Defines the syscall index for bf_vps_op_read_reg
-    constexpr auto BF_VPS_OP_READ_REG_IDX_VAL{bsl::to_u64(0x000000000000000BU)};
+    constexpr auto BF_VPS_OP_READ_REG_IDX_VAL{0x000000000000000B_u64};
     /// @brief Defines the syscall index for bf_vps_op_write_reg
-    constexpr auto BF_VPS_OP_WRITE_REG_IDX_VAL{bsl::to_u64(0x000000000000000CU)};
+    constexpr auto BF_VPS_OP_WRITE_REG_IDX_VAL{0x000000000000000C_u64};
     /// @brief Defines the syscall index for bf_vps_op_run
-    constexpr auto BF_VPS_OP_RUN_IDX_VAL{bsl::to_u64(0x000000000000000DU)};
+    constexpr auto BF_VPS_OP_RUN_IDX_VAL{0x000000000000000D_u64};
     /// @brief Defines the syscall index for bf_vps_op_run_current
-    constexpr auto BF_VPS_OP_RUN_CURRENT_IDX_VAL{bsl::to_u64(0x000000000000000EU)};
+    constexpr auto BF_VPS_OP_RUN_CURRENT_IDX_VAL{0x000000000000000E_u64};
     /// @brief Defines the syscall index for bf_vps_op_advance_ip
-    constexpr auto BF_VPS_OP_ADVANCE_IP_IDX_VAL{bsl::to_u64(0x000000000000000FU)};
+    constexpr auto BF_VPS_OP_ADVANCE_IP_IDX_VAL{0x000000000000000F_u64};
     /// @brief Defines the syscall index for bf_vps_op_advance_ip_and_run_current
-    constexpr auto BF_VPS_OP_ADVANCE_IP_AND_RUN_CURRENT_IDX_VAL{bsl::to_u64(0x0000000000000010U)};
+    constexpr auto BF_VPS_OP_ADVANCE_IP_AND_RUN_CURRENT_IDX_VAL{0x0000000000000010_u64};
     /// @brief Defines the syscall index for bf_vps_op_promote
-    constexpr auto BF_VPS_OP_PROMOTE_IDX_VAL{bsl::to_u64(0x0000000000000011U)};
+    constexpr auto BF_VPS_OP_PROMOTE_IDX_VAL{0x0000000000000011_u64};
     /// @brief Defines the syscall index for bf_vps_op_clear_vps
-    constexpr auto BF_VPS_OP_CLEAR_VPS_IDX_VAL{bsl::to_u64(0x0000000000000012U)};
+    constexpr auto BF_VPS_OP_CLEAR_VPS_IDX_VAL{0x0000000000000012_u64};
 
     /// @brief Defines the syscall index for bf_intrinsic_op_rdmsr
-    constexpr auto BF_INTRINSIC_OP_RDMSR_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+    constexpr auto BF_INTRINSIC_OP_RDMSR_IDX_VAL{0x0000000000000000_u64};
     /// @brief Defines the syscall index for bf_intrinsic_op_wrmsr
-    constexpr auto BF_INTRINSIC_OP_WRMSR_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+    constexpr auto BF_INTRINSIC_OP_WRMSR_IDX_VAL{0x0000000000000001_u64};
     /// @brief Defines the syscall index for bf_intrinsic_op_invlpga
-    constexpr auto BF_INTRINSIC_OP_INVLPGA_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+    constexpr auto BF_INTRINSIC_OP_INVLPGA_IDX_VAL{0x0000000000000002_u64};
     /// @brief Defines the syscall index for bf_intrinsic_op_invept
-    constexpr auto BF_INTRINSIC_OP_INVEPT_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
+    constexpr auto BF_INTRINSIC_OP_INVEPT_IDX_VAL{0x0000000000000003_u64};
     /// @brief Defines the syscall index for bf_intrinsic_op_invvpid
-    constexpr auto BF_INTRINSIC_OP_INVVPID_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
+    constexpr auto BF_INTRINSIC_OP_INVVPID_IDX_VAL{0x0000000000000004_u64};
 
     /// @brief Defines the syscall index for bf_mem_op_alloc_page
-    constexpr auto BF_MEM_OP_ALLOC_PAGE_IDX_VAL{bsl::to_u64(0x0000000000000000U)};
+    constexpr auto BF_MEM_OP_ALLOC_PAGE_IDX_VAL{0x0000000000000000_u64};
     /// @brief Defines the syscall index for bf_mem_op_free_page
-    constexpr auto BF_MEM_OP_FREE_PAGE_IDX_VAL{bsl::to_u64(0x0000000000000001U)};
+    constexpr auto BF_MEM_OP_FREE_PAGE_IDX_VAL{0x0000000000000001_u64};
     /// @brief Defines the syscall index for bf_mem_op_alloc_huge
-    constexpr auto BF_MEM_OP_ALLOC_HUGE_IDX_VAL{bsl::to_u64(0x0000000000000002U)};
+    constexpr auto BF_MEM_OP_ALLOC_HUGE_IDX_VAL{0x0000000000000002_u64};
     /// @brief Defines the syscall index for bf_mem_op_free_huge
-    constexpr auto BF_MEM_OP_FREE_HUGE_IDX_VAL{bsl::to_u64(0x0000000000000003U)};
+    constexpr auto BF_MEM_OP_FREE_HUGE_IDX_VAL{0x0000000000000003_u64};
     /// @brief Defines the syscall index for bf_mem_op_alloc_heap
-    constexpr auto BF_MEM_OP_ALLOC_HEAP_IDX_VAL{bsl::to_u64(0x0000000000000004U)};
+    constexpr auto BF_MEM_OP_ALLOC_HEAP_IDX_VAL{0x0000000000000004_u64};
 }
 
 #endif

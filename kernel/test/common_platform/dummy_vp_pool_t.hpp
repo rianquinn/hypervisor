@@ -45,14 +45,14 @@ namespace mk
         /// <!-- description -->
         ///   @brief If a vp_t in the pool is assigned to the requested VM,
         ///     the ID of the first vp_t found is returned. Otherwise, this
-        ///     function will return bsl::safe_uint16::zero(true)
+        ///     function will return bsl::safe_uint16::failure()
         ///
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
         ///   @param vmid the ID fo the VM to query
         ///   @return If a vp_t in the pool is assigned to the requested VM,
         ///     the ID of the first vp_t found is returned. Otherwise, this
-        ///     function will return bsl::safe_uint16::zero(true)
+        ///     function will return bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
         is_assigned_to_vm(tls_t &tls, bsl::safe_uint16 const &vmid) const &noexcept
@@ -62,7 +62,7 @@ namespace mk
                 return vmid;
             }
 
-            return bsl::safe_uint16::zero(true);
+            return bsl::safe_uint16::failure();
         }
     };
 }
