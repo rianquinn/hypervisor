@@ -37,18 +37,18 @@ namespace syscall
     // -------------------------------------------------------------------------
 
     /// @brief stores the answer to all things (in 8 bits)
-    constexpr auto g_answer8{42_u8};
+    constexpr auto ANSWER8{42_u8};
     /// @brief stores the answer to all things (in 16 bits)
-    constexpr auto g_answer16{42_u16};
+    constexpr auto ANSWER16{42_u16};
     /// @brief stores the answer to all things (in 32 bits)
-    constexpr auto g_answer32{42_u32};
+    constexpr auto ANSWER32{42_u32};
     /// @brief stores the answer to all things (in 64 bits)
-    constexpr auto g_answer64{42_u64};
+    constexpr auto ANSWER64{42_u64};
 
     /// @brief stores a bad address
-    constexpr auto g_bad_addr{0xFFFFFFFFFFFFFFFF_u64};
+    constexpr auto BAD_ADDR{0xFFFFFFFFFFFFFFFF_u64};
     /// @brief stores a bad version
-    constexpr auto g_bad_version{0x80000000_u32};
+    constexpr auto BAD_VERSION{0x80000000_u32};
 
     // -------------------------------------------------------------------------
     // tests
@@ -66,12 +66,12 @@ namespace syscall
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"initialize invalid version #1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"initialize invalid version #1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.initialize(    // --
                             bf_uint32_t::failure(),       // --
                             &dummy_bootstrap_entry,       // --
@@ -82,12 +82,12 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"initialize invalid version #2"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"initialize invalid version #2"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.initialize(    // --
                             {},                           // --
                             &dummy_bootstrap_entry,       // --
@@ -98,12 +98,12 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"initialize invalid bootstrap_handler"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"initialize invalid bootstrap_handler"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.initialize(     // --
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             {},                            // --
@@ -114,12 +114,12 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"initialize invalid vmexit_handler"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"initialize invalid vmexit_handler"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.initialize(     // --
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             &dummy_bootstrap_entry,        // --
@@ -130,12 +130,12 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"initialize invalid fail_handler"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"initialize invalid fail_handler"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.initialize(     // --
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             &dummy_bootstrap_entry,        // --
@@ -146,14 +146,14 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"initialize bf_is_spec1_supported fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"initialize bf_is_spec1_supported fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.initialize(    // --
-                            g_bad_version,                // --
+                            BAD_VERSION,                // --
                             &dummy_bootstrap_entry,       // --
                             &dummy_vmexit_entry,          // --
                             &dummy_fail_entry));          // --
@@ -162,13 +162,13 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"initialize bf_handle_op_open_handle_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"initialize bf_handle_op_open_handle_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_handle_op_open_handle_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.initialize(
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             &dummy_bootstrap_entry,        // --
@@ -179,13 +179,13 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"initialize bf_callback_op_register_bootstrap_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"initialize bf_callback_op_register_bootstrap_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_callback_op_register_bootstrap_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.initialize(
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             &dummy_bootstrap_entry,        // --
@@ -196,13 +196,13 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"initialize bf_callback_op_register_vmexit_impl fail"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"initialize bf_callback_op_register_vmexit_impl fail"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_callback_op_register_vmexit_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.initialize(
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             &dummy_bootstrap_entry,        // --
@@ -213,13 +213,13 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"initialize bf_callback_op_register_fail_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"initialize bf_callback_op_register_fail_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_callback_op_register_fail_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.initialize(     // --
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             &dummy_bootstrap_entry,        // --
@@ -230,12 +230,12 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"initialize success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"initialize success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.initialize(      // --
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             &dummy_bootstrap_entry,        // --
@@ -246,12 +246,12 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"release"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"release"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         sys.release();
                     };
                 };
@@ -262,475 +262,475 @@ namespace syscall
         // TLS ops
         // ---------------------------------------------------------------------
 
-        bsl::ut_scenario{"bf_tls_rax/bf_tls_set_rax"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_rax/bf_tls_set_rax"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_rax());
                         bsl::ut_check(sys.bf_tls_rax().is_zero());
                     };
 
-                    sys.bf_tls_set_rax(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rax() == g_answer64);
+                    sys.bf_tls_set_rax(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rax() == ANSWER64);
                     };
 
                     sys.bf_tls_set_rax(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rax() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rax() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_rbx/bf_tls_set_rbx"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_rbx/bf_tls_set_rbx"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_rbx());
                         bsl::ut_check(sys.bf_tls_rbx().is_zero());
                     };
 
-                    sys.bf_tls_set_rbx(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rbx() == g_answer64);
+                    sys.bf_tls_set_rbx(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rbx() == ANSWER64);
                     };
 
                     sys.bf_tls_set_rbx(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rbx() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rbx() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_rcx/bf_tls_set_rcx"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_rcx/bf_tls_set_rcx"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_rcx());
                         bsl::ut_check(sys.bf_tls_rcx().is_zero());
                     };
 
-                    sys.bf_tls_set_rcx(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rcx() == g_answer64);
+                    sys.bf_tls_set_rcx(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rcx() == ANSWER64);
                     };
 
                     sys.bf_tls_set_rcx(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rcx() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rcx() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_rdx/bf_tls_set_rdx"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_rdx/bf_tls_set_rdx"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_rdx());
                         bsl::ut_check(sys.bf_tls_rdx().is_zero());
                     };
 
-                    sys.bf_tls_set_rdx(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rdx() == g_answer64);
+                    sys.bf_tls_set_rdx(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rdx() == ANSWER64);
                     };
 
                     sys.bf_tls_set_rdx(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rdx() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rdx() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_rbp/bf_tls_set_rbp"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_rbp/bf_tls_set_rbp"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_rbp());
                         bsl::ut_check(sys.bf_tls_rbp().is_zero());
                     };
 
-                    sys.bf_tls_set_rbp(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rbp() == g_answer64);
+                    sys.bf_tls_set_rbp(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rbp() == ANSWER64);
                     };
 
                     sys.bf_tls_set_rbp(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rbp() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rbp() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_rsi/bf_tls_set_rsi"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_rsi/bf_tls_set_rsi"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_rsi());
                         bsl::ut_check(sys.bf_tls_rsi().is_zero());
                     };
 
-                    sys.bf_tls_set_rsi(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rsi() == g_answer64);
+                    sys.bf_tls_set_rsi(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rsi() == ANSWER64);
                     };
 
                     sys.bf_tls_set_rsi(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rsi() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rsi() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_rdi/bf_tls_set_rdi"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_rdi/bf_tls_set_rdi"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_rdi());
                         bsl::ut_check(sys.bf_tls_rdi().is_zero());
                     };
 
-                    sys.bf_tls_set_rdi(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rdi() == g_answer64);
+                    sys.bf_tls_set_rdi(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rdi() == ANSWER64);
                     };
 
                     sys.bf_tls_set_rdi(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_rdi() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_rdi() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_r8/bf_tls_set_r8"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_r8/bf_tls_set_r8"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_r8());
                         bsl::ut_check(sys.bf_tls_r8().is_zero());
                     };
 
-                    sys.bf_tls_set_r8(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r8() == g_answer64);
+                    sys.bf_tls_set_r8(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r8() == ANSWER64);
                     };
 
                     sys.bf_tls_set_r8(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r8() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r8() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_r9/bf_tls_set_r9"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_r9/bf_tls_set_r9"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_r9());
                         bsl::ut_check(sys.bf_tls_r9().is_zero());
                     };
 
-                    sys.bf_tls_set_r9(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r9() == g_answer64);
+                    sys.bf_tls_set_r9(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r9() == ANSWER64);
                     };
 
                     sys.bf_tls_set_r9(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r9() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r9() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_r10/bf_tls_set_r10"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_r10/bf_tls_set_r10"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_r10());
                         bsl::ut_check(sys.bf_tls_r10().is_zero());
                     };
 
-                    sys.bf_tls_set_r10(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r10() == g_answer64);
+                    sys.bf_tls_set_r10(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r10() == ANSWER64);
                     };
 
                     sys.bf_tls_set_r10(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r10() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r10() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_r11/bf_tls_set_r11"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_r11/bf_tls_set_r11"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_r11());
                         bsl::ut_check(sys.bf_tls_r11().is_zero());
                     };
 
-                    sys.bf_tls_set_r11(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r11() == g_answer64);
+                    sys.bf_tls_set_r11(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r11() == ANSWER64);
                     };
 
                     sys.bf_tls_set_r11(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r11() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r11() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_r12/bf_tls_set_r12"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_r12/bf_tls_set_r12"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_r12());
                         bsl::ut_check(sys.bf_tls_r12().is_zero());
                     };
 
-                    sys.bf_tls_set_r12(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r12() == g_answer64);
+                    sys.bf_tls_set_r12(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r12() == ANSWER64);
                     };
 
                     sys.bf_tls_set_r12(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r12() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r12() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_r13/bf_tls_set_r13"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_r13/bf_tls_set_r13"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_r13());
                         bsl::ut_check(sys.bf_tls_r13().is_zero());
                     };
 
-                    sys.bf_tls_set_r13(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r13() == g_answer64);
+                    sys.bf_tls_set_r13(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r13() == ANSWER64);
                     };
 
                     sys.bf_tls_set_r13(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r13() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r13() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_r14/bf_tls_set_r14"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_r14/bf_tls_set_r14"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_r14());
                         bsl::ut_check(sys.bf_tls_r14().is_zero());
                     };
 
-                    sys.bf_tls_set_r14(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r14() == g_answer64);
+                    sys.bf_tls_set_r14(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r14() == ANSWER64);
                     };
 
                     sys.bf_tls_set_r14(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r14() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r14() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_r15/bf_tls_set_r15"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_r15/bf_tls_set_r15"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_r15());
                         bsl::ut_check(sys.bf_tls_r15().is_zero());
                     };
 
-                    sys.bf_tls_set_r15(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r15() == g_answer64);
+                    sys.bf_tls_set_r15(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r15() == ANSWER64);
                     };
 
                     sys.bf_tls_set_r15(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_r15() == g_answer64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_r15() == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_extid/bf_tls_set_extid"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_extid/bf_tls_set_extid"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_extid());
                         bsl::ut_check(sys.bf_tls_extid().is_zero());
                     };
 
-                    g_data.at("bf_tls_extid") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_extid() == g_answer16);
+                    g_data.at("bf_tls_extid") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_extid() == ANSWER16);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_vmid/bf_tls_set_vmid"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_vmid/bf_tls_set_vmid"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_vmid());
                         bsl::ut_check(sys.bf_tls_vmid().is_zero());
                     };
 
-                    g_data.at("bf_tls_vmid") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_vmid() == g_answer16);
+                    g_data.at("bf_tls_vmid") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_vmid() == ANSWER16);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_vpid/bf_tls_set_vpid"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_vpid/bf_tls_set_vpid"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_vpid());
                         bsl::ut_check(sys.bf_tls_vpid().is_zero());
                     };
 
-                    g_data.at("bf_tls_vpid") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_vpid() == g_answer16);
+                    g_data.at("bf_tls_vpid") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_vpid() == ANSWER16);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_vpsid/bf_tls_set_vpsid"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_vpsid/bf_tls_set_vpsid"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_vpsid());
                         bsl::ut_check(sys.bf_tls_vpsid().is_zero());
                     };
 
-                    g_data.at("bf_tls_vpsid") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_vpsid() == g_answer16);
+                    g_data.at("bf_tls_vpsid") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_vpsid() == ANSWER16);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_ppid/bf_tls_set_ppid"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_ppid/bf_tls_set_ppid"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_ppid());
                         bsl::ut_check(sys.bf_tls_ppid().is_zero());
                     };
 
-                    g_data.at("bf_tls_ppid") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_ppid() == g_answer16);
+                    g_data.at("bf_tls_ppid") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_ppid() == ANSWER16);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_tls_online_pps/bf_tls_set_online_pps"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_tls_online_pps/bf_tls_set_online_pps"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_data.clear();
 
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_tls_online_pps());
                         bsl::ut_check(sys.bf_tls_online_pps().is_zero());
                     };
 
-                    g_data.at("bf_tls_online_pps") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_tls_online_pps() == g_answer16);
+                    g_data.at("bf_tls_online_pps") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_tls_online_pps() == ANSWER16);
                     };
                 };
             };
@@ -740,69 +740,69 @@ namespace syscall
         // bf_vm_ops
         // ---------------------------------------------------------------------
 
-        bsl::ut_scenario{"bf_vm_op_create_vm bf_vm_op_create_vm_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vm_op_create_vm bf_vm_op_create_vm_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vm_op_create_vm_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_vm_op_create_vm_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vm_op_create_vm_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vm_op_create_vm());
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vm_op_create_vm success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vm_op_create_vm success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vm_op_create_vm_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_vm_op_create_vm() == g_answer16);
+                    g_data.at("bf_vm_op_create_vm_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_vm_op_create_vm() == ANSWER16);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vm_op_destroy_vm invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vm_op_destroy_vm invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vm_op_destroy_vm(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vm_op_destroy_vm bf_vm_op_destroy_vm_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vm_op_destroy_vm bf_vm_op_destroy_vm_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_vm_op_destroy_vm_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vm_op_destroy_vm(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vm_op_destroy_vm success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vm_op_destroy_vm success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vm_op_destroy_vm(arg0));
                     };
                 };
@@ -813,162 +813,162 @@ namespace syscall
         // bf_vp_ops
         // ---------------------------------------------------------------------
 
-        bsl::ut_scenario{"bf_vp_op_create_vp invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vp_op_create_vp invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vp_op_create_vp_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vp_op_create_vp_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vp_op_create_vp(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vp_op_create_vp invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vp_op_create_vp invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vp_op_create_vp_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vp_op_create_vp_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vp_op_create_vp(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vp_op_create_vp bf_vp_op_create_vp_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vp_op_create_vp bf_vp_op_create_vp_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vp_op_create_vp_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_vp_op_create_vp_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vp_op_create_vp_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vp_op_create_vp(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vp_op_create_vp success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vp_op_create_vp success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vp_op_create_vp_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_vp_op_create_vp(arg0, arg1) == g_answer16);
+                    g_data.at("bf_vp_op_create_vp_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_vp_op_create_vp(arg0, arg1) == ANSWER16);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vp_op_destroy_vp invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vp_op_destroy_vp invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vp_op_destroy_vp(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vp_op_destroy_vp bf_vp_op_destroy_vp_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vp_op_destroy_vp bf_vp_op_destroy_vp_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_vp_op_destroy_vp_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vp_op_destroy_vp(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vp_op_destroy_vp success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vp_op_destroy_vp success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vp_op_destroy_vp(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vp_op_migrate invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vp_op_migrate invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vp_op_migrate(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vp_op_migrate invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vp_op_migrate invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vp_op_migrate(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vp_op_migrate bf_vp_op_migrate_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vp_op_migrate bf_vp_op_migrate_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_vp_op_migrate_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vp_op_migrate(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vp_op_migrate success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vp_op_migrate success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vp_op_migrate(arg0, arg1));
                     };
                 };
@@ -979,486 +979,486 @@ namespace syscall
         // bf_vps_ops
         // ---------------------------------------------------------------------
 
-        bsl::ut_scenario{"bf_vps_op_create_vps invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_create_vps invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_create_vps_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_create_vps_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_create_vps(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_create_vps invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_create_vps invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_create_vps_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_create_vps_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_create_vps(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_create_vps bf_vps_op_create_vps_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_create_vps bf_vps_op_create_vps_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_create_vps_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_vps_op_create_vps_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_create_vps_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_create_vps(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_create_vps success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_create_vps success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_create_vps_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_vps_op_create_vps(arg0, arg1) == g_answer16);
+                    g_data.at("bf_vps_op_create_vps_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_vps_op_create_vps(arg0, arg1) == ANSWER16);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_destroy_vps invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_destroy_vps invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_destroy_vps(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_destroy_vps bf_vps_op_destroy_vps_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_destroy_vps bf_vps_op_destroy_vps_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_vps_op_destroy_vps_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_destroy_vps(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_destroy_vps success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_destroy_vps success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_destroy_vps(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_init_as_root invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_init_as_root invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_init_as_root(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_init_as_root bf_vps_op_init_as_root_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_init_as_root bf_vps_op_init_as_root_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_vps_op_init_as_root_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_init_as_root(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_init_as_root success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_init_as_root success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_init_as_root(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read8 invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read8 invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read8_impl_reg0_out") = bsl::to_u64(g_answer8);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read8_impl_reg0_out") = bsl::to_u64(ANSWER8);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read8(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read8 invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read8 invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read8_impl_reg0_out") = bsl::to_u64(g_answer8);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read8_impl_reg0_out") = bsl::to_u64(ANSWER8);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read8(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read8 bf_vps_op_read8_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read8 bf_vps_op_read8_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_read8_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_vps_op_read8_impl_reg0_out") = bsl::to_u64(g_answer8);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read8_impl_reg0_out") = bsl::to_u64(ANSWER8);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read8(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read8 success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read8 success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read8_impl_reg0_out") = bsl::to_u64(g_answer8);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_vps_op_read8(arg0, arg1) == g_answer8);
+                    g_data.at("bf_vps_op_read8_impl_reg0_out") = bsl::to_u64(ANSWER8);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_vps_op_read8(arg0, arg1) == ANSWER8);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read16 invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read16 invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read16_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read16_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read16(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read16 invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read16 invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read16_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read16_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read16(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read16 bf_vps_op_read16_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read16 bf_vps_op_read16_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_read16_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_vps_op_read16_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read16_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read16(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read16 success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read16 success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read16_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_vps_op_read16(arg0, arg1) == g_answer16);
+                    g_data.at("bf_vps_op_read16_impl_reg0_out") = bsl::to_u64(ANSWER16);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_vps_op_read16(arg0, arg1) == ANSWER16);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read32 invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read32 invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read32_impl_reg0_out") = bsl::to_u64(g_answer32);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read32_impl_reg0_out") = bsl::to_u64(ANSWER32);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read32(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read32 invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read32 invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read32_impl_reg0_out") = bsl::to_u64(g_answer32);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read32_impl_reg0_out") = bsl::to_u64(ANSWER32);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read32(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read32 bf_vps_op_read32_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read32 bf_vps_op_read32_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_read32_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_vps_op_read32_impl_reg0_out") = bsl::to_u64(g_answer32);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read32_impl_reg0_out") = bsl::to_u64(ANSWER32);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read32(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read32 success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read32 success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read32_impl_reg0_out") = bsl::to_u64(g_answer32);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_vps_op_read32(arg0, arg1) == g_answer32);
+                    g_data.at("bf_vps_op_read32_impl_reg0_out") = bsl::to_u64(ANSWER32);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_vps_op_read32(arg0, arg1) == ANSWER32);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read64 invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read64 invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read64_impl_reg0_out") = bsl::to_u64(g_answer64);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read64_impl_reg0_out") = bsl::to_u64(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read64(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read64 invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read64 invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read64_impl_reg0_out") = bsl::to_u64(g_answer64);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read64_impl_reg0_out") = bsl::to_u64(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read64(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read64 bf_vps_op_read64_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read64 bf_vps_op_read64_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_read64_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_vps_op_read64_impl_reg0_out") = bsl::to_u64(g_answer64);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read64_impl_reg0_out") = bsl::to_u64(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read64(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read64 success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read64 success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read64_impl_reg0_out") = bsl::to_u64(g_answer64);
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_vps_op_read64(arg0, arg1) == g_answer64);
+                    g_data.at("bf_vps_op_read64_impl_reg0_out") = bsl::to_u64(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_vps_op_read64(arg0, arg1) == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write8 invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write8 invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bf_uint8_t arg2{g_answer8};
-                bsl::ut_when{} = [&]() {
+                bf_uint8_t arg2{ANSWER8};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write8(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write8 invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write8 invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bf_uint8_t arg2{g_answer8};
-                bsl::ut_when{} = [&]() {
+                bf_uint8_t arg2{ANSWER8};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write8(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write8 invalid arg2"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write8 invalid arg2"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint8_t arg2{bf_uint8_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write8(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write8 bf_vps_op_write8_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write8 bf_vps_op_write8_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bf_uint8_t arg2{g_answer8};
-                bsl::ut_when{} = [&]() {
+                bf_uint8_t arg2{ANSWER8};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_write8_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write8(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write8 success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write8 success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bf_uint8_t arg2{g_answer8};
-                bsl::ut_when{} = [&]() {
+                bf_uint8_t arg2{ANSWER8};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_write8(arg0, arg1, arg2));
                         bsl::ut_check(g_data.at("bf_vps_op_write8_impl") == bsl::to_u64(arg2));
                     };
@@ -1466,81 +1466,81 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write16 invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write16 invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bf_uint16_t arg2{g_answer16};
-                bsl::ut_when{} = [&]() {
+                bf_uint16_t arg2{ANSWER16};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write16(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write16 invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write16 invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bf_uint16_t arg2{g_answer16};
-                bsl::ut_when{} = [&]() {
+                bf_uint16_t arg2{ANSWER16};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write16(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write16 invalid arg2"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write16 invalid arg2"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint16_t arg2{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write16(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write16 bf_vps_op_write16_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write16 bf_vps_op_write16_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bf_uint16_t arg2{g_answer16};
-                bsl::ut_when{} = [&]() {
+                bf_uint16_t arg2{ANSWER16};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_write16_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write16(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write16 success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write16 success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bf_uint16_t arg2{g_answer16};
-                bsl::ut_when{} = [&]() {
+                bf_uint16_t arg2{ANSWER16};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_write16(arg0, arg1, arg2));
                         bsl::ut_check(g_data.at("bf_vps_op_write16_impl") == bsl::to_u64(arg2));
                     };
@@ -1548,81 +1548,81 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write32 invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write32 invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bf_uint32_t arg2{g_answer32};
-                bsl::ut_when{} = [&]() {
+                bf_uint32_t arg2{ANSWER32};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write32(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write32 invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write32 invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bf_uint32_t arg2{g_answer32};
-                bsl::ut_when{} = [&]() {
+                bf_uint32_t arg2{ANSWER32};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write32(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write32 invalid arg2"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write32 invalid arg2"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint32_t arg2{bf_uint32_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write32(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write32 bf_vps_op_write32_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write32 bf_vps_op_write32_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bf_uint32_t arg2{g_answer32};
-                bsl::ut_when{} = [&]() {
+                bf_uint32_t arg2{ANSWER32};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_write32_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write32(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write32 success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write32 success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bf_uint32_t arg2{g_answer32};
-                bsl::ut_when{} = [&]() {
+                bf_uint32_t arg2{ANSWER32};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_write32(arg0, arg1, arg2));
                         bsl::ut_check(g_data.at("bf_vps_op_write32_impl") == bsl::to_u64(arg2));
                     };
@@ -1630,195 +1630,195 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write64 invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write64 invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bf_uint64_t arg2{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t arg2{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write64(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write64 invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write64 invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bf_uint64_t arg2{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t arg2{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write64(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write64 invalid arg2"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write64 invalid arg2"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint64_t arg2{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write64(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write64 bf_vps_op_write64_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write64 bf_vps_op_write64_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bf_uint64_t arg2{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t arg2{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_write64_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write64(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write64 success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write64 success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bf_uint64_t arg2{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t arg2{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_write64(arg0, arg1, arg2));
                         bsl::ut_check(g_data.at("bf_vps_op_write64_impl") == bsl::to_u64(arg2));
                     };
                 };
             };
         };
-        bsl::ut_scenario{"bf_vps_op_read_reg invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read_reg invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_reg_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read_reg_impl_reg0_out") = bsl::to_u64(g_answer64);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read_reg_impl_reg0_out") = bsl::to_u64(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read_reg(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read_reg bf_vps_op_read_reg_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read_reg bf_vps_op_read_reg_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_reg_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_read_reg_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_vps_op_read_reg_impl_reg0_out") = bsl::to_u64(g_answer64);
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_vps_op_read_reg_impl_reg0_out") = bsl::to_u64(ANSWER64);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_read_reg(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_read_reg success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_read_reg success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_reg_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_vps_op_read_reg_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_vps_op_read_reg(arg0, arg1) == g_answer64);
+                    g_data.at("bf_vps_op_read_reg_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_vps_op_read_reg(arg0, arg1) == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write_reg invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write_reg invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_reg_t arg1{};
-                bf_uint64_t arg2{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t arg2{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write_reg(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write_reg invalid arg2"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write_reg invalid arg2"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_reg_t arg1{};
                 bf_uint64_t arg2{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write_reg(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write_reg bf_vps_op_write_reg_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write_reg bf_vps_op_write_reg_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_reg_t arg1{};
-                bf_uint64_t arg2{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t arg2{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_write_reg_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_write_reg(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_write_reg success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_write_reg success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_reg_t arg1{};
-                bf_uint64_t arg2{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t arg2{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_write_reg(arg0, arg1, arg2));
                         bsl::ut_check(g_data.at("bf_vps_op_write_reg_impl") == arg2);
                     };
@@ -1826,141 +1826,141 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_run invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_run invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint16_t arg1{};
                 bf_uint16_t arg2{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_run(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_run invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_run invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{bf_uint16_t::failure()};
                 bf_uint16_t arg2{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_run(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_run invalid arg2"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_run invalid arg2"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint16_t arg2{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_run(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_run bf_vps_op_run_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_run bf_vps_op_run_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint16_t arg2{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_vps_op_run_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_run(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_run success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_run success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint16_t arg2{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_run(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_run_current bf_vps_op_run_current_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_run_current bf_vps_op_run_current_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_vps_op_run_current_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_run_current());
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_run_current success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_run_current success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_run_current());
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_advance_ip invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_advance_ip invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_advance_ip(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_advance_ip bf_vps_op_advance_ip_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_advance_ip bf_vps_op_advance_ip_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_vps_op_advance_ip_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_advance_ip(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_advance_ip success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_advance_ip success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_advance_ip(arg0));
                     };
                 };
@@ -1969,106 +1969,106 @@ namespace syscall
 
         bsl::ut_scenario{
             "bf_vps_op_advance_ip_and_run_current bf_vps_op_advance_ip_and_run_current_impl "
-            "fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+            "fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_vps_op_advance_ip_and_run_current_impl") =
                         BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_advance_ip_and_run_current());
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_advance_ip_and_run_current success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_advance_ip_and_run_current success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_advance_ip_and_run_current());
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_promote invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_promote invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_promote(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_promote bf_vps_op_promote_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_promote bf_vps_op_promote_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_vps_op_promote_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_promote(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_promote success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_promote success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_promote(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_clear_vps invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_clear_vps invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_clear_vps(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_clear_vps bf_vps_op_clear_vps_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_clear_vps bf_vps_op_clear_vps_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_vps_op_clear_vps_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_vps_op_clear_vps(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_vps_op_clear_vps success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_vps_op_clear_vps success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_vps_op_clear_vps(arg0));
                     };
                 };
@@ -2079,107 +2079,107 @@ namespace syscall
         // bf_intrinsic_ops
         // ---------------------------------------------------------------------
 
-        bsl::ut_scenario{"bf_intrinsic_op_rdmsr invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_rdmsr invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{bf_uint32_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_intrinsic_op_rdmsr_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_intrinsic_op_rdmsr_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_rdmsr(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_rdmsr bf_intrinsic_op_rdmsr_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_rdmsr bf_intrinsic_op_rdmsr_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_intrinsic_op_rdmsr_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_intrinsic_op_rdmsr_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_intrinsic_op_rdmsr_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_rdmsr(arg0));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_rdmsr success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_rdmsr success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_intrinsic_op_rdmsr_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_intrinsic_op_rdmsr(arg0) == g_answer64);
+                    g_data.at("bf_intrinsic_op_rdmsr_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_intrinsic_op_rdmsr(arg0) == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_wrmsr invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_wrmsr invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{bf_uint32_t::failure()};
-                bf_uint64_t arg1{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t arg1{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_wrmsr(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_wrmsr invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_wrmsr invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_wrmsr(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_wrmsr bf_intrinsic_op_wrmsr_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_wrmsr bf_intrinsic_op_wrmsr_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{};
-                bf_uint64_t arg1{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t arg1{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_intrinsic_op_wrmsr_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_wrmsr(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_wrmsr success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_wrmsr success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{};
-                bf_uint64_t arg1{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t arg1{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_intrinsic_op_wrmsr(arg0, arg1));
                         bsl::ut_check(g_data.at("bf_intrinsic_op_wrmsr_impl") == arg1);
                     };
@@ -2187,190 +2187,190 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invlpga invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invlpga invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{bf_uint64_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_invlpga(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invlpga invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invlpga invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_invlpga(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invlpga bf_intrinsic_op_invlpga_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invlpga bf_intrinsic_op_invlpga_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_intrinsic_op_invlpga_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_invlpga(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invlpga success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invlpga success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_intrinsic_op_invlpga(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invept invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invept invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{bf_uint64_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_invept(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invept invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invept invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_invept(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invept bf_intrinsic_op_invept_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invept bf_intrinsic_op_invept_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_intrinsic_op_invept_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_invept(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invept success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invept success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_intrinsic_op_invept(arg0, arg1));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invvpid invalid arg0"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invvpid invalid arg0"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{bf_uint64_t::failure()};
                 bf_uint16_t arg1{};
                 bf_uint64_t arg2{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_invvpid(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invvpid invalid arg1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invvpid invalid arg1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint16_t arg1{bf_uint16_t::failure()};
                 bf_uint64_t arg2{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_invvpid(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invvpid invalid arg2"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invvpid invalid arg2"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint64_t arg2{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_invvpid(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invvpid bf_intrinsic_op_invvpid_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invvpid bf_intrinsic_op_invvpid_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint64_t arg2{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_errc.at("bf_intrinsic_op_invvpid_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_intrinsic_op_invvpid(arg0, arg1, arg2));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_intrinsic_op_invvpid success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_intrinsic_op_invvpid success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint64_t arg2{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_intrinsic_op_invvpid(arg0, arg1, arg2));
                     };
                 };
@@ -2381,31 +2381,31 @@ namespace syscall
         // bf_mem_ops
         // ---------------------------------------------------------------------
 
-        bsl::ut_scenario{"bf_mem_op_alloc_page invalid phys"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_page invalid phys"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_mem_op_alloc_page(phys) == nullptr);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_page bf_mem_op_alloc_page_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_page bf_mem_op_alloc_page_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_mem_op_alloc_page_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_mem_op_alloc_page(phys) == nullptr);
                         bsl::ut_check(sys.bf_mem_op_alloc_page() == nullptr);
                     };
@@ -2413,26 +2413,26 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_page success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_page success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
                 void *ptr{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = g_answer64;
+                    g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = ANSWER64;
 
                     ptr = sys.bf_mem_op_alloc_page(phys);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(ptr != nullptr);
                         bsl::ut_check(sys.bf_mem_op_free_page(ptr));
                     };
                 };
 
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     ptr = sys.bf_mem_op_alloc_page();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(ptr != nullptr);
                         bsl::ut_check(sys.bf_mem_op_free_page(ptr));
                     };
@@ -2440,102 +2440,102 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_free_page invalid ptr"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_free_page invalid ptr"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 void *ptr{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_mem_op_free_page(ptr));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_free_page failure/success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_free_page failure/success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 void *ptr{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = g_answer64;
+                    g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = ANSWER64;
 
                     ptr = sys.bf_mem_op_alloc_page();
                     g_errc.at("bf_mem_op_free_page_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_mem_op_free_page(ptr));
                     };
 
                     g_errc.at("bf_mem_op_free_page_impl") = BF_STATUS_SUCCESS;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_mem_op_free_page(ptr));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid size #1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid size #1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t size{bf_uint64_t::failure()};
                 bf_uint64_t phys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid size #2"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid size #2"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t size{};
                 bf_uint64_t phys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid phys"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_huge invalid phys"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t size{g_answer64};
+                bf_uint64_t size{ANSWER64};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_huge bf_mem_op_alloc_huge_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_huge bf_mem_op_alloc_huge_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t size{g_answer64};
+                bf_uint64_t size{ANSWER64};
                 bf_uint64_t phys{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_mem_op_alloc_huge_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                         bsl::ut_check(sys.bf_mem_op_alloc_huge(size) == nullptr);
                     };
@@ -2543,27 +2543,27 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_huge success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_huge success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t size{g_answer64};
+                bf_uint64_t size{ANSWER64};
                 bf_uint64_t phys{};
                 void *ptr{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = g_answer64;
+                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = ANSWER64;
 
                     ptr = sys.bf_mem_op_alloc_huge(size, phys);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(ptr != nullptr);
                         bsl::ut_check(sys.bf_mem_op_free_huge(ptr));
                     };
                 };
 
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     ptr = sys.bf_mem_op_alloc_huge(size);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(ptr != nullptr);
                         bsl::ut_check(sys.bf_mem_op_free_huge(ptr));
                     };
@@ -2571,82 +2571,82 @@ namespace syscall
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_free_huge invalid ptr"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_free_huge invalid ptr"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 void *ptr{};
-                bsl::ut_when{} = [&]() {
-                    bsl::ut_then{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_mem_op_free_huge(ptr));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_free_huge failure/success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_free_huge failure/success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t size{g_answer64};
+                bf_uint64_t size{ANSWER64};
                 void *ptr{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = g_answer64;
+                    g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = ANSWER64;
 
                     ptr = sys.bf_mem_op_alloc_huge(size);
                     g_errc.at("bf_mem_op_free_huge_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!sys.bf_mem_op_free_huge(ptr));
                     };
 
                     g_errc.at("bf_mem_op_free_huge_impl") = BF_STATUS_SUCCESS;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_mem_op_free_huge(ptr));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_heap invalid size"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_heap invalid size"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t size{bf_uint64_t::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_mem_op_alloc_heap_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_mem_op_alloc_heap_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_mem_op_alloc_heap(size) == nullptr);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_heap bf_mem_op_alloc_heap_impl fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_heap bf_mem_op_alloc_heap_impl fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t size{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t size{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_mem_op_alloc_heap_impl") = BF_STATUS_FAILURE_UNKNOWN;
-                    g_data.at("bf_mem_op_alloc_heap_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_mem_op_alloc_heap_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(sys.bf_mem_op_alloc_heap(size) == nullptr);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_mem_op_alloc_heap success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_mem_op_alloc_heap success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t size{g_answer64};
-                bsl::ut_when{} = [&]() {
+                bf_uint64_t size{ANSWER64};
+                bsl::ut_when{} = [&]() noexcept {
                     g_errc.clear();
                     g_data.clear();
-                    g_data.at("bf_mem_op_alloc_heap_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&]() {
+                    g_data.at("bf_mem_op_alloc_heap_impl_reg0_out") = ANSWER64;
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(nullptr != sys.bf_mem_op_alloc_heap(size));
                     };
                 };
@@ -2657,473 +2657,473 @@ namespace syscall
         // direct map helpers
         // ---------------------------------------------------------------------
 
-        bsl::ut_scenario{"bf_read_phys invalid phys #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_read_phys invalid phys #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint8>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys invalid phys #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_read_phys invalid phys #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint8>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys address out of range"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_read_phys address out of range"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_bad_addr};
-                bsl::ut_then{} = [&]() {
+                bf_uint64_t phys{BAD_ADDR};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint8>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_read_phys success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint8_t val{};
                 bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
-                bsl::ut_when{} = [&]() {
-                    bsl::ut_required_step(sys.bf_write_phys<bsl::uint8>(phys, g_answer8));
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_read_phys<bsl::uint8>(phys) == g_answer8);
+                bsl::ut_when{} = [&]() noexcept {
+                    bsl::ut_required_step(sys.bf_write_phys<bsl::uint8>(phys, ANSWER8));
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_read_phys<bsl::uint8>(phys) == ANSWER8);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys invalid phys #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_read_phys invalid phys #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint16>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys invalid phys #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_read_phys invalid phys #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint16>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys address out of range"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_read_phys address out of range"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_bad_addr};
-                bsl::ut_then{} = [&]() {
+                bf_uint64_t phys{BAD_ADDR};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint16>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_read_phys success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint16_t val{};
                 bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
-                bsl::ut_when{} = [&]() {
-                    bsl::ut_required_step(sys.bf_write_phys<bsl::uint16>(phys, g_answer16));
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_read_phys<bsl::uint16>(phys) == g_answer16);
+                bsl::ut_when{} = [&]() noexcept {
+                    bsl::ut_required_step(sys.bf_write_phys<bsl::uint16>(phys, ANSWER16));
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_read_phys<bsl::uint16>(phys) == ANSWER16);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys invalid phys #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_read_phys invalid phys #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint32>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys invalid phys #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_read_phys invalid phys #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint32>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys address out of range"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_read_phys address out of range"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_bad_addr};
-                bsl::ut_then{} = [&]() {
+                bf_uint64_t phys{BAD_ADDR};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint32>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_read_phys success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint32_t val{};
                 bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
-                bsl::ut_when{} = [&]() {
-                    bsl::ut_required_step(sys.bf_write_phys<bsl::uint32>(phys, g_answer32));
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_read_phys<bsl::uint32>(phys) == g_answer32);
+                bsl::ut_when{} = [&]() noexcept {
+                    bsl::ut_required_step(sys.bf_write_phys<bsl::uint32>(phys, ANSWER32));
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_read_phys<bsl::uint32>(phys) == ANSWER32);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys invalid phys #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_read_phys invalid phys #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint64>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys invalid phys #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_read_phys invalid phys #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint64>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys address out of range"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_read_phys address out of range"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_bad_addr};
-                bsl::ut_then{} = [&]() {
+                bf_uint64_t phys{BAD_ADDR};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint64>(phys));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_read_phys success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_read_phys success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t val{};
                 bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
-                bsl::ut_when{} = [&]() {
-                    bsl::ut_required_step(sys.bf_write_phys<bsl::uint64>(phys, g_answer64));
-                    bsl::ut_then{} = [&]() {
-                        bsl::ut_check(sys.bf_read_phys<bsl::uint64>(phys) == g_answer64);
+                bsl::ut_when{} = [&]() noexcept {
+                    bsl::ut_required_step(sys.bf_write_phys<bsl::uint64>(phys, ANSWER64));
+                    bsl::ut_then{} = [&]() noexcept {
+                        bsl::ut_check(sys.bf_read_phys<bsl::uint64>(phys) == ANSWER64);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid phys #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid phys #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bf_uint8_t val{g_answer8};
-                bsl::ut_then{} = [&]() {
+                bf_uint8_t val{ANSWER8};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint8>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid phys #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid phys #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bf_uint8_t val{g_answer8};
-                bsl::ut_then{} = [&]() {
+                bf_uint8_t val{ANSWER8};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint8>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid val"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid val"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_answer64};
+                bf_uint64_t phys{ANSWER64};
                 bf_uint8_t val{bf_uint8_t::failure()};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint8>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys address out of range"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_write_phys address out of range"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_bad_addr};
-                bf_uint8_t val{g_answer8};
-                bsl::ut_then{} = [&]() {
+                bf_uint64_t phys{BAD_ADDR};
+                bf_uint8_t val{ANSWER8};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint8>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_write_phys success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint8_t val{g_answer8};
+                bf_uint8_t val{ANSWER8};
                 bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint8>(phys, val));
-                    bsl::ut_check(sys.bf_read_phys<bsl::uint8>(phys) == g_answer8);
+                    bsl::ut_check(sys.bf_read_phys<bsl::uint8>(phys) == ANSWER8);
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid phys #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid phys #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bf_uint16_t val{g_answer16};
-                bsl::ut_then{} = [&]() {
+                bf_uint16_t val{ANSWER16};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint16>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid phys #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid phys #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bf_uint16_t val{g_answer16};
-                bsl::ut_then{} = [&]() {
+                bf_uint16_t val{ANSWER16};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint16>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid val"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid val"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_answer64};
+                bf_uint64_t phys{ANSWER64};
                 bf_uint16_t val{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint16>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys address out of range"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_write_phys address out of range"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_bad_addr};
-                bf_uint16_t val{g_answer16};
-                bsl::ut_then{} = [&]() {
+                bf_uint64_t phys{BAD_ADDR};
+                bf_uint16_t val{ANSWER16};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint16>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_write_phys success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint16_t val{g_answer16};
+                bf_uint16_t val{ANSWER16};
                 bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint16>(phys, val));
-                    bsl::ut_check(sys.bf_read_phys<bsl::uint16>(phys) == g_answer16);
+                    bsl::ut_check(sys.bf_read_phys<bsl::uint16>(phys) == ANSWER16);
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid phys #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid phys #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bf_uint32_t val{g_answer32};
-                bsl::ut_then{} = [&]() {
+                bf_uint32_t val{ANSWER32};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint32>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid phys #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid phys #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bf_uint32_t val{g_answer32};
-                bsl::ut_then{} = [&]() {
+                bf_uint32_t val{ANSWER32};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint32>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid val"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid val"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_answer64};
+                bf_uint64_t phys{ANSWER64};
                 bf_uint32_t val{bf_uint32_t::failure()};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint32>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys address out of range"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_write_phys address out of range"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_bad_addr};
-                bf_uint32_t val{g_answer32};
-                bsl::ut_then{} = [&]() {
+                bf_uint64_t phys{BAD_ADDR};
+                bf_uint32_t val{ANSWER32};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint32>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_write_phys success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint32_t val{g_answer32};
+                bf_uint32_t val{ANSWER32};
                 bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint32>(phys, val));
-                    bsl::ut_check(sys.bf_read_phys<bsl::uint32>(phys) == g_answer32);
+                    bsl::ut_check(sys.bf_read_phys<bsl::uint32>(phys) == ANSWER32);
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid phys #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid phys #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bf_uint64_t val{g_answer64};
-                bsl::ut_then{} = [&]() {
+                bf_uint64_t val{ANSWER64};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint64>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid phys #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid phys #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bf_uint64_t val{g_answer64};
-                bsl::ut_then{} = [&]() {
+                bf_uint64_t val{ANSWER64};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint64>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys invalid val"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_write_phys invalid val"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_answer64};
+                bf_uint64_t phys{ANSWER64};
                 bf_uint64_t val{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint64>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys address out of range"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_write_phys address out of range"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_bad_addr};
-                bf_uint64_t val{g_answer64};
-                bsl::ut_then{} = [&]() {
+                bf_uint64_t phys{BAD_ADDR};
+                bf_uint64_t val{ANSWER64};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint64>(phys, val));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_write_phys success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_write_phys success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t val{g_answer64};
+                bf_uint64_t val{ANSWER64};
                 bf_uint64_t phys{bsl::to_umax(&val) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint64>(phys, val));
-                    bsl::ut_check(sys.bf_read_phys<bsl::uint64>(phys) == g_answer64);
+                    bsl::ut_check(sys.bf_read_phys<bsl::uint64>(phys) == ANSWER64);
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_virt_to_phys invalid virt"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_virt_to_phys invalid virt"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 void *virt{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_virt_to_phys(virt));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_virt_to_phys overflow"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_virt_to_phys overflow"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                void *virt{bsl::to_ptr<void *>(g_answer64)};
-                bsl::ut_then{} = [&]() {
+                void *virt{bsl::to_ptr<void *>(ANSWER64)};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!sys.bf_virt_to_phys(virt));
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_virt_to_phys success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_virt_to_phys success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 void *virt{};
                 bf_uint64_t phys{bsl::to_umax(&virt) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(sys.bf_virt_to_phys(&virt) == phys);
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_phys_to_virt invalid phys #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_phys_to_virt invalid phys #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(sys.bf_phys_to_virt(phys) == nullptr);
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_phys_to_virt invalid phys #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"bf_phys_to_virt invalid phys #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(sys.bf_phys_to_virt(phys) == nullptr);
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_phys_to_virt overflow"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_phys_to_virt overflow"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
-                bf_uint64_t phys{g_bad_addr};
-                bsl::ut_then{} = [&]() {
+                bf_uint64_t phys{BAD_ADDR};
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(sys.bf_phys_to_virt(phys) == nullptr);
                 };
             };
         };
 
-        bsl::ut_scenario{"bf_phys_to_virt success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"bf_phys_to_virt success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bf_syscall_t sys{};
                 void *virt{};
                 bf_uint64_t phys{bsl::to_umax(&virt) - HYPERVISOR_EXT_DIRECT_MAP_ADDR};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(sys.bf_phys_to_virt(phys) == &virt);
                 };
             };

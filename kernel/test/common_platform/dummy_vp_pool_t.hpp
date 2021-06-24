@@ -55,7 +55,7 @@ namespace mk
         ///     function will return bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
-        is_assigned_to_vm(tls_t &tls, bsl::safe_uint16 const &vmid) const &noexcept
+        is_assigned_to_vm(tls_t &tls, bsl::safe_uint16 const &vmid) const noexcept
             -> bsl::safe_uint16
         {
             if (tls.test_ret == errc_vp_pool_failure) {

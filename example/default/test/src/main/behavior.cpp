@@ -117,87 +117,87 @@ namespace example
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"bootstrap_entry success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"bootstrap_entry success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     g_bootstrap.set_dispatch(bsl::errc_failure);
                     bootstrap_entry({});
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"bootstrap_entry success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"bootstrap_entry success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     g_bootstrap.set_dispatch(bsl::errc_success);
                     bootstrap_entry({});
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"fail_entry success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"fail_entry success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     g_fail.set_dispatch(bsl::errc_failure);
                     fail_entry({}, {});
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"fail_entry success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"fail_entry success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     g_fail.set_dispatch(bsl::errc_success);
                     fail_entry({}, {});
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"vmexit_entry success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"vmexit_entry success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     g_vmexit.set_dispatch(bsl::errc_failure);
                     vmexit_entry({}, {});
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"vmexit_entry success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"vmexit_entry success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     g_vmexit.set_dispatch(bsl::errc_success);
                     vmexit_entry({}, {});
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"main unsupported version"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"main unsupported version"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     syscall::g_bf_control_op_wait_impl_executed = {};
                     g_sys.set_initialize(bsl::errc_success);
@@ -208,7 +208,7 @@ namespace example
                     g_fail.set_initialize(bsl::errc_success);
                     g_vmexit.set_initialize(bsl::errc_success);
                     ext_main_entry({});
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                         bsl::ut_check(!syscall::g_bf_control_op_wait_impl_executed);
                     };
@@ -216,9 +216,9 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"main bf_syscall_t initialize fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"main bf_syscall_t initialize fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     syscall::g_bf_control_op_wait_impl_executed = {};
                     g_sys.set_initialize(bsl::errc_failure);
@@ -229,7 +229,7 @@ namespace example
                     g_fail.set_initialize(bsl::errc_success);
                     g_vmexit.set_initialize(bsl::errc_success);
                     ext_main_entry(syscall::BF_ALL_SPECS_SUPPORTED_VAL.get());
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                         bsl::ut_check(!syscall::g_bf_control_op_wait_impl_executed);
                     };
@@ -237,9 +237,9 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"main intrinsic_t initialize fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"main intrinsic_t initialize fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     syscall::g_bf_control_op_wait_impl_executed = {};
                     g_sys.set_initialize(bsl::errc_success);
@@ -250,7 +250,7 @@ namespace example
                     g_fail.set_initialize(bsl::errc_success);
                     g_vmexit.set_initialize(bsl::errc_success);
                     ext_main_entry(syscall::BF_ALL_SPECS_SUPPORTED_VAL.get());
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                         bsl::ut_check(!syscall::g_bf_control_op_wait_impl_executed);
                     };
@@ -258,9 +258,9 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"main vp_pool_t initialize fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"main vp_pool_t initialize fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     syscall::g_bf_control_op_wait_impl_executed = {};
                     g_sys.set_initialize(bsl::errc_success);
@@ -271,7 +271,7 @@ namespace example
                     g_fail.set_initialize(bsl::errc_success);
                     g_vmexit.set_initialize(bsl::errc_success);
                     ext_main_entry(syscall::BF_ALL_SPECS_SUPPORTED_VAL.get());
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                         bsl::ut_check(!syscall::g_bf_control_op_wait_impl_executed);
                     };
@@ -279,9 +279,9 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"main vps_pool_t initialize fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"main vps_pool_t initialize fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     syscall::g_bf_control_op_wait_impl_executed = {};
                     g_sys.set_initialize(bsl::errc_success);
@@ -292,7 +292,7 @@ namespace example
                     g_fail.set_initialize(bsl::errc_success);
                     g_vmexit.set_initialize(bsl::errc_success);
                     ext_main_entry(syscall::BF_ALL_SPECS_SUPPORTED_VAL.get());
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                         bsl::ut_check(!syscall::g_bf_control_op_wait_impl_executed);
                     };
@@ -300,9 +300,9 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"main bootstrap_t initialize fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"main bootstrap_t initialize fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     syscall::g_bf_control_op_wait_impl_executed = {};
                     g_sys.set_initialize(bsl::errc_success);
@@ -313,7 +313,7 @@ namespace example
                     g_fail.set_initialize(bsl::errc_success);
                     g_vmexit.set_initialize(bsl::errc_success);
                     ext_main_entry(syscall::BF_ALL_SPECS_SUPPORTED_VAL.get());
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                         bsl::ut_check(!syscall::g_bf_control_op_wait_impl_executed);
                     };
@@ -321,9 +321,9 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"main fail_t initialize fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"main fail_t initialize fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     syscall::g_bf_control_op_wait_impl_executed = {};
                     g_sys.set_initialize(bsl::errc_success);
@@ -334,7 +334,7 @@ namespace example
                     g_fail.set_initialize(bsl::errc_failure);
                     g_vmexit.set_initialize(bsl::errc_success);
                     ext_main_entry(syscall::BF_ALL_SPECS_SUPPORTED_VAL.get());
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                         bsl::ut_check(!syscall::g_bf_control_op_wait_impl_executed);
                     };
@@ -342,9 +342,9 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"main vmexit_t initialize fails"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"main vmexit_t initialize fails"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     syscall::g_bf_control_op_wait_impl_executed = {};
                     g_sys.set_initialize(bsl::errc_success);
@@ -355,7 +355,7 @@ namespace example
                     g_fail.set_initialize(bsl::errc_success);
                     g_vmexit.set_initialize(bsl::errc_failure);
                     ext_main_entry(syscall::BF_ALL_SPECS_SUPPORTED_VAL.get());
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                         bsl::ut_check(!syscall::g_bf_control_op_wait_impl_executed);
                     };
@@ -363,9 +363,9 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"main success"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"main success"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     syscall::g_bf_control_op_exit_impl_executed = {};
                     syscall::g_bf_control_op_wait_impl_executed = {};
                     g_sys.set_initialize(bsl::errc_success);
@@ -376,7 +376,7 @@ namespace example
                     g_fail.set_initialize(bsl::errc_success);
                     g_vmexit.set_initialize(bsl::errc_success);
                     ext_main_entry(syscall::BF_ALL_SPECS_SUPPORTED_VAL.get());
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(!syscall::g_bf_control_op_exit_impl_executed);
                         bsl::ut_check(syscall::g_bf_control_op_wait_impl_executed);
                     };

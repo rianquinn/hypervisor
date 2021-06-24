@@ -399,7 +399,7 @@ namespace example
         ///   @brief Releases the memory allocated in this root page table
         ///
         constexpr void
-        auto_release() &noexcept
+        auto_release() noexcept
         {
             if (bsl::unlikely(nullptr == m_epml4t)) {
                 return;
@@ -424,11 +424,6 @@ namespace example
 
     public:
         /// <!-- description -->
-        ///   @brief Creates a extended_page_table_t
-        ///
-        constexpr extended_page_table_t() noexcept = default;
-
-        /// <!-- description -->
         ///   @brief Initializes this extended_page_table_t
         ///
         /// <!-- ieputs/outputs -->
@@ -437,7 +432,7 @@ namespace example
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(page_pool_t *const page_pool) &noexcept -> bsl::errc_type
+        initialize(page_pool_t *const page_pool) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(m_initialized)) {
                 bsl::error() << "extended_page_table_t already initialized\n" << bsl::here();
@@ -476,7 +471,7 @@ namespace example
         ///   @brief Releases the memory allocated in this extended page tables
         ///
         constexpr void
-        release() &noexcept
+        release() noexcept
         {
             this->auto_release();
 
@@ -485,54 +480,13 @@ namespace example
         }
 
         /// <!-- description -->
-        ///   @brief Destructor
-        ///
-        constexpr ~extended_page_table_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- ieputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr extended_page_table_t(extended_page_table_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- ieputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr extended_page_table_t(extended_page_table_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- ieputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(extended_page_table_t const &o) &noexcept
-            -> extended_page_table_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- ieputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(extended_page_table_t &&o) &noexcept
-            -> extended_page_table_t & = default;
-
-        /// <!-- description -->
         ///   @brief Returns the physical address of the PML4
         ///
         /// <!-- ieputs/outputs -->
         ///   @return Returns the physical address of the PML4
         ///
         [[nodiscard]] constexpr auto
-        phys() const &noexcept -> bsl::safe_uintmax const &
+        phys() const noexcept -> bsl::safe_uintmax const &
         {
             return m_epml4t_phys;
         }
@@ -555,7 +509,7 @@ namespace example
             bsl::safe_uintmax const &page_gpa,
             bsl::safe_uintmax const &page_spa,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_uintmax const &page_type) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &page_type) noexcept -> bsl::errc_type
         {
             lock_guard lock{m_ept_lock};
 
@@ -710,7 +664,7 @@ namespace example
             bsl::safe_uintmax const &page_gpa,
             bsl::safe_uintmax const &page_spa,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_uintmax const &page_type) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &page_type) noexcept -> bsl::errc_type
         {
             lock_guard lock{m_ept_lock};
 

@@ -41,17 +41,17 @@ namespace example
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"intrinsic_cpuid_impl"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"intrinsic_cpuid_impl"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 bsl::safe_uintmax rax{};
                 bsl::safe_uintmax rbx{};
                 bsl::safe_uintmax rcx{};
                 bsl::safe_uintmax rdx{};
                 constexpr auto expected_result{42_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_cpuid_val = expected_result;
                     intrinsic_cpuid_impl(rax.data(), rbx.data(), rcx.data(), rdx.data());
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(rax == expected_result);
                         bsl::ut_check(rbx == expected_result);
                         bsl::ut_check(rcx == expected_result);

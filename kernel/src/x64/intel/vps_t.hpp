@@ -567,7 +567,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         set_ldtr_segment_descriptor(
-            intrinsic_t &intrinsic, loader::state_save_t const &state) &noexcept -> bsl::errc_type
+            intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -1400,7 +1400,7 @@ namespace mk
         ///
         template<typename T>
         constexpr void
-        dump(bsl::string_view const &str, bsl::safe_integral<T> const &val) const &noexcept
+        dump(bsl::string_view const &str, bsl::safe_integral<T> const &val) const noexcept
         {
             auto const *rowcolor{bsl::rst};
 
@@ -1450,7 +1450,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        initialize(bsl::safe_uint16 const &i) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(m_id)) {
                 bsl::error() << "vps_t already initialized\n" << bsl::here();
@@ -1488,7 +1488,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, page_pool_t &page_pool) &noexcept -> bsl::errc_type
+        release(tls_t &tls, page_pool_t &page_pool) noexcept -> bsl::errc_type
         {
             if (this->is_zombie()) {
                 return bsl::errc_success;
@@ -1536,7 +1536,7 @@ namespace mk
         ///   @return Returns the ID of this vps_t
         ///
         [[nodiscard]] constexpr auto
-        id() const &noexcept -> bsl::safe_uint16 const &
+        id() const noexcept -> bsl::safe_uint16 const &
         {
             return m_id;
         }
@@ -1558,7 +1558,7 @@ namespace mk
             intrinsic_t &intrinsic,
             page_pool_t &page_pool,
             bsl::safe_uint16 const &vpid,
-            bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
+            bsl::safe_uint16 const &ppid) noexcept -> bsl::safe_uint16
         {
             bsl::errc_type ret{};
 
@@ -1694,7 +1694,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        deallocate(tls_t &tls, page_pool_t &page_pool) &noexcept -> bsl::errc_type
+        deallocate(tls_t &tls, page_pool_t &page_pool) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
@@ -1760,7 +1760,7 @@ namespace mk
         ///     longer usable.
         ///
         constexpr void
-        zombify() &noexcept
+        zombify() noexcept
         {
             if (bsl::unlikely_assert(!m_id)) {
                 return;
@@ -1785,7 +1785,7 @@ namespace mk
         ///   @return Returns true if this vps_t is deallocated, false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_deallocated() const &noexcept -> bool
+        is_deallocated() const noexcept -> bool
         {
             return m_allocated == allocated_status_t::deallocated;
         }
@@ -1797,7 +1797,7 @@ namespace mk
         ///   @return Returns true if this vps_t is allocated, false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_allocated() const &noexcept -> bool
+        is_allocated() const noexcept -> bool
         {
             return m_allocated == allocated_status_t::allocated;
         }
@@ -1809,7 +1809,7 @@ namespace mk
         ///   @return Returns true if this vps_t is a zombie, false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_zombie() const &noexcept -> bool
+        is_zombie() const noexcept -> bool
         {
             return m_allocated == allocated_status_t::zombie;
         }
@@ -1824,7 +1824,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        set_active(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
+        set_active(tls_t &tls, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
@@ -1921,7 +1921,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        set_inactive(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
+        set_inactive(tls_t &tls, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "vps_t not initialized\n" << bsl::here();
@@ -2015,7 +2015,7 @@ namespace mk
         ///     bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
-        is_active(tls_t &tls) const &noexcept -> bsl::safe_uint16
+        is_active(tls_t &tls) const noexcept -> bsl::safe_uint16
         {
             bsl::discard(tls);
             return m_active_ppid;
@@ -2031,7 +2031,7 @@ namespace mk
         ///     false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_active_on_current_pp(tls_t &tls) const &noexcept -> bool
+        is_active_on_current_pp(tls_t &tls) const noexcept -> bool
         {
             return tls.ppid == m_active_ppid;
         }
@@ -2049,8 +2049,8 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
-        migrate(tls_t &tls, intrinsic_t &intrinsic, bsl::safe_uint16 const &ppid) &noexcept
+        [[nodiscard]] static constexpr auto
+        migrate(tls_t &tls, intrinsic_t &intrinsic, bsl::safe_uint16 const &ppid) noexcept
             -> bsl::errc_type
         {
             bsl::discard(tls);
@@ -2136,7 +2136,7 @@ namespace mk
         ///   @return Returns the ID of the VP this vp_t is assigned to
         ///
         [[nodiscard]] constexpr auto
-        assigned_vp() const &noexcept -> bsl::safe_uint16
+        assigned_vp() const noexcept -> bsl::safe_uint16
         {
             if (bsl::unlikely(syscall::BF_INVALID_ID == m_assigned_vpid)) {
                 return bsl::safe_uint16::failure();
@@ -2152,7 +2152,7 @@ namespace mk
         ///   @return Returns the ID of the PP this vp_t is assigned to
         ///
         [[nodiscard]] constexpr auto
-        assigned_pp() const &noexcept -> bsl::safe_uint16
+        assigned_pp() const noexcept -> bsl::safe_uint16
         {
             if (bsl::unlikely(syscall::BF_INVALID_ID == m_assigned_ppid)) {
                 return bsl::safe_uint16::failure();
@@ -2172,7 +2172,7 @@ namespace mk
         ///     and friends otherwise
         [[nodiscard]] constexpr auto
         state_save_to_vps(
-            tls_t &tls, intrinsic_t &intrinsic, loader::state_save_t const &state) &noexcept
+            tls_t &tls, intrinsic_t &intrinsic, loader::state_save_t const &state) noexcept
             -> bsl::errc_type
         {
             bsl::errc_type ret{};
@@ -2436,7 +2436,7 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         [[nodiscard]] constexpr auto
-        vps_to_state_save(tls_t &tls, intrinsic_t &intrinsic, loader::state_save_t &state) &noexcept
+        vps_to_state_save(tls_t &tls, intrinsic_t &intrinsic, loader::state_save_t &state) noexcept
             -> bsl::errc_type
         {
             bsl::errc_type ret{};
@@ -2706,7 +2706,7 @@ namespace mk
         ///
         template<typename FIELD_TYPE>
         [[nodiscard]] constexpr auto
-        read(tls_t &tls, intrinsic_t &intrinsic, bsl::safe_uintmax const &index) &noexcept
+        read(tls_t &tls, intrinsic_t &intrinsic, bsl::safe_uintmax const &index) noexcept
             -> bsl::safe_integral<FIELD_TYPE>
         {
             /// TODO:
@@ -2804,7 +2804,7 @@ namespace mk
             tls_t &tls,
             intrinsic_t &intrinsic,
             bsl::safe_uintmax const &index,
-            bsl::safe_integral<FIELD_TYPE> const &val) &noexcept -> bsl::errc_type
+            bsl::safe_integral<FIELD_TYPE> const &val) noexcept -> bsl::errc_type
         {
             /// TODO:
             /// - Implement a field type checker to make sure the user is
@@ -2964,7 +2964,7 @@ namespace mk
         ///   @return Returns the value of the requested field from the
         ///     VPS or bsl::safe_uintmax::failure() on failure.
         [[nodiscard]] constexpr auto
-        read_reg(tls_t &tls, intrinsic_t &intrinsic, syscall::bf_reg_t const reg) &noexcept
+        read_reg(tls_t &tls, intrinsic_t &intrinsic, syscall::bf_reg_t const reg) noexcept
             -> bsl::safe_uintmax
         {
             bsl::safe_uint64 index{bsl::safe_uint64::failure()};
@@ -3432,7 +3432,7 @@ namespace mk
             tls_t &tls,
             intrinsic_t &intrinsic,
             syscall::bf_reg_t const reg,
-            bsl::safe_uintmax const &val) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &val) noexcept -> bsl::errc_type
         {
             bsl::safe_uint64 index{bsl::safe_uint64::failure()};
 
@@ -3937,7 +3937,7 @@ namespace mk
         ///   @return Returns the VMExit reason on success, or
         ///
         [[nodiscard]] constexpr auto
-        run(tls_t &tls, intrinsic_t &intrinsic, vmexit_log_t &log) &noexcept -> bsl::safe_uintmax
+        run(tls_t &tls, intrinsic_t &intrinsic, vmexit_log_t &log) noexcept -> bsl::safe_uintmax
         {
             bsl::errc_type ret{};
             constexpr auto invalid_exit_reason{0xFFFFFFFF00000000_umax};
@@ -4033,7 +4033,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        advance_ip(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
+        advance_ip(tls_t &tls, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
             bsl::safe_uint64 rip{};
@@ -4106,7 +4106,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        clear(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
+        clear(tls_t &tls, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -4170,7 +4170,7 @@ namespace mk
         ///   @param intrinsic the intrinsics to use
         ///
         constexpr void
-        dump(tls_t &tls, intrinsic_t &intrinsic) const &noexcept
+        dump(tls_t &tls, intrinsic_t &intrinsic) const noexcept
         {
             bsl::discard(tls);
 

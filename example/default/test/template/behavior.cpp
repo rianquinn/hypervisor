@@ -56,30 +56,66 @@ namespace example
     tests() noexcept -> bsl::exit_code
     {
         /// NOTE:
-        /// - The BSL provides support for behavior driven unit tests.
+        /// - The tests() function is executed both at compile-time and at
+        ///   runtime. This is done using the following at the bottom of this
+        ///   file.
+        ///
+        ///   static_assert(example::tests() == bsl::ut_success());
+        ///   return example::tests();
+        ///
+        /// - Anything executed in a static_assert is executed at compile-time
+        ///   while the other call is your typical runtime call.
+        ///
+
+        /// NOTE:
+        /// - BSL unit tests use behavioral driven unit testing.
         ///   https://en.wikipedia.org/wiki/Behavior-driven_development
+        ///
+        /// - All of these calls are syntactic sugar, meaning they do
+        ///   absolutely nothing, except to ensure you are setting up your
+        ///   tests using behavioral driven methods. The actual work is
+        ///   performed by the following:
+        ///   - bsl::ut_check() - used inside bsl::ut_then, and is used to
+        ///     verify the results of your unit test
+        ///   - bsl::ut_required_step() - used inside of bsl::ut_when, and
+        ///     is used to verify that your unit test's set up is correct.
+        ///
+
+        bsl::ut_scenario{"this is what I am testing"} = []() noexcept {
+            bsl::ut_given{"given the following"} = []() noexcept {
+                /// add variables here
+                bsl::ut_when{"when we do the following"} = [&]() noexcept {
+                    /// add function calls here
+                    bsl::ut_then{"we expect the following"} = [&]() noexcept {
+                        /// add results checking here
+                    };
+                };
+            };
+        };
+
+        /// NOTE:
         /// - There are a couple of different ways to do this. Once way
         ///   is to group tests under the same scenario as follows:
         ///
 
-        bsl::ut_scenario{"verify +="} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"verify +="} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 constexpr auto data1{42_umax};
                 bsl::safe_uintmax data2{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     data2 += data1;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{"adds correctly"} = [&]() noexcept {
                         bsl::ut_check(data2 == data1);
                     };
                 };
             };
 
-            bsl::ut_given_at_runtime{} = []() {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto data1{42_umax};
                 auto data2{bsl::safe_uintmax::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     data2 += data1;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{"preserves the error flag"} = [&]() noexcept {
                         bsl::ut_check(!data2);
                     };
                 };
@@ -96,26 +132,26 @@ namespace example
         ///   are only changing one thing (or even a single character)
         ///
 
-        bsl::ut_scenario{"verify += adds correctly"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"verify += adds correctly"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 constexpr auto data1{42_umax};
                 bsl::safe_uintmax data2{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     data2 += data1;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(data2 == data1);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"verify += preserves the error flag"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"verify += preserves the error flag"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto data1{42_umax};
                 auto data2{bsl::safe_uintmax::failure()};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     data2 += data1;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!data2);
                     };
                 };
@@ -131,17 +167,17 @@ namespace example
         ///   was no additional action to take.
         ///
 
-        bsl::ut_scenario{"test something at runtime only"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"test something at runtime only"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto val{42_umax};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(runtime_only_function_that_knows_all(val));
                 };
             };
 
-            bsl::ut_given_at_runtime{} = []() {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto val{23_umax};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!runtime_only_function_that_knows_all(val));
                 };
             };
@@ -157,32 +193,15 @@ namespace example
         ///   block, and has a different name just to help with readability.
         ///
 
-        bsl::ut_scenario{"verify += preserves the error flag"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"verify += preserves the error flag"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 constexpr auto data1{42_umax};
                 auto data2{42_umax};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     data2 += data1;
                     bsl::ut_required_step(data2 == 84_umax);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(data2 - 42_umax == 42_umax);
-                    };
-                };
-            };
-        };
-
-        /// NOTE:
-        /// - All of the lambda functions accept a description, so if you
-        ///   want to be more descriptive about what you are testing, you
-        ///   can.
-        ///
-
-        bsl::ut_scenario{"this is what I am testing"} = []() {
-            bsl::ut_given{"given the following variables"} = []() {
-                bsl::ut_when{"when we do the following"} = [&]() mutable {
-                    bsl::ut_required_step(true);
-                    bsl::ut_then{"we expect the following"} = [&]() {
-                        bsl::ut_check(true);
                     };
                 };
             };
@@ -200,20 +219,20 @@ namespace example
         ///   when we do this, we need to add the mutable keyword.
         ///
 
-        bsl::ut_scenario{"verify two different conditions"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"verify two different conditions"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 constexpr auto data1{42_umax};
                 bsl::safe_uintmax data2{};
-                bsl::ut_when{} = [&, data2]() mutable {
+                bsl::ut_when{} = [&, data2]() mutable noexcept {
                     data2 += data1;
-                    bsl::ut_then{} = [&, data2]() {
+                    bsl::ut_then{} = [&, data2]() noexcept {
                         bsl::ut_check(data2 == data1);
                     };
                 };
 
-                bsl::ut_when{} = [&, data2]() mutable {
+                bsl::ut_when{} = [&, data2]() mutable noexcept {
                     data2 += (data1 * data1);
-                    bsl::ut_then{} = [&, data2]() {
+                    bsl::ut_then{} = [&, data2]() noexcept {
                         bsl::ut_check(data2 == (data1 * data1));
                     };
                 };
@@ -232,11 +251,11 @@ namespace example
         /// - Good luck!!!
         ///
 
-        bsl::ut_scenario{"description"} = []() {
-            bsl::ut_given{} = []() {
-                bsl::ut_when{} = [&]() mutable {
+        bsl::ut_scenario{"description"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(true);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(true);
                     };
                 };

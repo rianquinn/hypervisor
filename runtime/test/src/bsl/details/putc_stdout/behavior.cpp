@@ -40,9 +40,9 @@ namespace mk
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"putc_stdout executes"} = []() {
-            bsl::ut_given{} = []() {
-                bsl::ut_then{} = []() mutable {
+        bsl::ut_scenario{"putc_stdout executes"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
+                bsl::ut_then{} = []()  noexcept {
                     bsl::details::ut_putc_stdout('*');
                 };
             };

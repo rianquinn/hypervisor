@@ -40,44 +40,44 @@ namespace example
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"initialize fails"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize fails"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     intrinsic.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!intrinsic.initialize(gs, tls));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"initialize success"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize success"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(intrinsic.initialize(gs, tls));
                 };
             };
         };
 
-        bsl::ut_scenario{"release executes"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"release executes"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     intrinsic.release(gs, tls);
                 };
             };
         };
 
-        bsl::ut_scenario{"cpuid"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"cpuid"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 intrinsic_t intrinsic{};
                 constexpr auto expected_result{0x1234567800000042_u64};
                 constexpr auto eax{0x42_u32};
@@ -88,10 +88,10 @@ namespace example
                 auto rbx{0x1234567800000000_u64};
                 auto rcx{0x1234567800000000_u64};
                 auto rdx{0x1234567800000000_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     intrinsic.set_cpuid(eax, ebx, ecx, edx);
                     intrinsic.cpuid(rax, rbx, rcx, rdx);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(rax == expected_result);
                         bsl::ut_check(rbx == expected_result);
                         bsl::ut_check(rcx == expected_result);

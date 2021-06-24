@@ -40,72 +40,72 @@ namespace example
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"initialize fails"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize fails"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     tls.test_ret = bsl::errc_failure;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vps.initialize(gs, tls, sys, intrinsic, {}));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"initialize success"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize success"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(vps.initialize(gs, tls, sys, intrinsic, {}));
                 };
             };
         };
 
-        bsl::ut_scenario{"release executes"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"release executes"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
 
-        bsl::ut_scenario{"allocate fails"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate fails"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     tls.test_ret = bsl::errc_failure;
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"allocate success"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate success"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                 };
             };

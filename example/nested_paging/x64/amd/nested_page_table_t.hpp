@@ -399,7 +399,7 @@ namespace example
         ///   @brief Releases the memory allocated in this root page table
         ///
         constexpr void
-        auto_release() &noexcept
+        auto_release() noexcept
         {
             if (bsl::unlikely(nullptr == m_npml4t)) {
                 return;
@@ -424,11 +424,6 @@ namespace example
 
     public:
         /// <!-- description -->
-        ///   @brief Creates a nested_page_table_t
-        ///
-        constexpr nested_page_table_t() noexcept = default;
-
-        /// <!-- description -->
         ///   @brief Initializes this nested_page_table_t
         ///
         /// <!-- inputs/outputs -->
@@ -437,7 +432,7 @@ namespace example
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(page_pool_t *const page_pool) &noexcept -> bsl::errc_type
+        initialize(page_pool_t *const page_pool) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(m_initialized)) {
                 bsl::error() << "nested_page_table_t already initialized\n" << bsl::here();
@@ -476,7 +471,7 @@ namespace example
         ///   @brief Releases the memory allocated in this nested page tables
         ///
         constexpr void
-        release() &noexcept
+        release() noexcept
         {
             this->auto_release();
 
@@ -485,54 +480,13 @@ namespace example
         }
 
         /// <!-- description -->
-        ///   @brief Destructor
-        ///
-        constexpr ~nested_page_table_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr nested_page_table_t(nested_page_table_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr nested_page_table_t(nested_page_table_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(nested_page_table_t const &o) &noexcept
-            -> nested_page_table_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(nested_page_table_t &&o) &noexcept
-            -> nested_page_table_t & = default;
-
-        /// <!-- description -->
         ///   @brief Returns the physical address of the PML4
         ///
         /// <!-- inputs/outputs -->
         ///   @return Returns the physical address of the PML4
         ///
         [[nodiscard]] constexpr auto
-        phys() const &noexcept -> bsl::safe_uintmax const &
+        phys() const noexcept -> bsl::safe_uintmax const &
         {
             return m_npml4t_phys;
         }
@@ -555,7 +509,7 @@ namespace example
             bsl::safe_uintmax const &page_gpa,
             bsl::safe_uintmax const &page_spa,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_uintmax const &page_type) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &page_type) noexcept -> bsl::errc_type
         {
             lock_guard lock{m_npt_lock};
 
@@ -745,7 +699,7 @@ namespace example
             bsl::safe_uintmax const &page_gpa,
             bsl::safe_uintmax const &page_spa,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_uintmax const &page_type) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &page_type) noexcept -> bsl::errc_type
         {
             lock_guard lock{m_npt_lock};
 

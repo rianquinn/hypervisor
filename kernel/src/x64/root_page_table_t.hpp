@@ -81,8 +81,8 @@ namespace mk
         ///     table.
         ///
         template<typename TABLE_CONCEPT>
-        [[nodiscard]] constexpr auto
-        get_last_index(TABLE_CONCEPT const *const table) const noexcept -> bsl::safe_uintmax
+        [[nodiscard]] static constexpr auto
+        get_last_index(TABLE_CONCEPT const *const table) noexcept -> bsl::safe_uintmax
         {
             constexpr auto disabled{0_umax};
 
@@ -108,9 +108,9 @@ namespace mk
         ///   @param last_index the index of the last present entry in the page
         ///     table being dumped.
         ///
-        constexpr void
+        static constexpr void
         output_decoration_and_index(
-            bsl::safe_uintmax const &index, bsl::safe_uintmax const &last_index) const noexcept
+            bsl::safe_uintmax const &index, bsl::safe_uintmax const &last_index) noexcept
         {
             bsl::print() << bsl::rst;
 
@@ -133,8 +133,8 @@ namespace mk
         ///   @param is_last_index true if the entry being outputted is the
         ///     last index in the table.
         ///
-        constexpr void
-        output_spacing(bool const is_last_index) const noexcept
+        static constexpr void
+        output_spacing(bool const is_last_index) noexcept
         {
             bsl::print() << bsl::rst;
 
@@ -155,8 +155,8 @@ namespace mk
         ///   @param entry the page table entry to output
         ///
         template<typename ENTRY_CONCEPT>
-        constexpr void
-        output_entry_and_flags(ENTRY_CONCEPT const *const entry) const noexcept
+        static constexpr void
+        output_entry_and_flags(ENTRY_CONCEPT const *const entry) noexcept
         {
             constexpr auto disabled{0_umax};
             bool add_comma{};
@@ -299,7 +299,7 @@ namespace mk
         dump_pml4t(page_pool_t &page_pool, pml4t_t const *const pml4t) const noexcept
         {
             constexpr auto disabled{0_umax};
-            bsl::safe_uintmax const last_index{this->get_last_index(pml4t)};
+            bsl::safe_uintmax const last_index{get_last_index(pml4t)};
 
             bsl::print() << bsl::blu << bsl::hex(m_pml4t_phys);
             bsl::print() << bsl::rst << bsl::endl;
@@ -309,20 +309,20 @@ namespace mk
                     continue;
                 }
 
-                this->output_decoration_and_index(elem.index, last_index);
+                output_decoration_and_index(elem.index, last_index);
 
                 if (disabled != elem.data->us) {
                     bsl::print() << bsl::blu;
-                    this->output_entry_and_flags(elem.data);
+                    output_entry_and_flags(elem.data);
                 }
                 else {
                     bsl::print() << bsl::blk;
-                    this->output_entry_and_flags(elem.data);
+                    output_entry_and_flags(elem.data);
                 }
 
                 if (disabled != elem.data->us) {
-                    this->dump_pdpt(
-                        page_pool, this->get_pdpt(page_pool, elem.data), elem.index == last_index);
+                    dump_pdpt(
+                        page_pool, get_pdpt(page_pool, elem.data), elem.index == last_index);
                 }
                 else {
                     bsl::touch();
@@ -340,7 +340,7 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         add_pdpt(tls_t &tls, page_pool_t &page_pool, pml4te_t *const pml4te) noexcept
             -> bsl::errc_type
         {
@@ -374,7 +374,7 @@ namespace mk
         ///   @param huge_pool the huge_pool_t to use
         ///   @param pml4te the pml4te_t to add a pdpt_t too
         ///
-        constexpr void
+        static constexpr void
         remove_pdpt(
             tls_t &tls,
             page_pool_t &page_pool,
@@ -382,16 +382,16 @@ namespace mk
             pml4te_t *const pml4te) noexcept
         {
             constexpr auto disabled{0_umax};
-            for (auto const elem : this->get_pdpt(page_pool, pml4te)->entries) {
+            for (auto const elem : get_pdpt(page_pool, pml4te)->entries) {
                 if (disabled != elem.data->p) {
-                    this->remove_pdt(tls, page_pool, huge_pool, elem.data);
+                    remove_pdt(tls, page_pool, huge_pool, elem.data);
                 }
                 else {
                     bsl::touch();
                 }
             }
 
-            page_pool.deallocate(tls, this->get_pdpt(page_pool, pml4te), ALLOCATE_TAG_PDPTS);
+            page_pool.deallocate(tls, get_pdpt(page_pool, pml4te), ALLOCATE_TAG_PDPTS);
         }
 
         /// <!-- description -->
@@ -403,7 +403,7 @@ namespace mk
         ///   @param pml4te the pml4te_t to get the pdpt_t from
         ///   @return A pointer to the requested pdpt_t
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         get_pdpt(page_pool_t &page_pool, pml4te_t *const pml4te) noexcept -> pdpt_t *
         {
             bsl::safe_uintmax entry_phys{pml4te->phys};
@@ -421,8 +421,8 @@ namespace mk
         ///   @param pml4te the pml4te_t to get the pdpt_t from
         ///   @return A pointer to the requested pdpt_t
         ///
-        [[nodiscard]] constexpr auto
-        get_pdpt(page_pool_t &page_pool, pml4te_t const *const pml4te) const noexcept
+        [[nodiscard]] static constexpr auto
+        get_pdpt(page_pool_t &page_pool, pml4te_t const *const pml4te) noexcept
             -> pdpt_t const *
         {
             bsl::safe_uintmax entry_phys{pml4te->phys};
@@ -456,27 +456,27 @@ namespace mk
         ///   @param is_pml4te_last_index true if the parent pml4te was the
         ///     last pml4te in the table
         ///
-        constexpr void
+        static constexpr void
         dump_pdpt(page_pool_t &page_pool, pdpt_t const *const pdpt, bool is_pml4te_last_index)
-            const noexcept
+            noexcept
         {
             constexpr auto disabled{0_umax};
-            auto const last_index{this->get_last_index(pdpt)};
+            auto const last_index{get_last_index(pdpt)};
 
             for (auto const elem : pdpt->entries) {
                 if (disabled == elem.data->p) {
                     continue;
                 }
 
-                this->output_spacing(is_pml4te_last_index);
-                this->output_decoration_and_index(elem.index, last_index);
+                output_spacing(is_pml4te_last_index);
+                output_decoration_and_index(elem.index, last_index);
 
                 bsl::print() << bsl::blu;
-                this->output_entry_and_flags(elem.data);
+                output_entry_and_flags(elem.data);
 
-                this->dump_pdt(
+                dump_pdt(
                     page_pool,
-                    this->get_pdt(page_pool, elem.data),
+                    get_pdt(page_pool, elem.data),
                     is_pml4te_last_index,
                     elem.index == last_index);
             }
@@ -492,7 +492,7 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         add_pdt(tls_t &tls, page_pool_t &page_pool, pdpte_t *const pdpte) noexcept -> bsl::errc_type
         {
             auto const *const table{page_pool.allocate(tls, ALLOCATE_TAG_PDTS)};
@@ -525,7 +525,7 @@ namespace mk
         ///   @param huge_pool the huge_pool_t to use
         ///   @param pdpte the pdpte_t to add a pdt_t too
         ///
-        constexpr void
+        static constexpr void
         remove_pdt(
             tls_t &tls,
             page_pool_t &page_pool,
@@ -533,16 +533,16 @@ namespace mk
             pdpte_t *const pdpte) noexcept
         {
             constexpr auto disabled{0_umax};
-            for (auto const elem : this->get_pdt(page_pool, pdpte)->entries) {
+            for (auto const elem : get_pdt(page_pool, pdpte)->entries) {
                 if (disabled != elem.data->p) {
-                    this->remove_pt(tls, page_pool, huge_pool, elem.data);
+                    remove_pt(tls, page_pool, huge_pool, elem.data);
                 }
                 else {
                     bsl::touch();
                 }
             }
 
-            page_pool.deallocate(tls, this->get_pdt(page_pool, pdpte), ALLOCATE_TAG_PDTS);
+            page_pool.deallocate(tls, get_pdt(page_pool, pdpte), ALLOCATE_TAG_PDTS);
         }
 
         /// <!-- description -->
@@ -554,7 +554,7 @@ namespace mk
         ///   @param page_pool the page_pool_t to use
         ///   @return A pointer to the requested pdt_t
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         get_pdt(page_pool_t &page_pool, pdpte_t *const pdpte) noexcept -> pdt_t *
         {
             bsl::safe_uintmax entry_phys{pdpte->phys};
@@ -572,8 +572,8 @@ namespace mk
         ///   @param page_pool the page_pool_t to use
         ///   @return A pointer to the requested pdt_t
         ///
-        [[nodiscard]] constexpr auto
-        get_pdt(page_pool_t &page_pool, pdpte_t const *const pdpte) const noexcept -> pdt_t const *
+        [[nodiscard]] static constexpr auto
+        get_pdt(page_pool_t &page_pool, pdpte_t const *const pdpte) noexcept -> pdt_t const *
         {
             bsl::safe_uintmax entry_phys{pdpte->phys};
             entry_phys <<= HYPERVISOR_PAGE_SHIFT;
@@ -608,14 +608,14 @@ namespace mk
         ///   @param is_pdpte_last_index true if the parent pdpte was the
         ///     last pdpte in the table
         ///
-        constexpr void
+        static constexpr void
         dump_pdt(
             page_pool_t &page_pool,
             pdt_t const *const pdt,
             bool is_pml4te_last_index,
-            bool is_pdpte_last_index) const noexcept
+            bool is_pdpte_last_index) noexcept
         {
-            bsl::safe_uintmax const last_index{this->get_last_index(pdt)};
+            bsl::safe_uintmax const last_index{get_last_index(pdt)};
 
             constexpr auto disabled{0_umax};
             for (auto const elem : pdt->entries) {
@@ -623,15 +623,15 @@ namespace mk
                     continue;
                 }
 
-                this->output_spacing(is_pml4te_last_index);
-                this->output_spacing(is_pdpte_last_index);
-                this->output_decoration_and_index(elem.index, last_index);
+                output_spacing(is_pml4te_last_index);
+                output_spacing(is_pdpte_last_index);
+                output_decoration_and_index(elem.index, last_index);
 
                 bsl::print() << bsl::blu;
-                this->output_entry_and_flags(elem.data);
+                output_entry_and_flags(elem.data);
 
-                this->dump_pt(
-                    this->get_pt(page_pool, elem.data),
+                dump_pt(
+                    get_pt(page_pool, elem.data),
                     is_pml4te_last_index,
                     is_pdpte_last_index,
                     elem.index == last_index);
@@ -648,7 +648,7 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         add_pt(tls_t &tls, page_pool_t &page_pool, pdte_t *const pdte) noexcept -> bsl::errc_type
         {
             auto const *const table{page_pool.allocate(tls, ALLOCATE_TAG_PTS)};
@@ -681,12 +681,12 @@ namespace mk
         ///   @param huge_pool the huge_pool_t to use
         ///   @param pdte the pdte_t to add a pt_t too
         ///
-        constexpr void
+        static constexpr void
         remove_pt(
             tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool, pdte_t *const pdte) noexcept
         {
             constexpr auto disabled{0_umax};
-            for (auto const elem : this->get_pt(page_pool, pdte)->entries) {
+            for (auto const elem : get_pt(page_pool, pdte)->entries) {
                 if (disabled == elem.data->p) {
                     continue;
                 }
@@ -699,7 +699,7 @@ namespace mk
                     case MAP_PAGE_AUTO_RELEASE_ALLOC_PAGE.get(): {
                         page_pool.deallocate(
                             tls,
-                            this->pte_from_page_pool_to_virt(page_pool, elem.data),
+                            pte_from_page_pool_to_virt(page_pool, elem.data),
                             ALLOCATE_TAG_BF_MEM_OP_ALLOC_PAGE);
 
                         break;
@@ -707,14 +707,14 @@ namespace mk
 
                     case MAP_PAGE_AUTO_RELEASE_ALLOC_HUGE.get(): {
                         huge_pool.deallocate(
-                            tls, this->pte_from_huge_pool_to_virt(huge_pool, elem.data));
+                            tls, pte_from_huge_pool_to_virt(huge_pool, elem.data));
                         break;
                     }
 
                     case MAP_PAGE_AUTO_RELEASE_ALLOC_HEAP.get(): {
                         page_pool.deallocate(
                             tls,
-                            this->pte_from_page_pool_to_virt(page_pool, elem.data),
+                            pte_from_page_pool_to_virt(page_pool, elem.data),
                             ALLOCATE_TAG_BF_MEM_OP_ALLOC_HEAP);
 
                         break;
@@ -723,7 +723,7 @@ namespace mk
                     case MAP_PAGE_AUTO_RELEASE_STACK.get(): {
                         page_pool.deallocate(
                             tls,
-                            this->pte_from_page_pool_to_virt(page_pool, elem.data),
+                            pte_from_page_pool_to_virt(page_pool, elem.data),
                             ALLOCATE_TAG_EXT_STACK);
 
                         break;
@@ -732,7 +732,7 @@ namespace mk
                     case MAP_PAGE_AUTO_RELEASE_TLS.get(): {
                         page_pool.deallocate(
                             tls,
-                            this->pte_from_page_pool_to_virt(page_pool, elem.data),
+                            pte_from_page_pool_to_virt(page_pool, elem.data),
                             ALLOCATE_TAG_EXT_TLS);
 
                         break;
@@ -741,7 +741,7 @@ namespace mk
                     case MAP_PAGE_AUTO_RELEASE_ELF.get(): {
                         page_pool.deallocate(
                             tls,
-                            this->pte_from_page_pool_to_virt(page_pool, elem.data),
+                            pte_from_page_pool_to_virt(page_pool, elem.data),
                             ALLOCATE_TAG_EXT_ELF);
 
                         break;
@@ -754,7 +754,7 @@ namespace mk
                 }
             }
 
-            page_pool.deallocate(tls, this->get_pt(page_pool, pdte), ALLOCATE_TAG_PTS);
+            page_pool.deallocate(tls, get_pt(page_pool, pdte), ALLOCATE_TAG_PTS);
         }
 
         /// <!-- description -->
@@ -766,7 +766,7 @@ namespace mk
         ///   @param pdte the pdte_t to get the pt_t from
         ///   @return A pointer to the requested pt_t
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         get_pt(page_pool_t &page_pool, pdte_t *const pdte) noexcept -> pt_t *
         {
             bsl::safe_uintmax entry_phys{pdte->phys};
@@ -784,8 +784,8 @@ namespace mk
         ///   @param pdte the pdte_t to get the pt_t from
         ///   @return A pointer to the requested pt_t
         ///
-        [[nodiscard]] constexpr auto
-        get_pt(page_pool_t &page_pool, pdte_t const *const pdte) const noexcept -> pt_t const *
+        [[nodiscard]] static constexpr auto
+        get_pt(page_pool_t &page_pool, pdte_t const *const pdte) noexcept -> pt_t const *
         {
             bsl::safe_uintmax entry_phys{pdte->phys};
             entry_phys <<= HYPERVISOR_PAGE_SHIFT;
@@ -821,14 +821,14 @@ namespace mk
         ///   @param is_pdte_last_index true if the parent pdte was the
         ///     last pdte in the table
         ///
-        constexpr void
+        static constexpr void
         dump_pt(
             pt_t const *const pt,
             bool is_pml4te_last_index,
             bool is_pdpte_last_index,
-            bool is_pdte_last_index) const noexcept
+            bool is_pdte_last_index) noexcept
         {
-            bsl::safe_uintmax const last_index{this->get_last_index(pt)};
+            bsl::safe_uintmax const last_index{get_last_index(pt)};
 
             constexpr auto disabled{0_umax};
             for (auto const elem : pt->entries) {
@@ -836,13 +836,13 @@ namespace mk
                     continue;
                 }
 
-                this->output_spacing(is_pml4te_last_index);
-                this->output_spacing(is_pdpte_last_index);
-                this->output_spacing(is_pdte_last_index);
-                this->output_decoration_and_index(elem.index, last_index);
+                output_spacing(is_pml4te_last_index);
+                output_spacing(is_pdpte_last_index);
+                output_spacing(is_pdte_last_index);
+                output_decoration_and_index(elem.index, last_index);
 
                 bsl::print() << bsl::rst;
-                this->output_entry_and_flags(elem.data);
+                output_entry_and_flags(elem.data);
             }
         }
 
@@ -856,7 +856,7 @@ namespace mk
         ///   @return Returns the virtual address associated with a specific
         ///     pte that was allocated using the page pool.
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         pte_from_page_pool_to_virt(page_pool_t &page_pool, pte_t *const pte) noexcept -> void *
         {
             bsl::safe_uintmax entry_phys{pte->phys};
@@ -875,7 +875,7 @@ namespace mk
         ///   @return Returns the virtual address associated with a specific
         ///     pte that was allocated using the huge pool.
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         pte_from_huge_pool_to_virt(huge_pool_t &huge_pool, pte_t *const pte) noexcept -> void *
         {
             bsl::safe_uintmax entry_phys{pte->phys};
@@ -937,7 +937,7 @@ namespace mk
             page_pool_t &page_pool,
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_int32 const &auto_release) &noexcept -> void *
+            bsl::safe_int32 const &auto_release) noexcept -> void *
         {
             bsl::errc_type ret{};
 
@@ -997,7 +997,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///
         constexpr void
-        release_tables(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool) &noexcept
+        release_tables(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool) noexcept
         {
             constexpr auto disabled{0_umax};
             for (auto const elem : m_pml4t->entries) {
@@ -1029,7 +1029,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool) &noexcept
+        initialize(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool) noexcept
             -> bsl::errc_type
         {
             if (bsl::unlikely_assert(m_pml4t_phys)) {
@@ -1066,7 +1066,7 @@ namespace mk
         ///   @param huge_pool the huge_pool_t to use
         ///
         constexpr void
-        release(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool) &noexcept
+        release(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool) noexcept
         {
             lock_guard_t lock{tls, m_lock};
             this->release_tables(tls, page_pool, huge_pool);
@@ -1079,7 +1079,7 @@ namespace mk
         ///   @return Returns true if this RPT is initialized.
         ///
         [[nodiscard]] constexpr auto
-        is_initialized() const &noexcept -> bool
+        is_initialized() const noexcept -> bool
         {
             return !!m_pml4t_phys;
         }
@@ -1093,7 +1093,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        activate(intrinsic_t &intrinsic) const &noexcept -> bsl::errc_type
+        activate(intrinsic_t &intrinsic) const noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_pml4t_phys)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
@@ -1119,7 +1119,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        add_tables(tls_t &tls, void const *const rpt) &noexcept -> bsl::errc_type
+        add_tables(tls_t &tls, void const *const rpt) noexcept -> bsl::errc_type
         {
             lock_guard_t lock{tls, m_lock};
 
@@ -1167,7 +1167,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        add_tables(tls_t &tls, root_page_table_t const &rpt) &noexcept -> bsl::errc_type
+        add_tables(tls_t &tls, root_page_table_t const &rpt) noexcept -> bsl::errc_type
         {
             return this->add_tables(tls, rpt.m_pml4t);
         }
@@ -1194,7 +1194,7 @@ namespace mk
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_phys,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_int32 const &auto_release) &noexcept -> bsl::errc_type
+            bsl::safe_int32 const &auto_release) noexcept -> bsl::errc_type
         {
             constexpr auto disabled{0_umax};
             lock_guard_t lock{tls, m_lock};
@@ -1307,7 +1307,7 @@ namespace mk
                 bsl::touch();
             }
 
-            auto *const pdpt{this->get_pdpt(page_pool, pml4te)};
+            auto *const pdpt{get_pdpt(page_pool, pml4te)};
             auto *const pdpte{pdpt->entries.at_if(this->pdpto(page_virt))};
             if (disabled == pdpte->p) {
                 if (bsl::unlikely(!this->add_pdt(tls, page_pool, pdpte))) {
@@ -1321,7 +1321,7 @@ namespace mk
                 bsl::touch();
             }
 
-            auto *const pdt{this->get_pdt(page_pool, pdpte)};
+            auto *const pdt{get_pdt(page_pool, pdpte)};
             auto *const pdte{pdt->entries.at_if(this->pdto(page_virt))};
             if (disabled == pdte->p) {
                 if (bsl::unlikely(!this->add_pt(tls, page_pool, pdte))) {
@@ -1335,7 +1335,7 @@ namespace mk
                 bsl::touch();
             }
 
-            auto *const pt{this->get_pt(page_pool, pdte)};
+            auto *const pt{get_pt(page_pool, pdte)};
             auto *const pte{pt->entries.at_if(this->pto(page_virt))};
             if (bsl::unlikely(disabled != pte->p)) {
                 bsl::error() << "virtual address "     // --
@@ -1400,7 +1400,7 @@ namespace mk
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_phys,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_int32 const &auto_release) &noexcept -> bsl::errc_type
+            bsl::safe_int32 const &auto_release) noexcept -> bsl::errc_type
         {
             return this->map_page(
                 tls,
@@ -1434,7 +1434,7 @@ namespace mk
             tls_t &tls,
             page_pool_t &page_pool,
             bsl::safe_uintmax const &page_virt,
-            bsl::safe_int32 const &auto_release) &noexcept -> void *
+            bsl::safe_int32 const &auto_release) noexcept -> void *
         {
             if (bsl::unlikely_assert(!m_pml4t_phys)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
@@ -1495,7 +1495,7 @@ namespace mk
             tls_t &tls,
             page_pool_t &page_pool,
             bsl::safe_uintmax const &page_virt,
-            bsl::safe_int32 const &auto_release) &noexcept -> void *
+            bsl::safe_int32 const &auto_release) noexcept -> void *
         {
             if (bsl::unlikely_assert(!m_pml4t_phys)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
@@ -1540,7 +1540,7 @@ namespace mk
         ///   @param page_pool the page_pool_t to use
         ///
         constexpr void
-        dump(page_pool_t &page_pool) const &noexcept
+        dump(page_pool_t &page_pool) const noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;
@@ -1551,7 +1551,7 @@ namespace mk
                 return;
             }
 
-            this->dump_pml4t(page_pool, m_pml4t);
+            dump_pml4t(page_pool, m_pml4t);
         }
     };
 }

@@ -39,8 +39,8 @@ main() noexcept -> bsl::exit_code
 {
     bsl::enable_color();
 
-    bsl::ut_scenario{"verify noexcept"} = []() {
-        bsl::ut_then{} = []() {
+    bsl::ut_scenario{"verify noexcept"} = []() noexcept {
+        bsl::ut_then{} = []() noexcept {
             static_assert(noexcept(syscall::bf_control_op_exit()));
             static_assert(noexcept(syscall::bf_control_op_wait()));
         };

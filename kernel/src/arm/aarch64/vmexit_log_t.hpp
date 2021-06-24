@@ -76,7 +76,7 @@ namespace mk
         ///   @param rec the record to add to the log
         ///
         constexpr void
-        add(bsl::safe_uint16 const &ppid, vmexit_log_record_t const &rec) &noexcept
+        add(bsl::safe_uint16 const &ppid, vmexit_log_record_t const &rec) noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL < bsl::VV) {
                 return;
@@ -105,7 +105,7 @@ namespace mk
         ///   @param ppid the ID of the PP whose log should be dumped
         ///
         constexpr void
-        dump(bsl::safe_uint16 const &ppid) &noexcept
+        dump(bsl::safe_uint16 const &ppid) noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL < bsl::VV) {
                 return;

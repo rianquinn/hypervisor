@@ -263,7 +263,7 @@ namespace mk
         ///   @return Returns true if the dummy_lock_t is locked
         ///
         [[nodiscard]] constexpr auto
-        is_locked() const &noexcept -> bool
+        is_locked() const noexcept -> bool
         {
             return static_cast<bool>(m_flag);
         }

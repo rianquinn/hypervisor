@@ -260,7 +260,7 @@ namespace vmmctl
         /// <!-- inputs/outputs -->
         ///   @return Returns !empty()
         ///
-        [[nodiscard]] constexpr explicit operator bool() const noexcept
+        [[nodiscard]] explicit constexpr operator bool() const noexcept
         {
             return !this->empty();
         }

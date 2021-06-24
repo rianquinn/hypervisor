@@ -73,7 +73,7 @@ namespace mk
             page_pool_t &page_pool,
             huge_pool_t &huge_pool,
             root_page_table_t &system_rpt,
-            loader::ext_elf_files_type const &ext_elf_files) &noexcept -> bsl::errc_type
+            loader::ext_elf_files_type const &ext_elf_files) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -120,7 +120,7 @@ namespace mk
         ///   @param huge_pool the huge_pool_t to use
         ///
         constexpr void
-        release(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool) &noexcept
+        release(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool) noexcept
         {
             for (auto const ext : m_pool) {
                 ext.data->release(tls, page_pool, huge_pool);
@@ -144,7 +144,7 @@ namespace mk
             tls_t &tls,
             page_pool_t &page_pool,
             huge_pool_t &huge_pool,
-            bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->signal_vm_created(tls, page_pool, huge_pool, vmid))) {
@@ -175,7 +175,7 @@ namespace mk
             tls_t &tls,
             page_pool_t &page_pool,
             huge_pool_t &huge_pool,
-            bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
                 if (bsl::unlikely(
@@ -201,7 +201,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        start(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
+        start(tls_t &tls, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->start(tls, intrinsic))) {
@@ -226,7 +226,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        bootstrap(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
+        bootstrap(tls_t &tls, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
         {
             for (auto const ext : m_pool) {
                 if (bsl::unlikely(!ext.data->bootstrap(tls, intrinsic))) {
@@ -249,7 +249,7 @@ namespace mk
         ///   @param extid the ID of the extension to dump
         ///
         constexpr void
-        dump(tls_t &tls, page_pool_t &page_pool, bsl::safe_uint16 const &extid) &noexcept
+        dump(tls_t &tls, page_pool_t &page_pool, bsl::safe_uint16 const &extid) noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;

@@ -74,7 +74,7 @@ namespace syscall
             bf_uint32_t const &version,
             bf_callback_handler_bootstrap_t const bootstrap_handler,
             bf_callback_handler_vmexit_t const vmexit_handler,
-            bf_callback_handler_fail_t const fail_handler) &noexcept -> bsl::errc_type
+            bf_callback_handler_fail_t const fail_handler) noexcept -> bsl::errc_type
         {
             bf_status_t ret{};
 
@@ -164,7 +164,7 @@ namespace syscall
         ///   @brief Releases the bf_syscall_t by closing the handle.
         ///
         constexpr void
-        release() &noexcept
+        release() noexcept
         {
             bsl::discard(bf_handle_op_close_handle_impl(m_hndl.get()));
             m_hndl = {};
@@ -694,7 +694,7 @@ namespace syscall
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_vm_op_create_vm() &noexcept -> bf_uint16_t
+        bf_vm_op_create_vm() noexcept -> bf_uint16_t
         {
             bf_status_t ret{};
             bf_uint16_t vmid{};
@@ -722,7 +722,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_vm_op_destroy_vm(bf_uint16_t const &vmid) &noexcept -> bsl::errc_type
+        bf_vm_op_destroy_vm(bf_uint16_t const &vmid) noexcept -> bsl::errc_type
         {
             bf_status_t ret{};
 
@@ -761,7 +761,7 @@ namespace syscall
         ///
         ///
         [[nodiscard]] constexpr auto
-        bf_vp_op_create_vp(bf_uint16_t const &vmid, bf_uint16_t const &ppid) &noexcept
+        bf_vp_op_create_vp(bf_uint16_t const &vmid, bf_uint16_t const &ppid) noexcept
             -> bf_uint16_t
         {
             bf_status_t ret{};
@@ -800,7 +800,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_vp_op_destroy_vp(bf_uint16_t const &vpid) &noexcept -> bsl::errc_type
+        bf_vp_op_destroy_vp(bf_uint16_t const &vpid) noexcept -> bsl::errc_type
         {
             bf_status_t ret{};
 
@@ -866,7 +866,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_vp_op_migrate(bf_uint16_t const &vpid, bf_uint16_t const &ppid) &noexcept
+        bf_vp_op_migrate(bf_uint16_t const &vpid, bf_uint16_t const &ppid) noexcept
             -> bsl::errc_type
         {
             bf_status_t ret{};
@@ -910,7 +910,7 @@ namespace syscall
         ///
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_create_vps(bf_uint16_t const &vpid, bf_uint16_t const &ppid) &noexcept
+        bf_vps_op_create_vps(bf_uint16_t const &vpid, bf_uint16_t const &ppid) noexcept
             -> bf_uint16_t
         {
             bf_status_t ret{};
@@ -949,7 +949,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_destroy_vps(bf_uint16_t const &vpsid) &noexcept -> bsl::errc_type
+        bf_vps_op_destroy_vps(bf_uint16_t const &vpsid) noexcept -> bsl::errc_type
         {
             bf_status_t ret{};
 
@@ -981,7 +981,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_init_as_root(bf_uint16_t const &vpsid) &noexcept -> bsl::errc_type
+        bf_vps_op_init_as_root(bf_uint16_t const &vpsid) noexcept -> bsl::errc_type
         {
             bf_status_t ret{};
 
@@ -1016,7 +1016,7 @@ namespace syscall
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_read8(bf_uint16_t const &vpsid, bf_uint64_t const &index) const &noexcept
+        bf_vps_op_read8(bf_uint16_t const &vpsid, bf_uint64_t const &index) const noexcept
             -> bf_uint8_t
         {
             bf_status_t ret{};
@@ -1058,7 +1058,7 @@ namespace syscall
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_read16(bf_uint16_t const &vpsid, bf_uint64_t const &index) const &noexcept
+        bf_vps_op_read16(bf_uint16_t const &vpsid, bf_uint64_t const &index) const noexcept
             -> bf_uint16_t
         {
             bf_status_t ret{};
@@ -1100,7 +1100,7 @@ namespace syscall
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_read32(bf_uint16_t const &vpsid, bf_uint64_t const &index) const &noexcept
+        bf_vps_op_read32(bf_uint16_t const &vpsid, bf_uint64_t const &index) const noexcept
             -> bf_uint32_t
         {
             bf_status_t ret{};
@@ -1142,7 +1142,7 @@ namespace syscall
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_read64(bf_uint16_t const &vpsid, bf_uint64_t const &index) const &noexcept
+        bf_vps_op_read64(bf_uint16_t const &vpsid, bf_uint64_t const &index) const noexcept
             -> bf_uint64_t
         {
             bf_status_t ret{};
@@ -1186,7 +1186,7 @@ namespace syscall
         ///
         [[nodiscard]] constexpr auto
         bf_vps_op_write8(
-            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint8_t const &value) &noexcept
+            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint8_t const &value) noexcept
             -> bsl::errc_type
         {
             bf_status_t ret{};
@@ -1234,7 +1234,7 @@ namespace syscall
         ///
         [[nodiscard]] constexpr auto
         bf_vps_op_write16(
-            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint16_t const &value) &noexcept
+            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint16_t const &value) noexcept
             -> bsl::errc_type
         {
             bf_status_t ret{};
@@ -1282,7 +1282,7 @@ namespace syscall
         ///
         [[nodiscard]] constexpr auto
         bf_vps_op_write32(
-            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint32_t const &value) &noexcept
+            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint32_t const &value) noexcept
             -> bsl::errc_type
         {
             bf_status_t ret{};
@@ -1330,7 +1330,7 @@ namespace syscall
         ///
         [[nodiscard]] constexpr auto
         bf_vps_op_write64(
-            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint64_t const &value) &noexcept
+            bf_uint16_t const &vpsid, bf_uint64_t const &index, bf_uint64_t const &value) noexcept
             -> bsl::errc_type
         {
             bf_status_t ret{};
@@ -1374,7 +1374,7 @@ namespace syscall
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_read_reg(bf_uint16_t const &vpsid, bf_reg_t const reg) const &noexcept
+        bf_vps_op_read_reg(bf_uint16_t const &vpsid, bf_reg_t const reg) const noexcept
             -> bf_uint64_t
         {
             bf_status_t ret{};
@@ -1411,7 +1411,7 @@ namespace syscall
         ///
         [[nodiscard]] constexpr auto
         bf_vps_op_write_reg(
-            bf_uint16_t const &vpsid, bf_reg_t const reg, bf_uint64_t const &value) &noexcept
+            bf_uint16_t const &vpsid, bf_reg_t const reg, bf_uint64_t const &value) noexcept
             -> bsl::errc_type
         {
             bf_status_t ret{};
@@ -1487,7 +1487,7 @@ namespace syscall
         ///
         [[nodiscard]] constexpr auto
         bf_vps_op_run(
-            bf_uint16_t const &vmid, bf_uint16_t const &vpid, bf_uint16_t const &vpsid) &noexcept
+            bf_uint16_t const &vmid, bf_uint16_t const &vpid, bf_uint16_t const &vpsid) noexcept
             -> bsl::errc_type
         {
             bf_status_t ret{};
@@ -1529,7 +1529,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_run_current() &noexcept -> bsl::errc_type
+        bf_vps_op_run_current() noexcept -> bsl::errc_type
         {
             bf_status_t const ret{bf_vps_op_run_current_impl(m_hndl.get())};
             if (bsl::unlikely(ret != BF_STATUS_SUCCESS)) {
@@ -1554,7 +1554,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_advance_ip(bf_uint16_t const &vpsid) &noexcept -> bsl::errc_type
+        bf_vps_op_advance_ip(bf_uint16_t const &vpsid) noexcept -> bsl::errc_type
         {
             bf_status_t ret{};
 
@@ -1587,7 +1587,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_advance_ip_and_run_current() &noexcept -> bsl::errc_type
+        bf_vps_op_advance_ip_and_run_current() noexcept -> bsl::errc_type
         {
             bf_status_t const ret{bf_vps_op_advance_ip_and_run_current_impl(m_hndl.get())};
             if (bsl::unlikely(ret != BF_STATUS_SUCCESS)) {
@@ -1615,7 +1615,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_promote(bf_uint16_t const &vpsid) &noexcept -> bsl::errc_type
+        bf_vps_op_promote(bf_uint16_t const &vpsid) noexcept -> bsl::errc_type
         {
             bf_status_t ret{};
 
@@ -1652,7 +1652,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_vps_op_clear_vps(bf_uint16_t const &vpsid) &noexcept -> bsl::errc_type
+        bf_vps_op_clear_vps(bf_uint16_t const &vpsid) noexcept -> bsl::errc_type
         {
             bf_status_t ret{};
 
@@ -1691,7 +1691,7 @@ namespace syscall
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_intrinsic_op_rdmsr(bf_uint32_t const &msr) const &noexcept -> bf_uint64_t
+        bf_intrinsic_op_rdmsr(bf_uint32_t const &msr) const noexcept -> bf_uint64_t
         {
             bf_status_t ret{};
             bf_uint64_t value{};
@@ -1729,7 +1729,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_intrinsic_op_wrmsr(bf_uint32_t const &msr, bf_uint64_t const &value) &noexcept
+        bf_intrinsic_op_wrmsr(bf_uint32_t const &msr, bf_uint64_t const &value) noexcept
             -> bsl::errc_type
         {
             bf_status_t ret{};
@@ -1768,7 +1768,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_intrinsic_op_invlpga(bf_uint64_t const &addr, bf_uint64_t const &asid) &noexcept
+        bf_intrinsic_op_invlpga(bf_uint64_t const &addr, bf_uint64_t const &asid) noexcept
             -> bsl::errc_type
         {
             bf_status_t ret{};
@@ -1808,7 +1808,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_intrinsic_op_invept(bf_uint64_t const &eptp, bf_uint64_t const &type) &noexcept
+        bf_intrinsic_op_invept(bf_uint64_t const &eptp, bf_uint64_t const &type) noexcept
             -> bsl::errc_type
         {
             bf_status_t ret{};
@@ -1850,7 +1850,7 @@ namespace syscall
         ///
         [[nodiscard]] constexpr auto
         bf_intrinsic_op_invvpid(
-            bf_uint64_t const &addr, bf_uint16_t const &vpid, bf_uint64_t const &type) &noexcept
+            bf_uint64_t const &addr, bf_uint16_t const &vpid, bf_uint64_t const &type) noexcept
             -> bsl::errc_type
         {
             bf_status_t ret{};
@@ -1897,7 +1897,7 @@ namespace syscall
         ///     or a nullptr on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_mem_op_alloc_page(bf_uint64_t &phys) &noexcept -> void *
+        bf_mem_op_alloc_page(bf_uint64_t &phys) noexcept -> void *
         {
             void *ptr{};
             bf_status_t ret{};
@@ -1929,7 +1929,7 @@ namespace syscall
         ///     or a nullptr on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_mem_op_alloc_page() &noexcept -> void *
+        bf_mem_op_alloc_page() noexcept -> void *
         {
             bf_uint64_t ignored{};
             return this->bf_mem_op_alloc_page(ignored);
@@ -1946,7 +1946,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_mem_op_free_page(void *const virt) &noexcept -> bsl::errc_type
+        bf_mem_op_free_page(void *const virt) noexcept -> bsl::errc_type
         {
             bf_status_t ret{};
 
@@ -1991,7 +1991,7 @@ namespace syscall
         ///     or a nullptr on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_mem_op_alloc_huge(bf_uint64_t const &size, bf_uint64_t &phys) &noexcept -> void *
+        bf_mem_op_alloc_huge(bf_uint64_t const &size, bf_uint64_t &phys) noexcept -> void *
         {
             void *ptr{};
             bf_status_t ret{};
@@ -2046,7 +2046,7 @@ namespace syscall
         ///     or a nullptr on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_mem_op_alloc_huge(bf_uint64_t const &size) &noexcept -> void *
+        bf_mem_op_alloc_huge(bf_uint64_t const &size) noexcept -> void *
         {
             bf_uint64_t ignored{};
             return this->bf_mem_op_alloc_huge(size, ignored);
@@ -2063,7 +2063,7 @@ namespace syscall
         ///     otherwise
         ///
         [[nodiscard]] constexpr auto
-        bf_mem_op_free_huge(void *const virt) &noexcept -> bsl::errc_type
+        bf_mem_op_free_huge(void *const virt) noexcept -> bsl::errc_type
         {
             bf_status_t ret{};
 
@@ -2107,7 +2107,7 @@ namespace syscall
         ///     or a nullptr on failure.
         ///
         [[nodiscard]] constexpr auto
-        bf_mem_op_alloc_heap(bf_uint64_t const &size) &noexcept -> void *
+        bf_mem_op_alloc_heap(bf_uint64_t const &size) noexcept -> void *
         {
             void *ptr{};
             bf_status_t ret{};

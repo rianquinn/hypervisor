@@ -58,7 +58,7 @@ namespace integration
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         initialize(
             gs_t &gs,
             tls_t &tls,
@@ -84,7 +84,7 @@ namespace integration
         ///   @param sys the bf_syscall_t to use
         ///   @param intrinsic the intrinsic_t to use
         ///
-        constexpr void
+        static constexpr void
         release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) noexcept
         {
             bsl::discard(gs);
@@ -106,7 +106,7 @@ namespace integration
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         allocate(
             gs_t &gs,
             tls_t &tls,

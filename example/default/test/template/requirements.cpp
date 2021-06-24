@@ -49,7 +49,7 @@ namespace
     ///   initialized at compile-time and not at runtime.
     ///
 
-    constinit bsl::errc_type const verify_constinit{};
+    constinit bsl::errc_type const g_verify_constinit{};
 
     /// NOTE:
     /// - The following is used to ensure that each function is marked as
@@ -73,21 +73,21 @@ namespace
     // NOLINTNEXTLINE(bsl-user-defined-type-names-match-header-name)
     class fixture_t final
     {
-        bsl::errc_type errc1{};
-        bsl::errc_type errc2{};
+        bsl::errc_type m_errc1{};
+        bsl::errc_type m_errc2{};
 
     public:
         [[nodiscard]] constexpr auto
         test_member_const() const noexcept -> bool
         {
-            bsl::discard(errc1.get());
-            bsl::discard(!errc1);
-            bsl::discard(errc1.success());
-            bsl::discard(errc1.failure());
-            bsl::discard(errc1.is_checked());
-            bsl::discard(errc1.is_unchecked());
-            bsl::discard(errc1 == errc2);
-            bsl::discard(errc1 != errc2);
+            bsl::discard(m_errc1.get());
+            bsl::discard(!m_errc1);
+            bsl::discard(m_errc1.success());
+            bsl::discard(m_errc1.failure());
+            bsl::discard(m_errc1.is_checked());
+            bsl::discard(m_errc1.is_unchecked());
+            bsl::discard(m_errc1 == m_errc2);
+            bsl::discard(m_errc1 != m_errc2);
 
             return true;
         }
@@ -100,14 +100,14 @@ namespace
             bsl::discard(bsl::errc_type{});
             bsl::discard(bsl::errc_type{the_answer.get()});
             bsl::discard(bsl::errc_type{the_answer});
-            bsl::discard(errc1.get());
-            bsl::discard(!errc1);
-            bsl::discard(errc1.success());
-            bsl::discard(errc1.failure());
-            bsl::discard(errc1.is_checked());
-            bsl::discard(errc1.is_unchecked());
-            bsl::discard(errc1 == errc2);
-            bsl::discard(errc1 != errc2);
+            bsl::discard(m_errc1.get());
+            bsl::discard(!m_errc1);
+            bsl::discard(m_errc1.success());
+            bsl::discard(m_errc1.failure());
+            bsl::discard(m_errc1.is_checked());
+            bsl::discard(m_errc1.is_unchecked());
+            bsl::discard(m_errc1 == m_errc2);
+            bsl::discard(m_errc1 != m_errc2);
 
             return true;
         }
@@ -120,7 +120,7 @@ namespace
     ///   in the class is not constexpr friendly.
     ///
 
-    constexpr fixture_t fixture1{};
+    constexpr fixture_t FIXTURE1{};
 }
 
 /// <!-- description -->
@@ -139,8 +139,8 @@ main() noexcept -> bsl::exit_code
     ///   a global variable and that it is actually being used.
     ///
 
-    bsl::ut_scenario{"verify supports constinit"} = []() {
-        bsl::discard(verify_constinit);
+    bsl::ut_scenario{"verify supports constinit"} = []() noexcept {
+        bsl::discard(g_verify_constinit);
     };
 
     /// NOTE:
@@ -149,12 +149,12 @@ main() noexcept -> bsl::exit_code
     ///   constructors as well.
     ///
 
-    bsl::ut_scenario{"verify noexcept"} = []() {
-        bsl::ut_given{} = []() {
+    bsl::ut_scenario{"verify noexcept"} = []() noexcept {
+        bsl::ut_given{} = []() noexcept {
             bsl::errc_type errc1{};
             bsl::errc_type errc2{};
             constexpr auto the_answer{42_i32};
-            bsl::ut_then{} = []() {
+            bsl::ut_then{} = []() noexcept {
                 static_assert(noexcept(bsl::errc_type{}));
                 static_assert(noexcept(bsl::errc_type{the_answer.get()}));
                 static_assert(noexcept(bsl::errc_type{the_answer}));
@@ -178,11 +178,11 @@ main() noexcept -> bsl::exit_code
     ///   correctly.
     ///
 
-    bsl::ut_scenario{"verify constness"} = []() {
-        bsl::ut_given{} = []() {
+    bsl::ut_scenario{"verify constness"} = []() noexcept {
+        bsl::ut_given{} = []() noexcept {
             fixture_t fixture2{};
-            bsl::ut_then{} = [&]() {
-                static_assert(fixture1.test_member_const());
+            bsl::ut_then{} = [&]() noexcept {
+                static_assert(FIXTURE1.test_member_const());
                 bsl::ut_check(fixture2.test_member_nonconst());
             };
         };
@@ -196,11 +196,11 @@ main() noexcept -> bsl::exit_code
     ///   assert.
     ///
 
-    bsl::ut_scenario{"verify constness without using constexpr"} = []() {
-        bsl::ut_given{} = []() {
+    bsl::ut_scenario{"verify constness without using constexpr"} = []() noexcept {
+        bsl::ut_given{} = []() noexcept {
             fixture_t fixture2{};
             fixture_t const fixture3{};
-            bsl::ut_then{} = [&]() {
+            bsl::ut_then{} = [&]() noexcept {
                 bsl::ut_check(fixture3.test_member_const());
                 bsl::ut_check(fixture2.test_member_nonconst());
             };

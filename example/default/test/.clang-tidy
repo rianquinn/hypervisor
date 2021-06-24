@@ -26,7 +26,6 @@ Checks:
       -bsl-template-generic-param,
       -bsl-literals-user-defined,
       -bsl-lambda-implicit-capture,
-      -bsl-using-ident-unique-namespace,
     bugprone-*,
       -bugprone-branch-clone,
     cert-*,

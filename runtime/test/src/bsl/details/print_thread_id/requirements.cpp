@@ -38,10 +38,10 @@
 [[nodiscard]] auto
 main() noexcept -> bsl::exit_code
 {
-    bsl::ut_scenario{"verify noexcept"} = []() {
-        bsl::ut_given{} = []() {
+    bsl::ut_scenario{"verify noexcept"} = []() noexcept {
+        bsl::ut_given{} = []() noexcept {
             bsl::details::out_type<BSL_DEBUG_LEVEL, bsl::details::out_type_debug> o{};
-            bsl::ut_then{} = []() {
+            bsl::ut_then{} = []() noexcept {
                 static_assert(noexcept(bsl::details::ut_print_thread_id(o)));
             };
         };

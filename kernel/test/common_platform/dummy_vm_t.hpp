@@ -61,7 +61,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(tls_t &tls, bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        initialize(tls_t &tls, bsl::safe_uint16 const &i) noexcept -> bsl::errc_type
         {
             if (tls.test_ret == errc_fail_initialize) {
                 return bsl::errc_failure;
@@ -86,7 +86,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
+        release(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) noexcept -> bsl::errc_type
         {
             bsl::discard(ext_pool);
             bsl::discard(vp_pool);
@@ -110,7 +110,7 @@ namespace mk
         ///   @return Returns ID of the newly allocated vm
         ///
         [[nodiscard]] constexpr auto
-        allocate(tls_t &tls, ext_pool_t &ext_pool) &noexcept -> bsl::safe_uint16
+        allocate(tls_t &tls, ext_pool_t &ext_pool) noexcept -> bsl::safe_uint16
         {
             bsl::discard(ext_pool);
 
@@ -133,7 +133,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        deallocate(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
+        deallocate(tls_t &tls, ext_pool_t &ext_pool, vp_pool_t &vp_pool) noexcept -> bsl::errc_type
         {
             bsl::discard(ext_pool);
             bsl::discard(vp_pool);
@@ -147,7 +147,7 @@ namespace mk
         ///     longer usable.
         ///
         constexpr void
-        zombify() &noexcept
+        zombify() noexcept
         {
             m_allocated = allocated_status_t::zombie;
         }
@@ -159,7 +159,7 @@ namespace mk
         ///   @return Returns true if this vm_t is deallocated, false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_deallocated() const &noexcept -> bool
+        is_deallocated() const noexcept -> bool
         {
             return m_allocated == allocated_status_t::deallocated;
         }
@@ -171,7 +171,7 @@ namespace mk
         ///   @return Returns true if this vm_t is allocated, false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_allocated() const &noexcept -> bool
+        is_allocated() const noexcept -> bool
         {
             return m_allocated == allocated_status_t::allocated;
         }
@@ -183,7 +183,7 @@ namespace mk
         ///   @return Returns true if this vm_t is a zombie, false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_zombie() const &noexcept -> bool
+        is_zombie() const noexcept -> bool
         {
             return m_allocated == allocated_status_t::zombie;
         }
@@ -197,7 +197,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        set_active(tls_t &tls) &noexcept -> bsl::errc_type
+        set_active(tls_t &tls) noexcept -> bsl::errc_type
         {
             m_active = true;
             return tls.test_ret;
@@ -212,7 +212,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        set_inactive(tls_t &tls) &noexcept -> bsl::errc_type
+        set_inactive(tls_t &tls) noexcept -> bsl::errc_type
         {
             m_active = {};
             return tls.test_ret;
@@ -230,7 +230,7 @@ namespace mk
         ///     returns bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
-        is_active(tls_t &tls) const &noexcept -> bsl::safe_uint16
+        is_active(tls_t &tls) const noexcept -> bsl::safe_uint16
         {
             bsl::discard(tls);
 
@@ -251,7 +251,7 @@ namespace mk
         ///     false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_active_on_current_pp(tls_t &tls) const &noexcept -> bool
+        is_active_on_current_pp(tls_t &tls) const noexcept -> bool
         {
             bsl::discard(tls);
             return m_active;
@@ -264,7 +264,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///
         constexpr void
-        dump(tls_t &tls) const &noexcept
+        dump(tls_t &tls) const noexcept
         {
             bsl::discard(tls);
         }

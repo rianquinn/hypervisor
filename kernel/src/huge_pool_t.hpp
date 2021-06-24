@@ -80,7 +80,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(bsl::span<bsl::byte> &pool) &noexcept -> bsl::errc_type
+        initialize(bsl::span<bsl::byte> &pool) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(m_initialized)) {
                 bsl::error() << "huge_pool_t already initialized\n" << bsl::here();
@@ -108,7 +108,7 @@ namespace mk
         ///   @brief Release the huge_pool_t
         ///
         constexpr void
-        release() &noexcept
+        release() noexcept
         {
             m_crsr = bsl::safe_uintmax::failure();
             m_pool = {};
@@ -127,7 +127,7 @@ namespace mk
         ///
         template<typename T = void>
         [[nodiscard]] constexpr auto
-        allocate(tls_t &tls, bsl::safe_uintmax const &size) &noexcept -> T *
+        allocate(tls_t &tls, bsl::safe_uintmax const &size) noexcept -> T *
         {
             lock_guard_t lock{tls, m_lock};
 
@@ -181,7 +181,7 @@ namespace mk
         ///   @param ptr the pointer to the memory to deallocate
         ///
         constexpr void
-        deallocate(tls_t &tls, void *const ptr) &noexcept
+        deallocate(tls_t &tls, void *const ptr) noexcept
         {
             lock_guard_t lock{tls, m_lock};
             bsl::discard(ptr);
@@ -221,7 +221,7 @@ namespace mk
         ///
         template<typename T = void>
         [[nodiscard]] constexpr auto
-        virt_to_phys(T const *const virt) const &noexcept -> bsl::safe_uintmax
+        virt_to_phys(T const *const virt) const noexcept -> bsl::safe_uintmax
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
             return bsl::to_umax(virt) - HYPERVISOR_MK_HUGE_POOL_ADDR;
@@ -243,7 +243,7 @@ namespace mk
         ///
         template<typename T = void>
         [[nodiscard]] constexpr auto
-        phys_to_virt(bsl::safe_uintmax const &phys) const &noexcept -> T *
+        phys_to_virt(bsl::safe_uintmax const &phys) const noexcept -> T *
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
             return bsl::to_ptr<T *>(phys + HYPERVISOR_MK_HUGE_POOL_ADDR);
@@ -253,7 +253,7 @@ namespace mk
         ///   @brief Dumps the page_pool_t
         ///
         constexpr void
-        dump() const &noexcept
+        dump() const noexcept
         {
             constexpr auto kb{1024_umax};
             constexpr auto mb{kb * kb};

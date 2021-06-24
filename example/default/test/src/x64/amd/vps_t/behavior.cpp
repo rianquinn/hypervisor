@@ -40,131 +40,131 @@ namespace example
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"initialize twice fails"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize twice fails"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vps.initialize(gs, tls, sys, intrinsic, {}));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"initialize invalid id #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize invalid id #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_check(
                         !vps.initialize(gs, tls, sys, intrinsic, bsl::safe_uint16::failure()));
                 };
             };
         };
 
-        bsl::ut_scenario{"initialize invalid id #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize invalid id #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_check(!vps.initialize(gs, tls, sys, intrinsic, syscall::BF_INVALID_ID));
                 };
             };
         };
 
-        bsl::ut_scenario{"initialize success"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize success"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_check(vps.initialize(gs, tls, sys, intrinsic, {}));
                 };
             };
         };
 
-        bsl::ut_scenario{"release executes without initialize"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"release executes without initialize"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
 
-        bsl::ut_scenario{"release executes with initialize"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"release executes with initialize"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         vps.release(gs, tls, sys, intrinsic);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"allocate not initialized"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate not initialized"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                 };
             };
         };
 
-        bsl::ut_scenario{"allocate already allocated"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate already allocated"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     bsl::ut_required_step(vps.allocate(gs, tls, sys, intrinsic, {}, {}));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"allocate invalid vpid #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate invalid vpid #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vps.allocate(
                             gs, tls, sys, intrinsic, bsl::safe_uint16::failure(), {}));
                     };
@@ -172,16 +172,16 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"allocate invalid vpid #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate invalid vpid #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(
                             !vps.allocate(gs, tls, sys, intrinsic, syscall::BF_INVALID_ID, {}));
                     };
@@ -189,16 +189,16 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"allocate invalid ppid #1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate invalid ppid #1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vps.allocate(
                             gs, tls, sys, intrinsic, {}, bsl::safe_uint16::failure()));
                     };
@@ -206,16 +206,16 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"allocate invalid ppid #2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate invalid ppid #2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(
                             !vps.allocate(gs, tls, sys, intrinsic, {}, syscall::BF_INVALID_ID));
                     };
@@ -223,42 +223,42 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"allocate bf_vps_op_init_as_root fails"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate bf_vps_op_init_as_root fails"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_vps_op_init_as_root({}, bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"allocate when ppid does not match vpsid"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate when ppid does not match vpsid"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
                 constexpr auto ppid{42_u16};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(vps.allocate(gs, tls, sys, intrinsic, {}, ppid));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"allocate bf_vps_op_write32 fails for asid"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate bf_vps_op_write32 fails for asid"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
@@ -266,18 +266,18 @@ namespace example
                 intrinsic_t intrinsic{};
                 constexpr auto idx{0x0058_u64};
                 constexpr auto val{0x1_u32};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"allocate bf_vps_op_write32 fails for intercept 1"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate bf_vps_op_write32 fails for intercept 1"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
@@ -285,18 +285,18 @@ namespace example
                 intrinsic_t intrinsic{};
                 constexpr auto idx{0x000C_u64};
                 constexpr auto val{0x00040000_u32};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"allocate bf_vps_op_write32 fails for intercept 2"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate bf_vps_op_write32 fails for intercept 2"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
@@ -304,26 +304,26 @@ namespace example
                 intrinsic_t intrinsic{};
                 constexpr auto idx{0x0010_u64};
                 constexpr auto val{0x00000001_u32};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"allocate success"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"allocate success"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vps_t vps{};
                 gs_t gs{};
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };

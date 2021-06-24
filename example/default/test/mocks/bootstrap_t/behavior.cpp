@@ -40,8 +40,8 @@ namespace example
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"initialize fails"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize fails"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bootstrap_t bootstrap{};
                 gs_t gs{};
                 tls_t tls{};
@@ -49,9 +49,9 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bootstrap.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(
                             !bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     };
@@ -59,8 +59,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"initialize success"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize success"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bootstrap_t bootstrap{};
                 gs_t gs{};
                 tls_t tls{};
@@ -68,14 +68,14 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(bootstrap.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                 };
             };
         };
 
-        bsl::ut_scenario{"release executes"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"release executes"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bootstrap_t bootstrap{};
                 gs_t gs{};
                 tls_t tls{};
@@ -83,14 +83,14 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bootstrap.release(gs, tls, sys, intrinsic, vp_pool, vps_pool);
                 };
             };
         };
 
-        bsl::ut_scenario{"dispatch fails"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch fails"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bootstrap_t bootstrap{};
                 gs_t gs{};
                 tls_t tls{};
@@ -98,9 +98,9 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bootstrap.set_dispatch(bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(
                             !bootstrap.dispatch(gs, tls, sys, intrinsic, vp_pool, vps_pool, {}));
                     };
@@ -108,8 +108,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch success"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch success"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bootstrap_t bootstrap{};
                 gs_t gs{};
                 tls_t tls{};
@@ -117,7 +117,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(
                         bootstrap.dispatch(gs, tls, sys, intrinsic, vp_pool, vps_pool, {}));
                 };

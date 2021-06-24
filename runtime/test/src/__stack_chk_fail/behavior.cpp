@@ -45,11 +45,11 @@ namespace mk
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"__stack_chk_fail executes properly"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_when{} = []() {
+        bsl::ut_scenario{"__stack_chk_fail executes properly"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_when{} = []() noexcept {
                     ut_stack_chk_fail();
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = []() noexcept {
                         bsl::ut_check(syscall::g_bf_control_op_exit_impl_executed);
                     };
                 };

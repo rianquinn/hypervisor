@@ -33,7 +33,7 @@ namespace example
     // -------------------------------------------------------------------------
 
     /// @brief stores the answer to all things (in 32 bits)
-    constexpr auto g_answer32{42_u32};
+    constexpr auto ANSWER32{42_u32};
 
     // -------------------------------------------------------------------------
     // tests
@@ -51,8 +51,8 @@ namespace example
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"initialize bf_mem_op_alloc_page fails"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize bf_mem_op_alloc_page fails"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -60,9 +60,9 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     sys.set_bf_mem_op_alloc_page(bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(
                             !vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     };
@@ -71,8 +71,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"initialize success"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize success"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -80,8 +80,8 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_when{} = [&]() {
-                    bsl::ut_then{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(
                             vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     };
@@ -90,8 +90,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"release executes without initialize"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"release executes without initialize"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -99,14 +99,14 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     vmexit.release(gs, tls, sys, intrinsic, vp_pool, vps_pool);
                 };
             };
         };
 
-        bsl::ut_scenario{"release executes with initialize"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"release executes with initialize"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -114,18 +114,18 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         vmexit.release(gs, tls, sys, intrinsic, vp_pool, vps_pool);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"dispatch nmi bf_vps_op_read32 fails for proc ctls"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch nmi bf_vps_op_read32 fails for proc ctls"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -135,11 +135,11 @@ namespace example
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0_u64};
                 constexpr auto idx{0x4002_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.set_bf_vps_op_read32({}, idx, bsl::safe_uint32::failure());
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -148,8 +148,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch nmi bf_vps_op_write32 fails for proc ctls"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch nmi bf_vps_op_write32 fails for proc ctls"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -160,11 +160,11 @@ namespace example
                 constexpr auto exit_reason{0_u64};
                 constexpr auto idx{0x4002_u64};
                 constexpr auto val{0x400000_u32};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -173,8 +173,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch nmi default"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch nmi default"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -183,10 +183,10 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -195,8 +195,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch nmi window bf_vps_op_read32 fails for proc ctls"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch nmi window bf_vps_op_read32 fails for proc ctls"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -206,11 +206,11 @@ namespace example
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0x8_u64};
                 constexpr auto idx{0x4002_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.set_bf_vps_op_read32({}, idx, bsl::safe_uint32::failure());
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -219,8 +219,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch nmi bf_vps_op_write32 fails for proc ctls"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch nmi bf_vps_op_write32 fails for proc ctls"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -231,11 +231,11 @@ namespace example
                 constexpr auto exit_reason{0x8_u64};
                 constexpr auto idx{0x4002_u64};
                 constexpr auto val{0x0_u32};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -244,8 +244,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch nmi bf_vps_op_write32 fails for int info"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch nmi bf_vps_op_write32 fails for int info"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -256,11 +256,11 @@ namespace example
                 constexpr auto exit_reason{0x8_u64};
                 constexpr auto idx{0x4016_u64};
                 constexpr auto val{0x80000202_u32};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -269,8 +269,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch nmi window default"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch nmi window default"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -279,10 +279,10 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0x8_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -291,8 +291,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch cpuid stop"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch cpuid stop"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -302,13 +302,13 @@ namespace example
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0xA_u64};
                 constexpr auto online_pps{0x2_u16};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.bf_tls_set_rax(bsl::to_u64(loader::CPUID_COMMAND_EAX));
                     sys.bf_tls_set_rcx(bsl::to_u64(loader::CPUID_COMMAND_ECX_STOP));
                     sys.bf_tls_set_online_pps(online_pps);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -317,8 +317,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch cpuid stop last ppid"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch cpuid stop last ppid"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -328,14 +328,14 @@ namespace example
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0xA_u64};
                 constexpr auto online_pps{0x2_u16};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.bf_tls_set_rax(bsl::to_u64(loader::CPUID_COMMAND_EAX));
                     sys.bf_tls_set_rcx(bsl::to_u64(loader::CPUID_COMMAND_ECX_STOP));
                     sys.bf_tls_set_ppid(online_pps - 1_u16);
                     sys.bf_tls_set_online_pps(online_pps);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -344,8 +344,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch cpuid stop bf_vps_op_advance_ip fails"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch cpuid stop bf_vps_op_advance_ip fails"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -355,14 +355,14 @@ namespace example
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0xA_u64};
                 constexpr auto online_pps{0x2_u16};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.bf_tls_set_rax(bsl::to_u64(loader::CPUID_COMMAND_EAX));
                     sys.bf_tls_set_rcx(bsl::to_u64(loader::CPUID_COMMAND_ECX_STOP));
                     sys.bf_tls_set_online_pps(online_pps);
                     sys.set_bf_vps_op_advance_ip({}, bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -371,8 +371,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch report on"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch report on"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -381,12 +381,12 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0xA_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.bf_tls_set_rax(bsl::to_u64(loader::CPUID_COMMAND_EAX));
                     sys.bf_tls_set_rcx(bsl::to_u64(loader::CPUID_COMMAND_ECX_REPORT_ON));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -395,8 +395,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch report off"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch report off"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -405,12 +405,12 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0xA_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.bf_tls_set_rax(bsl::to_u64(loader::CPUID_COMMAND_EAX));
                     sys.bf_tls_set_rcx(bsl::to_u64(loader::CPUID_COMMAND_ECX_REPORT_OFF));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -419,8 +419,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch cpuid default"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch cpuid default"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -429,25 +429,25 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0xA_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
-                    intrinsic.set_cpuid(g_answer32, g_answer32, g_answer32, g_answer32);
-                    bsl::ut_then{} = [&]() {
+                    intrinsic.set_cpuid(ANSWER32, ANSWER32, ANSWER32, ANSWER32);
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
-                        bsl::ut_check(sys.bf_tls_rax() == bsl::to_u64(g_answer32));
-                        bsl::ut_check(sys.bf_tls_rbx() == bsl::to_u64(g_answer32));
-                        bsl::ut_check(sys.bf_tls_rcx() == bsl::to_u64(g_answer32));
-                        bsl::ut_check(sys.bf_tls_rdx() == bsl::to_u64(g_answer32));
+                        bsl::ut_check(sys.bf_tls_rax() == bsl::to_u64(ANSWER32));
+                        bsl::ut_check(sys.bf_tls_rbx() == bsl::to_u64(ANSWER32));
+                        bsl::ut_check(sys.bf_tls_rcx() == bsl::to_u64(ANSWER32));
+                        bsl::ut_check(sys.bf_tls_rdx() == bsl::to_u64(ANSWER32));
                     };
                     vmexit.release(gs, tls, sys, intrinsic, vp_pool, vps_pool);
                 };
             };
         };
 
-        bsl::ut_scenario{"dispatch invalid command"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch invalid command"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -456,11 +456,11 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0xA_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     sys.bf_tls_set_rax(bsl::to_u64(loader::CPUID_COMMAND_EAX));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };
@@ -469,8 +469,8 @@ namespace example
             };
         };
 
-        bsl::ut_scenario{"dispatch fails by default"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"dispatch fails by default"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 vmexit_t vmexit{};
                 gs_t gs{};
                 tls_t tls{};
@@ -479,10 +479,10 @@ namespace example
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
                 constexpr auto exit_reason{0xFF_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(
                         vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!vmexit.dispatch(
                             gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, exit_reason));
                     };

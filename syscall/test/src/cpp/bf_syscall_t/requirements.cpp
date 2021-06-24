@@ -29,47 +29,47 @@
 
 namespace syscall
 {
-    constinit bf_syscall_t const verify_constinit{};
+    constinit bf_syscall_t const g_verify_constinit{};
 
     // NOLINTNEXTLINE(bsl-user-defined-type-names-match-header-name)
     class fixture_t final
     {
-        bf_syscall_t sys{};
+        bf_syscall_t m_sys{};
 
     public:
         [[nodiscard]] constexpr auto
         test_member_const() const noexcept -> bool
         {
-            bsl::discard(sys.bf_tls_rax());
-            bsl::discard(sys.bf_tls_rbx());
-            bsl::discard(sys.bf_tls_rcx());
-            bsl::discard(sys.bf_tls_rdx());
-            bsl::discard(sys.bf_tls_rbp());
-            bsl::discard(sys.bf_tls_rsi());
-            bsl::discard(sys.bf_tls_rdi());
-            bsl::discard(sys.bf_tls_r8());
-            bsl::discard(sys.bf_tls_r9());
-            bsl::discard(sys.bf_tls_r10());
-            bsl::discard(sys.bf_tls_r11());
-            bsl::discard(sys.bf_tls_r12());
-            bsl::discard(sys.bf_tls_r13());
-            bsl::discard(sys.bf_tls_r14());
-            bsl::discard(sys.bf_tls_r15());
-            bsl::discard(sys.bf_tls_extid());
-            bsl::discard(sys.bf_tls_vmid());
-            bsl::discard(sys.bf_tls_vpid());
-            bsl::discard(sys.bf_tls_vpsid());
-            bsl::discard(sys.bf_tls_ppid());
-            bsl::discard(sys.bf_tls_online_pps());
-            bsl::discard(sys.bf_vps_op_read8({}, {}));
-            bsl::discard(sys.bf_vps_op_read16({}, {}));
-            bsl::discard(sys.bf_vps_op_read32({}, {}));
-            bsl::discard(sys.bf_vps_op_read64({}, {}));
-            bsl::discard(sys.bf_vps_op_read_reg({}, {}));
-            bsl::discard(sys.bf_intrinsic_op_rdmsr({}));
-            bsl::discard(sys.bf_read_phys({}));
-            bsl::discard(sys.bf_virt_to_phys({}));
-            bsl::discard(sys.bf_phys_to_virt({}));
+            bsl::discard(m_sys.bf_tls_rax());
+            bsl::discard(m_sys.bf_tls_rbx());
+            bsl::discard(m_sys.bf_tls_rcx());
+            bsl::discard(m_sys.bf_tls_rdx());
+            bsl::discard(m_sys.bf_tls_rbp());
+            bsl::discard(m_sys.bf_tls_rsi());
+            bsl::discard(m_sys.bf_tls_rdi());
+            bsl::discard(m_sys.bf_tls_r8());
+            bsl::discard(m_sys.bf_tls_r9());
+            bsl::discard(m_sys.bf_tls_r10());
+            bsl::discard(m_sys.bf_tls_r11());
+            bsl::discard(m_sys.bf_tls_r12());
+            bsl::discard(m_sys.bf_tls_r13());
+            bsl::discard(m_sys.bf_tls_r14());
+            bsl::discard(m_sys.bf_tls_r15());
+            bsl::discard(m_sys.bf_tls_extid());
+            bsl::discard(m_sys.bf_tls_vmid());
+            bsl::discard(m_sys.bf_tls_vpid());
+            bsl::discard(m_sys.bf_tls_vpsid());
+            bsl::discard(m_sys.bf_tls_ppid());
+            bsl::discard(m_sys.bf_tls_online_pps());
+            bsl::discard(m_sys.bf_vps_op_read8({}, {}));
+            bsl::discard(m_sys.bf_vps_op_read16({}, {}));
+            bsl::discard(m_sys.bf_vps_op_read32({}, {}));
+            bsl::discard(m_sys.bf_vps_op_read64({}, {}));
+            bsl::discard(m_sys.bf_vps_op_read_reg({}, {}));
+            bsl::discard(m_sys.bf_intrinsic_op_rdmsr({}));
+            bsl::discard(m_sys.bf_read_phys({}));
+            bsl::discard(m_sys.bf_virt_to_phys({}));
+            bsl::discard(m_sys.bf_phys_to_virt({}));
 
             return true;
         }
@@ -80,90 +80,90 @@ namespace syscall
             bf_uint64_t phys{};
 
             bsl::discard(bf_syscall_t{});
-            bsl::discard(sys.initialize({}, {}, {}, {}));
-            sys.release();
-            bsl::discard(sys.bf_tls_rax());
-            sys.bf_tls_set_rax({});
-            bsl::discard(sys.bf_tls_rbx());
-            sys.bf_tls_set_rbx({});
-            bsl::discard(sys.bf_tls_rcx());
-            sys.bf_tls_set_rcx({});
-            bsl::discard(sys.bf_tls_rdx());
-            sys.bf_tls_set_rdx({});
-            bsl::discard(sys.bf_tls_rbp());
-            sys.bf_tls_set_rbp({});
-            bsl::discard(sys.bf_tls_rsi());
-            sys.bf_tls_set_rsi({});
-            bsl::discard(sys.bf_tls_rdi());
-            sys.bf_tls_set_rdi({});
-            bsl::discard(sys.bf_tls_r8());
-            sys.bf_tls_set_r8({});
-            bsl::discard(sys.bf_tls_r9());
-            sys.bf_tls_set_r9({});
-            bsl::discard(sys.bf_tls_r10());
-            sys.bf_tls_set_r10({});
-            bsl::discard(sys.bf_tls_r11());
-            sys.bf_tls_set_r11({});
-            bsl::discard(sys.bf_tls_r12());
-            sys.bf_tls_set_r12({});
-            bsl::discard(sys.bf_tls_r13());
-            sys.bf_tls_set_r13({});
-            bsl::discard(sys.bf_tls_r14());
-            sys.bf_tls_set_r14({});
-            bsl::discard(sys.bf_tls_r15());
-            sys.bf_tls_set_r15({});
-            bsl::discard(sys.bf_tls_extid());
-            bsl::discard(sys.bf_tls_vmid());
-            bsl::discard(sys.bf_tls_vpid());
-            bsl::discard(sys.bf_tls_vpsid());
-            bsl::discard(sys.bf_tls_ppid());
-            bsl::discard(sys.bf_tls_online_pps());
-            bsl::discard(sys.bf_vm_op_create_vm());
-            bsl::discard(sys.bf_vm_op_destroy_vm({}));
-            bsl::discard(sys.bf_vp_op_create_vp({}, {}));
-            bsl::discard(sys.bf_vp_op_destroy_vp({}));
-            bsl::discard(sys.bf_vp_op_migrate({}, {}));
-            bsl::discard(sys.bf_vps_op_create_vps({}, {}));
-            bsl::discard(sys.bf_vps_op_destroy_vps({}));
-            bsl::discard(sys.bf_vps_op_init_as_root({}));
-            bsl::discard(sys.bf_vps_op_read8({}, {}));
-            bsl::discard(sys.bf_vps_op_read16({}, {}));
-            bsl::discard(sys.bf_vps_op_read32({}, {}));
-            bsl::discard(sys.bf_vps_op_read64({}, {}));
-            bsl::discard(sys.bf_vps_op_write8({}, {}, {}));
-            bsl::discard(sys.bf_vps_op_write16({}, {}, {}));
-            bsl::discard(sys.bf_vps_op_write32({}, {}, {}));
-            bsl::discard(sys.bf_vps_op_write64({}, {}, {}));
-            bsl::discard(sys.bf_vps_op_read_reg({}, {}));
-            bsl::discard(sys.bf_vps_op_write_reg({}, {}, {}));
-            bsl::discard(sys.bf_vps_op_run({}, {}, {}));
-            bsl::discard(sys.bf_vps_op_run_current());
-            bsl::discard(sys.bf_vps_op_advance_ip({}));
-            bsl::discard(sys.bf_vps_op_advance_ip_and_run_current());
-            bsl::discard(sys.bf_vps_op_promote({}));
-            bsl::discard(sys.bf_vps_op_clear_vps({}));
-            bsl::discard(sys.bf_intrinsic_op_rdmsr({}));
-            bsl::discard(sys.bf_intrinsic_op_wrmsr({}, {}));
-            bsl::discard(sys.bf_intrinsic_op_invlpga({}, {}));
-            bsl::discard(sys.bf_intrinsic_op_invept({}, {}));
-            bsl::discard(sys.bf_intrinsic_op_invvpid({}, {}, {}));
-            bsl::discard(sys.bf_mem_op_alloc_page(phys));
-            bsl::discard(sys.bf_mem_op_alloc_page());
-            bsl::discard(sys.bf_mem_op_free_page({}));
-            bsl::discard(sys.bf_mem_op_alloc_huge({}, phys));
-            bsl::discard(sys.bf_mem_op_alloc_huge({}));
-            bsl::discard(sys.bf_mem_op_free_huge({}));
-            bsl::discard(sys.bf_mem_op_alloc_heap({}));
-            bsl::discard(sys.bf_read_phys({}));
-            bsl::discard(sys.bf_write_phys({}, {}));
-            bsl::discard(sys.bf_virt_to_phys({}));
-            bsl::discard(sys.bf_phys_to_virt({}));
+            bsl::discard(m_sys.initialize({}, {}, {}, {}));
+            m_sys.release();
+            bsl::discard(m_sys.bf_tls_rax());
+            m_sys.bf_tls_set_rax({});
+            bsl::discard(m_sys.bf_tls_rbx());
+            m_sys.bf_tls_set_rbx({});
+            bsl::discard(m_sys.bf_tls_rcx());
+            m_sys.bf_tls_set_rcx({});
+            bsl::discard(m_sys.bf_tls_rdx());
+            m_sys.bf_tls_set_rdx({});
+            bsl::discard(m_sys.bf_tls_rbp());
+            m_sys.bf_tls_set_rbp({});
+            bsl::discard(m_sys.bf_tls_rsi());
+            m_sys.bf_tls_set_rsi({});
+            bsl::discard(m_sys.bf_tls_rdi());
+            m_sys.bf_tls_set_rdi({});
+            bsl::discard(m_sys.bf_tls_r8());
+            m_sys.bf_tls_set_r8({});
+            bsl::discard(m_sys.bf_tls_r9());
+            m_sys.bf_tls_set_r9({});
+            bsl::discard(m_sys.bf_tls_r10());
+            m_sys.bf_tls_set_r10({});
+            bsl::discard(m_sys.bf_tls_r11());
+            m_sys.bf_tls_set_r11({});
+            bsl::discard(m_sys.bf_tls_r12());
+            m_sys.bf_tls_set_r12({});
+            bsl::discard(m_sys.bf_tls_r13());
+            m_sys.bf_tls_set_r13({});
+            bsl::discard(m_sys.bf_tls_r14());
+            m_sys.bf_tls_set_r14({});
+            bsl::discard(m_sys.bf_tls_r15());
+            m_sys.bf_tls_set_r15({});
+            bsl::discard(m_sys.bf_tls_extid());
+            bsl::discard(m_sys.bf_tls_vmid());
+            bsl::discard(m_sys.bf_tls_vpid());
+            bsl::discard(m_sys.bf_tls_vpsid());
+            bsl::discard(m_sys.bf_tls_ppid());
+            bsl::discard(m_sys.bf_tls_online_pps());
+            bsl::discard(m_sys.bf_vm_op_create_vm());
+            bsl::discard(m_sys.bf_vm_op_destroy_vm({}));
+            bsl::discard(m_sys.bf_vp_op_create_vp({}, {}));
+            bsl::discard(m_sys.bf_vp_op_destroy_vp({}));
+            bsl::discard(m_sys.bf_vp_op_migrate({}, {}));
+            bsl::discard(m_sys.bf_vps_op_create_vps({}, {}));
+            bsl::discard(m_sys.bf_vps_op_destroy_vps({}));
+            bsl::discard(m_sys.bf_vps_op_init_as_root({}));
+            bsl::discard(m_sys.bf_vps_op_read8({}, {}));
+            bsl::discard(m_sys.bf_vps_op_read16({}, {}));
+            bsl::discard(m_sys.bf_vps_op_read32({}, {}));
+            bsl::discard(m_sys.bf_vps_op_read64({}, {}));
+            bsl::discard(m_sys.bf_vps_op_write8({}, {}, {}));
+            bsl::discard(m_sys.bf_vps_op_write16({}, {}, {}));
+            bsl::discard(m_sys.bf_vps_op_write32({}, {}, {}));
+            bsl::discard(m_sys.bf_vps_op_write64({}, {}, {}));
+            bsl::discard(m_sys.bf_vps_op_read_reg({}, {}));
+            bsl::discard(m_sys.bf_vps_op_write_reg({}, {}, {}));
+            bsl::discard(m_sys.bf_vps_op_run({}, {}, {}));
+            bsl::discard(m_sys.bf_vps_op_run_current());
+            bsl::discard(m_sys.bf_vps_op_advance_ip({}));
+            bsl::discard(m_sys.bf_vps_op_advance_ip_and_run_current());
+            bsl::discard(m_sys.bf_vps_op_promote({}));
+            bsl::discard(m_sys.bf_vps_op_clear_vps({}));
+            bsl::discard(m_sys.bf_intrinsic_op_rdmsr({}));
+            bsl::discard(m_sys.bf_intrinsic_op_wrmsr({}, {}));
+            bsl::discard(m_sys.bf_intrinsic_op_invlpga({}, {}));
+            bsl::discard(m_sys.bf_intrinsic_op_invept({}, {}));
+            bsl::discard(m_sys.bf_intrinsic_op_invvpid({}, {}, {}));
+            bsl::discard(m_sys.bf_mem_op_alloc_page(phys));
+            bsl::discard(m_sys.bf_mem_op_alloc_page());
+            bsl::discard(m_sys.bf_mem_op_free_page({}));
+            bsl::discard(m_sys.bf_mem_op_alloc_huge({}, phys));
+            bsl::discard(m_sys.bf_mem_op_alloc_huge({}));
+            bsl::discard(m_sys.bf_mem_op_free_huge({}));
+            bsl::discard(m_sys.bf_mem_op_alloc_heap({}));
+            bsl::discard(m_sys.bf_read_phys({}));
+            bsl::discard(m_sys.bf_write_phys({}, {}));
+            bsl::discard(m_sys.bf_virt_to_phys({}));
+            bsl::discard(m_sys.bf_phys_to_virt({}));
 
             return true;
         }
     };
 
-    constexpr fixture_t fixture1{};
+    constexpr fixture_t FIXTURE1{};
 }
 
 /// <!-- description -->
@@ -177,15 +177,15 @@ namespace syscall
 [[nodiscard]] auto
 main() noexcept -> bsl::exit_code
 {
-    bsl::ut_scenario{"verify supports constinit"} = []() {
-        bsl::discard(syscall::verify_constinit);
+    bsl::ut_scenario{"verify supports constinit"} = []() noexcept {
+        bsl::discard(syscall::g_verify_constinit);
     };
 
-    bsl::ut_scenario{"verify noexcept"} = []() {
-        bsl::ut_given{} = []() {
+    bsl::ut_scenario{"verify noexcept"} = []() noexcept {
+        bsl::ut_given{} = []() noexcept {
             syscall::bf_syscall_t sys{};
             syscall::bf_uint64_t phys{};
-            bsl::ut_then{} = []() {
+            bsl::ut_then{} = []() noexcept {
                 static_assert(noexcept(syscall::bf_syscall_t{}));
                 static_assert(noexcept(sys.initialize({}, {}, {}, {})));
                 static_assert(noexcept(sys.release()));
@@ -269,11 +269,11 @@ main() noexcept -> bsl::exit_code
         };
     };
 
-    bsl::ut_scenario{"verify constness"} = []() {
-        bsl::ut_given{} = []() {
+    bsl::ut_scenario{"verify constness"} = []() noexcept {
+        bsl::ut_given{} = []() noexcept {
             syscall::fixture_t fixture2{};
-            bsl::ut_then{} = [&]() {
-                bsl::ut_check(syscall::fixture1.test_member_const());
+            bsl::ut_then{} = [&]() noexcept {
+                bsl::ut_check(syscall::FIXTURE1.test_member_const());
                 bsl::ut_check(fixture2.test_member_nonconst());
             };
         };

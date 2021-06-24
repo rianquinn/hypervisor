@@ -165,7 +165,7 @@ namespace vmmctl
         /// <!-- inputs/outputs -->
         ///   @return Returns is_open()
         ///
-        [[nodiscard]] constexpr explicit operator bool() const noexcept
+        [[nodiscard]] explicit constexpr operator bool() const noexcept
         {
             return this->is_open();
         }

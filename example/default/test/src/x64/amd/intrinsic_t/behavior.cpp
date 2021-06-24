@@ -41,54 +41,54 @@ namespace example
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"initialize success"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize success"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(intrinsic.initialize(gs, tls));
                 };
             };
         };
 
-        bsl::ut_scenario{"release executes without initialize"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"release executes without initialize"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     intrinsic.release(gs, tls);
                 };
             };
         };
 
-        bsl::ut_scenario{"release executes with initialize"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"release executes with initialize"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     bsl::ut_required_step(intrinsic.initialize(gs, tls));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         intrinsic.release(gs, tls);
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"cpuid"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"cpuid"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 intrinsic_t intrinsic{};
                 bsl::safe_uintmax rax{};
                 bsl::safe_uintmax rbx{};
                 bsl::safe_uintmax rcx{};
                 bsl::safe_uintmax rdx{};
                 constexpr auto expected_result{42_u64};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     g_cpuid_val = expected_result;
                     intrinsic.cpuid(rax, rbx, rcx, rdx);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(rax == expected_result);
                         bsl::ut_check(rbx == expected_result);
                         bsl::ut_check(rcx == expected_result);

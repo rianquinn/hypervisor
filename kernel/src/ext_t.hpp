@@ -132,10 +132,10 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         validate_pt_load(
             bfelf::elf64_phdr_t const *const phdr,
-            bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
+            bsl::span<bsl::byte const> const &elf_file) noexcept -> bsl::errc_type
         {
             if ((bsl::to_u32(phdr->p_flags) & bfelf::PF_X).is_pos()) {
                 if (bsl::unlikely((bsl::to_u32(phdr->p_flags) & bfelf::PF_W).is_pos())) {
@@ -205,8 +205,8 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
-        validate_pt_gnu_stack(bfelf::elf64_phdr_t const *const phdr) &noexcept -> bsl::errc_type
+        [[nodiscard]] static constexpr auto
+        validate_pt_gnu_stack(bfelf::elf64_phdr_t const *const phdr) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely((bsl::to_u32(phdr->p_flags) & bfelf::PF_X).is_pos())) {
                 bsl::error() << "Executable stacks are not supported\n" << bsl::here();
@@ -225,10 +225,10 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         validate_pt_tls(
             bfelf::elf64_phdr_t const *const phdr,
-            bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
+            bsl::span<bsl::byte const> const &elf_file) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely((bsl::to_u32(phdr->p_flags) & bfelf::PF_X).is_pos())) {
                 bsl::error() << "Executable TLS blocks are not supported\n" << bsl::here();
@@ -274,8 +274,8 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
-        validate(bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
+        [[nodiscard]] static constexpr auto
+        validate(bsl::span<bsl::byte const> const &elf_file) noexcept -> bsl::errc_type
         {
             if constexpr (BSL_RELEASE_MODE) {
                 return bsl::errc_success;
@@ -304,7 +304,7 @@ namespace mk
                 switch (elem.data->p_type) {
                     case bfelf::PT_LOAD.get(): {
                         found_pt_load = true;
-                        if (bsl::unlikely(!this->validate_pt_load(elem.data, elf_file))) {
+                        if (bsl::unlikely(!validate_pt_load(elem.data, elf_file))) {
                             bsl::print<bsl::V>() << bsl::here();
                             return bsl::errc_failure;
                         }
@@ -313,7 +313,7 @@ namespace mk
 
                     case bfelf::PT_GNU_STACK.get(): {
                         found_pt_gnu_stack = true;
-                        if (bsl::unlikely(!this->validate_pt_gnu_stack(elem.data))) {
+                        if (bsl::unlikely(!validate_pt_gnu_stack(elem.data))) {
                             bsl::print<bsl::V>() << bsl::here();
                             return bsl::errc_failure;
                         }
@@ -321,7 +321,7 @@ namespace mk
                     }
 
                     case bfelf::PT_TLS.get(): {
-                        if (bsl::unlikely(!this->validate_pt_tls(elem.data, elf_file))) {
+                        if (bsl::unlikely(!validate_pt_tls(elem.data, elf_file))) {
                             bsl::print<bsl::V>() << bsl::here();
                             return bsl::errc_failure;
                         }
@@ -359,12 +359,12 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         add_segments(
             tls_t &tls,
             page_pool_t &page_pool,
             root_page_table_t &rpt,
-            bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
+            bsl::span<bsl::byte const> const &elf_file) noexcept -> bsl::errc_type
         {
             bsl::span<bsl::byte> page{};
 
@@ -479,12 +479,12 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         add_stack(
             tls_t &tls,
             page_pool_t &page_pool,
             root_page_table_t &rpt,
-            bsl::safe_uintmax const &addr) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &addr) noexcept -> bsl::errc_type
         {
             for (bsl::safe_uintmax bytes{}; bytes < HYPERVISOR_EXT_STACK_SIZE;
                  bytes += HYPERVISOR_PAGE_SIZE) {
@@ -513,7 +513,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        add_stacks(tls_t &tls, page_pool_t &page_pool, root_page_table_t &rpt) &noexcept
+        add_stacks(tls_t &tls, page_pool_t &page_pool, root_page_table_t &rpt) noexcept
             -> bsl::errc_type
         {
             for (bsl::safe_uintmax pp{}; pp < bsl::to_umax(tls.online_pps); ++pp) {
@@ -545,14 +545,14 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
+        [[nodiscard]] static constexpr auto
         add_tls_block(
             tls_t &tls,
             page_pool_t &page_pool,
             root_page_table_t &rpt,
             bsl::safe_uintmax const &addr_usr,
             bsl::safe_uintmax const &addr_abi,
-            bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
+            bsl::span<bsl::byte const> const &elf_file) noexcept -> bsl::errc_type
         {
             bsl::span<bsl::uint8> page_usr{};
             bsl::span<bsl::uintmax> page_abi{};
@@ -610,7 +610,7 @@ namespace mk
             tls_t &tls,
             page_pool_t &page_pool,
             root_page_table_t &rpt,
-            bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
+            bsl::span<bsl::byte const> const &elf_file) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -653,7 +653,7 @@ namespace mk
             huge_pool_t &huge_pool,
             root_page_table_t &rpt,
             root_page_table_t const &system_rpt,
-            bsl::span<bsl::byte const> const &elf_file) &noexcept -> bsl::errc_type
+            bsl::span<bsl::byte const> const &elf_file) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(!rpt.initialize(tls, page_pool, huge_pool))) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -706,7 +706,7 @@ namespace mk
             tls_t &tls,
             page_pool_t &page_pool,
             huge_pool_t &huge_pool,
-            root_page_table_t &rpt) &noexcept -> bsl::errc_type
+            root_page_table_t &rpt) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(!rpt.initialize(tls, page_pool, huge_pool))) {
                 bsl::print<bsl::V>() << bsl::here();
@@ -793,7 +793,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        update_direct_map_rpts(tls_t &tls) &noexcept -> bsl::errc_type
+        update_direct_map_rpts(tls_t &tls) noexcept -> bsl::errc_type
         {
             for (auto const rpt : m_direct_map_rpts) {
                 if (!rpt.data->is_initialized()) {
@@ -833,7 +833,7 @@ namespace mk
             intrinsic_t &intrinsic,
             bsl::safe_uintmax const &ip,
             bsl::safe_uintmax const &arg0 = {},
-            bsl::safe_uintmax const &arg1 = {}) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &arg1 = {}) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
@@ -905,7 +905,7 @@ namespace mk
             huge_pool_t &huge_pool,
             bsl::safe_uint16 const &i,
             loader::ext_elf_file_type const &ext_elf_file,
-            root_page_table_t const &system_rpt) &noexcept -> bsl::errc_type
+            root_page_table_t const &system_rpt) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -923,7 +923,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            if (bsl::unlikely_assert(!this->validate(ext_elf_file))) {
+            if (bsl::unlikely_assert(!validate(ext_elf_file))) {
                 bsl::print<bsl::V>() << bsl::here();
                 return bsl::errc_failure;
             }
@@ -956,7 +956,7 @@ namespace mk
         ///   @param huge_pool the huge_pool_t to use
         ///
         constexpr void
-        release(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool) &noexcept
+        release(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool) noexcept
         {
             m_heap_crsr = {};
             m_handle = bsl::safe_uintmax::failure();
@@ -982,7 +982,7 @@ namespace mk
         ///   @return Returns the ID of this ext_t
         ///
         [[nodiscard]] constexpr auto
-        id() const &noexcept -> bsl::safe_uint16 const &
+        id() const noexcept -> bsl::safe_uint16 const &
         {
             return m_id;
         }
@@ -994,7 +994,7 @@ namespace mk
         ///   @return Returns the bootstrap IP for this extension.
         ///
         [[nodiscard]] constexpr auto
-        bootstrap_ip() const &noexcept -> bsl::safe_uintmax const &
+        bootstrap_ip() const noexcept -> bsl::safe_uintmax const &
         {
             return m_bootstrap_ip;
         }
@@ -1009,7 +1009,7 @@ namespace mk
         ///   @param ip the bootstrap IP to use
         ///
         constexpr void
-        set_bootstrap_ip(bsl::safe_uintmax const &ip) &noexcept
+        set_bootstrap_ip(bsl::safe_uintmax const &ip) noexcept
         {
             m_bootstrap_ip = ip;
         }
@@ -1021,7 +1021,7 @@ namespace mk
         ///   @return Returns the VMExit IP for this extension.
         ///
         [[nodiscard]] constexpr auto
-        vmexit_ip() const &noexcept -> bsl::safe_uintmax const &
+        vmexit_ip() const noexcept -> bsl::safe_uintmax const &
         {
             return m_vmexit_ip;
         }
@@ -1036,7 +1036,7 @@ namespace mk
         ///   @param ip the VMExit IP to use
         ///
         constexpr void
-        set_vmexit_ip(bsl::safe_uintmax const &ip) &noexcept
+        set_vmexit_ip(bsl::safe_uintmax const &ip) noexcept
         {
             m_vmexit_ip = ip;
         }
@@ -1048,7 +1048,7 @@ namespace mk
         ///   @return Returns the fast fail IP for this extension.
         ///
         [[nodiscard]] constexpr auto
-        fail_ip() const &noexcept -> bsl::safe_uintmax const &
+        fail_ip() const noexcept -> bsl::safe_uintmax const &
         {
             return m_fail_ip;
         }
@@ -1063,7 +1063,7 @@ namespace mk
         ///   @param ip the fail IP to use
         ///
         constexpr void
-        set_fail_ip(bsl::safe_uintmax const &ip) &noexcept
+        set_fail_ip(bsl::safe_uintmax const &ip) noexcept
         {
             m_fail_ip = ip;
         }
@@ -1075,7 +1075,7 @@ namespace mk
         ///   @return Opens a handle and returns the resulting handle
         ///
         [[nodiscard]] constexpr auto
-        open_handle() &noexcept -> bsl::safe_uintmax
+        open_handle() noexcept -> bsl::safe_uintmax
         {
             if (bsl::unlikely(m_handle)) {
                 bsl::error() << "handle already opened\n" << bsl::here();
@@ -1091,7 +1091,7 @@ namespace mk
         ///   @brief Closes a previously opened handle
         ///
         constexpr void
-        close_handle() &noexcept
+        close_handle() noexcept
         {
             m_handle = bsl::safe_uintmax::failure();
         }
@@ -1103,7 +1103,7 @@ namespace mk
         ///   @return Returns true if the extension's handle is open.
         ///
         [[nodiscard]] constexpr auto
-        is_handle_open() const &noexcept -> bool
+        is_handle_open() const noexcept -> bool
         {
             return !!m_handle;
         }
@@ -1116,7 +1116,7 @@ namespace mk
         ///   @return Returns true if provided handle is valid
         ///
         [[nodiscard]] constexpr auto
-        is_handle_valid(bsl::safe_uintmax const &handle) const &noexcept -> bool
+        is_handle_valid(bsl::safe_uintmax const &handle) const noexcept -> bool
         {
             return handle == m_handle;
         }
@@ -1130,7 +1130,7 @@ namespace mk
         ///     completed it's execution.
         ///
         [[nodiscard]] constexpr auto
-        is_started() const &noexcept -> bool
+        is_started() const noexcept -> bool
         {
             return m_started;
         }
@@ -1147,7 +1147,7 @@ namespace mk
         ///     function will return an invalid virtual and physical address.
         ///
         [[nodiscard]] constexpr auto
-        alloc_page(tls_t &tls, page_pool_t &page_pool) &noexcept -> page_t
+        alloc_page(tls_t &tls, page_pool_t &page_pool) noexcept -> page_t
         {
             bsl::errc_type ret{};
 
@@ -1212,8 +1212,8 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
-        free_page(bsl::safe_uintmax const &page_virt) &noexcept -> bsl::errc_type
+        [[nodiscard]] static constexpr auto
+        free_page(bsl::safe_uintmax const &page_virt) noexcept -> bsl::errc_type
         {
             bsl::discard(page_virt);
 
@@ -1239,7 +1239,7 @@ namespace mk
             tls_t &tls,
             page_pool_t &page_pool,
             huge_pool_t &huge_pool,
-            bsl::safe_uintmax const &size) &noexcept -> huge_t
+            bsl::safe_uintmax const &size) noexcept -> huge_t
         {
             bsl::errc_type ret{};
 
@@ -1318,8 +1318,8 @@ namespace mk
         ///   @return Returns bsl::errc_success on success, bsl::errc_failure
         ///     and friends otherwise
         ///
-        [[nodiscard]] constexpr auto
-        free_huge(bsl::safe_uintmax const &huge_virt) &noexcept -> bsl::errc_type
+        [[nodiscard]] static constexpr auto
+        free_huge(bsl::safe_uintmax const &huge_virt) noexcept -> bsl::errc_type
         {
             bsl::discard(huge_virt);
 
@@ -1341,7 +1341,7 @@ namespace mk
         ///     function returns bsl::safe_uintmax::failure().
         ///
         [[nodiscard]] constexpr auto
-        alloc_heap(tls_t &tls, page_pool_t &page_pool, bsl::safe_uintmax const &size) &noexcept
+        alloc_heap(tls_t &tls, page_pool_t &page_pool, bsl::safe_uintmax const &size) noexcept
             -> bsl::safe_uintmax
         {
             bsl::errc_type ret{};
@@ -1444,7 +1444,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         map_page_direct(
-            tls_t &tls, page_pool_t &page_pool, bsl::safe_uintmax const &page_virt) &noexcept
+            tls_t &tls, page_pool_t &page_pool, bsl::safe_uintmax const &page_virt) noexcept
             -> bsl::errc_type
         {
             bsl::errc_type ret{};
@@ -1511,7 +1511,7 @@ namespace mk
             tls_t &tls,
             page_pool_t &page_pool,
             huge_pool_t &huge_pool,
-            bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
@@ -1555,7 +1555,7 @@ namespace mk
             tls_t &tls,
             page_pool_t &page_pool,
             huge_pool_t &huge_pool,
-            bsl::safe_uint16 const &vmid) &noexcept -> bsl::errc_type
+            bsl::safe_uint16 const &vmid) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_id)) {
                 bsl::error() << "ext_t not initialized\n" << bsl::here();
@@ -1590,7 +1590,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        start(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
+        start(tls_t &tls, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
         {
             auto const arg{bsl::to_umax(syscall::BF_ALL_SPECS_SUPPORTED_VAL)};
             auto const ret{this->execute(tls, intrinsic, m_entry_ip, arg)};
@@ -1615,7 +1615,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        bootstrap(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
+        bootstrap(tls_t &tls, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(!m_bootstrap_ip)) {
                 bsl::error() << "a bootstrap handler was never registered\n" << bsl::here();
@@ -1645,7 +1645,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        vmexit(tls_t &tls, intrinsic_t &intrinsic, bsl::safe_uintmax const &exit_reason) &noexcept
+        vmexit(tls_t &tls, intrinsic_t &intrinsic, bsl::safe_uintmax const &exit_reason) noexcept
             -> bsl::errc_type
         {
             bsl::safe_uintmax arg0{bsl::to_umax(tls.active_vpsid)};
@@ -1672,7 +1672,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        fail(tls_t &tls, intrinsic_t &intrinsic) &noexcept -> bsl::errc_type
+        fail(tls_t &tls, intrinsic_t &intrinsic) noexcept -> bsl::errc_type
         {
             bsl::safe_uintmax arg0{syscall::BF_STATUS_FAILURE_UNKNOWN};
 
@@ -1693,7 +1693,7 @@ namespace mk
         ///   @param page_pool the page_pool_t to use
         ///
         constexpr void
-        dump(tls_t &tls, page_pool_t &page_pool) const &noexcept
+        dump(tls_t &tls, page_pool_t &page_pool) const noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;
@@ -1846,7 +1846,7 @@ namespace mk
             bsl::print() << bsl::ylw << "+------------------------------------+";
             bsl::print() << bsl::rst << bsl::endl;
 
-            auto *const direct_map_rpt{m_direct_map_rpts.at_if(bsl::to_umax(tls.active_vmid))};
+            auto const *const direct_map_rpt{m_direct_map_rpts.at_if(bsl::to_umax(tls.active_vmid))};
             if (bsl::unlikely(nullptr == direct_map_rpt)) {
                 bsl::error() << "invalid active_vmid "       // --
                              << bsl::hex(tls.active_vmid)    // --

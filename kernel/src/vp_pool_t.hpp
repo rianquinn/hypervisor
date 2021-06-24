@@ -67,7 +67,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(tls_t &tls, vps_pool_t &vps_pool) &noexcept -> bsl::errc_type
+        initialize(tls_t &tls, vps_pool_t &vps_pool) noexcept -> bsl::errc_type
         {
             bsl::finally_assert release_on_error{[this, &tls, &vps_pool]() noexcept -> void {
                 auto const ret{this->release(tls, vps_pool)};
@@ -105,7 +105,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        release(tls_t &tls, vps_pool_t &vps_pool) &noexcept -> bsl::errc_type
+        release(tls_t &tls, vps_pool_t &vps_pool) noexcept -> bsl::errc_type
         {
             for (auto const vp : m_pool) {
                 auto const ret{vp.data->release(tls, vps_pool)};
@@ -130,7 +130,7 @@ namespace mk
         ///   @return Returns ID of the newly allocated vp
         ///
         [[nodiscard]] constexpr auto
-        allocate(tls_t &tls, bsl::safe_uint16 const &vmid, bsl::safe_uint16 const &ppid) &noexcept
+        allocate(tls_t &tls, bsl::safe_uint16 const &vmid, bsl::safe_uint16 const &ppid) noexcept
             -> bsl::safe_uint16
         {
             lock_guard_t lock{tls, m_lock};
@@ -165,7 +165,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        deallocate(tls_t &tls, vps_pool_t &vps_pool, bsl::safe_uint16 const &vpid) &noexcept
+        deallocate(tls_t &tls, vps_pool_t &vps_pool, bsl::safe_uint16 const &vpid) noexcept
             -> bsl::errc_type
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
@@ -194,7 +194,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        zombify(bsl::safe_uint16 const &vpid) &noexcept -> bsl::errc_type
+        zombify(bsl::safe_uint16 const &vpid) noexcept -> bsl::errc_type
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
@@ -226,11 +226,11 @@ namespace mk
         ///     deallocated.
         ///
         [[nodiscard]] constexpr auto
-        is_deallocated(tls_t &tls, bsl::safe_uint16 const &vpid) const &noexcept -> bool
+        is_deallocated(tls_t &tls, bsl::safe_uint16 const &vpid) const noexcept -> bool
         {
             bsl::discard(tls);
 
-            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            auto const *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error()
                     << "vpid "                                                              // --
@@ -259,11 +259,11 @@ namespace mk
         ///     allocated.
         ///
         [[nodiscard]] constexpr auto
-        is_allocated(tls_t &tls, bsl::safe_uint16 const &vpid) const &noexcept -> bool
+        is_allocated(tls_t &tls, bsl::safe_uint16 const &vpid) const noexcept -> bool
         {
             bsl::discard(tls);
 
-            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            auto const *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error()
                     << "vpid "                                                              // --
@@ -292,11 +292,11 @@ namespace mk
         ///     a zombie.
         ///
         [[nodiscard]] constexpr auto
-        is_zombie(tls_t &tls, bsl::safe_uint16 const &vpid) const &noexcept -> bool
+        is_zombie(tls_t &tls, bsl::safe_uint16 const &vpid) const noexcept -> bool
         {
             bsl::discard(tls);
 
-            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            auto const *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error()
                     << "vpid "                                                              // --
@@ -325,7 +325,7 @@ namespace mk
         ///     function will return bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
-        is_assigned_to_vm(tls_t &tls, bsl::safe_uint16 const &vmid) const &noexcept
+        is_assigned_to_vm(tls_t &tls, bsl::safe_uint16 const &vmid) const noexcept
             -> bsl::safe_uint16
         {
             bsl::discard(tls);
@@ -361,7 +361,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        set_active(tls_t &tls, bsl::safe_uint16 const &vpid) &noexcept -> bsl::errc_type
+        set_active(tls_t &tls, bsl::safe_uint16 const &vpid) noexcept -> bsl::errc_type
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
@@ -389,7 +389,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        set_inactive(tls_t &tls, bsl::safe_uint16 const &vpid) &noexcept -> bsl::errc_type
+        set_inactive(tls_t &tls, bsl::safe_uint16 const &vpid) noexcept -> bsl::errc_type
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
@@ -420,9 +420,9 @@ namespace mk
         ///     vp_t is not active on the current PP.
         ///
         [[nodiscard]] constexpr auto
-        is_active(tls_t &tls, bsl::safe_uint16 const &vpid) const &noexcept -> bsl::safe_uint16
+        is_active(tls_t &tls, bsl::safe_uint16 const &vpid) const noexcept -> bsl::safe_uint16
         {
-            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            auto const *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error()
                     << "vpid "                                                              // --
@@ -451,9 +451,9 @@ namespace mk
         ///     active on the current PP.
         ///
         [[nodiscard]] constexpr auto
-        is_active_on_current_pp(tls_t &tls, bsl::safe_uint16 const &vpid) const &noexcept -> bool
+        is_active_on_current_pp(tls_t &tls, bsl::safe_uint16 const &vpid) const noexcept -> bool
         {
-            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            auto const *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error()
                     << "vpid "                                                              // --
@@ -480,7 +480,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        migrate(tls_t &tls, bsl::safe_uint16 const &ppid, bsl::safe_uint16 const &vpid) &noexcept
+        migrate(tls_t &tls, bsl::safe_uint16 const &ppid, bsl::safe_uint16 const &vpid) noexcept
             -> bsl::errc_type
         {
             auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
@@ -507,9 +507,9 @@ namespace mk
         ///   @return Returns the ID of the VM the requested vp_t is assigned to
         ///
         [[nodiscard]] constexpr auto
-        assigned_vm(bsl::safe_uint16 const &vpid) const &noexcept -> bsl::safe_uint16
+        assigned_vm(bsl::safe_uint16 const &vpid) const noexcept -> bsl::safe_uint16
         {
-            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            auto const *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error()
                     << "vpid "                                                              // --
@@ -533,9 +533,9 @@ namespace mk
         ///   @return Returns the ID of the PP the requested vp_t is assigned to
         ///
         [[nodiscard]] constexpr auto
-        assigned_pp(bsl::safe_uint16 const &vpid) const &noexcept -> bsl::safe_uint16
+        assigned_pp(bsl::safe_uint16 const &vpid) const noexcept -> bsl::safe_uint16
         {
-            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            auto const *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error()
                     << "vpid "                                                              // --
@@ -559,13 +559,13 @@ namespace mk
         ///   @param vpid the ID of the VP to dump
         ///
         constexpr void
-        dump(tls_t &tls, bsl::safe_uint16 const &vpid) &noexcept
+        dump(tls_t &tls, bsl::safe_uint16 const &vpid) noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;
             }
 
-            auto *const vp{m_pool.at_if(bsl::to_umax(vpid))};
+            auto const *const vp{m_pool.at_if(bsl::to_umax(vpid))};
             if (bsl::unlikely(nullptr == vp)) {
                 bsl::error()
                     << "vpid "                                                              // --

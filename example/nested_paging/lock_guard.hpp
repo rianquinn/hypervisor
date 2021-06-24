@@ -94,7 +94,7 @@ namespace example
         ///   @param o the object being copied
         ///   @return a reference to *this
         ///
-        [[maybe_unused]] auto operator=(lock_guard const &o) &noexcept -> lock_guard & = delete;
+        [[maybe_unused]] auto operator=(lock_guard const &o) noexcept -> lock_guard & = delete;
 
         /// <!-- description -->
         ///   @brief move assignment
@@ -103,7 +103,7 @@ namespace example
         ///   @param o the object being moved
         ///   @return a reference to *this
         ///
-        [[maybe_unused]] auto operator=(lock_guard &&o) &noexcept -> lock_guard & = default;
+        [[maybe_unused]] auto operator=(lock_guard &&o) noexcept -> lock_guard & = default;
     };
 }
 

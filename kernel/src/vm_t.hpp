@@ -95,7 +95,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(tls_t &tls, bsl::safe_uint16 const &i) &noexcept -> bsl::errc_type
+        initialize(tls_t &tls, bsl::safe_uint16 const &i) noexcept -> bsl::errc_type
         {
             bsl::discard(tls);
 
@@ -141,7 +141,7 @@ namespace mk
             page_pool_t &page_pool,
             huge_pool_t &huge_pool,
             ext_pool_t &ext_pool,
-            vp_pool_t &vp_pool) &noexcept -> bsl::errc_type
+            vp_pool_t &vp_pool) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
             lock_guard_t lock{tls, m_lock};
@@ -209,7 +209,7 @@ namespace mk
         ///   @return Returns the ID of this vm_t
         ///
         [[nodiscard]] constexpr auto
-        id() const &noexcept -> bsl::safe_uint16 const &
+        id() const noexcept -> bsl::safe_uint16 const &
         {
             return m_id;
         }
@@ -226,7 +226,7 @@ namespace mk
         ///
         [[nodiscard]] constexpr auto
         allocate(tls_t &tls, page_pool_t &page_pool, huge_pool_t &huge_pool, ext_pool_t &ext_pool)
-            &noexcept -> bsl::safe_uint16
+            noexcept -> bsl::safe_uint16
         {
             bsl::errc_type ret{};
             lock_guard_t lock{tls, m_lock};
@@ -287,7 +287,7 @@ namespace mk
             page_pool_t &page_pool,
             huge_pool_t &huge_pool,
             vp_pool_t &vp_pool,
-            ext_pool_t &ext_pool) &noexcept -> bsl::errc_type
+            ext_pool_t &ext_pool) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
             lock_guard_t lock{tls, m_lock};
@@ -379,7 +379,7 @@ namespace mk
         ///     longer usable.
         ///
         constexpr void
-        zombify() &noexcept
+        zombify() noexcept
         {
             if (bsl::unlikely_assert(!m_id)) {
                 return;
@@ -412,7 +412,7 @@ namespace mk
         ///   @return Returns true if this vm_t is deallocated, false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_deallocated() const &noexcept -> bool
+        is_deallocated() const noexcept -> bool
         {
             return m_allocated == allocated_status_t::deallocated;
         }
@@ -424,7 +424,7 @@ namespace mk
         ///   @return Returns true if this vm_t is allocated, false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_allocated() const &noexcept -> bool
+        is_allocated() const noexcept -> bool
         {
             return m_allocated == allocated_status_t::allocated;
         }
@@ -436,7 +436,7 @@ namespace mk
         ///   @return Returns true if this vm_t is a zombie, false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_zombie() const &noexcept -> bool
+        is_zombie() const noexcept -> bool
         {
             return m_allocated == allocated_status_t::zombie;
         }
@@ -450,7 +450,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        set_active(tls_t &tls) &noexcept -> bsl::errc_type
+        set_active(tls_t &tls) noexcept -> bsl::errc_type
         {
             lock_guard_t lock{tls, m_lock};
 
@@ -518,7 +518,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        set_inactive(tls_t &tls) &noexcept -> bsl::errc_type
+        set_inactive(tls_t &tls) noexcept -> bsl::errc_type
         {
             lock_guard_t lock{tls, m_lock};
 
@@ -600,7 +600,7 @@ namespace mk
         ///     returns bsl::safe_uint16::failure()
         ///
         [[nodiscard]] constexpr auto
-        is_active(tls_t &tls) const &noexcept -> bsl::safe_uint16
+        is_active(tls_t &tls) const noexcept -> bsl::safe_uint16
         {
             auto const online_pps{m_active.size().min(bsl::to_umax(tls.online_pps))};
 
@@ -625,9 +625,9 @@ namespace mk
         ///     false otherwise
         ///
         [[nodiscard]] constexpr auto
-        is_active_on_current_pp(tls_t &tls) const &noexcept -> bool
+        is_active_on_current_pp(tls_t &tls) const noexcept -> bool
         {
-            auto *const active{m_active.at_if(bsl::to_umax(tls.ppid))};
+            auto const *const active{m_active.at_if(bsl::to_umax(tls.ppid))};
             if (bsl::unlikely(nullptr == active)) {
                 bsl::error() << "tls.ppid "                                   // --
                              << bsl::hex(m_id)                                // --
@@ -649,7 +649,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///
         constexpr void
-        dump(tls_t &tls) const &noexcept
+        dump(tls_t &tls) const noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;

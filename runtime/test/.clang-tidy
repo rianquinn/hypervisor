@@ -24,13 +24,10 @@ Checks:
     -*,
     bsl-*,
       -bsl-template-generic-param,
-      -bsl-comparison-operators-forbidden,
-      -bsl-boolean-operators-forbidden,
-      -bsl-function-noexcept,
-      -bsl-name-prefixes,
-      -bsl-name-case,
-      -bsl-using-ident-unique-namespace,
       -bsl-literals-user-defined,
+      -bsl-lambda-implicit-capture,
+      -bsl-using-ident-unique-namespace,
+      -bsl-name-prefixes,
     bugprone-*,
       -bugprone-branch-clone,
     cert-*,
@@ -38,11 +35,9 @@ Checks:
       -cert-oop54-cpp,
     clang-analyzer-*,
       -clang-analyzer-core.CallAndMessage,
-      -clang-analyzer-core.NullDereference,
     cppcoreguidelines-*,
       -cppcoreguidelines-avoid-non-const-global-variables,
     hicpp-*,
-      -hicpp-function-size,
     misc-*,
       -misc-misplaced-const,
       -misc-non-private-member-variables-in-classes,
@@ -52,8 +47,7 @@ Checks:
     readability-*,
       -readability-redundant-member-init,
       -readability-avoid-const-params-in-decls,
-      -readability-static-accessed-through-instance,
-      -readability-function-size
+      -readability-static-accessed-through-instance
   '
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'

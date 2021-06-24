@@ -40,10 +40,10 @@ namespace mk
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"print_thread_id executes"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"print_thread_id executes"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 bsl::details::out_type<BSL_DEBUG_LEVEL, bsl::details::out_type_debug> o{};
-                bsl::ut_then{} = [&]() mutable {
+                bsl::ut_then{} = [&]()  noexcept {
                     bsl::details::ut_print_thread_id(o);
                 };
             };

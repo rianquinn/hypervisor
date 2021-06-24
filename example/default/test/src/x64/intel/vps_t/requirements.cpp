@@ -34,12 +34,12 @@ namespace
     constinit syscall::bf_syscall_t g_sys{};
     constinit example::intrinsic_t g_intrinsic{};
 
-    constinit example::vps_t const verify_constinit{};
+    constinit example::vps_t const g_verify_constinit{};
 
     // NOLINTNEXTLINE(bsl-user-defined-type-names-match-header-name)
     class fixture_t final
     {
-        example::vps_t vps_pool{};
+        example::vps_t m_vps{};
 
     public:
         [[nodiscard]] static constexpr auto
@@ -56,15 +56,15 @@ namespace
         test_member_nonconst() noexcept -> bool
         {
             bsl::discard(example::vps_t{});
-            bsl::discard(vps_pool.initialize(g_gs, g_tls, g_sys, g_intrinsic, {}));
-            vps_pool.release(g_gs, g_tls, g_sys, g_intrinsic);
-            bsl::discard(vps_pool.allocate(g_gs, g_tls, g_sys, g_intrinsic, {}, {}));
+            bsl::discard(m_vps.initialize(g_gs, g_tls, g_sys, g_intrinsic, {}));
+            m_vps.release(g_gs, g_tls, g_sys, g_intrinsic);
+            bsl::discard(m_vps.allocate(g_gs, g_tls, g_sys, g_intrinsic, {}, {}));
 
             return true;
         }
     };
 
-    constexpr fixture_t fixture1{};
+    constexpr fixture_t FIXTURE1{};
 }
 
 /// <!-- description -->
@@ -78,27 +78,27 @@ namespace
 [[nodiscard]] auto
 main() noexcept -> bsl::exit_code
 {
-    bsl::ut_scenario{"verify supports constinit"} = []() {
-        bsl::discard(verify_constinit);
+    bsl::ut_scenario{"verify supports constinit"} = []() noexcept {
+        bsl::discard(g_verify_constinit);
     };
 
-    bsl::ut_scenario{"verify noexcept"} = []() {
-        bsl::ut_given{} = []() {
-            example::vps_t vps_pool{};
-            bsl::ut_then{} = []() {
+    bsl::ut_scenario{"verify noexcept"} = []() noexcept {
+        bsl::ut_given{} = []() noexcept {
+            example::vps_t vps{};
+            bsl::ut_then{} = []() noexcept {
                 static_assert(noexcept(example::vps_t{}));
-                static_assert(noexcept(vps_pool.initialize(g_gs, g_tls, g_sys, g_intrinsic, {})));
-                static_assert(noexcept(vps_pool.release(g_gs, g_tls, g_sys, g_intrinsic)));
-                static_assert(noexcept(vps_pool.allocate(g_gs, g_tls, g_sys, g_intrinsic, {}, {})));
+                static_assert(noexcept(vps.initialize(g_gs, g_tls, g_sys, g_intrinsic, {})));
+                static_assert(noexcept(vps.release(g_gs, g_tls, g_sys, g_intrinsic)));
+                static_assert(noexcept(vps.allocate(g_gs, g_tls, g_sys, g_intrinsic, {}, {})));
             };
         };
     };
 
-    bsl::ut_scenario{"verify constness"} = []() {
-        bsl::ut_given{} = []() {
+    bsl::ut_scenario{"verify constness"} = []() noexcept {
+        bsl::ut_given{} = []() noexcept {
             fixture_t fixture2{};
-            bsl::ut_then{} = [&]() {
-                static_assert(fixture1.test_member_const());
+            bsl::ut_then{} = [&]() noexcept {
+                static_assert(FIXTURE1.test_member_const());
                 bsl::ut_check(fixture2.test_member_nonconst());
             };
         };

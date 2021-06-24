@@ -58,15 +58,15 @@ namespace mk
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"copy an array of size 1"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"copy an array of size 1"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto size{1_umax};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     constexpr auto val{42_i32};
                     bsl::discard(
                         ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
                         }
@@ -75,15 +75,15 @@ namespace mk
             };
         };
 
-        bsl::ut_scenario{"copy an array of size 15 (unaligned)"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"copy an array of size 15 (unaligned)"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto size{15_umax};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     constexpr auto val{42_i32};
                     bsl::discard(
                         ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
                         }
@@ -92,15 +92,15 @@ namespace mk
             };
         };
 
-        bsl::ut_scenario{"copy an array of size 16 (aligned)"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"copy an array of size 16 (aligned)"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto size{16_umax};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     constexpr auto val{42_i32};
                     bsl::discard(
                         ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
                         }
@@ -109,15 +109,15 @@ namespace mk
             };
         };
 
-        bsl::ut_scenario{"copy an array of size 31 (unaligned)"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"copy an array of size 31 (unaligned)"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto size{31_umax};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     constexpr auto val{42_i32};
                     bsl::discard(
                         ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
                         }
@@ -126,15 +126,15 @@ namespace mk
             };
         };
 
-        bsl::ut_scenario{"copy an array of size 32 (aligned)"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"copy an array of size 32 (aligned)"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto size{32_umax};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     constexpr auto val{42_i32};
                     bsl::discard(
                         ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
                         }
@@ -143,15 +143,15 @@ namespace mk
             };
         };
 
-        bsl::ut_scenario{"copy an array of size 127 (unaligned)"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"copy an array of size 127 (unaligned)"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto size{127_umax};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     constexpr auto val{42_i32};
                     bsl::discard(
                         ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
                         }
@@ -160,15 +160,15 @@ namespace mk
             };
         };
 
-        bsl::ut_scenario{"copy an array of size 128 (aligned)"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"copy an array of size 128 (aligned)"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto size{128_umax};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     constexpr auto val{42_i32};
                     bsl::discard(
                         ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
                         }
@@ -177,15 +177,15 @@ namespace mk
             };
         };
 
-        bsl::ut_scenario{"copy an array of size 0xFFFFF (unaligned)"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"copy an array of size 0xFFFFF (unaligned)"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto size{0xFFFFF_umax};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     constexpr auto val{42_i32};
                     bsl::discard(
                         ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
                         }
@@ -194,15 +194,15 @@ namespace mk
             };
         };
 
-        bsl::ut_scenario{"copy an array of size 0x100000 (aligned)"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"copy an array of size 0x100000 (aligned)"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto size{0x100000_umax};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     constexpr auto val{42_i32};
                     bsl::discard(
                         ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()));
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         for (auto const elem : bsl::as_const(data_dst)) {
                             bsl::ut_check(*elem.data == bsl::to_u8(val));
                         }
@@ -211,11 +211,11 @@ namespace mk
             };
         };
 
-        bsl::ut_scenario{"memset return"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
+        bsl::ut_scenario{"memset return"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
                 constexpr auto size{1_umax};
                 bsl::array<bsl::uint8, size.get()> data_dst{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     constexpr auto val{42_i32};
                     bsl::ut_check(
                         ut_memset(data_dst.data(), val.get(), data_dst.size_bytes().get()) ==

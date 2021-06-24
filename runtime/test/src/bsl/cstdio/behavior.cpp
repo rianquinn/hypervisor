@@ -40,17 +40,17 @@ namespace mk
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"fputc executes"} = []() {
-            bsl::ut_given{} = []() {
-                bsl::ut_then{} = []() mutable {
+        bsl::ut_scenario{"fputc executes"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
+                bsl::ut_then{} = []()  noexcept {
                     bsl::fputc('*');
                 };
             };
         };
 
-        bsl::ut_scenario{"fputs executes"} = []() {
-            bsl::ut_given{} = []() {
-                bsl::ut_then{} = []() mutable {
+        bsl::ut_scenario{"fputs executes"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
+                bsl::ut_then{} = []()  noexcept {
                     bsl::fputs("the answer is 42");
                 };
             };

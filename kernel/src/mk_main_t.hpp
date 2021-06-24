@@ -321,7 +321,7 @@ namespace mk
         /// <!-- inputs/outputs -->
         ///   @param tls the current TLS block
         ///
-        constexpr void
+        static constexpr void
         set_extension_sp(tls_t &tls) noexcept
         {
             constexpr auto stack_addr{HYPERVISOR_EXT_STACK_ADDR};
@@ -339,7 +339,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsic_t to use
         ///
-        constexpr void
+        static constexpr void
         set_extension_tp(tls_t &tls, intrinsic_t &intrinsic) noexcept
         {
             constexpr auto tls_addr{HYPERVISOR_EXT_TLS_ADDR};
@@ -503,7 +503,7 @@ namespace mk
             vps_pool_t &vps_pool,
             ext_pool_t &ext_pool,
             root_page_table_t &system_rpt,
-            loader::mk_args_t *const args) &noexcept -> bsl::exit_code
+            loader::mk_args_t *const args) noexcept -> bsl::exit_code
         {
             bsl::errc_type ret{};
 
@@ -517,8 +517,8 @@ namespace mk
                 return bsl::exit_failure;
             }
 
-            this->set_extension_sp(tls);
-            this->set_extension_tp(tls, intrinsic);
+            set_extension_sp(tls);
+            set_extension_tp(tls, intrinsic);
 
             if (args->ppid == syscall::BF_BS_PPID) {
                 ret = this->initialize(

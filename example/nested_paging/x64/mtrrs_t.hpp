@@ -1204,7 +1204,7 @@ namespace example
         ///     on failure.
         ///
         [[nodiscard]] constexpr auto
-        parse(syscall::bf_handle_t &handle) &noexcept -> bsl::errc_type
+        parse(syscall::bf_handle_t &handle) noexcept -> bsl::errc_type
         {
             bsl::errc_type ret{};
 
@@ -1440,7 +1440,7 @@ namespace example
             MAP_T &map,
             bsl::safe_uintmax const &gpa,
             bsl::safe_uintmax const &size,
-            bsl::safe_uintmax const &flags) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &flags) noexcept -> bsl::errc_type
         {
             constexpr bsl::safe_uint64 page_size_4k{bsl::to_umax(0x001000U)};
 
@@ -1533,7 +1533,7 @@ namespace example
             MAP_T &map,
             bsl::safe_uintmax const &gpa,
             bsl::safe_uintmax const &size,
-            bsl::safe_uintmax const &flags) &noexcept -> bsl::errc_type
+            bsl::safe_uintmax const &flags) noexcept -> bsl::errc_type
         {
             constexpr bsl::safe_uint64 page_size_4k{bsl::to_umax(0x001000U)};
             constexpr bsl::safe_uint64 page_size_2m{bsl::to_umax(0x200000U)};
@@ -1639,7 +1639,7 @@ namespace example
         ///     or bsl::safe_uintmax::failure() on failure.
         ///
         [[nodiscard]] constexpr auto
-        max_phys() &noexcept -> bsl::safe_uintmax
+        max_phys() noexcept -> bsl::safe_uintmax
         {
             if (m_ranges_count.is_zero()) {
                 bsl::error() << "mtrrs has not been parsed yet\n" << bsl::here();
@@ -1654,7 +1654,7 @@ namespace example
         ///   @brief Outputs the contents of the MTRRs.
         ///
         constexpr void
-        dump() const &noexcept
+        dump() const noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;

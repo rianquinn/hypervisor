@@ -46,9 +46,9 @@ namespace mk
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"__stack_chk_guard is the right value"} = []() {
-            bsl::ut_given_at_runtime{} = []() {
-                bsl::ut_then{} = []() {
+        bsl::ut_scenario{"__stack_chk_guard is the right value"} = []() noexcept {
+            bsl::ut_given_at_runtime{} = []() noexcept {
+                bsl::ut_then{} = []() noexcept {
                     constexpr auto expected{0xDEADBEEFDEADBEEF_umax};
                     bsl::ut_check(ut_stack_chk_guard == expected);
                 };

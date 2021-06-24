@@ -73,7 +73,7 @@ namespace vmmctl
         /// <!-- description -->
         ///   @brief Displays the help menu for vmmctl
         ///
-        constexpr static void
+        static constexpr void
         help() noexcept
         {
             bsl::print() << "Usage: vmmctl start microkernel ext1 <ext2> ..." << bsl::endl;
@@ -249,7 +249,7 @@ namespace vmmctl
         ///     arguments if the ELF file was successfully mapped, otherwise
         ///     this function returns bsl::errc_failure.
         ///
-        [[nodiscard]] constexpr static auto
+        [[nodiscard]] static constexpr auto
         map_elf_file(bsl::arguments &args, ifmap *const map) noexcept -> bsl::errc_type
         {
             if ((*map = ifmap{args.front<bsl::string_view>()})) {
@@ -383,7 +383,7 @@ namespace vmmctl
         /// <!-- inputs/outputs -->
         ///   @param cmd the user provided command
         ///
-        constexpr static void
+        static constexpr void
         process_cmd_output_error(bsl::string_view const &cmd) noexcept
         {
             if (cmd.empty()) {

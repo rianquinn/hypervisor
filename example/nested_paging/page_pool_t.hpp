@@ -82,11 +82,6 @@ namespace example
 
     public:
         /// <!-- description -->
-        ///   @brief Default constructor
-        ///
-        constexpr page_pool_t() noexcept = default;
-
-        /// <!-- description -->
         ///   @brief Initializes the page pool
         ///
         /// <!-- inputs/outputs -->
@@ -95,7 +90,7 @@ namespace example
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        initialize(syscall::bf_handle_t const &handle) &noexcept -> bsl::errc_type
+        initialize(syscall::bf_handle_t const &handle) noexcept -> bsl::errc_type
         {
             if (bsl::unlikely(m_initialized)) {
                 bsl::error() << "page_pool_t already initialized\n" << bsl::here();
@@ -118,7 +113,7 @@ namespace example
         ///   @brief Release the page_pool_t
         ///
         constexpr void
-        release() &noexcept
+        release() noexcept
         {
             m_size = {};
             m_head = {};
@@ -126,47 +121,6 @@ namespace example
             m_handle = {};
             m_initialized = {};
         }
-
-        /// <!-- description -->
-        ///   @brief Destroyes a previously created page_pool_t
-        ///
-        constexpr ~page_pool_t() noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///
-        constexpr page_pool_t(page_pool_t const &o) noexcept = delete;
-
-        /// <!-- description -->
-        ///   @brief move constructor
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///
-        constexpr page_pool_t(page_pool_t &&o) noexcept = default;
-
-        /// <!-- description -->
-        ///   @brief copy assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being copied
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(page_pool_t const &o) &noexcept
-            -> page_pool_t & = delete;
-
-        /// <!-- description -->
-        ///   @brief move assignment
-        ///
-        /// <!-- inputs/outputs -->
-        ///   @param o the object being moved
-        ///   @return a reference to *this
-        ///
-        [[maybe_unused]] constexpr auto operator=(page_pool_t &&o) &noexcept
-            -> page_pool_t & = default;
 
         /// <!-- description -->
         ///   @brief Allocates a page from the page pool.
@@ -177,7 +131,7 @@ namespace example
         ///
         template<typename T>
         [[nodiscard]] constexpr auto
-        allocate() &noexcept -> T *
+        allocate() noexcept -> T *
         {
             lock_guard lock{m_pool_lock};
 
@@ -220,7 +174,7 @@ namespace example
         ///   @param ptr the pointer to the page to deallocate
         ///
         constexpr void
-        deallocate(void *const ptr) &noexcept
+        deallocate(void *const ptr) noexcept
         {
             lock_guard lock{m_pool_lock};
 
@@ -262,7 +216,7 @@ namespace example
         ///
         template<typename T>
         [[nodiscard]] constexpr auto
-        virt_to_phys(T const *const virt) const &noexcept -> bsl::safe_uintmax
+        virt_to_phys(T const *const virt) const noexcept -> bsl::safe_uintmax
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
             return bsl::to_umax(virt) - bsl::to_umax(HYPERVISOR_EXT_PAGE_POOL_ADDR);
@@ -284,7 +238,7 @@ namespace example
         ///
         template<typename T>
         [[nodiscard]] constexpr auto
-        phys_to_virt(bsl::safe_uintmax const &phys) const &noexcept -> T *
+        phys_to_virt(bsl::safe_uintmax const &phys) const noexcept -> T *
         {
             static_assert(bsl::disjunction<bsl::is_void<T>, bsl::is_standard_layout<T>>::value);
             return bsl::to_ptr<T *>(phys + bsl::to_umax(HYPERVISOR_EXT_PAGE_POOL_ADDR));

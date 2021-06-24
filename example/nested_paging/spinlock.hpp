@@ -82,7 +82,7 @@ namespace example
         ///   @param o the object being copied
         ///   @return a reference to *this
         ///
-        [[maybe_unused]] auto operator=(spinlock const &o) &noexcept -> spinlock & = delete;
+        [[maybe_unused]] auto operator=(spinlock const &o) noexcept -> spinlock & = delete;
 
         /// <!-- description -->
         ///   @brief move assignment
@@ -91,7 +91,7 @@ namespace example
         ///   @param o the object being moved
         ///   @return a reference to *this
         ///
-        [[maybe_unused]] auto operator=(spinlock &&o) &noexcept -> spinlock & = default;
+        [[maybe_unused]] auto operator=(spinlock &&o) noexcept -> spinlock & = default;
 
         /// <!-- description -->
         ///   @brief Locks the spinlock. This will not return until the

@@ -56,7 +56,7 @@ namespace mk
         ///   @param str the name of the field
         ///   @param val the value of the field
         ///
-        constexpr void
+        static constexpr void
         dump_field(bsl::string_view const &str, bsl::safe_uintmax const &val) noexcept
         {
             if (val.is_zero()) {
@@ -76,7 +76,7 @@ namespace mk
         ///   @param rec the record to add to the log
         ///
         constexpr void
-        add(bsl::safe_uint16 const &ppid, vmexit_log_record_t const &rec) &noexcept
+        add(bsl::safe_uint16 const &ppid, vmexit_log_record_t const &rec) noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL < bsl::VV) {
                 return;
@@ -105,7 +105,7 @@ namespace mk
         ///   @param ppid the ID of the PP whose log should be dumped
         ///
         constexpr void
-        dump(bsl::safe_uint16 const &ppid) &noexcept
+        dump(bsl::safe_uint16 const &ppid) noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL < bsl::VV) {
                 return;
@@ -132,7 +132,7 @@ namespace mk
             bsl::print() << bsl::rst << bsl::endl;
 
             for (bsl::safe_uintmax i{}; i < pp_log->log.size(); ++i) {
-                auto const rec{pp_log->log.at_if(pp_log->crsr)};
+                auto const *const rec{pp_log->log.at_if(pp_log->crsr)};
 
                 if (rec->rip.is_pos()) {
                     bsl::print() << bsl::ylw << "| ";

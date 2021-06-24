@@ -883,7 +883,7 @@ namespace mk
             tls_t &tls,
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_int32 const &auto_release) &noexcept -> void *
+            bsl::safe_int32 const &auto_release) noexcept -> void *
         {
             // bsl::errc_type ret{};
 
@@ -946,7 +946,7 @@ namespace mk
         // ///   @param tls the current TLS block
         // ///
         // constexpr void
-        // release_tables(tls_t &tls) &noexcept
+        // release_tables(tls_t &tls) noexcept
         // {
         //     if (bsl::unlikely(nullptr == m_l0t)) {
         //         return;
@@ -978,13 +978,6 @@ namespace mk
         // }
 
     public:
-        /// @brief an alias for intrinsic_t
-        using intrinsic_type = intrinsic_t;
-        /// @brief an alias for page_pool_t
-        using page_pool_type = page_pool_t;
-        /// @brief an alias for huge_pool_t
-        using huge_pool_type = huge_pool_t;
-
         /// <!-- descril3tion -->
         ///   @brief Initializes this root_page_table_t
         ///
@@ -1001,7 +994,7 @@ namespace mk
             tls_t &tls,
             intrinsic_t *const intrinsic,
             page_pool_t *const page_pool,
-            huge_pool_t *const huge_pool) &noexcept -> bsl::errc_type
+            huge_pool_t *const huge_pool) noexcept -> bsl::errc_type
         {
             bsl::print() << bsl::rst << "Hello from ARMv8 on a Raspberry Pi 4!!!\n";
             bsl::print() << bsl::endl;
@@ -1069,7 +1062,7 @@ namespace mk
         ///   @param tls the current TLS block
         ///
         constexpr void
-        release(tls_t &tls) &noexcept
+        release(tls_t &tls) noexcept
         {
             lock_guard_t lock{tls, m_lock};
 
@@ -1088,7 +1081,7 @@ namespace mk
         ///   @return Returns true if this RPT is initialized.
         ///
         [[nodiscard]] constexpr auto
-        is_initialized() const &noexcept -> bool
+        is_initialized() const noexcept -> bool
         {
             return m_initialized;
         }
@@ -1101,7 +1094,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        activate() const &noexcept -> bsl::errc_type
+        activate() const noexcept -> bsl::errc_type
         {
             if (bsl::unlikely_assert(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
@@ -1127,7 +1120,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        add_tables(tls_t &tls, void const *const rpt) &noexcept -> bsl::errc_type
+        add_tables(tls_t &tls, void const *const rpt) noexcept -> bsl::errc_type
         {
             lock_guard_t lock{tls, m_lock};
 
@@ -1173,7 +1166,7 @@ namespace mk
         ///     and friends otherwise
         ///
         [[nodiscard]] constexpr auto
-        add_tables(tls_t &tls, root_page_table_t const &rpt) &noexcept -> bsl::errc_type
+        add_tables(tls_t &tls, root_page_table_t const &rpt) noexcept -> bsl::errc_type
         {
             return this->add_tables(tls, rpt.m_l0t);
         }
@@ -1198,7 +1191,7 @@ namespace mk
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_phys,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_int32 const &auto_release) &noexcept -> bsl::errc_type
+            bsl::safe_int32 const &auto_release) noexcept -> bsl::errc_type
         {
             lock_guard_t lock{tls, m_lock};
 
@@ -1398,7 +1391,7 @@ namespace mk
             bsl::safe_uintmax const &page_virt,
             bsl::safe_uintmax const &page_phys,
             bsl::safe_uintmax const &page_flags,
-            bsl::safe_int32 const &auto_release) &noexcept -> bsl::errc_type
+            bsl::safe_int32 const &auto_release) noexcept -> bsl::errc_type
         {
             return this->map_page(
                 tls,
@@ -1429,7 +1422,7 @@ namespace mk
         allocate_page_rw(
             tls_t &tls,
             bsl::safe_uintmax const &page_virt,
-            bsl::safe_int32 const &auto_release) &noexcept -> void *
+            bsl::safe_int32 const &auto_release) noexcept -> void *
         {
             if (bsl::unlikely_assert(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
@@ -1488,7 +1481,7 @@ namespace mk
         allocate_page_rx(
             tls_t &tls,
             bsl::safe_uintmax const &page_virt,
-            bsl::safe_int32 const &auto_release) &noexcept -> void *
+            bsl::safe_int32 const &auto_release) noexcept -> void *
         {
             if (bsl::unlikely_assert(!m_initialized)) {
                 bsl::error() << "root_page_table_t not initialized\n" << bsl::here();
@@ -1530,7 +1523,7 @@ namespace mk
         ///   @brief Dumps the provided pml4_t
         ///
         constexpr void
-        dump() const &noexcept
+        dump() const noexcept
         {
             if constexpr (BSL_DEBUG_LEVEL == bsl::CRITICAL_ONLY) {
                 return;

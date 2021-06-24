@@ -40,37 +40,37 @@ namespace example
     [[nodiscard]] constexpr auto
     tests() noexcept -> bsl::exit_code
     {
-        bsl::ut_scenario{"initialize fails"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize fails"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_when{} = [&]() {
+                bsl::ut_when{} = [&]() noexcept {
                     intrinsic.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&]() {
+                    bsl::ut_then{} = [&]() noexcept {
                         bsl::ut_check(!intrinsic.initialize(gs, tls));
                     };
                 };
             };
         };
 
-        bsl::ut_scenario{"initialize success"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"initialize success"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     bsl::ut_check(intrinsic.initialize(gs, tls));
                 };
             };
         };
 
-        bsl::ut_scenario{"release executes"} = []() {
-            bsl::ut_given{} = []() {
+        bsl::ut_scenario{"release executes"} = []() noexcept {
+            bsl::ut_given{} = []() noexcept {
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&]() {
+                bsl::ut_then{} = [&]() noexcept {
                     intrinsic.release(gs, tls);
                 };
             };
