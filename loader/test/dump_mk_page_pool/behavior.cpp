@@ -51,7 +51,7 @@ namespace mk
 
         bsl::ut_scenario{"success"} = []() {
             mutable_span_t page_pool{};
-            bsl::ut_then{} = [&page_pool]() {
+            bsl::ut_then{} = [&]() {
                 dump_mk_page_pool(&page_pool);
             };
         };

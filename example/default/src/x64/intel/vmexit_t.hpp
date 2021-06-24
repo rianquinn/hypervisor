@@ -72,12 +72,16 @@ namespace example
             vp_pool_t &vp_pool,
             vps_pool_t &vps_pool) noexcept -> bsl::errc_type
         {
-            bsl::discard(gs);
             bsl::discard(tls);
-            bsl::discard(sys);
             bsl::discard(intrinsic);
             bsl::discard(vp_pool);
             bsl::discard(vps_pool);
+
+            gs.msr_bitmap = sys.bf_mem_op_alloc_page(gs.msr_bitmap_phys);
+            if (bsl::unlikely_assert(nullptr == gs.msr_bitmap)) {
+                bsl::print<bsl::V>() << bsl::here();
+                return bsl::errc_failure;
+            }
 
             /// NOTE:
             /// - Add initialization code here if needed. Otherwise, this
@@ -107,9 +111,9 @@ namespace example
             vp_pool_t &vp_pool,
             vps_pool_t &vps_pool) noexcept
         {
-            bsl::discard(gs);
+            bsl::errc_type ret{};
+
             bsl::discard(tls);
-            bsl::discard(sys);
             bsl::discard(intrinsic);
             bsl::discard(vp_pool);
             bsl::discard(vps_pool);
@@ -118,6 +122,17 @@ namespace example
             /// - Release functions are usually only needed in the event of
             ///   an error, or during unit testing.
             ///
+
+            ret = sys.bf_mem_op_free_page(gs.msr_bitmap);
+            if (bsl::unlikely_assert(!ret)) {
+                bsl::print<bsl::V>() << bsl::here();
+            }
+            else {
+                bsl::touch();
+            }
+
+            gs.msr_bitmap = {};
+            gs.msr_bitmap_phys = {};
         }
 
         /// <!-- description -->

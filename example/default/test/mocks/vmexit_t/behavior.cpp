@@ -49,9 +49,9 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_when{} = [&vmexit, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                bsl::ut_when{} = [&]() {
                     vmexit.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&vmexit, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(
                             !vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     };
@@ -68,7 +68,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_then{} = [&vmexit, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(vmexit.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                 };
             };
@@ -83,7 +83,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_then{} = [&vmexit, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                bsl::ut_then{} = [&]() {
                     vmexit.release(gs, tls, sys, intrinsic, vp_pool, vps_pool);
                 };
             };
@@ -98,9 +98,9 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_when{} = [&vmexit, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                bsl::ut_when{} = [&]() {
                     vmexit.set_dispatch(bsl::errc_failure);
-                    bsl::ut_then{} = [&vmexit, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(
                             !vmexit.dispatch(gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, {}));
                     };
@@ -117,7 +117,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_then{} = [&vmexit, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(
                         vmexit.dispatch(gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, {}));
                 };

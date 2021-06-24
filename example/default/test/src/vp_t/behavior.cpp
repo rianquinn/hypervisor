@@ -47,9 +47,9 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vp.initialize(gs, tls, sys, intrinsic, {}));
                     };
                 };
@@ -63,7 +63,7 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_check(
                         !vp.initialize(gs, tls, sys, intrinsic, bsl::safe_uint16::failure()));
                 };
@@ -77,7 +77,7 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_check(!vp.initialize(gs, tls, sys, intrinsic, syscall::BF_INVALID_ID));
                 };
             };
@@ -90,7 +90,7 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_check(vp.initialize(gs, tls, sys, intrinsic, {}));
                 };
             };
@@ -103,7 +103,7 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     vp.release(gs, tls, sys, intrinsic);
                 };
             };
@@ -116,9 +116,9 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         vp.release(gs, tls, sys, intrinsic);
                     };
                 };
@@ -132,7 +132,7 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, {}, {}));
                 };
             };
@@ -145,10 +145,10 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, sys, intrinsic, {}));
                     bsl::ut_required_step(vp.allocate(gs, tls, sys, intrinsic, {}, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vp.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
@@ -162,9 +162,9 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(
                             !vp.allocate(gs, tls, sys, intrinsic, bsl::safe_uint16::failure(), {}));
                     };
@@ -179,9 +179,9 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(
                             !vp.allocate(gs, tls, sys, intrinsic, syscall::BF_INVALID_ID, {}));
                     };
@@ -196,9 +196,9 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(
                             !vp.allocate(gs, tls, sys, intrinsic, {}, bsl::safe_uint16::failure()));
                     };
@@ -213,9 +213,9 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(
                             !vp.allocate(gs, tls, sys, intrinsic, {}, syscall::BF_INVALID_ID));
                     };
@@ -230,9 +230,9 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vp.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vp, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(vp.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };

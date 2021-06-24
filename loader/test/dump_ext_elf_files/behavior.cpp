@@ -28,6 +28,7 @@ extern "C"
 }
 
 #include <bsl/array.hpp>
+#include <bsl/convert.hpp>
 #include <bsl/ut.hpp>
 
 namespace mk
@@ -52,7 +53,7 @@ namespace mk
 
         bsl::ut_scenario{"no extensions"} = []() {
             bsl::array<span_t, bsl::to_umax(HYPERVISOR_MAX_EXTENSIONS).get()> files{};
-            bsl::ut_then{} = [&files]() {
+            bsl::ut_then{} = [&]() {
                 dump_ext_elf_files(files.data());
             };
         };
@@ -62,7 +63,7 @@ namespace mk
             uint8_t data{};
             files.front().addr = &data;
             files.front().size = sizeof(data);
-            bsl::ut_then{} = [&files]() {
+            bsl::ut_then{} = [&]() {
                 dump_ext_elf_files(files.data());
             };
         };

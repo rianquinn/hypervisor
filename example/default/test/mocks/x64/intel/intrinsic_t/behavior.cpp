@@ -45,9 +45,9 @@ namespace example
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_when{} = [&intrinsic, &gs, &tls]() {
+                bsl::ut_when{} = [&]() {
                     intrinsic.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&intrinsic, &gs, &tls]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!intrinsic.initialize(gs, tls));
                     };
                 };
@@ -59,7 +59,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&intrinsic, &gs, &tls]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(intrinsic.initialize(gs, tls));
                 };
             };
@@ -70,7 +70,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&intrinsic, &gs, &tls]() {
+                bsl::ut_then{} = [&]() {
                     intrinsic.release(gs, tls);
                 };
             };
@@ -88,19 +88,10 @@ namespace example
                 auto rbx{0x1234567800000000_u64};
                 auto rcx{0x1234567800000000_u64};
                 auto rdx{0x1234567800000000_u64};
-                bsl::ut_when{} = [&intrinsic,
-                                  &eax,
-                                  &ebx,
-                                  &ecx,
-                                  &edx,
-                                  &rax,
-                                  &rbx,
-                                  &rcx,
-                                  &rdx,
-                                  &expected_result]() {
+                bsl::ut_when{} = [&]() {
                     intrinsic.set_cpuid(eax, ebx, ecx, edx);
                     intrinsic.cpuid(rax, rbx, rcx, rdx);
-                    bsl::ut_then{} = [&rax, &rbx, &rcx, &rdx, &expected_result]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(rax == expected_result);
                         bsl::ut_check(rbx == expected_result);
                         bsl::ut_check(rcx == expected_result);

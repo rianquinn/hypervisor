@@ -66,9 +66,9 @@ namespace example
             bsl::ut_given{} = []() {
                 constexpr auto data1{42_umax};
                 bsl::safe_uintmax data2{};
-                bsl::ut_when{} = [&data1, &data2]() {
+                bsl::ut_when{} = [&]() {
                     data2 += data1;
-                    bsl::ut_then{} = [&data1, &data2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(data2 == data1);
                     };
                 };
@@ -77,9 +77,9 @@ namespace example
             bsl::ut_given_at_runtime{} = []() {
                 constexpr auto data1{42_umax};
                 auto data2{bsl::safe_uintmax::failure()};
-                bsl::ut_when{} = [&data1, &data2]() {
+                bsl::ut_when{} = [&]() {
                     data2 += data1;
-                    bsl::ut_then{} = [&data2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!data2);
                     };
                 };
@@ -100,9 +100,9 @@ namespace example
             bsl::ut_given{} = []() {
                 constexpr auto data1{42_umax};
                 bsl::safe_uintmax data2{};
-                bsl::ut_when{} = [&data1, &data2]() {
+                bsl::ut_when{} = [&]() {
                     data2 += data1;
-                    bsl::ut_then{} = [&data1, &data2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(data2 == data1);
                     };
                 };
@@ -113,9 +113,9 @@ namespace example
             bsl::ut_given_at_runtime{} = []() {
                 constexpr auto data1{42_umax};
                 auto data2{bsl::safe_uintmax::failure()};
-                bsl::ut_when{} = [&data1, &data2]() {
+                bsl::ut_when{} = [&]() {
                     data2 += data1;
-                    bsl::ut_then{} = [&data2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!data2);
                     };
                 };
@@ -134,14 +134,14 @@ namespace example
         bsl::ut_scenario{"test something at runtime only"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 constexpr auto val{42_umax};
-                bsl::ut_then{} = [&val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(runtime_only_function_that_knows_all(val));
                 };
             };
 
             bsl::ut_given_at_runtime{} = []() {
                 constexpr auto val{23_umax};
-                bsl::ut_then{} = [&val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!runtime_only_function_that_knows_all(val));
                 };
             };
@@ -161,10 +161,10 @@ namespace example
             bsl::ut_given{} = []() {
                 constexpr auto data1{42_umax};
                 auto data2{42_umax};
-                bsl::ut_when{} = [&data1, &data2]() {
+                bsl::ut_when{} = [&]() {
                     data2 += data1;
                     bsl::ut_required_step(data2 == 84_umax);
-                    bsl::ut_then{} = [&data2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(data2 - 42_umax == 42_umax);
                     };
                 };
@@ -179,9 +179,9 @@ namespace example
 
         bsl::ut_scenario{"this is what I am testing"} = []() {
             bsl::ut_given{"given the following variables"} = []() {
-                bsl::ut_when{"when we do the following"} = []() mutable {
+                bsl::ut_when{"when we do the following"} = [&]() mutable {
                     bsl::ut_required_step(true);
-                    bsl::ut_then{"we expect the following"} = []() {
+                    bsl::ut_then{"we expect the following"} = [&]() {
                         bsl::ut_check(true);
                     };
                 };
@@ -204,16 +204,16 @@ namespace example
             bsl::ut_given{} = []() {
                 constexpr auto data1{42_umax};
                 bsl::safe_uintmax data2{};
-                bsl::ut_when{} = [&data1, data2]() mutable {
+                bsl::ut_when{} = [&, data2]() mutable {
                     data2 += data1;
-                    bsl::ut_then{} = [&data1, data2]() {
+                    bsl::ut_then{} = [&, data2]() {
                         bsl::ut_check(data2 == data1);
                     };
                 };
 
-                bsl::ut_when{} = [&data1, data2]() mutable {
+                bsl::ut_when{} = [&, data2]() mutable {
                     data2 += (data1 * data1);
-                    bsl::ut_then{} = [&data1, data2]() {
+                    bsl::ut_then{} = [&, data2]() {
                         bsl::ut_check(data2 == (data1 * data1));
                     };
                 };
@@ -234,9 +234,9 @@ namespace example
 
         bsl::ut_scenario{"description"} = []() {
             bsl::ut_given{} = []() {
-                bsl::ut_when{} = []() mutable {
+                bsl::ut_when{} = [&]() mutable {
                     bsl::ut_required_step(true);
-                    bsl::ut_then{} = []() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(true);
                     };
                 };

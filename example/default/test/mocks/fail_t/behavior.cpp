@@ -49,9 +49,9 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_when{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                bsl::ut_when{} = [&]() {
                     fail.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!fail.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                     };
                 };
@@ -67,7 +67,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_then{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(fail.initialize(gs, tls, sys, intrinsic, vp_pool, vps_pool));
                 };
             };
@@ -82,7 +82,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_then{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                bsl::ut_then{} = [&]() {
                     fail.release(gs, tls, sys, intrinsic, vp_pool, vps_pool);
                 };
             };
@@ -97,9 +97,9 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_when{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                bsl::ut_when{} = [&]() {
                     fail.set_dispatch(bsl::errc_failure);
-                    bsl::ut_then{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(
                             !fail.dispatch(gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, {}));
                     };
@@ -116,7 +116,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 vp_pool_t vp_pool{};
                 vps_pool_t vps_pool{};
-                bsl::ut_then{} = [&fail, &gs, &tls, &sys, &intrinsic, &vp_pool, &vps_pool]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(
                         fail.dispatch(gs, tls, sys, intrinsic, vp_pool, vps_pool, {}, {}));
                 };

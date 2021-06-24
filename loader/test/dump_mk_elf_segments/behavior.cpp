@@ -28,6 +28,7 @@ extern "C"
 }
 
 #include <bsl/array.hpp>
+#include <bsl/convert.hpp>
 #include <bsl/ut.hpp>
 
 namespace mk
@@ -52,7 +53,7 @@ namespace mk
 
         bsl::ut_scenario{"no segments"} = []() {
             bsl::array<elf_segment_t, bsl::to_umax(HYPERVISOR_MAX_SEGMENTS).get()> segments{};
-            bsl::ut_then{} = [&segments]() {
+            bsl::ut_then{} = [&]() {
                 dump_mk_elf_segments(segments.data());
             };
         };
@@ -62,7 +63,7 @@ namespace mk
             uint8_t data{};
             segments.front().addr = &data;
             segments.front().size = sizeof(data);
-            bsl::ut_then{} = [&segments]() {
+            bsl::ut_then{} = [&]() {
                 dump_mk_elf_segments(segments.data());
             };
         };

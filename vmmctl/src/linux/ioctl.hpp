@@ -74,11 +74,9 @@ namespace vmmctl
         ///     with a device driver through an IOCTL interface.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam CSTR the string type that used to describe "name"
         ///   @param name the name of the device driver to IOCTL.
         ///
-        template<typename CSTR>
-        explicit constexpr ioctl(CSTR name) noexcept
+        explicit constexpr ioctl(bsl::string_view const &name) noexcept
         {
             // We don't have a choice here
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
@@ -177,13 +175,11 @@ namespace vmmctl
         ///     data.
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam REQUEST the type of request
         ///   @param req the request
         ///   @return Returns true if the IOCTL succeeded, false otherwise.
         ///
-        template<typename REQUEST>
         [[nodiscard]] constexpr auto
-        send(bsl::safe_integral<REQUEST> const &req) const noexcept -> bool
+        send(bsl::safe_uintmax const &req) const noexcept -> bool
         {
             if (bsl::unlikely(IOCTL_INVALID_HNDL.get() == m_hndl)) {
                 bsl::error() << "failed to send, ioctl not properly initialized\n";
@@ -209,20 +205,16 @@ namespace vmmctl
         ///   @brief Reads data from the device driver
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam REQUEST the type of request
         ///   @param req the request
         ///   @param data a pointer to read data to
         ///   @param size the size of the buffer being read to
         ///   @return Returns true if the IOCTL succeeded, false otherwise.
         ///
-        template<typename REQUEST>
         [[nodiscard]] constexpr auto
         // This conflicts with read() from unistd.h when it is included.
         // NOLINTNEXTLINE(bsl-using-ident-unique-namespace)
-        read_data(
-            bsl::safe_integral<REQUEST> const &req,
-            void *const data,
-            bsl::safe_uintmax const &size) const noexcept -> bool
+        read_data(bsl::safe_uintmax const &req, void *const data, bsl::safe_uintmax const &size)
+            const noexcept -> bool
         {
             bsl::discard(size);
 
@@ -255,16 +247,14 @@ namespace vmmctl
         ///   @brief Writes data to the device driver
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam REQUEST the type of request
         ///   @param req the request
         ///   @param data a pointer to write data from
         ///   @param size the size of the buffer being written from
         ///   @return Returns true if the IOCTL succeeded, false otherwise.
         ///
-        template<typename REQUEST>
         [[nodiscard]] constexpr auto
         write_data(
-            bsl::safe_integral<REQUEST> const &req,
+            bsl::safe_uintmax const &req,
             void const *const data,
             bsl::safe_uintmax const &size) const noexcept -> bool
         {
@@ -299,16 +289,14 @@ namespace vmmctl
         ///   @brief Reads/writes data from/to the device driver
         ///
         /// <!-- inputs/outputs -->
-        ///   @tparam REQUEST the type of request
         ///   @param req the request
         ///   @param data a pointer to read/write data to/from
         ///   @param size the size of the buffer being read/written to/from
         ///   @return Returns true if the IOCTL succeeded, false otherwise.
         ///
-        template<typename REQUEST>
         [[nodiscard]] constexpr auto
         read_write_data(
-            bsl::safe_integral<REQUEST> const &req,
+            bsl::safe_uintmax const &req,
             void *const data,
             bsl::safe_uintmax const &size) const noexcept -> bool
         {

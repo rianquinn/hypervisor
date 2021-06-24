@@ -47,12 +47,11 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.initialize(gs, tls, sys, intrinsic, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -64,7 +63,7 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(
                         !vps.initialize(gs, tls, sys, intrinsic, bsl::safe_uint16::failure()));
                 };
@@ -78,24 +77,8 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!vps.initialize(gs, tls, sys, intrinsic, syscall::BF_INVALID_ID));
-                };
-            };
-        };
-
-        bsl::ut_scenario{"initialize bf_mem_op_alloc_page fails"} = []() {
-            bsl::ut_given{} = []() {
-                vps_t vps{};
-                gs_t gs{};
-                tls_t tls{};
-                syscall::bf_syscall_t sys{};
-                intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
-                    sys.set_bf_mem_op_alloc_page(bsl::errc_failure);
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
-                        bsl::ut_check(!vps.initialize(gs, tls, sys, intrinsic, {}));
-                    };
                 };
             };
         };
@@ -107,11 +90,10 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(vps.initialize(gs, tls, sys, intrinsic, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -123,7 +105,7 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     vps.release(gs, tls, sys, intrinsic);
                 };
             };
@@ -136,9 +118,9 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         vps.release(gs, tls, sys, intrinsic);
                     };
                 };
@@ -152,7 +134,7 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                 };
             };
@@ -165,13 +147,12 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     bsl::ut_required_step(vps.allocate(gs, tls, sys, intrinsic, {}, {}));
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -183,13 +164,12 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(
                             gs, tls, sys, intrinsic, bsl::safe_uint16::failure(), {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -201,13 +181,12 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(
                             !vps.allocate(gs, tls, sys, intrinsic, syscall::BF_INVALID_ID, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -219,13 +198,12 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(
                             gs, tls, sys, intrinsic, {}, bsl::safe_uint16::failure()));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -237,13 +215,12 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(
                             !vps.allocate(gs, tls, sys, intrinsic, {}, syscall::BF_INVALID_ID));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -255,13 +232,12 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_vps_op_init_as_root({}, bsl::errc_failure);
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -274,12 +250,11 @@ namespace example
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
                 constexpr auto ppid{42_u16};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &ppid]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic, &ppid]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(vps.allocate(gs, tls, sys, intrinsic, {}, ppid));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -293,13 +268,12 @@ namespace example
                 intrinsic_t intrinsic{};
                 constexpr auto idx{0x0000_u64};
                 constexpr auto val{0x1_u16};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &idx, &val]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_vps_op_write16({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -313,13 +287,12 @@ namespace example
                 intrinsic_t intrinsic{};
                 constexpr auto idx{0x2800_u64};
                 constexpr auto val{0xFFFFFFFFFFFFFFFF_u64};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &idx, &val]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_vps_op_write64({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -332,13 +305,12 @@ namespace example
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
                 constexpr auto msr{0x48D_u32};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &msr]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_intrinsic_op_rdmsr(msr, bsl::safe_uint64::failure());
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -353,14 +325,13 @@ namespace example
                 constexpr auto idx{0x4000_u64};
                 constexpr auto val{0x0_u32};
                 constexpr auto msr{0x48D_u32};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &idx, &val, &msr]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_intrinsic_op_rdmsr(msr, {});
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -373,13 +344,12 @@ namespace example
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
                 constexpr auto msr{0x48E_u32};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &msr]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_intrinsic_op_rdmsr(msr, bsl::safe_uint64::failure());
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -394,14 +364,13 @@ namespace example
                 constexpr auto idx{0x4002_u64};
                 constexpr auto val{0x0_u32};
                 constexpr auto msr{0x48E_u32};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &idx, &val, &msr]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_intrinsic_op_rdmsr(msr, {});
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -414,13 +383,12 @@ namespace example
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
                 constexpr auto msr{0x48F_u32};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &msr]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_intrinsic_op_rdmsr(msr, bsl::safe_uint64::failure());
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -435,14 +403,13 @@ namespace example
                 constexpr auto idx{0x400C_u64};
                 constexpr auto val{0x0_u32};
                 constexpr auto msr{0x48F_u32};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &idx, &val, &msr]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_intrinsic_op_rdmsr(msr, {});
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -455,13 +422,12 @@ namespace example
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
                 constexpr auto msr{0x490_u32};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &msr]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_intrinsic_op_rdmsr(msr, bsl::safe_uint64::failure());
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -476,14 +442,13 @@ namespace example
                 constexpr auto idx{0x4012_u64};
                 constexpr auto val{0x0_u32};
                 constexpr auto msr{0x490_u32};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &idx, &val, &msr]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_intrinsic_op_rdmsr(msr, {});
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -496,13 +461,12 @@ namespace example
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
                 constexpr auto msr{0x48B_u32};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &msr]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_intrinsic_op_rdmsr(msr, bsl::safe_uint64::failure());
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -517,14 +481,13 @@ namespace example
                 constexpr auto idx{0x401E_u64};
                 constexpr auto val{0x0_u32};
                 constexpr auto msr{0x48B_u32};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &idx, &val, &msr]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_intrinsic_op_rdmsr(msr, {});
                     sys.set_bf_vps_op_write32({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -537,23 +500,14 @@ namespace example
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
                 constexpr auto idx{0x2004_u64};
-                constexpr auto val{0x1000_u64};
-
-                /// NOTE:
-                /// - The val above is the physical address of the msr bitmaps.
-                ///   The mocked syscall library will always return a physical
-                ///   address that is 0x1000 * the allocation number. Since we
-                ///   only allocated one thing which is the msr_bitmap, the
-                ///   physical address of the msr_bitmap must be 0x1000.
-                ///
-
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic, &idx, &val]() {
+                constexpr auto val{42_umax};
+                bsl::ut_when{} = [&]() {
+                    gs.msr_bitmap_phys = val;
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
                     sys.set_bf_vps_op_write64({}, idx, val, bsl::errc_failure);
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };
@@ -565,12 +519,11 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(vps.initialize(gs, tls, sys, intrinsic, {}));
-                    bsl::ut_then{} = [&vps, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(vps.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
-                    vps.release(gs, tls, sys, intrinsic);
                 };
             };
         };

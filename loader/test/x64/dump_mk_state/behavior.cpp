@@ -45,14 +45,14 @@ namespace mk
     {
         bsl::ut_scenario{"null state"} = []() {
             bsl::ut_then{} = []() {
-                dump_mk_state(nullptr, bsl::ZERO_U32.get());
+                dump_mk_state(nullptr, {});
             };
         };
 
         bsl::ut_scenario{"null tss"} = []() {
             state_save_t state{};
-            bsl::ut_then{} = [&state]() {
-                dump_mk_state(&state, bsl::ZERO_U32.get());
+            bsl::ut_then{} = [&]() {
+                dump_mk_state(&state, {});
             };
         };
 
@@ -60,8 +60,8 @@ namespace mk
             tss_t tss{};
             state_save_t state{};
             state.tss = &tss;
-            bsl::ut_then{} = [&state]() {
-                dump_mk_state(&state, bsl::ZERO_U32.get());
+            bsl::ut_then{} = [&]() {
+                dump_mk_state(&state, {});
             };
         };
 

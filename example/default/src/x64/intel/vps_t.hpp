@@ -62,11 +62,6 @@ namespace example
     ///
     class vps_t final
     {
-        /// @brief stores the MSR bitmap used by this vps_t
-        void *m_msr_bitmap{};
-        /// @brief stores the physical address of the MSR bitmap above
-        bsl::safe_uintmax m_msr_bitmap_phys{};
-
         /// @brief stores the ID associated with this vps_t
         bsl::safe_uint16 m_id{bsl::safe_uint16::failure()};
         /// @brief stores the ID of the VP this vps_t is assigned to
@@ -97,6 +92,7 @@ namespace example
         {
             bsl::discard(gs);
             bsl::discard(tls);
+            bsl::discard(sys);
             bsl::discard(intrinsic);
 
             /// NOTE:
@@ -138,12 +134,6 @@ namespace example
                 return bsl::errc_invalid_argument;
             }
 
-            m_msr_bitmap = sys.bf_mem_op_alloc_page(m_msr_bitmap_phys);
-            if (bsl::unlikely_assert(nullptr == m_msr_bitmap)) {
-                bsl::print<bsl::V>() << bsl::here();
-                return bsl::errc_failure;
-            }
-
             /// NOTE:
             /// - Finally, store the ID assigned to this vps_t and report
             ///   success.
@@ -165,19 +155,10 @@ namespace example
         constexpr void
         release(gs_t &gs, tls_t &tls, syscall::bf_syscall_t &sys, intrinsic_t &intrinsic) noexcept
         {
-            bsl::errc_type ret{};
-
             bsl::discard(gs);
             bsl::discard(tls);
+            bsl::discard(sys);
             bsl::discard(intrinsic);
-
-            ret = sys.bf_mem_op_free_page(m_msr_bitmap);
-            if (bsl::unlikely_assert(!ret)) {
-                bsl::print<bsl::V>() << bsl::here();
-            }
-            else {
-                bsl::touch();
-            }
 
             /// NOTE:
             /// - Release functions are usually only needed in the event of
@@ -497,7 +478,7 @@ namespace example
 
             constexpr auto vmcs_msr_bitmaps{0x2004_u64};
 
-            ret = sys.bf_vps_op_write64(m_id, vmcs_msr_bitmaps, m_msr_bitmap_phys);
+            ret = sys.bf_vps_op_write64(m_id, vmcs_msr_bitmaps, gs.msr_bitmap_phys);
             if (bsl::unlikely_assert(!ret)) {
                 bsl::print<bsl::V>() << bsl::here();
                 return ret;

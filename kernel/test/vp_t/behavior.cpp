@@ -307,7 +307,7 @@ namespace mk
                 tls_t tls{};
                 dummy_vm_pool_t vm_pool{};
                 bsl::ut_when{} = [&vp, &tls, &vm_pool]() {
-                    tls.online_pps = bsl::ZERO_U16.get();
+                    tls.online_pps = {};
                     bsl::ut_required_step(vp.initialize(tls, VPID1));
                     bsl::ut_then{} = [&vp, &tls, &vm_pool]() {
                         bsl::ut_check(!vp.allocate(tls, vm_pool, VMID0, PPID0));

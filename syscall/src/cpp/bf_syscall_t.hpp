@@ -112,7 +112,7 @@ namespace syscall
                 return bsl::errc_unsupported;
             }
 
-            ret = bf_handle_op_open_handle_impl(syscall::BF_SPEC_ID1_VAL.get(), m_hndl.data());
+            ret = bf_handle_op_open_handle_impl(BF_SPEC_ID1_VAL.get(), m_hndl.data());
             if (bsl::unlikely_assert(ret != BF_STATUS_SUCCESS)) {
                 bsl::error() << "bf_handle_op_open_handle_impl failed with status "    // --
                              << bsl::hex(ret)                                          // --

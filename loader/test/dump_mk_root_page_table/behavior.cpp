@@ -51,7 +51,7 @@ namespace mk
 
         bsl::ut_scenario{"success"} = []() {
             root_page_table_t rpt{};
-            bsl::ut_then{} = [&rpt]() {
+            bsl::ut_then{} = [&]() {
                 dump_mk_root_page_table(&rpt);
             };
         };

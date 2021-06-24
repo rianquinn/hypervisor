@@ -45,14 +45,14 @@ namespace mk
     {
         bsl::ut_scenario{"null state"} = []() {
             bsl::ut_then{} = []() {
-                dump_root_vp_state(nullptr, bsl::ZERO_U32.get());
+                dump_root_vp_state(nullptr, {});
             };
         };
 
         bsl::ut_scenario{"success"} = []() {
             state_save_t state{};
-            bsl::ut_then{} = [&state]() {
-                dump_root_vp_state(&state, bsl::ZERO_U32.get());
+            bsl::ut_then{} = [&]() {
+                dump_root_vp_state(&state, {});
             };
         };
 

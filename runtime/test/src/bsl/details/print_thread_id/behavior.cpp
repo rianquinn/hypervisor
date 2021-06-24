@@ -43,7 +43,7 @@ namespace mk
         bsl::ut_scenario{"print_thread_id executes"} = []() {
             bsl::ut_given{} = []() {
                 bsl::details::out_type<BSL_DEBUG_LEVEL, bsl::details::out_type_debug> o{};
-                bsl::ut_then{} = [&o]() mutable {
+                bsl::ut_then{} = [&]() mutable {
                     bsl::details::ut_print_thread_id(o);
                 };
             };

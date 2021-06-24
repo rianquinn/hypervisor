@@ -24,21 +24,27 @@
 macro(hypervisor_add_integration NAME HEADERS)
     add_executable(integration_${NAME})
 
+    target_include_directories(integration_${NAME} PRIVATE
+        support
+    )
+
     if(HYPERVISOR_TARGET_ARCH STREQUAL "AuthenticAMD")
         target_include_directories(integration_${NAME} PRIVATE
-            x64/amd
+            support/x64
+            support/x64/amd
         )
     endif()
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "GenuineIntel")
         target_include_directories(integration_${NAME} PRIVATE
-            x64/intel
+            support/x64
+            support/x64/intel
         )
     endif()
 
     if(HYPERVISOR_TARGET_ARCH STREQUAL "aarch64")
         target_include_directories(integration_${NAME} PRIVATE
-            arm/aarch64
+            support/arm/aarch64
         )
     endif()
 

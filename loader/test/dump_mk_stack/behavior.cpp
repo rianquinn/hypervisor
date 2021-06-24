@@ -45,14 +45,14 @@ namespace mk
     {
         bsl::ut_scenario{"null stack"} = []() {
             bsl::ut_then{} = []() {
-                dump_mk_stack(nullptr, bsl::ZERO_U32.get());
+                dump_mk_stack(nullptr, {});
             };
         };
 
         bsl::ut_scenario{"success"} = []() {
             span_t stack{};
-            bsl::ut_then{} = [&stack]() {
-                dump_mk_stack(&stack, bsl::ZERO_U32.get());
+            bsl::ut_then{} = [&]() {
+                dump_mk_stack(&stack, {});
             };
         };
 

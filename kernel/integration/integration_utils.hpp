@@ -25,6 +25,8 @@
 #ifndef INTEGRATION_UTILS_HPP
 #define INTEGRATION_UTILS_HPP
 
+#include <bf_control_ops.hpp>
+
 #include <bsl/debug.hpp>
 #include <bsl/errc_type.hpp>
 #include <bsl/touch.hpp>

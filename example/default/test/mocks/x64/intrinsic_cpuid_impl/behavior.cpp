@@ -48,10 +48,10 @@ namespace example
                 bsl::safe_uintmax rcx{};
                 bsl::safe_uintmax rdx{};
                 constexpr auto expected_result{42_u64};
-                bsl::ut_when{} = [&rax, &rbx, &rcx, &rdx, &expected_result]() {
+                bsl::ut_when{} = [&]() {
                     g_cpuid_val = expected_result;
                     intrinsic_cpuid_impl(rax.data(), rbx.data(), rcx.data(), rdx.data());
-                    bsl::ut_then{} = [&rax, &rbx, &rcx, &rdx, &expected_result]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(rax == expected_result);
                         bsl::ut_check(rbx == expected_result);
                         bsl::ut_check(rcx == expected_result);

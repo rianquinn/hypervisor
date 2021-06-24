@@ -51,7 +51,7 @@ namespace mk
 
         bsl::ut_scenario{"success"} = []() {
             debug_ring_t debug_ring{};
-            bsl::ut_then{} = [&debug_ring]() {
+            bsl::ut_then{} = [&]() {
                 dump_mk_debug_ring(&debug_ring);
             };
         };

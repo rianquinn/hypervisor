@@ -47,9 +47,9 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp_pool, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     vp_pool.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&vp_pool, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vp_pool.initialize(gs, tls, sys, intrinsic));
                     };
                 };
@@ -63,7 +63,7 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&vp_pool, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(vp_pool.initialize(gs, tls, sys, intrinsic));
                 };
             };
@@ -76,7 +76,7 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&vp_pool, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_then{} = [&]() {
                     vp_pool.release(gs, tls, sys, intrinsic);
                 };
             };
@@ -89,9 +89,9 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_when{} = [&vp_pool, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_when{} = [&]() {
                     vp_pool.set_allocate(bsl::safe_uint16::failure());
-                    bsl::ut_then{} = [&vp_pool, &gs, &tls, &sys, &intrinsic]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!vp_pool.allocate(gs, tls, sys, intrinsic, {}, {}));
                     };
                 };
@@ -105,7 +105,7 @@ namespace example
                 tls_t tls{};
                 syscall::bf_syscall_t sys{};
                 intrinsic_t intrinsic{};
-                bsl::ut_then{} = [&vp_pool, &gs, &tls, &sys, &intrinsic]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(vp_pool.allocate(gs, tls, sys, intrinsic, {}, {}));
                 };
             };

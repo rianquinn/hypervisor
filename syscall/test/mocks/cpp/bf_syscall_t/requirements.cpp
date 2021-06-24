@@ -353,7 +353,7 @@ main() noexcept -> bsl::exit_code
     bsl::ut_scenario{"verify constness"} = []() {
         bsl::ut_given{} = []() {
             syscall::fixture_t fixture2{};
-            bsl::ut_then{} = [&fixture2]() {
+            bsl::ut_then{} = [&]() {
                 static_assert(syscall::fixture1.test_member_const());
                 bsl::ut_check(fixture2.test_member_nonconst());
             };

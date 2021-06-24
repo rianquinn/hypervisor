@@ -22,7 +22,20 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef COMMON_ARCH_SUPPORT_HPP
-#define COMMON_ARCH_SUPPORT_HPP
+#ifndef GS_T_HPP
+#define GS_T_HPP
+
+#include <bsl/safe_integral.hpp>
+
+namespace integration
+{
+    /// @class integration::gs_t
+    ///
+    /// <!-- description -->
+    ///   @brief Defines the extension's Global Storage (GS).
+    ///
+    struct gs_t final
+    {};
+}
 
 #endif

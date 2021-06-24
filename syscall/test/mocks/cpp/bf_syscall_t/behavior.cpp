@@ -66,7 +66,7 @@ namespace syscall
         bsl::ut_scenario{"initialize invalid version #1"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_then{} = [&sys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.initialize(    // --
                         bf_uint32_t::failure(),       // --
                         &dummy_bootstrap_entry,       // --
@@ -79,7 +79,7 @@ namespace syscall
         bsl::ut_scenario{"initialize invalid version #2"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_then{} = [&sys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.initialize(    // --
                         {},                           // --
                         &dummy_bootstrap_entry,       // --
@@ -92,7 +92,7 @@ namespace syscall
         bsl::ut_scenario{"initialize invalid bootstrap_handler"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_then{} = [&sys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.initialize(     // --
                         BF_ALL_SPECS_SUPPORTED_VAL,    // --
                         {},                            // --
@@ -105,7 +105,7 @@ namespace syscall
         bsl::ut_scenario{"initialize invalid vmexit_handler"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_then{} = [&sys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.initialize(     // --
                         BF_ALL_SPECS_SUPPORTED_VAL,    // --
                         &dummy_bootstrap_entry,        // --
@@ -118,7 +118,7 @@ namespace syscall
         bsl::ut_scenario{"initialize invalid fail_handler"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_then{} = [&sys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.initialize(     // --
                         BF_ALL_SPECS_SUPPORTED_VAL,    // --
                         &dummy_bootstrap_entry,        // --
@@ -131,9 +131,9 @@ namespace syscall
         bsl::ut_scenario{"initialize bf_is_spec1_supported fails"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.initialize(    // --
                             g_bad_version,                // --
                             &dummy_bootstrap_entry,       // --
@@ -147,9 +147,9 @@ namespace syscall
         bsl::ut_scenario{"initialize bf_handle_op_open_handle_impl fails"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.initialize(
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             &dummy_bootstrap_entry,        // --
@@ -163,9 +163,9 @@ namespace syscall
         bsl::ut_scenario{"initialize bf_callback_op_register_bootstrap_impl fails"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.initialize(
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             &dummy_bootstrap_entry,        // --
@@ -179,9 +179,9 @@ namespace syscall
         bsl::ut_scenario{"initialize bf_callback_op_register_vmexit_impl fail"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.initialize(
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             &dummy_bootstrap_entry,        // --
@@ -195,9 +195,9 @@ namespace syscall
         bsl::ut_scenario{"initialize bf_callback_op_register_fail_impl fails"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.initialize(     // --
                             BF_ALL_SPECS_SUPPORTED_VAL,    // --
                             &dummy_bootstrap_entry,        // --
@@ -211,7 +211,7 @@ namespace syscall
         bsl::ut_scenario{"initialize success"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_then{} = [&sys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.initialize(
                         BF_ALL_SPECS_SUPPORTED_VAL,
                         &dummy_bootstrap_entry,
@@ -224,7 +224,7 @@ namespace syscall
         bsl::ut_scenario{"release"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_then{} = [&sys]() {
+                bsl::ut_then{} = [&]() {
                     sys.release();
                 };
             };
@@ -237,19 +237,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_rax/bf_tls_set_rax"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rax());
                         bsl::ut_check(sys.bf_tls_rax().is_zero());
                     };
 
                     sys.bf_tls_set_rax(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rax() == g_answer64);
                     };
 
                     sys.bf_tls_set_rax(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rax() == g_answer64);
                     };
                 };
@@ -259,19 +259,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_rbx/bf_tls_set_rbx"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rbx());
                         bsl::ut_check(sys.bf_tls_rbx().is_zero());
                     };
 
                     sys.bf_tls_set_rbx(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rbx() == g_answer64);
                     };
 
                     sys.bf_tls_set_rbx(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rbx() == g_answer64);
                     };
                 };
@@ -281,19 +281,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_rcx/bf_tls_set_rcx"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rcx());
                         bsl::ut_check(sys.bf_tls_rcx().is_zero());
                     };
 
                     sys.bf_tls_set_rcx(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rcx() == g_answer64);
                     };
 
                     sys.bf_tls_set_rcx(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rcx() == g_answer64);
                     };
                 };
@@ -303,19 +303,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_rdx/bf_tls_set_rdx"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rdx());
                         bsl::ut_check(sys.bf_tls_rdx().is_zero());
                     };
 
                     sys.bf_tls_set_rdx(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rdx() == g_answer64);
                     };
 
                     sys.bf_tls_set_rdx(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rdx() == g_answer64);
                     };
                 };
@@ -325,19 +325,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_rbp/bf_tls_set_rbp"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rbp());
                         bsl::ut_check(sys.bf_tls_rbp().is_zero());
                     };
 
                     sys.bf_tls_set_rbp(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rbp() == g_answer64);
                     };
 
                     sys.bf_tls_set_rbp(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rbp() == g_answer64);
                     };
                 };
@@ -347,19 +347,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_rsi/bf_tls_set_rsi"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rsi());
                         bsl::ut_check(sys.bf_tls_rsi().is_zero());
                     };
 
                     sys.bf_tls_set_rsi(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rsi() == g_answer64);
                     };
 
                     sys.bf_tls_set_rsi(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rsi() == g_answer64);
                     };
                 };
@@ -369,19 +369,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_rdi/bf_tls_set_rdi"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rdi());
                         bsl::ut_check(sys.bf_tls_rdi().is_zero());
                     };
 
                     sys.bf_tls_set_rdi(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rdi() == g_answer64);
                     };
 
                     sys.bf_tls_set_rdi(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_rdi() == g_answer64);
                     };
                 };
@@ -391,19 +391,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_r8/bf_tls_set_r8"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r8());
                         bsl::ut_check(sys.bf_tls_r8().is_zero());
                     };
 
                     sys.bf_tls_set_r8(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r8() == g_answer64);
                     };
 
                     sys.bf_tls_set_r8(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r8() == g_answer64);
                     };
                 };
@@ -413,19 +413,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_r9/bf_tls_set_r9"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r9());
                         bsl::ut_check(sys.bf_tls_r9().is_zero());
                     };
 
                     sys.bf_tls_set_r9(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r9() == g_answer64);
                     };
 
                     sys.bf_tls_set_r9(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r9() == g_answer64);
                     };
                 };
@@ -435,19 +435,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_r10/bf_tls_set_r10"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r10());
                         bsl::ut_check(sys.bf_tls_r10().is_zero());
                     };
 
                     sys.bf_tls_set_r10(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r10() == g_answer64);
                     };
 
                     sys.bf_tls_set_r10(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r10() == g_answer64);
                     };
                 };
@@ -457,19 +457,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_r11/bf_tls_set_r11"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r11());
                         bsl::ut_check(sys.bf_tls_r11().is_zero());
                     };
 
                     sys.bf_tls_set_r11(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r11() == g_answer64);
                     };
 
                     sys.bf_tls_set_r11(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r11() == g_answer64);
                     };
                 };
@@ -479,19 +479,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_r12/bf_tls_set_r12"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r12());
                         bsl::ut_check(sys.bf_tls_r12().is_zero());
                     };
 
                     sys.bf_tls_set_r12(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r12() == g_answer64);
                     };
 
                     sys.bf_tls_set_r12(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r12() == g_answer64);
                     };
                 };
@@ -501,19 +501,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_r13/bf_tls_set_r13"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r13());
                         bsl::ut_check(sys.bf_tls_r13().is_zero());
                     };
 
                     sys.bf_tls_set_r13(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r13() == g_answer64);
                     };
 
                     sys.bf_tls_set_r13(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r13() == g_answer64);
                     };
                 };
@@ -523,19 +523,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_r14/bf_tls_set_r14"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r14());
                         bsl::ut_check(sys.bf_tls_r14().is_zero());
                     };
 
                     sys.bf_tls_set_r14(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r14() == g_answer64);
                     };
 
                     sys.bf_tls_set_r14(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r14() == g_answer64);
                     };
                 };
@@ -545,19 +545,19 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_r15/bf_tls_set_r15"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r15());
                         bsl::ut_check(sys.bf_tls_r15().is_zero());
                     };
 
                     sys.bf_tls_set_r15(g_answer64);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r15() == g_answer64);
                     };
 
                     sys.bf_tls_set_r15(bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_r15() == g_answer64);
                     };
                 };
@@ -567,14 +567,14 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_extid/bf_tls_set_extid"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_extid());
                         bsl::ut_check(sys.bf_tls_extid().is_zero());
                     };
 
                     sys.bf_tls_set_extid(g_answer16);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_extid() == g_answer16);
                     };
                 };
@@ -584,14 +584,14 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_vmid/bf_tls_set_vmid"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_vmid());
                         bsl::ut_check(sys.bf_tls_vmid().is_zero());
                     };
 
                     sys.bf_tls_set_vmid(g_answer16);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_vmid() == g_answer16);
                     };
                 };
@@ -601,14 +601,14 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_vpid/bf_tls_set_vpid"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_vpid());
                         bsl::ut_check(sys.bf_tls_vpid().is_zero());
                     };
 
                     sys.bf_tls_set_vpid(g_answer16);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_vpid() == g_answer16);
                     };
                 };
@@ -618,14 +618,14 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_vpsid/bf_tls_set_vpsid"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_vpsid());
                         bsl::ut_check(sys.bf_tls_vpsid().is_zero());
                     };
 
                     sys.bf_tls_set_vpsid(g_answer16);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_vpsid() == g_answer16);
                     };
                 };
@@ -635,14 +635,14 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_ppid/bf_tls_set_ppid"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_ppid());
                         bsl::ut_check(sys.bf_tls_ppid().is_zero());
                     };
 
                     sys.bf_tls_set_ppid(g_answer16);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_ppid() == g_answer16);
                     };
                 };
@@ -652,14 +652,14 @@ namespace syscall
         bsl::ut_scenario{"bf_tls_online_pps/bf_tls_set_online_pps"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
-                    bsl::ut_then{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_online_pps());
                         bsl::ut_check(sys.bf_tls_online_pps().is_zero());
                     };
 
                     sys.bf_tls_set_online_pps(g_answer16);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_tls_online_pps() == g_answer16);
                     };
                 };
@@ -673,9 +673,9 @@ namespace syscall
         bsl::ut_scenario{"bf_vm_op_create_vm bf_vm_op_create_vm_impl fails"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vm_op_create_vm(bf_uint16_t::failure());
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vm_op_create_vm());
                     };
                 };
@@ -685,9 +685,9 @@ namespace syscall
         bsl::ut_scenario{"bf_vm_op_create_vm success"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vm_op_create_vm(g_answer16);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_vm_op_create_vm() == g_answer16);
                     };
                 };
@@ -698,7 +698,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vm_op_destroy_vm(arg0));
                 };
             };
@@ -708,9 +708,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&sys, &arg0]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vm_op_destroy_vm(arg0, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vm_op_destroy_vm(arg0));
                     };
                 };
@@ -721,7 +721,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vm_op_destroy_vm(arg0));
                 };
             };
@@ -736,7 +736,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint16_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vp_op_create_vp(arg0, arg1));
                 };
             };
@@ -747,7 +747,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vp_op_create_vp(arg0, arg1));
                 };
             };
@@ -758,9 +758,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vp_op_create_vp(arg0, arg1, bf_uint16_t::failure());
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vp_op_create_vp(arg0, arg1));
                     };
                 };
@@ -772,9 +772,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vp_op_create_vp(arg0, arg1, g_answer16);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_vp_op_create_vp(arg0, arg1) == g_answer16);
                     };
                 };
@@ -785,7 +785,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vp_op_destroy_vp(arg0));
                 };
             };
@@ -795,9 +795,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&sys, &arg0]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vp_op_destroy_vp(arg0, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vp_op_destroy_vp(arg0));
                     };
                 };
@@ -808,7 +808,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vp_op_destroy_vp(arg0));
                 };
             };
@@ -819,7 +819,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint16_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vp_op_migrate(arg0, arg1));
                 };
             };
@@ -830,7 +830,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vp_op_migrate(arg0, arg1));
                 };
             };
@@ -841,9 +841,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vp_op_migrate(arg0, arg1, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vp_op_migrate(arg0, arg1));
                     };
                 };
@@ -855,7 +855,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vp_op_migrate(arg0, arg1));
                 };
             };
@@ -870,7 +870,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint16_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_create_vps(arg0, arg1));
                 };
             };
@@ -881,7 +881,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_create_vps(arg0, arg1));
                 };
             };
@@ -892,9 +892,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_create_vps(arg0, arg1, bf_uint16_t::failure());
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_create_vps(arg0, arg1));
                     };
                 };
@@ -906,9 +906,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_create_vps(arg0, arg1, g_answer16);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_vps_op_create_vps(arg0, arg1) == g_answer16);
                     };
                 };
@@ -919,7 +919,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_destroy_vps(arg0));
                 };
             };
@@ -929,9 +929,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&sys, &arg0]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_destroy_vps(arg0, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_destroy_vps(arg0));
                     };
                 };
@@ -942,7 +942,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_destroy_vps(arg0));
                 };
             };
@@ -952,7 +952,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_init_as_root(arg0));
                 };
             };
@@ -962,9 +962,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&sys, &arg0]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_init_as_root(arg0, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_init_as_root(arg0));
                     };
                 };
@@ -975,7 +975,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_init_as_root(arg0));
                 };
             };
@@ -986,7 +986,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_read8(arg0, arg1));
                 };
             };
@@ -997,7 +997,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_read8(arg0, arg1));
                 };
             };
@@ -1008,9 +1008,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_read8(arg0, arg1, bf_uint8_t::failure());
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_read8(arg0, arg1));
                     };
                 };
@@ -1022,9 +1022,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_read8(arg0, arg1, g_answer8);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_vps_op_read8(arg0, arg1) == g_answer8);
                     };
                 };
@@ -1036,7 +1036,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_read16(arg0, arg1));
                 };
             };
@@ -1047,7 +1047,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_read16(arg0, arg1));
                 };
             };
@@ -1058,9 +1058,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_read16(arg0, arg1, bf_uint16_t::failure());
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_read16(arg0, arg1));
                     };
                 };
@@ -1072,9 +1072,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_read16(arg0, arg1, g_answer16);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_vps_op_read16(arg0, arg1) == g_answer16);
                     };
                 };
@@ -1086,7 +1086,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_read32(arg0, arg1));
                 };
             };
@@ -1097,7 +1097,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_read32(arg0, arg1));
                 };
             };
@@ -1108,9 +1108,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_read32(arg0, arg1, bf_uint32_t::failure());
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_read32(arg0, arg1));
                     };
                 };
@@ -1122,9 +1122,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_read32(arg0, arg1, g_answer32);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_vps_op_read32(arg0, arg1) == g_answer32);
                     };
                 };
@@ -1136,7 +1136,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_read64(arg0, arg1));
                 };
             };
@@ -1147,7 +1147,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_read64(arg0, arg1));
                 };
             };
@@ -1158,9 +1158,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_read64(arg0, arg1, bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_read64(arg0, arg1));
                     };
                 };
@@ -1172,9 +1172,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_read64(arg0, arg1, g_answer64);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_vps_op_read64(arg0, arg1) == g_answer64);
                     };
                 };
@@ -1187,7 +1187,7 @@ namespace syscall
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
                 bf_uint8_t arg2{g_answer8};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write8(arg0, arg1, arg2));
                 };
             };
@@ -1199,7 +1199,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
                 bf_uint8_t arg2{g_answer8};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write8(arg0, arg1, arg2));
                 };
             };
@@ -1211,7 +1211,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint8_t arg2{bf_uint8_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write8(arg0, arg1, arg2));
                 };
             };
@@ -1223,9 +1223,9 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint8_t arg2{g_answer8};
-                bsl::ut_when{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_write8(arg0, arg1, arg2, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_write8(arg0, arg1, arg2));
                     };
                 };
@@ -1238,7 +1238,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint8_t arg2{g_answer8};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_write8(arg0, arg1, arg2));
                     bsl::ut_check(sys.bf_vps_op_read8(arg0, arg1) == arg2);
                 };
@@ -1251,7 +1251,7 @@ namespace syscall
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
                 bf_uint16_t arg2{g_answer16};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write16(arg0, arg1, arg2));
                 };
             };
@@ -1263,7 +1263,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
                 bf_uint16_t arg2{g_answer16};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write16(arg0, arg1, arg2));
                 };
             };
@@ -1275,7 +1275,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint16_t arg2{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write16(arg0, arg1, arg2));
                 };
             };
@@ -1287,9 +1287,9 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint16_t arg2{g_answer16};
-                bsl::ut_when{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_write16(arg0, arg1, arg2, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_write16(arg0, arg1, arg2));
                     };
                 };
@@ -1302,7 +1302,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint16_t arg2{g_answer16};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_write16(arg0, arg1, arg2));
                     bsl::ut_check(sys.bf_vps_op_read16(arg0, arg1) == arg2);
                 };
@@ -1315,7 +1315,7 @@ namespace syscall
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
                 bf_uint32_t arg2{g_answer32};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write32(arg0, arg1, arg2));
                 };
             };
@@ -1327,7 +1327,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
                 bf_uint32_t arg2{g_answer32};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write32(arg0, arg1, arg2));
                 };
             };
@@ -1339,7 +1339,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint32_t arg2{bf_uint32_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write32(arg0, arg1, arg2));
                 };
             };
@@ -1351,9 +1351,9 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint32_t arg2{g_answer32};
-                bsl::ut_when{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_write32(arg0, arg1, arg2, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_write32(arg0, arg1, arg2));
                     };
                 };
@@ -1366,7 +1366,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint32_t arg2{g_answer32};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_write32(arg0, arg1, arg2));
                     bsl::ut_check(sys.bf_vps_op_read32(arg0, arg1) == arg2);
                 };
@@ -1379,7 +1379,7 @@ namespace syscall
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint64_t arg1{};
                 bf_uint64_t arg2{g_answer64};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write64(arg0, arg1, arg2));
                 };
             };
@@ -1391,7 +1391,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
                 bf_uint64_t arg2{g_answer64};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write64(arg0, arg1, arg2));
                 };
             };
@@ -1403,7 +1403,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint64_t arg2{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write64(arg0, arg1, arg2));
                 };
             };
@@ -1415,9 +1415,9 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint64_t arg2{g_answer64};
-                bsl::ut_when{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_write64(arg0, arg1, arg2, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_write64(arg0, arg1, arg2));
                     };
                 };
@@ -1430,7 +1430,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
                 bf_uint64_t arg2{g_answer64};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_write64(arg0, arg1, arg2));
                     bsl::ut_check(sys.bf_vps_op_read64(arg0, arg1) == arg2);
                 };
@@ -1442,7 +1442,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_reg_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_read_reg(arg0, arg1));
                 };
             };
@@ -1453,9 +1453,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_reg_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_read_reg(arg0, arg1, bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_read_reg(arg0, arg1));
                     };
                 };
@@ -1467,9 +1467,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
                 bf_reg_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_read_reg(arg0, arg1, g_answer64);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_vps_op_read_reg(arg0, arg1) == g_answer64);
                     };
                 };
@@ -1482,7 +1482,7 @@ namespace syscall
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_reg_t arg1{};
                 bf_uint64_t arg2{g_answer64};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write_reg(arg0, arg1, arg2));
                 };
             };
@@ -1494,7 +1494,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_reg_t arg1{};
                 bf_uint64_t arg2{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_write_reg(arg0, arg1, arg2));
                 };
             };
@@ -1506,9 +1506,9 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_reg_t arg1{};
                 bf_uint64_t arg2{g_answer64};
-                bsl::ut_when{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_write_reg(arg0, arg1, arg2, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_write_reg(arg0, arg1, arg2));
                     };
                 };
@@ -1521,7 +1521,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_reg_t arg1{};
                 bf_uint64_t arg2{g_answer64};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_write_reg(arg0, arg1, arg2));
                     bsl::ut_check(sys.bf_vps_op_read_reg(arg0, arg1) == arg2);
                 };
@@ -1534,7 +1534,7 @@ namespace syscall
                 bf_uint16_t arg0{bf_uint16_t::failure()};
                 bf_uint16_t arg1{};
                 bf_uint16_t arg2{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_run(arg0, arg1, arg2));
                 };
             };
@@ -1546,7 +1546,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{bf_uint16_t::failure()};
                 bf_uint16_t arg2{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_run(arg0, arg1, arg2));
                 };
             };
@@ -1558,7 +1558,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint16_t arg2{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_run(arg0, arg1, arg2));
                 };
             };
@@ -1570,9 +1570,9 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint16_t arg2{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_run(arg0, arg1, arg2, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_run(arg0, arg1, arg2));
                     };
                 };
@@ -1585,7 +1585,7 @@ namespace syscall
                 bf_uint16_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint16_t arg2{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_run(arg0, arg1, arg2));
                 };
             };
@@ -1594,9 +1594,9 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_run_current bf_vps_op_run_current_impl fails"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_run_current(bsl::errc_failure);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_run_current());
                     };
                 };
@@ -1606,7 +1606,7 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_run_current success"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_then{} = [&sys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_run_current());
                 };
             };
@@ -1616,7 +1616,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_advance_ip(arg0));
                 };
             };
@@ -1626,9 +1626,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&sys, &arg0]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_advance_ip(arg0, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_advance_ip(arg0));
                     };
                 };
@@ -1639,7 +1639,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_advance_ip(arg0));
                 };
             };
@@ -1650,9 +1650,9 @@ namespace syscall
             "fails"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_when{} = [&sys]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_advance_ip_and_run_current(bsl::errc_failure);
-                    bsl::ut_then{} = [&sys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_advance_ip_and_run_current());
                     };
                 };
@@ -1662,7 +1662,7 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_advance_ip_and_run_current success"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_then{} = [&sys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_advance_ip_and_run_current());
                 };
             };
@@ -1672,7 +1672,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_promote(arg0));
                 };
             };
@@ -1682,9 +1682,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&sys, &arg0]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_promote(arg0, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_promote(arg0));
                     };
                 };
@@ -1695,7 +1695,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_promote(arg0));
                 };
             };
@@ -1705,7 +1705,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_vps_op_clear_vps(arg0));
                 };
             };
@@ -1715,9 +1715,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_when{} = [&sys, &arg0]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_vps_op_clear_vps(arg0, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_vps_op_clear_vps(arg0));
                     };
                 };
@@ -1728,7 +1728,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint16_t arg0{};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_vps_op_clear_vps(arg0));
                 };
             };
@@ -1742,7 +1742,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{bf_uint32_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_intrinsic_op_rdmsr(arg0));
                 };
             };
@@ -1752,9 +1752,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{};
-                bsl::ut_when{} = [&sys, &arg0]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_intrinsic_op_rdmsr(arg0, bf_uint64_t::failure());
-                    bsl::ut_then{} = [&sys, &arg0]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_intrinsic_op_rdmsr(arg0));
                     };
                 };
@@ -1765,9 +1765,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{};
-                bsl::ut_when{} = [&sys, &arg0]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_intrinsic_op_rdmsr(arg0, g_answer64);
-                    bsl::ut_then{} = [&sys, &arg0]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_intrinsic_op_rdmsr(arg0) == g_answer64);
                     };
                 };
@@ -1779,7 +1779,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{bf_uint32_t::failure()};
                 bf_uint64_t arg1{g_answer64};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_intrinsic_op_wrmsr(arg0, arg1));
                 };
             };
@@ -1790,7 +1790,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_intrinsic_op_wrmsr(arg0, arg1));
                 };
             };
@@ -1801,9 +1801,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{};
                 bf_uint64_t arg1{g_answer64};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_intrinsic_op_wrmsr(arg0, arg1, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_intrinsic_op_wrmsr(arg0, arg1));
                     };
                 };
@@ -1815,7 +1815,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint32_t arg0{};
                 bf_uint64_t arg1{g_answer64};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_intrinsic_op_wrmsr(arg0, arg1));
                     bsl::ut_check(sys.bf_intrinsic_op_rdmsr(arg0) == arg1);
                 };
@@ -1827,7 +1827,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{bf_uint64_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_intrinsic_op_invlpga(arg0, arg1));
                 };
             };
@@ -1838,7 +1838,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_intrinsic_op_invlpga(arg0, arg1));
                 };
             };
@@ -1849,9 +1849,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_intrinsic_op_invlpga(arg0, arg1, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_intrinsic_op_invlpga(arg0, arg1));
                     };
                 };
@@ -1863,7 +1863,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_intrinsic_op_invlpga(arg0, arg1));
                 };
             };
@@ -1874,7 +1874,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{bf_uint64_t::failure()};
                 bf_uint64_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_intrinsic_op_invept(arg0, arg1));
                 };
             };
@@ -1885,7 +1885,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_intrinsic_op_invept(arg0, arg1));
                 };
             };
@@ -1896,9 +1896,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_intrinsic_op_invept(arg0, arg1, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_intrinsic_op_invept(arg0, arg1));
                     };
                 };
@@ -1910,7 +1910,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_intrinsic_op_invept(arg0, arg1));
                 };
             };
@@ -1922,7 +1922,7 @@ namespace syscall
                 bf_uint64_t arg0{bf_uint64_t::failure()};
                 bf_uint16_t arg1{};
                 bf_uint64_t arg2{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_intrinsic_op_invvpid(arg0, arg1, arg2));
                 };
             };
@@ -1934,7 +1934,7 @@ namespace syscall
                 bf_uint64_t arg0{};
                 bf_uint16_t arg1{bf_uint16_t::failure()};
                 bf_uint64_t arg2{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_intrinsic_op_invvpid(arg0, arg1, arg2));
                 };
             };
@@ -1946,7 +1946,7 @@ namespace syscall
                 bf_uint64_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint64_t arg2{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_intrinsic_op_invvpid(arg0, arg1, arg2));
                 };
             };
@@ -1958,9 +1958,9 @@ namespace syscall
                 bf_uint64_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint64_t arg2{};
-                bsl::ut_when{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_intrinsic_op_invvpid(arg0, arg1, arg2, bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_intrinsic_op_invvpid(arg0, arg1, arg2));
                     };
                 };
@@ -1973,7 +1973,7 @@ namespace syscall
                 bf_uint64_t arg0{};
                 bf_uint16_t arg1{};
                 bf_uint64_t arg2{};
-                bsl::ut_then{} = [&sys, &arg0, &arg1, &arg2]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_intrinsic_op_invvpid(arg0, arg1, arg2));
                 };
             };
@@ -1987,7 +1987,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_mem_op_alloc_page(phys) == nullptr);
                 };
             };
@@ -1997,9 +1997,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_when{} = [&sys, &phys]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_mem_op_alloc_page(bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &phys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_mem_op_alloc_page(phys) == nullptr);
                         bsl::ut_check(sys.bf_mem_op_alloc_page() == nullptr);
                     };
@@ -2012,17 +2012,17 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
                 void *ptr{};
-                bsl::ut_when{} = [&sys, &phys, &ptr]() {
+                bsl::ut_when{} = [&]() {
                     ptr = sys.bf_mem_op_alloc_page(phys);
-                    bsl::ut_then{} = [&sys, &ptr]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(ptr != nullptr);
                         bsl::ut_check(sys.bf_mem_op_free_page(ptr));
                     };
                 };
 
-                bsl::ut_when{} = [&sys, &ptr]() {
+                bsl::ut_when{} = [&]() {
                     ptr = sys.bf_mem_op_alloc_page();
-                    bsl::ut_then{} = [&sys, &ptr]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(ptr != nullptr);
                         bsl::ut_check(sys.bf_mem_op_free_page(ptr));
                     };
@@ -2034,7 +2034,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 void *ptr{};
-                bsl::ut_then{} = [&sys, &ptr]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_mem_op_free_page(ptr));
                 };
             };
@@ -2044,19 +2044,19 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 void *ptr{};
-                bsl::ut_when{} = [&sys, &ptr]() {
+                bsl::ut_when{} = [&]() {
                     ptr = sys.bf_mem_op_alloc_page();
                     sys.set_bf_mem_op_free_page(bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &ptr]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_mem_op_free_page(ptr));
                     };
 
                     sys.set_bf_mem_op_free_page(bsl::errc_success);
-                    bsl::ut_then{} = [&sys, &ptr]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_mem_op_free_page(ptr));
                     };
 
-                    bsl::ut_then{} = [&sys, &ptr]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_mem_op_free_page(ptr));
                     };
                 };
@@ -2068,7 +2068,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t size{bf_uint64_t::failure()};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&sys, &size, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                 };
             };
@@ -2079,7 +2079,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t size{};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&sys, &size, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                 };
             };
@@ -2090,7 +2090,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t size{g_answer64};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &size, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                 };
             };
@@ -2101,9 +2101,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t size{g_answer64};
                 bf_uint64_t phys{};
-                bsl::ut_when{} = [&sys, &size, &phys]() {
+                bsl::ut_when{} = [&]() {
                     sys.set_bf_mem_op_alloc_huge(bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &size, &phys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_mem_op_alloc_huge(size, phys) == nullptr);
                         bsl::ut_check(sys.bf_mem_op_alloc_huge(size) == nullptr);
                     };
@@ -2117,17 +2117,17 @@ namespace syscall
                 bf_uint64_t size{g_answer64};
                 bf_uint64_t phys{};
                 void *ptr{};
-                bsl::ut_when{} = [&sys, &size, &phys, &ptr]() {
+                bsl::ut_when{} = [&]() {
                     ptr = sys.bf_mem_op_alloc_huge(size, phys);
-                    bsl::ut_then{} = [&sys, &ptr]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(ptr != nullptr);
                         bsl::ut_check(sys.bf_mem_op_free_huge(ptr));
                     };
                 };
 
-                bsl::ut_when{} = [&sys, &size, &ptr]() {
+                bsl::ut_when{} = [&]() {
                     ptr = sys.bf_mem_op_alloc_huge(size);
-                    bsl::ut_then{} = [&sys, &ptr]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(ptr != nullptr);
                         bsl::ut_check(sys.bf_mem_op_free_huge(ptr));
                     };
@@ -2139,7 +2139,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 void *ptr{};
-                bsl::ut_then{} = [&sys, &ptr]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_mem_op_free_huge(ptr));
                 };
             };
@@ -2150,19 +2150,19 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t size{g_answer64};
                 void *ptr{};
-                bsl::ut_when{} = [&sys, &size, &ptr]() {
+                bsl::ut_when{} = [&]() {
                     ptr = sys.bf_mem_op_alloc_huge(size);
                     sys.set_bf_mem_op_free_huge(bsl::errc_failure);
-                    bsl::ut_then{} = [&sys, &ptr]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_mem_op_free_huge(ptr));
                     };
 
                     sys.set_bf_mem_op_free_huge(bsl::errc_success);
-                    bsl::ut_then{} = [&sys, &ptr]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_mem_op_free_huge(ptr));
                     };
 
-                    bsl::ut_then{} = [&sys, &ptr]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!sys.bf_mem_op_free_huge(ptr));
                     };
                 };
@@ -2172,7 +2172,7 @@ namespace syscall
         bsl::ut_scenario{"quiet bf_mem_op_alloc_heap"} = []() {
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
-                bsl::ut_then{} = [&sys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_mem_op_alloc_heap(g_answer64) == nullptr);
                 };
             };
@@ -2186,7 +2186,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint8>(phys));
                 };
             };
@@ -2196,7 +2196,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint8>(phys));
                 };
             };
@@ -2206,7 +2206,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_bad_addr};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint8>(phys));
                 };
             };
@@ -2216,9 +2216,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
-                bsl::ut_when{} = [&sys, &phys]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(sys.bf_write_phys<bsl::uint8>(phys, g_answer8));
-                    bsl::ut_then{} = [&sys, &phys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_read_phys<bsl::uint8>(phys) == g_answer8);
                     };
                 };
@@ -2229,7 +2229,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint16>(phys));
                 };
             };
@@ -2239,7 +2239,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint16>(phys));
                 };
             };
@@ -2249,7 +2249,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_bad_addr};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint16>(phys));
                 };
             };
@@ -2259,9 +2259,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
-                bsl::ut_when{} = [&sys, &phys]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(sys.bf_write_phys<bsl::uint16>(phys, g_answer16));
-                    bsl::ut_then{} = [&sys, &phys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_read_phys<bsl::uint16>(phys) == g_answer16);
                     };
                 };
@@ -2272,7 +2272,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint32>(phys));
                 };
             };
@@ -2282,7 +2282,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint32>(phys));
                 };
             };
@@ -2292,7 +2292,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_bad_addr};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint32>(phys));
                 };
             };
@@ -2302,9 +2302,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
-                bsl::ut_when{} = [&sys, &phys]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(sys.bf_write_phys<bsl::uint32>(phys, g_answer32));
-                    bsl::ut_then{} = [&sys, &phys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_read_phys<bsl::uint32>(phys) == g_answer32);
                     };
                 };
@@ -2315,7 +2315,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint64>(phys));
                 };
             };
@@ -2325,7 +2325,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint64>(phys));
                 };
             };
@@ -2335,7 +2335,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_bad_addr};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_read_phys<bsl::uint64>(phys));
                 };
             };
@@ -2345,9 +2345,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
-                bsl::ut_when{} = [&sys, &phys]() {
+                bsl::ut_when{} = [&]() {
                     bsl::ut_required_step(sys.bf_write_phys<bsl::uint64>(phys, g_answer64));
-                    bsl::ut_then{} = [&sys, &phys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_read_phys<bsl::uint64>(phys) == g_answer64);
                     };
                 };
@@ -2359,7 +2359,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
                 bf_uint8_t val{g_answer8};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint8>(phys, val));
                 };
             };
@@ -2370,7 +2370,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
                 bf_uint8_t val{g_answer8};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint8>(phys, val));
                 };
             };
@@ -2381,7 +2381,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
                 bf_uint8_t val{bf_uint8_t::failure()};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint8>(phys, val));
                 };
             };
@@ -2392,7 +2392,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_bad_addr};
                 bf_uint8_t val{g_answer8};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint8>(phys, val));
                 };
             };
@@ -2403,7 +2403,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
                 bf_uint8_t val{g_answer8};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint8>(phys, val));
                     bsl::ut_check(sys.bf_read_phys<bsl::uint8>(phys) == g_answer8);
                 };
@@ -2415,7 +2415,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
                 bf_uint16_t val{g_answer16};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint16>(phys, val));
                 };
             };
@@ -2426,7 +2426,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
                 bf_uint16_t val{g_answer16};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint16>(phys, val));
                 };
             };
@@ -2437,7 +2437,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
                 bf_uint16_t val{bf_uint16_t::failure()};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint16>(phys, val));
                 };
             };
@@ -2448,7 +2448,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_bad_addr};
                 bf_uint16_t val{g_answer16};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint16>(phys, val));
                 };
             };
@@ -2459,7 +2459,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
                 bf_uint16_t val{g_answer16};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint16>(phys, val));
                     bsl::ut_check(sys.bf_read_phys<bsl::uint16>(phys) == g_answer16);
                 };
@@ -2471,7 +2471,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
                 bf_uint32_t val{g_answer32};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint32>(phys, val));
                 };
             };
@@ -2482,7 +2482,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
                 bf_uint32_t val{g_answer32};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint32>(phys, val));
                 };
             };
@@ -2493,7 +2493,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
                 bf_uint32_t val{bf_uint32_t::failure()};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint32>(phys, val));
                 };
             };
@@ -2504,7 +2504,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_bad_addr};
                 bf_uint32_t val{g_answer32};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint32>(phys, val));
                 };
             };
@@ -2515,7 +2515,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
                 bf_uint32_t val{g_answer32};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint32>(phys, val));
                     bsl::ut_check(sys.bf_read_phys<bsl::uint32>(phys) == g_answer32);
                 };
@@ -2527,7 +2527,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
                 bf_uint64_t val{g_answer64};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint64>(phys, val));
                 };
             };
@@ -2538,7 +2538,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
                 bf_uint64_t val{g_answer64};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint64>(phys, val));
                 };
             };
@@ -2549,7 +2549,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
                 bf_uint64_t val{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint64>(phys, val));
                 };
             };
@@ -2560,7 +2560,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_bad_addr};
                 bf_uint64_t val{g_answer64};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_write_phys<bsl::uint64>(phys, val));
                 };
             };
@@ -2571,7 +2571,7 @@ namespace syscall
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
                 bf_uint64_t val{g_answer64};
-                bsl::ut_then{} = [&sys, &phys, &val]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_write_phys<bsl::uint64>(phys, val));
                     bsl::ut_check(sys.bf_read_phys<bsl::uint64>(phys) == g_answer64);
                 };
@@ -2582,7 +2582,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 void *virt{};
-                bsl::ut_then{} = [&sys, &virt]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_virt_to_phys(virt));
                 };
             };
@@ -2592,7 +2592,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 void *virt{};
-                bsl::ut_then{} = [&sys, &virt]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(!sys.bf_virt_to_phys(&virt));
                 };
             };
@@ -2602,9 +2602,9 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 void *virt{};
-                bsl::ut_when{} = [&sys, &virt]() {
+                bsl::ut_when{} = [&]() {
                     virt = sys.bf_mem_op_alloc_page();
-                    bsl::ut_then{} = [&sys, &virt]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_virt_to_phys(virt));
                         bsl::ut_check(sys.bf_mem_op_free_page(virt));
                     };
@@ -2616,7 +2616,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{bf_uint64_t::failure()};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_phys_to_virt(phys) == nullptr);
                 };
             };
@@ -2626,7 +2626,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_phys_to_virt(phys) == nullptr);
                 };
             };
@@ -2636,7 +2636,7 @@ namespace syscall
             bsl::ut_given{} = []() {
                 bf_syscall_t sys{};
                 bf_uint64_t phys{g_answer64};
-                bsl::ut_then{} = [&sys, &phys]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(sys.bf_phys_to_virt(phys) == nullptr);
                 };
             };
@@ -2647,9 +2647,9 @@ namespace syscall
                 bf_syscall_t sys{};
                 void *virt{};
                 bf_uint64_t phys{g_answer64};
-                bsl::ut_when{} = [&sys, &virt, &phys]() {
+                bsl::ut_when{} = [&]() {
                     virt = sys.bf_mem_op_alloc_page(phys);
-                    bsl::ut_then{} = [&sys, &virt, &phys]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(sys.bf_phys_to_virt(phys) == virt);
                         bsl::ut_check(sys.bf_mem_op_free_page(virt));
                     };

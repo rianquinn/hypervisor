@@ -51,7 +51,7 @@ namespace mk
 
         bsl::ut_scenario{"success"} = []() {
             mutable_span_t huge_pool{};
-            bsl::ut_then{} = [&huge_pool]() {
+            bsl::ut_then{} = [&]() {
                 dump_mk_huge_pool(&huge_pool);
             };
         };

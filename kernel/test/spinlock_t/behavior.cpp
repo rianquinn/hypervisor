@@ -97,13 +97,13 @@ namespace mk
                 spinlock_t spinlock{};
                 tls_t tls{};
                 bsl::ut_when{} = [&spinlock, &tls]() {
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(!spinlock.is_locked());
@@ -117,13 +117,13 @@ namespace mk
                 spinlock_t spinlock{};
                 tls_t tls{};
                 bsl::ut_when{} = [&spinlock, &tls]() {
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(!spinlock.is_locked());
@@ -137,19 +137,19 @@ namespace mk
                 spinlock_t spinlock{};
                 tls_t tls{};
                 bsl::ut_when{} = [&spinlock, &tls]() {
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(!spinlock.is_locked());
@@ -163,19 +163,19 @@ namespace mk
                 spinlock_t spinlock{};
                 tls_t tls{};
                 bsl::ut_when{} = [&spinlock, &tls]() {
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(!spinlock.is_locked());
@@ -189,25 +189,25 @@ namespace mk
                 spinlock_t spinlock{};
                 tls_t tls{};
                 bsl::ut_when{} = [&spinlock, &tls]() {
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(!spinlock.is_locked());
@@ -221,25 +221,25 @@ namespace mk
                 spinlock_t spinlock{};
                 tls_t tls{};
                 bsl::ut_when{} = [&spinlock, &tls]() {
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(!spinlock.is_locked());
@@ -253,25 +253,25 @@ namespace mk
                 spinlock_t spinlock{};
                 tls_t tls{};
                 bsl::ut_when{} = [&spinlock, &tls]() {
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(!spinlock.is_locked());
@@ -285,25 +285,25 @@ namespace mk
                 spinlock_t spinlock{};
                 tls_t tls{};
                 bsl::ut_when{} = [&spinlock, &tls]() {
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(!spinlock.is_locked());
@@ -317,31 +317,31 @@ namespace mk
                 spinlock_t spinlock{};
                 tls_t tls{};
                 bsl::ut_when{} = [&spinlock, &tls]() {
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(!spinlock.is_locked());
@@ -355,31 +355,31 @@ namespace mk
                 spinlock_t spinlock{};
                 tls_t tls{};
                 bsl::ut_when{} = [&spinlock, &tls]() {
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.lock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ONE_UMAX.get();
+                    tls.esr_ip = (1_umax).get();
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(spinlock.is_locked());
                     };
 
-                    tls.esr_ip = bsl::ZERO_UMAX.get();
+                    tls.esr_ip = {};
                     spinlock.unlock(tls);
                     bsl::ut_then{} = [&spinlock]() {
                         bsl::ut_check(!spinlock.is_locked());
@@ -420,8 +420,7 @@ namespace mk
                         //   attempts at this test had.
                         //
 
-                        bsl::ut_check(
-                            static_cast<bsl::uint64>(g_threads_that_waited) == bsl::ONE_UMAX);
+                        bsl::ut_check(static_cast<bsl::uint64>(g_threads_that_waited) == 1_umax);
                     };
                 };
             };

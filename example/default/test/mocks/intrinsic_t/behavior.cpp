@@ -45,9 +45,9 @@ namespace example
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_when{} = [&intrinsic, &gs, &tls]() {
+                bsl::ut_when{} = [&]() {
                     intrinsic.set_initialize(bsl::errc_failure);
-                    bsl::ut_then{} = [&intrinsic, &gs, &tls]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check(!intrinsic.initialize(gs, tls));
                     };
                 };
@@ -59,7 +59,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&intrinsic, &gs, &tls]() {
+                bsl::ut_then{} = [&]() {
                     bsl::ut_check(intrinsic.initialize(gs, tls));
                 };
             };
@@ -70,7 +70,7 @@ namespace example
                 intrinsic_t intrinsic{};
                 gs_t gs{};
                 tls_t tls{};
-                bsl::ut_then{} = [&intrinsic, &gs, &tls]() {
+                bsl::ut_then{} = [&]() {
                     intrinsic.release(gs, tls);
                 };
             };

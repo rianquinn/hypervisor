@@ -25,6 +25,8 @@
 #ifndef MOCKS_GS_T_HPP
 #define MOCKS_GS_T_HPP
 
+#include <bsl/safe_integral.hpp>
+
 namespace example
 {
     /// @class example::gs_t
@@ -34,7 +36,12 @@ namespace example
     ///     unit testing. Specifically, this version is architecture specific.
     ///
     struct gs_t final
-    {};
+    {
+        /// @brief stores the MSR bitmap used by this vps_t
+        void *msr_bitmap{};
+        /// @brief stores the physical address of the MSR bitmap above
+        bsl::safe_uintmax msr_bitmap_phys{};
+    };
 }
 
 #endif

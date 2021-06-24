@@ -22,56 +22,27 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#ifndef ARCH_SUPPORT_HPP
-#define ARCH_SUPPORT_HPP
-
-#include <bf_constants.hpp>
+#ifndef TLS_T_HPP
+#define TLS_T_HPP
 
 #include <bsl/convert.hpp>
-#include <bsl/debug.hpp>
-#include <bsl/discard.hpp>
-#include <bsl/errc_type.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/unlikely_assert.hpp>
 
 namespace integration
 {
+    /// @class integration::tls_t
+    ///
     /// <!-- description -->
-    ///   @brief Implements the architecture specific VMExit handler.
+    ///   @brief Defines the extension's Thread Local Storage (TLS).
     ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle the handle to use
-    ///   @param vpsid the ID of the VPS that generated the VMExit
-    ///   @param exit_reason the exit reason associated with the VMExit
-    ///
-    constexpr void
-    vmexit(
-        syscall::bf_handle_t &handle,
-        bsl::safe_uint16 const &vpsid,
-        bsl::safe_uint64 const &exit_reason) noexcept
-    {
-        bsl::discard(handle);
-        bsl::discard(vpsid);
-        bsl::discard(exit_reason);
-    }
+    struct tls_t final
+    {};
 
-    /// <!-- description -->
-    ///   @brief Initializes a VPS with architecture specific stuff.
-    ///
-    /// <!-- inputs/outputs -->
-    ///   @param handle the handle to use
-    ///   @param vpsid the VPS being intialized
-    ///   @return Returns bsl::errc_success on success and bsl::errc_failure
-    ///     on failure.
-    ///
-    [[nodiscard]] constexpr auto
-    init_vps(syscall::bf_handle_t &handle, bsl::safe_uint16 const &vpsid) noexcept -> bsl::errc_type
-    {
-        bsl::discard(handle);
-        bsl::discard(vpsid);
+    /// @brief defines the max size supported for the TLS block
+    constexpr auto MAX_TLS_SIZE{HYPERVISOR_PAGE_SIZE};
 
-        return bsl::errc_success;
-    }
+    /// @brief ensure that the tls_t does not exceed the max supported size
+    static_assert(!(sizeof(tls_t) > MAX_TLS_SIZE));
 }
 
 #endif

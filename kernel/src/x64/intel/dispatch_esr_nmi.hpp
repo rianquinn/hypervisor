@@ -54,8 +54,11 @@ namespace mk
         constexpr auto vmcs_procbased_ctls_idx{0x4002_umax};
         constexpr auto vmcs_set_nmi_window_exiting{0x400000_u32};
 
-        if (bsl::ZERO_UMAX != tls.nmi_lock) {
-            tls.nmi_pending = bsl::ONE_UMAX.get();
+        constexpr auto unlocked{0_umax};
+        constexpr auto pending{1_umax};
+
+        if (unlocked != tls.nmi_lock) {
+            tls.nmi_pending = pending.get();
             return bsl::errc_success;
         }
 
@@ -73,7 +76,8 @@ namespace mk
             return ret;
         }
 
-        tls.nmi_pending = bsl::ZERO_UMAX.get();
+        constexpr auto not_pending{0_umax};
+        tls.nmi_pending = not_pending.get();
         return bsl::errc_success;
     }
 }

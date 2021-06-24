@@ -22,35 +22,20 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#include "integration_utils.hpp"
+#ifndef GS_T_HPP
+#define GS_T_HPP
 
-#include <bf_constants.hpp>
-
-#include <bsl/debug.hpp>
-#include <bsl/exit_code.hpp>
 #include <bsl/safe_integral.hpp>
-#include <bsl/unlikely.hpp>
 
 namespace integration
 {
+    /// @class integration::gs_t
+    ///
     /// <!-- description -->
-    ///   @brief Implements the main entry function for this integration
-    ///     test
+    ///   @brief Defines the extension's Global Storage (GS).
     ///
-    /// <!-- inputs/outputs -->
-    ///   @param version the version of the spec implemented by the
-    ///     microkernel. This can be used to ensure the extension and the
-    ///     microkernel speak the same ABI.
-    ///
-    extern "C" void
-    ext_main_entry(bsl::uint32 const version) noexcept
-    {
-        if (bsl::unlikely(!syscall::bf_is_spec1_supported(version))) {
-            bsl::error() << "integration test not supported\n" << bsl::here();
-            return syscall::bf_control_op_exit();
-        }
-
-        bsl::error() << "extension purposely exiting early\n";
-        syscall::bf_control_op_exit();
-    }
+    struct gs_t final
+    {};
 }
+
+#endif

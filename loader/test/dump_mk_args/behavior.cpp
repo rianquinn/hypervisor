@@ -45,14 +45,14 @@ namespace mk
     {
         bsl::ut_scenario{"null args"} = []() {
             bsl::ut_then{} = []() {
-                dump_mk_args(nullptr, bsl::ZERO_U32.get());
+                dump_mk_args(nullptr, {});
             };
         };
 
         bsl::ut_scenario{"no extensions"} = []() {
             mk_args_t args{};
-            bsl::ut_then{} = [&args]() {
-                dump_mk_args(&args, bsl::ZERO_U32.get());
+            bsl::ut_then{} = [&]() {
+                dump_mk_args(&args, {});
             };
         };
 
@@ -61,8 +61,8 @@ namespace mk
             uint8_t data{};
             args.ext_elf_files[0].addr = &data;
             args.ext_elf_files[0].size = sizeof(data);
-            bsl::ut_then{} = [&args]() {
-                dump_mk_args(&args, bsl::ZERO_U32.get());
+            bsl::ut_then{} = [&]() {
+                dump_mk_args(&args, {});
             };
         };
 

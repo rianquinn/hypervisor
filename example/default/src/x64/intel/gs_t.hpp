@@ -42,8 +42,10 @@ namespace example
     ///
     struct gs_t final
     {
-        /// @brief dummy data for example purposes only.
-        bsl::safe_uintmax dummy;
+        /// @brief stores the MSR bitmap used by this vps_t
+        void *msr_bitmap{};
+        /// @brief stores the physical address of the MSR bitmap above
+        bsl::safe_uintmax msr_bitmap_phys{};
     };
 }
 

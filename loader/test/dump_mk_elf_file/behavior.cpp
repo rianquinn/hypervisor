@@ -51,7 +51,7 @@ namespace mk
 
         bsl::ut_scenario{"success"} = []() {
             span_t file{};
-            bsl::ut_then{} = [&file]() {
+            bsl::ut_then{} = [&]() {
                 dump_mk_elf_file(&file);
             };
         };

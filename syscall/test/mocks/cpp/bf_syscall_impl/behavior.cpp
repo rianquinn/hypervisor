@@ -63,7 +63,7 @@ namespace syscall
         bsl::ut_scenario{"quiet dummy_bootstrap_entry"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint16_t arg0{};
-                bsl::ut_then{} = [&arg0]() {
+                bsl::ut_then{} = [&]() {
                     dummy_bootstrap_entry(arg0.get());
                 };
             };
@@ -73,7 +73,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_then{} = [&arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     dummy_vmexit_entry(arg0.get(), arg1.get());
                 };
             };
@@ -83,7 +83,7 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint16_t arg0{};
                 bf_uint64_t arg1{};
-                bsl::ut_then{} = [&arg0, &arg1]() {
+                bsl::ut_then{} = [&]() {
                     dummy_fail_entry(arg0.get(), arg1.get());
                 };
             };
@@ -381,12 +381,12 @@ namespace syscall
         bsl::ut_scenario{"bf_handle_op_open_handle_impl failure"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint64_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_handle_op_open_handle_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_handle_op_open_handle_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_handle_op_open_handle_impl({}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(reg0_out.is_zero());
@@ -398,11 +398,11 @@ namespace syscall
         bsl::ut_scenario{"bf_handle_op_open_handle_impl success"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint64_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_handle_op_open_handle_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_handle_op_open_handle_impl({}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
                         bsl::ut_check(g_answer64 == reg0_out);
@@ -667,12 +667,12 @@ namespace syscall
         bsl::ut_scenario{"bf_vm_op_create_vm_impl failure"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint16_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vm_op_create_vm_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_vm_op_create_vm_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vm_op_create_vm_impl({}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(reg0_out.is_zero());
@@ -684,11 +684,11 @@ namespace syscall
         bsl::ut_scenario{"bf_vm_op_create_vm_impl success"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint16_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_vm_op_create_vm_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vm_op_create_vm_impl({}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
                         bsl::ut_check(g_answer16 == reg0_out);
@@ -740,12 +740,12 @@ namespace syscall
         bsl::ut_scenario{"bf_vp_op_create_vp_impl failure"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint16_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vp_op_create_vp_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_vp_op_create_vp_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vp_op_create_vp_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(reg0_out.is_zero());
@@ -757,11 +757,11 @@ namespace syscall
         bsl::ut_scenario{"bf_vp_op_create_vp_impl success"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint16_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_vp_op_create_vp_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vp_op_create_vp_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
                         bsl::ut_check(g_answer16 == reg0_out);
@@ -840,12 +840,12 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_create_vps_impl failure"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint16_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_create_vps_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_vps_op_create_vps_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{
                             bf_vps_op_create_vps_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
@@ -858,11 +858,11 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_create_vps_impl success"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint16_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_vps_op_create_vps_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{
                             bf_vps_op_create_vps_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
@@ -942,12 +942,12 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_read8_impl failure"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint8_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_read8_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_vps_op_read8_impl_reg0_out") = bsl::to_u64(g_answer8);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vps_op_read8_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(reg0_out.is_zero());
@@ -959,11 +959,11 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_read8_impl success"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint8_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_vps_op_read8_impl_reg0_out") = bsl::to_u64(g_answer8);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vps_op_read8_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
                         bsl::ut_check(g_answer8 == reg0_out);
@@ -988,12 +988,12 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_read16_impl failure"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint16_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_read16_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_vps_op_read16_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vps_op_read16_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(reg0_out.is_zero());
@@ -1005,11 +1005,11 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_read16_impl success"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint16_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_vps_op_read16_impl_reg0_out") = bsl::to_u64(g_answer16);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vps_op_read16_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
                         bsl::ut_check(g_answer16 == reg0_out);
@@ -1034,12 +1034,12 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_read32_impl failure"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint32_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_read32_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_vps_op_read32_impl_reg0_out") = bsl::to_u64(g_answer32);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vps_op_read32_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(reg0_out.is_zero());
@@ -1051,11 +1051,11 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_read32_impl success"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint32_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_vps_op_read32_impl_reg0_out") = bsl::to_u64(g_answer32);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vps_op_read32_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
                         bsl::ut_check(g_answer32 == reg0_out);
@@ -1080,12 +1080,12 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_read64_impl failure"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint64_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_read64_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_vps_op_read64_impl_reg0_out") = bsl::to_u64(g_answer64);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vps_op_read64_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(reg0_out.is_zero());
@@ -1097,11 +1097,11 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_read64_impl success"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint64_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_vps_op_read64_impl_reg0_out") = bsl::to_u64(g_answer64);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vps_op_read64_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
                         bsl::ut_check(g_answer64 == reg0_out);
@@ -1245,12 +1245,12 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_read_reg_impl failure"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint64_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_vps_op_read_reg_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_vps_op_read_reg_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vps_op_read_reg_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(reg0_out.is_zero());
@@ -1262,11 +1262,11 @@ namespace syscall
         bsl::ut_scenario{"bf_vps_op_read_reg_impl success"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint64_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_vps_op_read_reg_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_vps_op_read_reg_impl({}, {}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
                         bsl::ut_check(g_answer64 == reg0_out);
@@ -1485,12 +1485,12 @@ namespace syscall
         bsl::ut_scenario{"bf_intrinsic_op_rdmsr_impl failure"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint64_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_intrinsic_op_rdmsr_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_intrinsic_op_rdmsr_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_intrinsic_op_rdmsr_impl({}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(reg0_out.is_zero());
@@ -1502,11 +1502,11 @@ namespace syscall
         bsl::ut_scenario{"bf_intrinsic_op_rdmsr_impl success"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint64_t reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_intrinsic_op_rdmsr_impl_reg0_out") = g_answer64;
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_intrinsic_op_rdmsr_impl({}, {}, reg0_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
                         bsl::ut_check(g_answer64 == reg0_out);
@@ -1628,11 +1628,11 @@ namespace syscall
         bsl::ut_scenario{"bf_mem_op_alloc_page_impl invalid arg0"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint64_t reg1_out{};
-                bsl::ut_when{} = [&reg1_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_mem_op_alloc_page_impl_reg1_out") = bsl::to_umax(g_answer64);
-                    bsl::ut_then{} = [&reg1_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_mem_op_alloc_page_impl({}, {}, reg1_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(reg1_out.is_zero());
@@ -1644,11 +1644,11 @@ namespace syscall
         bsl::ut_scenario{"bf_mem_op_alloc_page_impl invalid arg0"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 void *reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = bsl::to_umax(g_answer64);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_mem_op_alloc_page_impl({}, &reg0_out, {})};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(nullptr == reg0_out);
@@ -1661,13 +1661,13 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 void *reg0_out{};
                 bf_uint64_t reg1_out{};
-                bsl::ut_when{} = [&reg0_out, &reg1_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_mem_op_alloc_page_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = bsl::to_umax(g_answer64);
                     g_data.at("bf_mem_op_alloc_page_impl_reg1_out") = bsl::to_umax(g_answer64);
-                    bsl::ut_then{} = [&reg0_out, &reg1_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{
                             bf_mem_op_alloc_page_impl({}, &reg0_out, reg1_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
@@ -1682,13 +1682,13 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 void *reg0_out{};
                 bf_uint64_t reg1_out{};
-                bsl::ut_when{} = [&reg0_out, &reg1_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_mem_op_alloc_page_impl") = BF_STATUS_SUCCESS;
                     g_data.at("bf_mem_op_alloc_page_impl_reg0_out") = bsl::to_umax(g_answer64);
                     g_data.at("bf_mem_op_alloc_page_impl_reg1_out") = bsl::to_umax(g_answer64);
-                    bsl::ut_then{} = [&reg0_out, &reg1_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{
                             bf_mem_op_alloc_page_impl({}, &reg0_out, reg1_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
@@ -1729,11 +1729,11 @@ namespace syscall
         bsl::ut_scenario{"bf_mem_op_alloc_huge_impl invalid arg0"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 bf_uint64_t reg1_out{};
-                bsl::ut_when{} = [&reg1_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_mem_op_alloc_huge_impl_reg1_out") = bsl::to_umax(g_answer64);
-                    bsl::ut_then{} = [&reg1_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{
                             bf_mem_op_alloc_huge_impl({}, {}, {}, reg1_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
@@ -1746,11 +1746,11 @@ namespace syscall
         bsl::ut_scenario{"bf_mem_op_alloc_huge_impl invalid arg0"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 void *reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = bsl::to_umax(g_answer64);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_mem_op_alloc_huge_impl({}, {}, &reg0_out, {})};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(nullptr == reg0_out);
@@ -1763,13 +1763,13 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 void *reg0_out{};
                 bf_uint64_t reg1_out{};
-                bsl::ut_when{} = [&reg0_out, &reg1_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_mem_op_alloc_huge_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = bsl::to_umax(g_answer64);
                     g_data.at("bf_mem_op_alloc_huge_impl_reg1_out") = bsl::to_umax(g_answer64);
-                    bsl::ut_then{} = [&reg0_out, &reg1_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{
                             bf_mem_op_alloc_huge_impl({}, {}, &reg0_out, reg1_out.data())};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
@@ -1784,13 +1784,13 @@ namespace syscall
             bsl::ut_given_at_runtime{} = []() {
                 void *reg0_out{};
                 bf_uint64_t reg1_out{};
-                bsl::ut_when{} = [&reg0_out, &reg1_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_mem_op_alloc_huge_impl") = BF_STATUS_SUCCESS;
                     g_data.at("bf_mem_op_alloc_huge_impl_reg0_out") = bsl::to_umax(g_answer64);
                     g_data.at("bf_mem_op_alloc_huge_impl_reg1_out") = bsl::to_umax(g_answer64);
-                    bsl::ut_then{} = [&reg0_out, &reg1_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{
                             bf_mem_op_alloc_huge_impl({}, {}, &reg0_out, reg1_out.data())};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
@@ -1844,12 +1844,12 @@ namespace syscall
         bsl::ut_scenario{"bf_mem_op_alloc_heap_impl failure"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 void *reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_errc.at("bf_mem_op_alloc_heap_impl") = BF_STATUS_FAILURE_UNKNOWN;
                     g_data.at("bf_mem_op_alloc_heap_impl_reg0_out") = bsl::to_umax(g_answer64);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_mem_op_alloc_heap_impl({}, {}, &reg0_out)};
                         bsl::ut_check(BF_STATUS_FAILURE_UNKNOWN == ret);
                         bsl::ut_check(nullptr == reg0_out);
@@ -1861,11 +1861,11 @@ namespace syscall
         bsl::ut_scenario{"bf_mem_op_alloc_heap_impl success"} = []() {
             bsl::ut_given_at_runtime{} = []() {
                 void *reg0_out{};
-                bsl::ut_when{} = [&reg0_out]() {
+                bsl::ut_when{} = [&]() {
                     g_errc.clear();
                     g_data.clear();
                     g_data.at("bf_mem_op_alloc_heap_impl_reg0_out") = bsl::to_u64(g_answer64);
-                    bsl::ut_then{} = [&reg0_out]() {
+                    bsl::ut_then{} = [&]() {
                         bf_status_t const ret{bf_mem_op_alloc_heap_impl({}, {}, &reg0_out)};
                         bsl::ut_check(BF_STATUS_SUCCESS == ret);
                         bsl::ut_check(g_answer64 == bsl::to_umax(reg0_out));
@@ -1879,8 +1879,8 @@ namespace syscall
 }
 
 /// <!-- description -->
-///   @brief Main function for this unit test. If a call to bsl::ut_check(bsl::ZERO_UMAX == ) fails
-///     the application will fast fail. If all calls to bsl::ut_check(bsl::ZERO_UMAX == ) pass, this
+///   @brief Main function for this unit test. If a call to bsl::ut_check() fails
+///     the application will fast fail. If all calls to bsl::ut_check() pass, this
 ///     function will successfully return with bsl::exit_success.
 ///
 /// <!-- inputs/outputs -->

@@ -51,7 +51,7 @@ namespace mk
 
         bsl::ut_scenario{"success"} = []() {
             code_aliases_t a{};
-            bsl::ut_then{} = [&a]() {
+            bsl::ut_then{} = [&]() {
                 dump_mk_code_aliases(&a);
             };
         };

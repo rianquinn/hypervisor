@@ -336,6 +336,6 @@ namespace example
         ///   as there is nothing to process after this call.
         ///
 
-        syscall::bf_control_op_wait();
+        return syscall::bf_control_op_wait();
     }
 }

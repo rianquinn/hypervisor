@@ -49,9 +49,9 @@ namespace example
                 auto rbx{data};
                 auto rcx{data};
                 auto rdx{data};
-                bsl::ut_when{} = [&data, &mask, &rax, &rbx, &rcx, &rdx]() {
+                bsl::ut_when{} = [&]() {
                     intrinsic_cpuid_impl(rax.data(), rbx.data(), rcx.data(), rdx.data());
-                    bsl::ut_then{} = [&data, &mask, &rax, &rbx, &rcx, &rdx]() {
+                    bsl::ut_then{} = [&]() {
                         bsl::ut_check((rax & mask) == data);
                         bsl::ut_check((rbx & mask) == data);
                         bsl::ut_check((rcx & mask) == data);

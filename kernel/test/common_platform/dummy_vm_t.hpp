@@ -235,7 +235,7 @@ namespace mk
             bsl::discard(tls);
 
             if (m_active) {
-                return bsl::ZERO_U16;
+                return {};
             }
 
             return bsl::safe_uint16::failure();

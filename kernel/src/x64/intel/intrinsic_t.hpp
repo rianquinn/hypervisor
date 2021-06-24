@@ -773,7 +773,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            invept_descriptor_t desc{eptp.get(), bsl::ZERO_UMAX.get()};
+            invept_descriptor_t desc{eptp.get(), {}};
             intrinsic_invept(&desc, type.get());
             return bsl::errc_success;
         }
@@ -827,13 +827,7 @@ namespace mk
                 return bsl::errc_failure;
             }
 
-            invvpid_descriptor_t desc{
-                vpid.get(),
-                bsl::ZERO_U16.get(),
-                bsl::ZERO_U16.get(),
-                bsl::ZERO_U16.get(),
-                addr.get()};
-
+            invvpid_descriptor_t desc{vpid.get(), {}, {}, {}, addr.get()};
             intrinsic_invvpid(&desc, type.get());
             return bsl::errc_success;
         }

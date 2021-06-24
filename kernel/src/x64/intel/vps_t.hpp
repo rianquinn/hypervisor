@@ -121,8 +121,9 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::ZERO_U16 == state.es_selector) {
-                ret = intrinsic.vmwrite16(VMCS_GUEST_ES_SELECTOR, bsl::ZERO_U16);
+            constexpr auto unused{0_u16};
+            if (unused == state.es_selector) {
+                ret = intrinsic.vmwrite16(VMCS_GUEST_ES_SELECTOR, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -134,13 +135,13 @@ namespace mk
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite32(VMCS_GUEST_ES_LIMIT, bsl::ZERO_U32);
+                ret = intrinsic.vmwrite32(VMCS_GUEST_ES_LIMIT, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite64(VMCS_GUEST_ES_BASE, bsl::ZERO_U64);
+                ret = intrinsic.vmwrite64(VMCS_GUEST_ES_BASE, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -195,8 +196,9 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::ZERO_U16 == state.cs_selector) {
-                ret = intrinsic.vmwrite16(VMCS_GUEST_CS_SELECTOR, bsl::ZERO_U16);
+            constexpr auto unused{0_u16};
+            if (unused == state.cs_selector) {
+                ret = intrinsic.vmwrite16(VMCS_GUEST_CS_SELECTOR, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -208,13 +210,13 @@ namespace mk
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite32(VMCS_GUEST_CS_LIMIT, bsl::ZERO_U32);
+                ret = intrinsic.vmwrite32(VMCS_GUEST_CS_LIMIT, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite64(VMCS_GUEST_CS_BASE, bsl::ZERO_U64);
+                ret = intrinsic.vmwrite64(VMCS_GUEST_CS_BASE, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -269,8 +271,9 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::ZERO_U16 == state.ss_selector) {
-                ret = intrinsic.vmwrite16(VMCS_GUEST_SS_SELECTOR, bsl::ZERO_U16);
+            constexpr auto unused{0_u16};
+            if (unused == state.ss_selector) {
+                ret = intrinsic.vmwrite16(VMCS_GUEST_SS_SELECTOR, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -282,13 +285,13 @@ namespace mk
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite32(VMCS_GUEST_SS_LIMIT, bsl::ZERO_U32);
+                ret = intrinsic.vmwrite32(VMCS_GUEST_SS_LIMIT, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite64(VMCS_GUEST_SS_BASE, bsl::ZERO_U64);
+                ret = intrinsic.vmwrite64(VMCS_GUEST_SS_BASE, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -343,8 +346,9 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::ZERO_U16 == state.ds_selector) {
-                ret = intrinsic.vmwrite16(VMCS_GUEST_DS_SELECTOR, bsl::ZERO_U16);
+            constexpr auto unused{0_u16};
+            if (unused == state.ds_selector) {
+                ret = intrinsic.vmwrite16(VMCS_GUEST_DS_SELECTOR, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -356,13 +360,13 @@ namespace mk
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite32(VMCS_GUEST_DS_LIMIT, bsl::ZERO_U32);
+                ret = intrinsic.vmwrite32(VMCS_GUEST_DS_LIMIT, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite64(VMCS_GUEST_DS_BASE, bsl::ZERO_U64);
+                ret = intrinsic.vmwrite64(VMCS_GUEST_DS_BASE, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -417,8 +421,9 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::ZERO_U16 == state.fs_selector) {
-                ret = intrinsic.vmwrite16(VMCS_GUEST_FS_SELECTOR, bsl::ZERO_U16);
+            constexpr auto unused{0_u16};
+            if (unused == state.fs_selector) {
+                ret = intrinsic.vmwrite16(VMCS_GUEST_FS_SELECTOR, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -430,13 +435,13 @@ namespace mk
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite32(VMCS_GUEST_FS_LIMIT, bsl::ZERO_U32);
+                ret = intrinsic.vmwrite32(VMCS_GUEST_FS_LIMIT, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite64(VMCS_GUEST_FS_BASE, bsl::ZERO_U64);
+                ret = intrinsic.vmwrite64(VMCS_GUEST_FS_BASE, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -491,8 +496,9 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::ZERO_U16 == state.gs_selector) {
-                ret = intrinsic.vmwrite16(VMCS_GUEST_GS_SELECTOR, bsl::ZERO_U16);
+            constexpr auto unused{0_u16};
+            if (unused == state.gs_selector) {
+                ret = intrinsic.vmwrite16(VMCS_GUEST_GS_SELECTOR, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -504,13 +510,13 @@ namespace mk
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite32(VMCS_GUEST_GS_LIMIT, bsl::ZERO_U32);
+                ret = intrinsic.vmwrite32(VMCS_GUEST_GS_LIMIT, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite64(VMCS_GUEST_GS_BASE, bsl::ZERO_U64);
+                ret = intrinsic.vmwrite64(VMCS_GUEST_GS_BASE, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -565,8 +571,9 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::ZERO_U16 == state.ldtr_selector) {
-                ret = intrinsic.vmwrite16(VMCS_GUEST_LDTR_SELECTOR, bsl::ZERO_U16);
+            constexpr auto unused{0_u16};
+            if (unused == state.ldtr_selector) {
+                ret = intrinsic.vmwrite16(VMCS_GUEST_LDTR_SELECTOR, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -578,13 +585,13 @@ namespace mk
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite32(VMCS_GUEST_LDTR_LIMIT, bsl::ZERO_U32);
+                ret = intrinsic.vmwrite32(VMCS_GUEST_LDTR_LIMIT, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite64(VMCS_GUEST_LDTR_BASE, bsl::ZERO_U64);
+                ret = intrinsic.vmwrite64(VMCS_GUEST_LDTR_BASE, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -639,8 +646,9 @@ namespace mk
         {
             bsl::errc_type ret{};
 
-            if (bsl::ZERO_U16 == state.tr_selector) {
-                ret = intrinsic.vmwrite16(VMCS_GUEST_TR_SELECTOR, bsl::ZERO_U16);
+            constexpr auto unused{0_u16};
+            if (unused == state.tr_selector) {
+                ret = intrinsic.vmwrite16(VMCS_GUEST_TR_SELECTOR, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -652,13 +660,13 @@ namespace mk
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite32(VMCS_GUEST_TR_LIMIT, bsl::ZERO_U32);
+                ret = intrinsic.vmwrite32(VMCS_GUEST_TR_LIMIT, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
                 }
 
-                ret = intrinsic.vmwrite64(VMCS_GUEST_TR_BASE, bsl::ZERO_U64);
+                ret = intrinsic.vmwrite64(VMCS_GUEST_TR_BASE, {});
                 if (bsl::unlikely_assert(!ret)) {
                     bsl::print<bsl::V>() << bsl::here();
                     return ret;
@@ -743,10 +751,10 @@ namespace mk
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
-                state.es_selector = bsl::ZERO_U16.get();
-                state.es_attrib = bsl::ZERO_U16.get();
-                state.es_limit = bsl::ZERO_U32.get();
-                state.es_base = bsl::ZERO_U64.get();
+                state.es_selector = {};
+                state.es_attrib = {};
+                state.es_limit = {};
+                state.es_base = {};
             }
             else {
                 state.es_selector = selector.get();
@@ -803,10 +811,10 @@ namespace mk
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
-                state.cs_selector = bsl::ZERO_U16.get();
-                state.cs_attrib = bsl::ZERO_U16.get();
-                state.cs_limit = bsl::ZERO_U32.get();
-                state.cs_base = bsl::ZERO_U64.get();
+                state.cs_selector = {};
+                state.cs_attrib = {};
+                state.cs_limit = {};
+                state.cs_base = {};
             }
             else {
                 state.cs_selector = selector.get();
@@ -863,10 +871,10 @@ namespace mk
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
-                state.ss_selector = bsl::ZERO_U16.get();
-                state.ss_attrib = bsl::ZERO_U16.get();
-                state.ss_limit = bsl::ZERO_U32.get();
-                state.ss_base = bsl::ZERO_U64.get();
+                state.ss_selector = {};
+                state.ss_attrib = {};
+                state.ss_limit = {};
+                state.ss_base = {};
             }
             else {
                 state.ss_selector = selector.get();
@@ -923,10 +931,10 @@ namespace mk
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
-                state.ds_selector = bsl::ZERO_U16.get();
-                state.ds_attrib = bsl::ZERO_U16.get();
-                state.ds_limit = bsl::ZERO_U32.get();
-                state.ds_base = bsl::ZERO_U64.get();
+                state.ds_selector = {};
+                state.ds_attrib = {};
+                state.ds_limit = {};
+                state.ds_base = {};
             }
             else {
                 state.ds_selector = selector.get();
@@ -983,10 +991,10 @@ namespace mk
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
-                state.gs_selector = bsl::ZERO_U16.get();
-                state.gs_attrib = bsl::ZERO_U16.get();
-                state.gs_limit = bsl::ZERO_U32.get();
-                state.gs_base = bsl::ZERO_U64.get();
+                state.gs_selector = {};
+                state.gs_attrib = {};
+                state.gs_limit = {};
+                state.gs_base = {};
             }
             else {
                 state.gs_selector = selector.get();
@@ -1043,10 +1051,10 @@ namespace mk
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
-                state.fs_selector = bsl::ZERO_U16.get();
-                state.fs_attrib = bsl::ZERO_U16.get();
-                state.fs_limit = bsl::ZERO_U32.get();
-                state.fs_base = bsl::ZERO_U64.get();
+                state.fs_selector = {};
+                state.fs_attrib = {};
+                state.fs_limit = {};
+                state.fs_base = {};
             }
             else {
                 state.fs_selector = selector.get();
@@ -1103,10 +1111,10 @@ namespace mk
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
-                state.ldtr_selector = bsl::ZERO_U16.get();
-                state.ldtr_attrib = bsl::ZERO_U16.get();
-                state.ldtr_limit = bsl::ZERO_U32.get();
-                state.ldtr_base = bsl::ZERO_U64.get();
+                state.ldtr_selector = {};
+                state.ldtr_attrib = {};
+                state.ldtr_limit = {};
+                state.ldtr_base = {};
             }
             else {
                 state.ldtr_selector = selector.get();
@@ -1163,10 +1171,10 @@ namespace mk
             }
 
             if (VMCS_UNUSABLE_SEGMENT == access_rights) {
-                state.tr_selector = bsl::ZERO_U16.get();
-                state.tr_attrib = bsl::ZERO_U16.get();
-                state.tr_limit = bsl::ZERO_U32.get();
-                state.tr_base = bsl::ZERO_U64.get();
+                state.tr_selector = {};
+                state.tr_attrib = {};
+                state.tr_limit = {};
+                state.tr_base = {};
             }
             else {
                 state.tr_selector = selector.get();
@@ -1540,7 +1548,6 @@ namespace mk
         ///   @param tls the current TLS block
         ///   @param intrinsic the intrinsics to use
         ///   @param page_pool the page pool to use
-        ///   @param vp_pool the VP pool to use
         ///   @param vpid The ID of the VP to assign the newly created VP to
         ///   @param ppid The ID of the PP to assign the newly created VP to
         ///   @return Returns ID of the newly allocated vps
@@ -1550,7 +1557,6 @@ namespace mk
             tls_t &tls,
             intrinsic_t &intrinsic,
             page_pool_t &page_pool,
-            vp_pool_t &vp_pool,
             bsl::safe_uint16 const &vpid,
             bsl::safe_uint16 const &ppid) &noexcept -> bsl::safe_uint16
         {
@@ -1576,25 +1582,25 @@ namespace mk
                 return bsl::safe_uint16::failure();
             }
 
-            if (bsl::unlikely(vp_pool.is_zombie(tls, vpid))) {
-                bsl::error() << "vp "                                                // --
-                             << bsl::hex(vpid)                                       // --
-                             << " is a zombie and a vps cannot be assigned to it"    // --
-                             << bsl::endl                                            // --
-                             << bsl::here();                                         // --
+            // if (bsl::unlikely(vp_pool.is_zombie(tls, vpid))) {
+            //     bsl::error() << "vp "                                                // --
+            //                  << bsl::hex(vpid)                                       // --
+            //                  << " is a zombie and a vps cannot be assigned to it"    // --
+            //                  << bsl::endl                                            // --
+            //                  << bsl::here();                                         // --
 
-                return bsl::safe_uint16::failure();
-            }
+            //     return bsl::safe_uint16::failure();
+            // }
 
-            if (bsl::unlikely(vp_pool.is_deallocated(tls, vpid))) {
-                bsl::error() << "vp "                                                         // --
-                             << bsl::hex(vpid)                                                // --
-                             << " has not been created and a vps cannot be assigned to it"    // --
-                             << bsl::endl                                                     // --
-                             << bsl::here();                                                  // --
+            // if (bsl::unlikely(vp_pool.is_deallocated(tls, vpid))) {
+            //     bsl::error() << "vp "                                                         // --
+            //                  << bsl::hex(vpid)                                                // --
+            //                  << " has not been created and a vps cannot be assigned to it"    // --
+            //                  << bsl::endl                                                     // --
+            //                  << bsl::here();                                                  // --
 
-                return bsl::safe_uint16::failure();
-            }
+            //     return bsl::safe_uint16::failure();
+            // }
 
             if (bsl::unlikely_assert(!ppid)) {
                 bsl::error() << "invalid ppid\n" << bsl::here();
@@ -2117,7 +2123,7 @@ namespace mk
             //     return bsl::errc_failure;
             // }
 
-            // m_guest_vmcb->vmcb_clean_bits = bsl::ZERO_U32.get();
+            // m_guest_vmcb->vmcb_clean_bits = {};
             // m_assigned_ppid = ppid;
 
             return bsl::errc_success;
@@ -3989,7 +3995,7 @@ namespace mk
                      exit_reason,
                      intrinsic.vmread64_quiet(VMCS_EXIT_QUALIFICATION),
                      intrinsic.vmread64_quiet(VMCS_VMEXIT_INSTRUCTION_INFORMATION),
-                     bsl::ZERO_UMAX,
+                     {},
                      intrinsic.tls_reg(syscall::TLS_OFFSET_RAX),
                      intrinsic.tls_reg(syscall::TLS_OFFSET_RBX),
                      intrinsic.tls_reg(syscall::TLS_OFFSET_RCX),
@@ -4164,6 +4170,7 @@ namespace mk
         ///   @param intrinsic the intrinsics to use
         ///
         constexpr void
+        dump(tls_t &tls, intrinsic_t &intrinsic) const &noexcept
         {
             bsl::discard(tls);
 
